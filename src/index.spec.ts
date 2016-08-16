@@ -1,7 +1,7 @@
 import test from 'ava'
 import { CliBuilder } from './index'
 
-function testProgram(t, pass: string, fail?: string) {
+function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
@@ -68,18 +68,32 @@ test('override default command', t => {
 
 test('config command with no action', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, '', '\nCommand "config" does not have action defined\n')
+  const program = testProgram(t, undefined, '\nCommand "config" does not have action defined\n')
   program.command('config')
   program.start(argv)
 })
 
 test('config command with no action', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
-  const program = testProgram(t, '', '\nCommand "config" does not have action defined\n')
+  const program = testProgram(t)
   program.command('config')
     .option('-x', 'config option')
     .action((argv, options) => {
       t.is(options.x, true)
+    })
+  program.start(argv)
+})
+
+test('argument', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'file.txt']
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file name>  File to blow up\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(2)
+  program.command()
+    .argument('<file name>', 'File to blow up')
+    .action((arg) => {
+      t.is(arg.fileName, 'file.txt')
+      return false
     })
   program.start(argv)
 })
