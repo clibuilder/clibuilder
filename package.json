@@ -27,8 +27,7 @@
     "lint": "tslint \"src/**/*.ts\"",
     "test": "rimraf dist && tsc && ava \"dist/**/*.spec.js\"",
     "watch": "rimraf dist && node scripts/watch.js dist/**/*.spec.js",
-    "verify": "npm run test+lint && npm run build",
-    "test+lint": "npm test && npm run lint",
+    "verify": "npm run test && npm run build && npm run lint",
     "preversion": "npm run verify",
     "prepublish": "typings install && npm run build"
   },
