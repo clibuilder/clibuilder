@@ -46,7 +46,7 @@ export class CliBuilder {
       })
   }
 
-  command(cmd: string = '') {
+  command(cmd: string = ''): CommandBuilder {
     if (cmd === '') {
       return this.builder.clear()
     }

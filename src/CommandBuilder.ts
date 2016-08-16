@@ -35,7 +35,7 @@ export class CommandBuilder {
     this._description = undefined
     this.aliases = []
     this.options = []
-    this.fn = () => this.program.error(`\nCommand "${this.commandName}" does not have action defined\n`)
+    this.fn = () => this.program.log(this.help())
     return this
   }
   command(cmd: string) {

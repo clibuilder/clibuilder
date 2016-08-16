@@ -6,20 +6,11 @@ function testProgram(t, pass?: string, fail?: string) {
   program.version = '0.1.0'
   program.log = msg => {
     // console.log(msg)
-    if (pass === undefined) {
-      t.fail('should not pass')
-    }
-    else {
-      t.is(msg, pass)
-    }
+    t.is(msg, pass)
   }
   program.error = msg => {
-    if (fail) {
-      t.is(msg, fail)
-    }
-    else {
-      t.fail(`ERROR: ${msg}`)
-    }
+    // console.error(msg)
+    t.is(msg, fail)
   }
   return program
 }
@@ -87,10 +78,12 @@ test('unknown command', t => {
   program.start(argv)
 })
 
-test('command with no action', t => {
+test.only('command with no action shows command help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, undefined, '\nCommand "config" does not have action defined\n')
+  const program = testProgram(t, '\nUsage: democli config\n\n')
   program.command('config')
+
+  t.plan(1)
   program.start(argv)
 })
 test('command help', t => {
