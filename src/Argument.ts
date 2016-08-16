@@ -8,10 +8,10 @@ export class Argument {
   constructor(public arg: string, public description: string = '') {
     this.required = !!~arg.indexOf('<')
     this.optional = !!~arg.indexOf('[')
-    this.name = camelCase(arg.substring(1, arg.length - 1))
-    if (this.name.length > 3 && this.name.slice(-3) === '...') {
+    const token = arg.substring(1, arg.length - 1)
+    this.name = camelCase(token)
+    if (token.length > 3 && token.slice(-3) === '...') {
       this.variadic = true
-      this.name = this.name.slice(0, -3)
     }
   }
 }

@@ -99,6 +99,22 @@ test('argument', t => {
   program.start(argv)
 })
 
+test('variadic arguments', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'file.txt', 'file2.txt']
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file names...>  File to blow up\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(4)
+  program.command()
+    .argument('<file names...>', 'File to blow up')
+    .action((arg) => {
+      t.is(arg.fileNames.length, 2)
+      t.is(arg.fileNames[0], 'file.txt')
+      t.is(arg.fileNames[1], 'file2.txt')
+      return false
+    })
+  program.start(argv)
+})
+
 test('option name with dash', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '--some-thing']
   const program = testProgram(t, '\nUsage: democli\n\Options:\n-m, --mode <mode>  Override setup mode to use.\n\ndemocli@0.1.0 /usr/local/bin\n')
