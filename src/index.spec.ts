@@ -5,7 +5,7 @@ function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
-    // console.log(msg)
+    console.log(msg)
     t.is(msg, pass)
   }
   program.error = msg => {
@@ -74,13 +74,14 @@ test('config command with no action', t => {
   program.start(argv)
 })
 
-test('config command with no action', t => {
+test('config command with option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
-  const program = testProgram(t)
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n\n')
   program.command('config')
     .option('-x', 'config option')
     .action((argv, options) => {
       t.is(options.x, true)
+      return false
     })
   program.start(argv)
 })
