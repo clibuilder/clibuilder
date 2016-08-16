@@ -5,8 +5,13 @@ function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
-    console.log(msg)
-    t.is(msg, pass)
+    // console.log(msg)
+    if (pass === undefined) {
+      t.fail('should not pass')
+    }
+    else {
+      t.is(msg, pass)
+    }
   }
   program.error = msg => {
     if (fail) {
@@ -56,6 +61,14 @@ test('--version', t => {
   program.start(argv)
 })
 
+test('unknown option', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '--unknown']
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n', '\nUnknown option "--unknown"\n')
+
+  t.plan(2)
+  program.start(argv)
+})
+
 test('override default command', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-r']
   const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-r  custom option\n\ndemocli@0.1.0 /usr/local/bin\n')
@@ -67,18 +80,36 @@ test('override default command', t => {
   program.start(argv)
 })
 
-test('config command with no action', t => {
+test('unknown command', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'unknown']
+  const program = testProgram(t, undefined, '\nUnknown command "unknown"\n')
+  program.command('config')
+  program.start(argv)
+})
+
+test('command with no action', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
   const program = testProgram(t, undefined, '\nCommand "config" does not have action defined\n')
   program.command('config')
   program.start(argv)
 })
 
-test('config command with option', t => {
+test('command with option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
   const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n\n')
   program.command('config')
     .option('-x', 'config option')
+    .action((argv, options) => {
+      t.is(options.x, true)
+      return false
+    })
+  program.start(argv)
+})
+
+test('base help with command', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t, '\nUsage: democli <command>\n\nCommands:\n    config\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n')
+  program.command('config')
     .action((argv, options) => {
       t.is(options.x, true)
       return false

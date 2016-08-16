@@ -61,11 +61,25 @@ export class CommandBuilder {
     const options = this.buildOptions(argv)
     const unknownOptions = (options._ as any).unknown
     const cmd = this.commandName === '' ? '' : options._.shift() || ''
+    if (this.builders.length && options._.length) {
+      if (this.commandName !== '' && this.commandName === cmd) {
+        argv.splice(argv.indexOf(this.commandName))
+      }
 
-    if (this.builders.length === 0 && (this.commandName === cmd || ~this.aliases.indexOf(cmd))) {
+      let command
+      this.builders.forEach(builder => {
+        command = builder.build(argv)
+        return !command
+      })
+      if (command) {
+        return command
+      }
+    }
+
+    if (this.commandName === cmd || ~this.aliases.indexOf(cmd)) {
       if (unknownOptions) {
         return () => {
-          this.program.error(`\nUnknown option ${unknownOptions[0]}`)
+          this.program.error(`\nUnknown option "${unknownOptions[0]}"\n`)
           this.program.log(this.help())
         }
       }
@@ -84,19 +98,11 @@ export class CommandBuilder {
         }
       }
     }
-
-    let command
-    this.builders.forEach(builder => {
-      command = builder.build(argv)
-      return !command
-    })
-
-    if (!command) {
-      command = () => {
-        this.program.error(`\nUnknown command ${cmd}\n`)
+    else {
+      return () => {
+        this.program.error(`\nUnknown command "${cmd}"\n`)
       }
     }
-    return command
   }
   help() {
     let sections = (this.isRoot ? this.program.programHelpTemplate : this.program.commandHelpTemplate).split('\n')
@@ -138,6 +144,7 @@ export class CommandBuilder {
         }
       }
     })
+
     const options = minimist(argv, minimistOption)
     if (unknownOptions.length > 0) {
       (options._ as any).unknown = unknownOptions
