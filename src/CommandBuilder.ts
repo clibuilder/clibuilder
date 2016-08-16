@@ -184,4 +184,3 @@ export class CommandBuilder {
     return names
   }
 }
-
