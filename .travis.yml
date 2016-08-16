@@ -8,5 +8,5 @@ notifications:
 node_js:
   - "stable"
 
-after_script:
+before_script:
   - npm run verify
