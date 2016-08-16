@@ -43,7 +43,6 @@ test('-h', t => {
   program.start(argv)
 })
 
-
 test('-v', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-v']
   const program = testProgram(t, '0.1.0')
