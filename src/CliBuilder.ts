@@ -58,7 +58,13 @@ export class CliBuilder {
     this.name = parts.pop()
     this.location = parts.join('/')
 
-    const command = this.builder.build(argv.slice(2))
-    command()
+    const args = argv.slice(2)
+    const command = this.builder.build(args)
+    if (command) {
+      command()
+    }
+    else {
+      this.error(`\nUnknown command "${args}"\n`)
+    }
   }
 }

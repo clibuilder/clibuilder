@@ -67,10 +67,12 @@ export class CommandBuilder {
       }
 
       let command
-      this.builders.forEach(builder => {
+      for (const builder of this.builders) {
         command = builder.build(argv)
-        return !command
-      })
+        if (command) {
+          break
+        }
+      }
       if (command) {
         return command
       }
@@ -83,26 +85,27 @@ export class CommandBuilder {
           this.program.log(this.help())
         }
       }
+
       const args = {}
       this.arguments.forEach(a => {
         if (a.variadic) {
-          args[a.name] = options._
+          args[a.name] = options._.splice(0)
         }
         else {
           args[a.name] = options._.shift()
         }
       })
-      return () => {
-        if (this.fn(args, options) === false) {
-          this.program.log(this.help())
+
+      // If there are anything left in the argv, treat it as an unknown command
+      if (options._.length === 0) {
+        return () => {
+          if (this.fn(args, options) === false) {
+            this.program.log(this.help())
+          }
         }
       }
     }
-    else {
-      return () => {
-        this.program.error(`\nUnknown command "${cmd}"\n`)
-      }
-    }
+    return undefined
   }
   help() {
     let sections = (this.isRoot ? this.program.programHelpTemplate : this.program.commandHelpTemplate).split('\n')

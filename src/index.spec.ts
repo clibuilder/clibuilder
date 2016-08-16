@@ -93,6 +93,18 @@ test('command with no action', t => {
   program.command('config')
   program.start(argv)
 })
+test('command help', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n\n')
+  program.command('other')
+  program.command('config')
+    .option('-x', 'config option')
+    .action((argv, options) => {
+      return false
+    })
+  program.command('other2')
+  program.start(argv)
+})
 
 test('command with option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
