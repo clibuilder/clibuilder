@@ -99,6 +99,22 @@ test('argument', t => {
   program.start(argv)
 })
 
+test('argument choices', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<feature>      feature to add.\n  f1           feature 1\n  feature-abc  feature abc\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(1)
+  program.command()
+    .argument('<feature>', 'feature to add.', {
+      f1: 'feature 1',
+      'feature-abc': 'feature abc'
+    })
+    .action((arg) => {
+      return false
+    })
+  program.start(argv)
+})
+
 test('variadic arguments', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'file.txt', 'file2.txt']
   const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file names...>  File to blow up\n\ndemocli@0.1.0 /usr/local/bin\n')

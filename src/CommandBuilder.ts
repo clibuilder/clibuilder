@@ -22,8 +22,8 @@ export class CommandBuilder {
     this.aliases.push(name)
     return this
   }
-  argument(arg: string, description?: string) {
-    const argument = new Argument(arg, description)
+  argument(arg: string, description?: string, choicesDescription?: { [name: string]: string }) {
+    const argument = new Argument(arg, description, choicesDescription)
     this.arguments.push(argument)
     return this
   }
@@ -157,10 +157,28 @@ export class CommandBuilder {
         }
 
         const argWidth = this.arguments.reduce((max, argument) => {
-          return Math.max(max, argument.arg.length)
+          max = Math.max(max, argument.arg.length)
+          if (argument.choiceDescription) {
+            const keys = Object.keys(argument.choiceDescription)
+            max = keys.reduce((max, key) => {
+              // The keys will be 2 spaces indented
+              return Math.max(max, key.length + 2)
+            }, max)
+          }
+          return max
         }, 0)
 
-        return `Arguments:\n${this.arguments.map((argument) => `${pad(argument.arg, argWidth)}  ${argument.description}`).join('\n')}\n`
+        return `Arguments:\n${this.arguments.map((argument) => {
+          const lines = [`${pad(argument.arg, argWidth)}  ${argument.description}`]
+          if (argument.choiceDescription) {
+            const keys = Object.keys(argument.choiceDescription)
+            keys.forEach(key => {
+              const description = (argument.choiceDescription as any)[key]
+              lines.push(`  ${pad(key, argWidth - 2)}  ${description}`)
+            })
+          }
+          return lines.join('\n')
+        }).join('\n')}\n`
       case '<commands>':
         const commandNames = this.getCommandNames()
         if (!commandNames.length) {
