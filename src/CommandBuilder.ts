@@ -1,5 +1,6 @@
 import minimist = require('minimist')
 import wordwrap = require('wordwrap')
+import camelCase = require('camel-case')
 
 import { pad } from './utils'
 import { Argument } from './Argument'
@@ -46,8 +47,8 @@ export class CommandBuilder {
     this._description = description
     return this
   }
-  option(flags: string, description: string) {
-    const option = new Option(flags, description)
+  option(flags: string, description: string, valuesDescription?: { [name: string]: string }) {
+    const option = new Option(flags, description, valuesDescription)
     this.options.push(option)
     return this
   }
@@ -123,8 +124,18 @@ export class CommandBuilder {
       else {
         minimistOption.string.push(cmd)
       }
-      if (long && short) {
-        minimistOption.alias[long] = [short]
+      if (long) {
+        const alias: string[] = []
+        const camel = camelCase(long)
+        if (camel !== long) {
+          alias.push(camel)
+        }
+        if (short) {
+          alias.push(short)
+        }
+        if (alias.length) {
+          minimistOption.alias[long] = alias
+        }
       }
     })
     const options = minimist(argv, minimistOption)
@@ -161,10 +172,28 @@ export class CommandBuilder {
           return undefined
         }
         const width = this.options.reduce((max, option) => {
-          return Math.max(max, option.flags.length)
+          max = Math.max(max, option.flags.length)
+          if (option.valuesDescription) {
+            const keys = Object.keys(option.valuesDescription)
+            max = keys.reduce((max, key) => {
+              // The keys will be 2 spaces indented
+              return Math.max(max, key.length + 2)
+            }, max)
+          }
+          return max
         }, 0)
 
-        return `Options:\n${this.options.map((option) => `${pad(option.flags, width)}  ${option.description}`).join('\n')}\n`
+        return `Options:\n${this.options.map((option) => {
+          const lines = [`${pad(option.flags, width)}  ${option.description}`]
+          if (option.valuesDescription) {
+            const keys = Object.keys(option.valuesDescription)
+            keys.forEach(key => {
+              const description = (option.valuesDescription as any)[key]
+              lines.push(`  ${pad(key, width - 2)}  ${description}`)
+            })
+          }
+          return lines.join('\n')
+        }).join('\n')}\n`
       case '<version>':
         return `${this.program.name}@${this.program.version} ${this.program.location}\n`
       case '<alias>':

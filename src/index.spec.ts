@@ -5,6 +5,7 @@ function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
+    // console.log(msg)
     t.is(msg, pass)
   }
   program.error = msg => {
@@ -93,6 +94,35 @@ test('argument', t => {
     .argument('<file name>', 'File to blow up')
     .action((arg) => {
       t.is(arg.fileName, 'file.txt')
+      return false
+    })
+  program.start(argv)
+})
+
+test('option name with dash', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '--some-thing']
+  const program = testProgram(t, '\nUsage: democli\n\Options:\n-m, --mode <mode>  Override setup mode to use.\n\ndemocli@0.1.0 /usr/local/bin\n')
+  program.command()
+    .option('--some-thing', 'Some thing')
+    .action((args, options) => {
+      t.is(options.someThing, true)
+    })
+  program.start(argv)
+})
+
+test('option', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-m', 'no-prompt']
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-m, --mode <mode>  Override setup mode to use.\n  no-prompt        Skip prompt\n  no-test          Do not install test\n  with-test        Setup with test\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(2)
+  program.command()
+    .option('-m, --mode <mode>', 'Override setup mode to use.', {
+      'no-prompt': 'Skip prompt',
+      'no-test': 'Do not install test',
+      'with-test': 'Setup with test'
+    })
+    .action((args, options) => {
+      t.is(options.mode, 'no-prompt')
       return false
     })
   program.start(argv)
