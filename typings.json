@@ -1,6 +1,6 @@
 {
   "globalDevDependencies": {
-    "node": "registry:env/node#6.0.0+20160723033700"
+    "node": "registry:env/node#6.0.0+20160813135048"
   },
   "dependencies": {
     "minimist": "registry:npm/minimist#1.0.0+20160723033700",
