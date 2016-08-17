@@ -1,7 +1,7 @@
 import wordwrap = require('wordwrap')
-import { Argument } from './argument'
+import { Argument } from './Argument'
 import { CommandBuilder } from './CommandBuilder'
-import { Option } from './option'
+import { Option } from './Option'
 import { pad } from './utils'
 
 export class CliBuilder {
