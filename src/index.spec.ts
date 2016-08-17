@@ -5,7 +5,7 @@ function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
-    // console.log(msg)
+    console.log(msg)
     t.is(msg, pass)
   }
   program.error = msg => {
@@ -78,9 +78,9 @@ test('unknown command', t => {
   program.start(argv)
 })
 
-test.only('command with no action shows command help', t => {
+test('command with no action shows command help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, '\nUsage: democli config\n\n')
+  const program = testProgram(t, '\nUsage: democli config\n\nThis command has not been defined.')
   program.command('config')
 
   t.plan(1)
@@ -88,7 +88,7 @@ test.only('command with no action shows command help', t => {
 })
 test('command help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n\n')
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n')
   program.command('other')
   program.command('config')
     .option('-x', 'config option')
@@ -101,7 +101,7 @@ test('command help', t => {
 
 test('command with option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
-  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n\n')
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n')
   program.command('config')
     .option('-x', 'config option')
     .action((argv, options) => {

@@ -21,12 +21,17 @@ export class CliBuilder {
 <arguments>
 <commands>
 <options>
-<alias>`
+<alias>
+<no-action>`
 
   name: string
   location: string
   log = console.log
   error = console.error
+  /**
+   * A customized message that shows at `<no-action>` section
+   */
+  noActionMessage = 'This command has not been defined.'
   private builder: CommandBuilder
   constructor() {
     this.builder = new CommandBuilder('', this, true)

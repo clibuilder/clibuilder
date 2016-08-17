@@ -12,7 +12,7 @@ export class CommandBuilder {
   private aliases: string[] = []
   private arguments: Argument[] = []
   private builders: CommandBuilder[] = []
-  private fn: Function
+  private fn: Function | undefined
   private options: Option[] = []
   constructor(private commandName: string, private program: CliBuilder, private isRoot: boolean) {
     this.clear()
@@ -35,7 +35,7 @@ export class CommandBuilder {
     this._description = undefined
     this.aliases = []
     this.options = []
-    this.fn = () => this.program.log(this.help())
+    this.fn = undefined
     return this
   }
   command(cmd: string) {
@@ -99,7 +99,7 @@ export class CommandBuilder {
       // If there are anything left in the argv, treat it as an unknown command
       if (options._.length === 0) {
         return () => {
-          if (this.fn(args, options) === false) {
+          if (!this.fn || this.fn(args, options) === false) {
             this.program.log(this.help())
           }
         }
@@ -226,9 +226,11 @@ export class CommandBuilder {
         return `${this.program.name}@${this.program.version} ${this.program.location}\n`
       case '<alias>':
         if (!this.aliases.length) {
-          return ''
+          return undefined
         }
         return `Alias:\n${wrap(this.aliases.join(', '))}\n`
+      case '<no-action>':
+        return this.fn ? undefined : this.program.noActionMessage
       default:
         return token
     }
