@@ -58,13 +58,14 @@ export class HelpSectionBuilder {
    * Builds usage section help message.
    * REPLACEABLE
    */
-  usage(): string | undefined {
+  usage(this: HelpSectionBuilder): string | undefined {
     return `Usage: ${this.builder.program.name}${this.builder.commandName !== '' ? ' ' + this.builder.commandName : ''}${this.builder.getCommandNames().length ? ' <command>' : ''}\n`
   }
   /**
-   * Builds description section help message
+   * Builds description section help message.
+   * REPLACEABLE
    */
-  description(): string | undefined {
+  description(this: HelpSectionBuilder): string | undefined {
     if (!this.builder.descriptions.length) {
       return undefined
     }
@@ -73,9 +74,10 @@ export class HelpSectionBuilder {
     return this.builder.descriptions.map(d => `${wrap(d)}`).join('\n')
   }
   /**
-   * Builds argument section help message
+   * Builds argument section help message.
+   * REPLACEABLE
    */
-  arguments(): string | undefined {
+  arguments(this: HelpSectionBuilder): string | undefined {
     if (!this.builder.arguments.length) {
       return undefined
     }
@@ -94,9 +96,10 @@ export class HelpSectionBuilder {
     }).join('\n')}\n`
   }
   /**
-   * Build commands section help message
+   * Build commands section help message.
+   * REPLACEABLE
    */
-  commands(): string | undefined {
+  commands(this: HelpSectionBuilder): string | undefined {
     const commandNames = this.builder.getCommandNames()
     if (!commandNames.length) {
       return undefined
@@ -107,8 +110,9 @@ export class HelpSectionBuilder {
   }
   /**
    * Build options section help message.
+   * REPLACEABLE
    */
-  options(): string | undefined {
+  options(this: HelpSectionBuilder): string | undefined {
     if (!this.builder.options.length) {
       return undefined
     }
@@ -128,15 +132,17 @@ export class HelpSectionBuilder {
     }).join('\n')}\n`
   }
   /**
-   * Builds version section help message
+   * Builds version section help message.
+   * REPLACEABLE
    */
-  version(): string | undefined {
+  version(this: HelpSectionBuilder): string | undefined {
     return `${this.program.name}@${this.program.version} ${this.program.location}\n`
   }
   /**
-   * Builds alias section help message
+   * Builds alias section help message.
+   * REPLACEABLE
    */
-  alias(): string | undefined {
+  alias(this: HelpSectionBuilder): string | undefined {
     if (!this.builder.aliases.length) {
       return undefined
     }
@@ -145,9 +151,10 @@ export class HelpSectionBuilder {
     return `Alias:\n${wrap(this.builder.aliases.join(', '))}\n`
   }
   /**
-   * Builds no-action section help message
+   * Builds noAction section help message.
+   * REPLACEABLE
    */
-  noAction(): string | undefined {
+  noAction(this: HelpSectionBuilder): string | undefined {
     if (this.builder.hasAction()) {
       return undefined
     }
