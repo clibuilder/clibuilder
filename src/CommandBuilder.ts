@@ -1,20 +1,18 @@
 import minimist = require('minimist')
-import wordwrap = require('wordwrap')
 import camelCase = require('camel-case')
 
-import { pad } from './utils'
 import { Argument } from './Argument'
 import { Option } from './Option'
 import { CliBuilder } from './CliBuilder'
 
 export class CommandBuilder {
+  aliases: string[] = []
+  arguments: Argument[] = []
+  options: Option[] = []
   private _description: string | undefined
-  private aliases: string[] = []
-  private arguments: Argument[] = []
   private builders: CommandBuilder[] = []
   private fn: Function | undefined
-  private options: Option[] = []
-  constructor(private commandName: string, private program: CliBuilder, private isRoot: boolean) {
+  constructor(public commandName: string, public program: CliBuilder, private isRoot: boolean) {
     this.clear()
   }
 
@@ -111,6 +109,16 @@ export class CommandBuilder {
     let sections = (this.isRoot ? this.program.programHelpTemplate : this.program.commandHelpTemplate).split('\n')
     return sections.map((token) => this.buildHelp(token)).filter(value => value !== undefined).join('\n')
   }
+  getCommandNames() {
+    let names: string[] = [] // this.commandName === '' ? [] : [this.commandName, ...this.aliases]
+    this.builders.forEach(builder => {
+      names = names.concat([builder.commandName, ...builder.aliases]).concat(builder.getCommandNames())
+    })
+    return names
+  }
+  hasAction() {
+    return !!this.fn
+  }
   private buildOptions(argv) {
     const unknownOptions: string[] = []
     const minimistOption = {
@@ -155,91 +163,27 @@ export class CommandBuilder {
     return options
   }
   private buildHelp(token: string) {
-    const wrap = wordwrap(4, 80)
     switch (token) {
       case '<usage>':
-        return `Usage: ${this.program.name}${this.commandName !== '' ? ' ' + this.commandName : ''}${this.builders.length ? ' <command>' : ''}\n`
+        return this.program.helpSectionBuilders.usage(this)
       case '<description>':
-        return this._description ? `${wrap(this._description)}\n` : undefined
+        return this._description ? this.program.helpSectionBuilders.description(this._description) : undefined
       case '<arguments>':
-        if (!this.arguments.length) {
-          return undefined
-        }
-
-        const argWidth = this.arguments.reduce((max, argument) => {
-          max = Math.max(max, argument.arg.length)
-          if (argument.choiceDescription) {
-            const keys = Object.keys(argument.choiceDescription)
-            max = keys.reduce((max, key) => {
-              // The keys will be 2 spaces indented
-              return Math.max(max, key.length + 2)
-            }, max)
-          }
-          return max
-        }, 0)
-
-        return `Arguments:\n${this.arguments.map((argument) => {
-          const lines = [`${pad(argument.arg, argWidth)}  ${argument.description}`]
-          if (argument.choiceDescription) {
-            const keys = Object.keys(argument.choiceDescription)
-            keys.forEach(key => {
-              const description = (argument.choiceDescription as any)[key]
-              lines.push(`  ${pad(key, argWidth - 2)}  ${description}`)
-            })
-          }
-          return lines.join('\n')
-        }).join('\n')}\n`
+        return this.program.helpSectionBuilders.arguments(this.arguments)
       case '<commands>':
         const commandNames = this.getCommandNames()
-        if (!commandNames.length) {
-          return undefined
-        }
-        return `Commands:\n${wrap(commandNames.join(', '))}\n`
+        return commandNames.length ? this.program.helpSectionBuilders.commands(commandNames) : undefined
       case '<options>':
-        if (!this.options.length) {
-          return undefined
-        }
-        const width = this.options.reduce((max, option) => {
-          max = Math.max(max, option.flags.length)
-          if (option.valuesDescription) {
-            const keys = Object.keys(option.valuesDescription)
-            max = keys.reduce((max, key) => {
-              // The keys will be 2 spaces indented
-              return Math.max(max, key.length + 2)
-            }, max)
-          }
-          return max
-        }, 0)
-
-        return `Options:\n${this.options.map((option) => {
-          const lines = [`${pad(option.flags, width)}  ${option.description}`]
-          if (option.valuesDescription) {
-            const keys = Object.keys(option.valuesDescription)
-            keys.forEach(key => {
-              const description = (option.valuesDescription as any)[key]
-              lines.push(`  ${pad(key, width - 2)}  ${description}`)
-            })
-          }
-          return lines.join('\n')
-        }).join('\n')}\n`
+      return this.options.length ? this.program.helpSectionBuilders.options(this.options) : undefined
       case '<version>':
-        return `${this.program.name}@${this.program.version} ${this.program.location}\n`
+        const { name, version, location } = this.program
+        return this.program.helpSectionBuilders.version(name, version, location)
       case '<alias>':
-        if (!this.aliases.length) {
-          return undefined
-        }
-        return `Alias:\n${wrap(this.aliases.join(', '))}\n`
-      case '<no-action>':
-        return this.fn ? undefined : this.program.noActionMessage
+        return this.aliases.length ? this.program.helpSectionBuilders.alias(this.aliases) : undefined
+      case '<noAction>':
+        return this.fn ? undefined : this.program.helpSectionBuilders.noAction(this.commandName)
       default:
         return token
     }
-  }
-  private getCommandNames() {
-    let names: string[] = [] // this.commandName === '' ? [] : [this.commandName, ...this.aliases]
-    this.builders.forEach(builder => {
-      names = names.concat([builder.commandName, ...builder.aliases]).concat(builder.getCommandNames())
-    })
-    return names
   }
 }

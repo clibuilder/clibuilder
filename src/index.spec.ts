@@ -5,7 +5,7 @@ function testProgram(t, pass?: string, fail?: string) {
   const program = new CliBuilder()
   program.version = '0.1.0'
   program.log = msg => {
-    console.log(msg)
+    // console.log(msg)
     t.is(msg, pass)
   }
   program.error = msg => {
@@ -25,6 +25,15 @@ test('custom help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
   const program = testProgram(t, '\nUsage: democli\n')
   program.programHelpTemplate = '\n<usage>'
+  program.start(argv)
+})
+
+test('custom help section', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t, '\nUsage: democli\n\ndemocli@0.1.0 /usr/local/bin\n')
+  program.helpSectionBuilders.options = () => {
+    return undefined
+  }
   program.start(argv)
 })
 
@@ -80,7 +89,7 @@ test('unknown command', t => {
 
 test('command with no action shows command help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, '\nUsage: democli config\n\nThis command has not been defined.')
+  const program = testProgram(t, '\nUsage: democli config\n\nThe action of command "config" has not been defined')
   program.command('config')
 
   t.plan(1)
