@@ -9,9 +9,9 @@ export class CommandBuilder {
   aliases: string[] = []
   arguments: Argument[] = []
   options: Option[] = []
-  private _description: string | undefined
+  descriptions: string[] = []
   private builders: CommandBuilder[] = []
-  private fn: Function | undefined
+  private actionFn: Function | undefined
   constructor(public commandName: string, public program: CliBuilder, private isRoot: boolean) {
     this.clear()
   }
@@ -30,10 +30,10 @@ export class CommandBuilder {
    * This is mostly used internally.
    */
   clear() {
-    this._description = undefined
+    this.descriptions = []
     this.aliases = []
     this.options = []
-    this.fn = undefined
+    this.actionFn = undefined
     return this
   }
   command(cmd: string) {
@@ -42,7 +42,7 @@ export class CommandBuilder {
     return builder
   }
   description(description: string) {
-    this._description = description
+    this.descriptions.push(description)
     return this
   }
   option(flags: string, description: string, valuesDescription?: { [name: string]: string }) {
@@ -51,7 +51,7 @@ export class CommandBuilder {
     return this
   }
   action(fn) {
-    this.fn = fn
+    this.actionFn = fn
     return this
   }
 
@@ -97,7 +97,7 @@ export class CommandBuilder {
       // If there are anything left in the argv, treat it as an unknown command
       if (options._.length === 0) {
         return () => {
-          if (!this.fn || this.fn(args, options) === false) {
+          if (!this.actionFn || this.actionFn(args, options) === false) {
             this.program.log(this.help())
           }
         }
@@ -117,7 +117,8 @@ export class CommandBuilder {
     return names
   }
   hasAction() {
-    return !!this.fn
+    // if the is a root command, assume it has action
+    return this.isRoot || !!this.actionFn
   }
   private buildOptions(argv) {
     const unknownOptions: string[] = []
@@ -163,27 +164,12 @@ export class CommandBuilder {
     return options
   }
   private buildHelp(token: string) {
-    switch (token) {
-      case '<usage>':
-        return this.program.helpSectionBuilders.usage(this)
-      case '<description>':
-        return this._description ? this.program.helpSectionBuilders.description(this._description) : undefined
-      case '<arguments>':
-        return this.arguments.length ? this.program.helpSectionBuilders.arguments(this.arguments) : undefined
-      case '<commands>':
-        const commandNames = this.getCommandNames()
-        return commandNames.length ? this.program.helpSectionBuilders.commands(commandNames) : undefined
-      case '<options>':
-      return this.options.length ? this.program.helpSectionBuilders.options(this.options) : undefined
-      case '<version>':
-        const { name, version, location } = this.program
-        return this.program.helpSectionBuilders.version(name, version, location)
-      case '<alias>':
-        return this.aliases.length ? this.program.helpSectionBuilders.alias(this.aliases) : undefined
-      case '<noAction>':
-        return this.fn ? undefined : this.program.helpSectionBuilders.noAction(this.commandName)
-      default:
-        return token
+    if (token === '') {
+      return token
     }
+
+    const tokenName = token.slice(1, -1)
+    this.program.helpSectionBuilder.builder = this
+    return this.program.helpSectionBuilder[tokenName]()
   }
 }

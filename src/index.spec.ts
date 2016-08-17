@@ -31,7 +31,7 @@ test('custom help', t => {
 test('custom help section', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
   const program = testProgram(t, '\nUsage: democli\n\ndemocli@0.1.0 /usr/local/bin\n')
-  program.helpSectionBuilders.options = () => {
+  program.helpSectionBuilder.options = () => {
     return undefined
   }
   program.start(argv)
