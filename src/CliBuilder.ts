@@ -4,6 +4,51 @@ import { CommandBuilder } from './CommandBuilder'
 import { Option } from './Option'
 import { pad } from './utils'
 
+export interface HelpSectionBuilders {
+  /**
+   * Builds usage section help message
+   * @param builder The CommandBuilder itself.
+   */
+  usage(builder: CommandBuilder): string | undefined
+  /**
+   * Builds description section help message
+   * @param description The desciption specified by `description()`
+   */
+  description(description: string): string | undefined
+  /**
+   * Builds argument section help message
+   * @param args The argument list. Guaranteed non empty.
+   */
+  arguments(args: Argument[]): string | undefined
+  /**
+   * Build commands section help message
+   * @param names Names of the command. Guaranteed non empty.
+   */
+  commands(names: string[]): string | undefined
+  /**
+   * Build options section help message.
+   * @param options The option list. Guaranteed non empty.
+   */
+  options(options: Option[]): string | undefined
+  /**
+   * Builds version section help message
+   * @param name Name of the program
+   * @param version Version of the program
+   * @param location The directory where the program resides
+   */
+  version(name: string, version: string, location: string): string | undefined
+  /**
+   * Builds alias section help message
+   * @param aliases The aliases list of the command. Guaranteed non empty.
+   */
+  alias(aliases: string[]): string | undefined
+  /**
+   * Builds no-action section help message
+   * @param name The name of the command
+   */
+  noAction(name: string): string | undefined
+}
+
 export class CliBuilder {
   version: string
   /**
@@ -39,31 +84,15 @@ export class CliBuilder {
    * You should take that into consideration when you are overriding them.
    * Pay attention on what do they receive in the function.
    */
-  helpSectionBuilders = {
-    /**
-     * Builds usage section help message
-     * @param builder The CommandBuilder itself.
-     */
+  helpSectionBuilders: HelpSectionBuilders = {
     usage: function (builder: CommandBuilder): string | undefined {
       return `Usage: ${builder.program.name}${builder.commandName !== '' ? ' ' + builder.commandName : ''}${builder.getCommandNames().length ? ' <command>' : ''}\n`
     },
-    /**
-     * Builds description section help message
-     * @param description The desciption specified by `description()`
-     */
     description: function (description: string): string | undefined {
       const wrap = wordwrap(4, 80)
       return `${wrap(description)}\n`
     },
-    /**
-     * Builds argument section help message
-     * @param args The argument list.
-     */
     arguments: function (args: Argument[]): string | undefined {
-      if (!args.length) {
-        return undefined
-      }
-
       const argWidth = args.reduce((max, argument) => {
         max = Math.max(max, argument.arg.length)
         if (argument.choiceDescription) {
@@ -88,18 +117,10 @@ export class CliBuilder {
         return lines.join('\n')
       }).join('\n')}\n`
     },
-    /**
-     * Build commands section help message
-     * @param names Names of the command
-     */
     commands: function (names: string[]): string | undefined {
       const wrap = wordwrap(4, 80)
       return `Commands:\n${wrap(names.join(', '))}\n`
     },
-    /**
-     * Build options section help message.
-     * @param options The option list
-     */
     options: function (options: Option[]): string | undefined {
       const width = options.reduce((max, option) => {
         max = Math.max(max, option.flags.length)
@@ -125,27 +146,13 @@ export class CliBuilder {
         return lines.join('\n')
       }).join('\n')}\n`
     },
-    /**
-     * Builds version section help message
-     * @param name Name of the program
-     * @param version Version of the program
-     * @param location The directory where the program resides
-     */
     version: function (name: string, version: string, location: string): string | undefined {
       return `${name}@${version} ${location}\n`
     },
-    /**
-     * Builds alias section help message
-     * @param aliases The aliases list of the command
-     */
     alias: function (aliases: string[]): string | undefined {
       const wrap = wordwrap(4, 80)
       return `Alias:\n${wrap(aliases.join(', '))}\n`
     },
-    /**
-     * Builds no-action section help message
-     * @param name The name of the command
-     */
     noAction: function (name: string): string | undefined {
       return `The action of command "${name}" has not been defined`
     }

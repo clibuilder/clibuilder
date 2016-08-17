@@ -169,7 +169,7 @@ export class CommandBuilder {
       case '<description>':
         return this._description ? this.program.helpSectionBuilders.description(this._description) : undefined
       case '<arguments>':
-        return this.program.helpSectionBuilders.arguments(this.arguments)
+        return this.arguments.length ? this.program.helpSectionBuilders.arguments(this.arguments) : undefined
       case '<commands>':
         const commandNames = this.getCommandNames()
         return commandNames.length ? this.program.helpSectionBuilders.commands(commandNames) : undefined
