@@ -74,7 +74,7 @@ test('override default command', t => {
   const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-r  custom option\n\ndemocli@0.1.0 /usr/local/bin\n')
   program.command()
     .option('-r', 'custom option')
-    .action((args, options) => {
+    .action<void, { r: boolean }>((args, options) => {
       return false
     })
   program.start(argv)
@@ -113,7 +113,7 @@ test('command with option', t => {
   const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n')
   program.command('config')
     .option('-x', 'config option')
-    .action((argv, options) => {
+    .action<void, any>((argv, options) => {
       t.is(options.x, true)
       return false
     })
@@ -124,7 +124,7 @@ test('base help with command', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
   const program = testProgram(t, '\nUsage: democli <command>\n\nCommands:\n    config\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n')
   program.command('config')
-    .action((argv, options) => {
+    .action<void, any>((argv, options) => {
       t.is(options.x, true)
       return false
     })
@@ -138,7 +138,7 @@ test('argument', t => {
   t.plan(2)
   program.command()
     .argument('<file name>', 'File to blow up')
-    .action((arg) => {
+    .action<{ fileName: string }, void>((arg) => {
       t.is(arg.fileName, 'file.txt')
       return false
     })
@@ -168,7 +168,7 @@ test('variadic arguments', t => {
   t.plan(4)
   program.command()
     .argument('<file names...>', 'File to blow up')
-    .action((arg) => {
+    .action<{ fileNames: string[] }, void>((arg) => {
       t.is(arg.fileNames.length, 2)
       t.is(arg.fileNames[0], 'file.txt')
       t.is(arg.fileNames[1], 'file2.txt')
@@ -182,7 +182,7 @@ test('option name with dash', t => {
   const program = testProgram(t, '\nUsage: democli\n\Options:\n-m, --mode <mode>  Override setup mode to use.\n\ndemocli@0.1.0 /usr/local/bin\n')
   program.command()
     .option('--some-thing', 'Some thing')
-    .action((args, options) => {
+    .action<void, any>((args, options) => {
       t.is(options.someThing, true)
     })
   program.start(argv)
@@ -199,7 +199,7 @@ test('option', t => {
       'no-test': 'Do not install test',
       'with-test': 'Setup with test'
     })
-    .action((args, options) => {
+    .action<void, any>((args, options) => {
       t.is(options.mode, 'no-prompt')
       return false
     })

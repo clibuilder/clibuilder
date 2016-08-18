@@ -44,7 +44,7 @@ export class CliBuilder {
     this.builder
       .option('-h, --help', 'output usage information')
       .option('-v, --version', 'output the version number')
-      .action((args, options) => {
+      .action<void, { help: boolean, version: boolean}>((args, options) => {
         if (options.version) {
           this.log(this.version)
         }
