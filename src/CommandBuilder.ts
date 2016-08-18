@@ -50,7 +50,12 @@ export class CommandBuilder {
     this.options.push(option)
     return this
   }
-  action(fn) {
+  /**
+   * Defines action of the command
+   * @template A Type of the args
+   * @template O Type of the options
+   */
+  action<A, O>(fn: (args: A, options: O) => boolean | void) {
     this.actionFn = fn
     return this
   }
