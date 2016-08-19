@@ -3,16 +3,18 @@ import camelCase = require('camel-case')
 
 import { Argument } from './Argument'
 import { Option } from './Option'
-import { CliBuilder } from './CliBuilder'
+import { CliBuilder, UI } from './CliBuilder'
 
 export class CommandBuilder {
   aliases: string[] = []
   arguments: Argument[] = []
   options: Option[] = []
   descriptions: string[] = []
+  isRoot: boolean
   private builders: CommandBuilder[] = []
   private actionFn: Function | undefined
-  constructor(public commandName: string, public program: CliBuilder, private isRoot: boolean) {
+  constructor(public commandName: string, public program: CliBuilder, public parent?: CommandBuilder) {
+    this.isRoot = !parent
     this.clear()
   }
 
@@ -37,7 +39,7 @@ export class CommandBuilder {
     return this
   }
   command(cmd: string) {
-    const builder = new CommandBuilder(cmd, this.program, false)
+    const builder = new CommandBuilder(cmd, this.program, this)
     this.builders.push(builder)
     return builder
   }
@@ -55,7 +57,7 @@ export class CommandBuilder {
    * @template A Type of the args
    * @template O Type of the options
    */
-  action<A, O>(fn: (args: A, options: O, builder: CommandBuilder, program: CliBuilder) => boolean | void) {
+  action<A, O>(fn: (args: A, options: O, builder: CommandBuilder, ui: UI) => boolean | void) {
     this.actionFn = fn
     return this
   }
@@ -66,7 +68,7 @@ export class CommandBuilder {
     const cmd = this.commandName === '' ? '' : options._.shift() || ''
     if (this.builders.length && options._.length) {
       if (this.commandName !== '' && this.commandName === cmd) {
-        argv.splice(argv.indexOf(this.commandName))
+        argv.splice(argv.indexOf(this.commandName), 1)
       }
 
       let command
@@ -120,6 +122,18 @@ export class CommandBuilder {
       names = names.concat([builder.commandName, ...builder.aliases]).concat(builder.getCommandNames())
     })
     return names
+  }
+  getCommandChain() {
+    const chain: string[] = [this.commandName]
+    let p = this.parent
+    while (p) {
+      if (p.commandName) {
+        chain.unshift(p.commandName)
+      }
+      p = p.parent
+    }
+
+    return chain
   }
   hasAction() {
     // if the is a root command, assumes it has action
