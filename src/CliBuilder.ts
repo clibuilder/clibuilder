@@ -1,6 +1,7 @@
 import { Action } from './Action'
 import { CommandBuilder } from './CommandBuilder'
 import { HelpSectionBuilder } from './HelpSectionBuilder'
+import { Option } from './Option'
 
 export class CliBuilder {
   version: string
@@ -52,19 +53,51 @@ export class CliBuilder {
    */
   helpSectionBuilder: HelpSectionBuilder
   public builder: CommandBuilder
+  private options: Option[] = []
   constructor() {
+    // Add help to all commands by default
+    this.option('-h, --help', 'output usage information')
     this.builder = new CommandBuilder('', this, undefined)
     this.helpSectionBuilder = new HelpSectionBuilder(this.builder)
-    this.builder
-      .option('-h, --help', 'output usage information')
-      .option('-v, --version', 'output the version number')
+    this.command().option('-v, --version', 'output the version number')
+      .action<void, any>((args, options, builder, ui) => {
+        if (options.version) {
+          ui.log(this.version)
+        }
+        else if (options.help) {
+          // this.defaultHelpAction(args, options, builder, ui)
+          return false
+        }
+        else {
+          return this.defaultAction ? this.defaultAction(args, options, builder, ui) : false
+        }
+      })
+  }
+
+  /**
+   * Add default option that will be added to the root and all commands.
+   * This should be called before creating commands.
+   */
+  option(flags: string, description: string, valuesDescription?: { [name: string]: string }) {
+    const option = new Option(flags, description, valuesDescription)
+    this.options.push(option)
+    return this
+  }
+  /**
+   * Clears all default options, including the default help option
+   * This should be called before creating commands.
+   */
+  clearOptions() {
+    this.options = []
   }
 
   command(cmd: string = ''): CommandBuilder {
-    if (cmd === '') {
-      return this.builder.clear()
+    const builder = cmd === '' ? this.builder.clear() : this.builder.command(cmd)
+
+    for (const option of this.options) {
+      builder.option(option.flags, option.description, option.valuesDescription)
     }
-    return this.builder.command(cmd)
+    return builder
   }
 
   start(argv) {
@@ -83,19 +116,9 @@ export class CliBuilder {
   }
   /**
    * The default help action.
-   * This action always bind to the CliBuilder itself,
-   * so that it can access things like `this.version`
    */
   defaultHelpAction(args: any, options: any, builder: CommandBuilder, ui: UI) {
-    if (options.version) {
-      ui.log(this.version)
-    }
-    else if (options.help) {
-      ui.log(builder.help())
-    }
-    else {
-      ui.log(builder.help())
-    }
+    ui.log(builder.help())
   }
 }
 

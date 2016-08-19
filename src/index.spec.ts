@@ -71,10 +71,13 @@ test('unknown option', t => {
 
 test('override default command', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-r']
-  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-r  custom option\n\ndemocli@0.1.0 /usr/local/bin\n')
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-h, --help  output usage information\n-r          custom option\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(2)
   program.command()
     .option('-r', 'custom option')
     .action<void, { r: boolean }>((args, options) => {
+      t.is(options.r, true)
       return false
     })
   program.start(argv)
@@ -97,7 +100,7 @@ test('command with no action shows command help', t => {
 })
 test('command help', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config']
-  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n')
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-h, --help  output usage information\n-x          config option\n')
   program.command('other')
   program.command('config')
     .option('-x', 'config option')
@@ -110,7 +113,7 @@ test('command help', t => {
 
 test('command with option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'config', '-x']
-  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-x  config option\n')
+  const program = testProgram(t, '\nUsage: democli config\n\nOptions:\n-h, --help  output usage information\n-x          config option\n')
   program.command('config')
     .option('-x', 'config option')
     .action<void, any>((argv, options) => {
@@ -133,7 +136,7 @@ test('base help with command', t => {
 
 test('argument', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'file.txt']
-  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file name>  File to blow up\n\ndemocli@0.1.0 /usr/local/bin\n')
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file name>  File to blow up\n\nOptions:\n-h, --help   output usage information\n\ndemocli@0.1.0 /usr/local/bin\n')
 
   t.plan(2)
   program.command()
@@ -147,7 +150,7 @@ test('argument', t => {
 
 test('argument choices', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
-  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<feature>      feature to add.\n  f1           feature 1\n  feature-abc  feature abc\n\ndemocli@0.1.0 /usr/local/bin\n')
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<feature>      feature to add.\n  f1           feature 1\n  feature-abc  feature abc\n\nOptions:\n-h, --help     output usage information\n\ndemocli@0.1.0 /usr/local/bin\n')
 
   t.plan(1)
   program.command()
@@ -163,7 +166,7 @@ test('argument choices', t => {
 
 test('variadic arguments', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'file.txt', 'file2.txt']
-  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file names...>  File to blow up\n\ndemocli@0.1.0 /usr/local/bin\n')
+  const program = testProgram(t, '\nUsage: democli\n\nArguments:\n<file names...>  File to blow up\n\nOptions:\n-h, --help       output usage information\n\ndemocli@0.1.0 /usr/local/bin\n')
 
   t.plan(4)
   program.command()
@@ -190,9 +193,9 @@ test('option name with dash', t => {
 
 test('option', t => {
   const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-m', 'no-prompt']
-  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-m, --mode <mode>  Override setup mode to use.\n  no-prompt        Skip prompt\n  no-test          Do not install test\n  with-test        Setup with test\n\ndemocli@0.1.0 /usr/local/bin\n')
+  const program = testProgram(t)
 
-  t.plan(2)
+  t.plan(1)
   program.command()
     .option('-m, --mode <mode>', 'Override setup mode to use.', {
       'no-prompt': 'Skip prompt',
@@ -201,7 +204,20 @@ test('option', t => {
     })
     .action<void, any>((args, options) => {
       t.is(options.mode, 'no-prompt')
-      return false
+    })
+  program.start(argv)
+})
+
+test('option default help', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-h, --help         output usage information\n-m, --mode <mode>  Override setup mode to use.\n  no-prompt        Skip prompt\n  no-test          Do not install test\n  with-test        Setup with test\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(1)
+  program.command()
+    .option('-m, --mode <mode>', 'Override setup mode to use.', {
+      'no-prompt': 'Skip prompt',
+      'no-test': 'Do not install test',
+      'with-test': 'Setup with test'
     })
   program.start(argv)
 })
