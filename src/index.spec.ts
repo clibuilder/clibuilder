@@ -205,3 +205,16 @@ test('option', t => {
     })
   program.start(argv)
 })
+
+test('command chain', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'cmd1', 'cmd2', 'cmd3']
+  const program = testProgram(t)
+  program.command('cmd1')
+    .command('cmd2')
+    .command('cmd3')
+    .action((args, options, builder) => {
+      const actual = builder.getCommandChain()
+      t.deepEqual(['cmd1', 'cmd2', 'cmd3'], actual)
+    })
+  program.start(argv)
+})

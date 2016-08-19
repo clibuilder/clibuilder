@@ -39,22 +39,12 @@ export class CliBuilder {
   helpSectionBuilder: HelpSectionBuilder
   public builder: CommandBuilder
   constructor() {
-    this.builder = new CommandBuilder('', this, true)
+    this.builder = new CommandBuilder('', this, undefined)
     this.helpSectionBuilder = new HelpSectionBuilder(this.builder)
     this.builder
       .option('-h, --help', 'output usage information')
       .option('-v, --version', 'output the version number')
-      .action<void, { help: boolean, version: boolean}>((args, options) => {
-        if (options.version) {
-          this.log(this.version)
-        }
-        else if (options.help) {
-          this.log(this.builder.help())
-        }
-        else {
-          this.log(this.builder.help())
-        }
-      })
+      .action((args, options, builder, ui) => this.defaultAction(args, options, builder, ui))
   }
 
   command(cmd: string = ''): CommandBuilder {
@@ -78,4 +68,20 @@ export class CliBuilder {
       this.error(`\nUnknown command "${args}"\n`)
     }
   }
+  defaultAction(args: any, options: any, builder: CommandBuilder, ui: UI) {
+    if (options.version) {
+      ui.log(this.version)
+    }
+    else if (options.help) {
+      ui.log(builder.help())
+    }
+    else {
+      ui.log(builder.help())
+    }
+  }
+}
+
+export interface UI {
+  log(...args: string[]): void
+  error(...args: string[]): void
 }
