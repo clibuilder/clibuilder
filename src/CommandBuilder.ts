@@ -1,9 +1,10 @@
 import minimist = require('minimist')
 import camelCase = require('camel-case')
 
+import { Action } from './Action'
 import { Argument } from './Argument'
 import { Option } from './Option'
-import { CliBuilder, UI } from './CliBuilder'
+import { CliBuilder } from './CliBuilder'
 
 export class CommandBuilder {
   aliases: string[] = []
@@ -57,7 +58,7 @@ export class CommandBuilder {
    * @template A Type of the args
    * @template O Type of the options
    */
-  action<A, O>(fn: (args: A, options: O, builder: CommandBuilder, ui: UI) => boolean | void) {
+  action<A, O>(fn: Action<A, O>) {
     this.actionFn = fn
     return this
   }
@@ -104,7 +105,8 @@ export class CommandBuilder {
       // If there are anything left in the argv, treat it as an unknown command
       if (options._.length === 0) {
         return () => {
-          if (!this.actionFn || this.actionFn(args, options, this, this.program) === false) {
+          const fn = this.actionFn || this.program.defaultAction || this.program.defaultHelpAction.bind(this.program)
+          if (fn(args, options, this, this.program) === false) {
             this.program.log(this.help())
           }
         }

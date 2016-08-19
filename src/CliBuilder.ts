@@ -1,3 +1,4 @@
+import { Action } from './Action'
 import { CommandBuilder } from './CommandBuilder'
 import { HelpSectionBuilder } from './HelpSectionBuilder'
 
@@ -25,10 +26,23 @@ export class CliBuilder {
 <alias>
 <noAction>`
 
+  /**
+   * Name of the cli application.
+   * Derived from argv.
+   */
   name: string
+  /**
+   * Location of the cli appliction.
+   * Derived from argv.
+   */
   location: string
   log = console.log
   error = console.error
+  /**
+   * The default action to use if there is no `.action()` for a command.
+   * You can override this to support default custom logic.
+   */
+  defaultAction: Action<any, any>
   /**
    * Help section builder used to create help output.
    * You can drop in a replacement function of a particular section.
@@ -44,7 +58,6 @@ export class CliBuilder {
     this.builder
       .option('-h, --help', 'output usage information')
       .option('-v, --version', 'output the version number')
-      .action((args, options, builder, ui) => this.defaultAction(args, options, builder, ui))
   }
 
   command(cmd: string = ''): CommandBuilder {
@@ -68,7 +81,12 @@ export class CliBuilder {
       this.error(`\nUnknown command "${args}"\n`)
     }
   }
-  defaultAction(args: any, options: any, builder: CommandBuilder, ui: UI) {
+  /**
+   * The default help action.
+   * This action always bind to the CliBuilder itself,
+   * so that it can access things like `this.version`
+   */
+  defaultHelpAction(args: any, options: any, builder: CommandBuilder, ui: UI) {
     if (options.version) {
       ui.log(this.version)
     }
