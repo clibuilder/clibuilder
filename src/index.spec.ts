@@ -214,7 +214,54 @@ test('command chain', t => {
     .command('cmd3')
     .action((args, options, builder) => {
       const actual = builder.getCommandChain()
-      t.deepEqual(['cmd1', 'cmd2', 'cmd3'], actual)
+      t.deepEqual(actual, ['cmd1', 'cmd2', 'cmd3'])
     })
+  program.start(argv)
+})
+
+test('override default action -h', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', '-h']
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(1)
+  program.defaultAction = (args, options) => {
+    t.is(options.h, true)
+  }
+  program.start(argv)
+})
+
+test('override default action subcommand with option', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'so', 'ma', '-k']
+  const program = testProgram(t, '\nUsage: democli\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(2)
+  program.defaultAction = (args, options, builder) => {
+    t.is(options.k, true)
+    t.deepEqual(builder.getCommandChain(), ['so', 'ma'])
+  }
+  program.command('so')
+    .command('ma')
+    .option('-k', 'desc')
+  program.start(argv)
+})
+
+test('override default action', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t)
+  t.plan(1)
+  program.defaultAction = () => {
+    t.pass('defaultAction called')
+  }
+  program.start(argv)
+})
+
+test('override default action with command', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'som']
+  const program = testProgram(t)
+  t.plan(1)
+  program.defaultAction = (args, options, builder) => {
+    t.is(builder.commandName, 'som', `defaultAction called by ${builder.commandName}`)
+  }
+  program.command('som')
   program.start(argv)
 })
