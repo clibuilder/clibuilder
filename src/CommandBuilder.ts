@@ -105,7 +105,7 @@ export class CommandBuilder {
       // If there are anything left in the argv, treat it as an unknown command
       if (options._.length === 0) {
         return () => {
-          const fn = this.actionFn || this.program.defaultAction || this.program.defaultHelpAction.bind(this.program)
+          const fn = this.actionFn || this.program.defaultAction || this.program.defaultHelpAction
           if (fn(args, options, this, this.program) === false) {
             this.program.log(this.help())
           }
@@ -139,7 +139,7 @@ export class CommandBuilder {
   }
   hasAction() {
     // if the is a root command, assumes it has action
-    return this.isRoot || !!this.actionFn
+    return this.isRoot || !!(this.actionFn || this.program.defaultAction)
   }
   private buildOptions(argv) {
     const unknownOptions: string[] = []
