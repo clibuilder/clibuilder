@@ -1,6 +1,6 @@
 {
   "name": "clibuilder",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "A CLI building library",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
