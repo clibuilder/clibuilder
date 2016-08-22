@@ -121,7 +121,7 @@ export class CommandBuilder {
   getCommandNames() {
     let names: string[] = [] // this.commandName === '' ? [] : [this.commandName, ...this.aliases]
     this.builders.forEach(builder => {
-      names = names.concat([builder.commandName, ...builder.aliases]).concat(builder.getCommandNames())
+      names = names.concat([builder.commandName, ...builder.aliases])
     })
     return names
   }
@@ -137,9 +137,9 @@ export class CommandBuilder {
 
     return chain
   }
-  hasAction() {
+  hasActionOrCommands() {
     // if the is a root command, assumes it has action
-    return this.isRoot || !!(this.actionFn || this.program.defaultAction)
+    return this.isRoot || !!(this.actionFn || this.program.defaultAction) || this.builders.length
   }
   private buildOptions(argv) {
     const unknownOptions: string[] = []

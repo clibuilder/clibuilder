@@ -65,8 +65,7 @@ export class CliBuilder {
           ui.log(this.version)
         }
         else if (options.help) {
-          // this.defaultHelpAction(args, options, builder, ui)
-          return false
+          this.defaultHelpAction(args, options, builder, ui)
         }
         else {
           return this.defaultAction ? this.defaultAction(args, options, builder, ui) : false
