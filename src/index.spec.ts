@@ -281,3 +281,24 @@ test('override default action with command', t => {
   program.command('som')
   program.start(argv)
 })
+
+test('subcommand', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli']
+  const program = testProgram(t, '\nUsage: democli <command>\n\nCommands:\n    so\n\nOptions:\n-h, --help     output usage information\n-v, --version  output the version number\n\ndemocli@0.1.0 /usr/local/bin\n')
+
+  t.plan(1)
+  program.command('so')
+    .command('ma')
+    .option('-k', 'desc')
+  program.start(argv)
+})
+test('subcommand', t => {
+  const argv = ['/usr/local/bin/node', '/usr/local/bin/democli', 'so']
+  const program = testProgram(t, '\nUsage: democli so <command>\n\nCommands:\n    ma\n\nOptions:\n-h, --help  output usage information\n')
+
+  t.plan(1)
+  program.command('so')
+    .command('ma')
+    .option('-k', 'desc')
+  program.start(argv)
+})

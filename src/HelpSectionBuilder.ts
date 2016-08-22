@@ -78,7 +78,7 @@ export class HelpSectionBuilder {
    * REPLACEABLE
    */
   arguments(this: HelpSectionBuilder): string | undefined {
-    if (!this.builder.arguments.length || !this.builder.hasAction()) {
+    if (!this.builder.arguments.length || !this.builder.hasActionOrCommands()) {
       return undefined
     }
 
@@ -101,7 +101,7 @@ export class HelpSectionBuilder {
    */
   commands(this: HelpSectionBuilder): string | undefined {
     const commandNames = this.builder.getCommandNames()
-    if (!commandNames.length || !this.builder.hasAction()) {
+    if (!commandNames.length || !this.builder.hasActionOrCommands()) {
       return undefined
     }
 
@@ -113,7 +113,7 @@ export class HelpSectionBuilder {
    * REPLACEABLE
    */
   options(this: HelpSectionBuilder): string | undefined {
-    if (!this.builder.options.length || !this.builder.hasAction()) {
+    if (!this.builder.options.length || !this.builder.hasActionOrCommands()) {
       return undefined
     }
 
@@ -143,7 +143,7 @@ export class HelpSectionBuilder {
    * REPLACEABLE
    */
   alias(this: HelpSectionBuilder): string | undefined {
-    if (!this.builder.aliases.length || !this.builder.hasAction()) {
+    if (!this.builder.aliases.length || !this.builder.hasActionOrCommands()) {
       return undefined
     }
 
@@ -155,7 +155,7 @@ export class HelpSectionBuilder {
    * REPLACEABLE
    */
   noAction(this: HelpSectionBuilder): string | undefined {
-    if (this.builder.hasAction()) {
+    if (this.builder.hasActionOrCommands()) {
       return undefined
     }
 
