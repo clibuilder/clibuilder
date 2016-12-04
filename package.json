@@ -14,13 +14,13 @@
     "wordwrap": "^1.0.0"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
+    "ava": "^0.17.0",
     "dependency-check": "^2.6.0",
     "rimraf": "^2.5.4",
-    "tslint": "^3.14.0",
-    "tslint-config-unional": "^0.4.4",
+    "tslint": "^4.0.2",
+    "tslint-config-unional": "^0.6.0",
     "typescript": "^2.0.0",
-    "typings": "^1.3.2"
+    "typings": "^2.0.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
