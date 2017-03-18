@@ -18,7 +18,7 @@
     "dependency-check": "^2.6.0",
     "rimraf": "^2.5.4",
     "tslint": "^4.0.2",
-    "tslint-config-unional": "^0.6.0",
+    "tslint-config-unional": "^0.7.0",
     "typescript": "^2.0.0",
     "typings": "^2.0.0"
   },
