@@ -52,7 +52,7 @@
     "transform": {
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
@@ -89,6 +89,7 @@
   "devDependencies": {
     "@types/jest": "^19.2.2",
     "@types/minimist": "^1.2.0",
+    "@types/node": "^7.0.12",
     "aurelia-logging-memory": "^0.2.0",
     "ava": "^0.17.0",
     "dependency-check": "^2.6.0",

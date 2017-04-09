@@ -1,21 +1,23 @@
-import { UI } from './UI'
-import { Command } from './interfaces'
+import events = require('events')
+
+export abstract class Command {
+  name: string
+}
 export interface Options {
   name: string,
   commands: Command[]
 }
 export class Program {
-  ui: UI
-  commands: Command[]
+  emitter: events.EventEmitter
+  map: { [name: string]: Command }
   constructor(options: Options) {
-    this.ui = new UI(options)
-    this.commands = options.commands
-  }
-  getCommandAndAliasNames() {
-    return []
+    this.emitter = new events.EventEmitter()
+    options.commands
   }
 
-  execute(_commandName: string, ..._args: any[]) {
+  execute(commandName: string, ...args: any[]) {
+    this.emitter.emit('execute', commandName, ...args)
+
     return
   }
 }

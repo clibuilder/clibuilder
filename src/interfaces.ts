@@ -3,8 +3,9 @@ export interface Command extends CommandInputs {
    * Name of the command.
    */
   name: string
-  description: string
-  alias?: string[]
+  description?: string
+  alias?: string[],
+  run(...args: string[]): void
 }
 export interface CommandInputs {
   arguments?: CommandArgument[]
