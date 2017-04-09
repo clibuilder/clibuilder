@@ -41,4 +41,5 @@ node_modules
 typings
 
 # output folder
-dist
+dist-es5
+dist-es2015
