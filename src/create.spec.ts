@@ -1,79 +1,65 @@
-import { create } from './create'
+import { create, Command } from './index'
 import { logLevel } from 'aurelia-logging'
+import { noopCommand } from './test/commands'
 
 describe('show help', () => {
-  test('when called with no parameter', () => {
-    const cli = createNoCommandCli()
+  const cli = createNoCommandCli()
+  beforeEach(() => {
     cli.showHelp = jest.fn()
-
-    cli.run(['node', 'cli'])
+  })
+  test('when called with no parameter', () => {
+    cli.process(['node', 'cli'])
 
     expect(cli.showHelp).toBeCalled()
   })
   test('when called with -h', () => {
-    const cli = createNoCommandCli()
-    cli.showHelp = jest.fn()
-
-    cli.run(['node', 'cli', '-h'])
+    cli.process(['node', 'cli', '-h'])
 
     expect(cli.showHelp).toBeCalled()
   })
   test('when called with --help', () => {
-    const cli = createNoCommandCli()
-    cli.showHelp = jest.fn()
-
-    cli.run(['node', 'cli', '--help'])
+    cli.process(['node', 'cli', '--help'])
 
     expect(cli.showHelp).toBeCalled()
   })
   test('when command not found', () => {
-    const cli = createNoCommandCli()
-    cli.showHelp = jest.fn()
-
-    cli.run(['node', 'cli', 'some'])
+    cli.process(['node', 'cli', 'some'])
 
     expect(cli.showHelp).toBeCalled()
   })
 })
 
 describe('show version', () => {
-  test('with -v', () => {
-    const cli = createNoCommandCli()
+  const cli = createNoCommandCli()
+  beforeEach(() => {
     cli.showVersion = jest.fn()
-
-    cli.run(['node', 'cli', '-v'])
+  })
+  test('with -v', () => {
+    cli.process(['node', 'cli', '-v'])
     expect(cli.showVersion).toBeCalled()
   })
 
   test('with --version', () => {
-    const cli = createNoCommandCli()
-    cli.showVersion = jest.fn()
-
-    cli.run(['node', 'cli', '-v'])
+    cli.process(['node', 'cli', '-v'])
     expect(cli.showVersion).toBeCalled()
   })
 })
 
 describe('set log level', () => {
-  test('with -V', () => {
-    const cli = createNoOpCli()
+  const cli = createNoOpCli()
+  beforeEach(() => {
     cli.setLevel = jest.fn()
-
-    cli.run(['node', 'cli', 'nop', '-V'])
+  })
+  test('with -V', () => {
+    cli.process(['node', 'cli', 'noop', '-V'])
     expect(cli.setLevel).toBeCalledWith(logLevel.debug)
   })
   test('with --verbose', () => {
-    const cli = createNoOpCli()
-    cli.setLevel = jest.fn()
-
-    cli.run(['node', 'cli', 'nop', '--verbose'])
+    cli.process(['node', 'cli', 'noop', '--verbose'])
     expect(cli.setLevel).toBeCalledWith(logLevel.debug)
   })
   test('with --silent', () => {
-    const cli = createNoOpCli()
-    cli.setLevel = jest.fn()
-
-    cli.run(['node', 'cli', 'nop', '--silent'])
+    cli.process(['node', 'cli', 'noop', '--silent'])
     expect(cli.setLevel).toBeCalledWith(logLevel.none)
   })
 })
@@ -85,7 +71,7 @@ describe('simple command', () => {
       name: 'a',
       run
     })
-    cli.run(['node', 'cli', 'a'])
+    cli.process(['node', 'cli', 'a'])
     expect(run).toBeCalled()
   })
   test('invoke command by alias', () => {
@@ -95,7 +81,7 @@ describe('simple command', () => {
       alias: ['b'],
       run
     })
-    cli.run(['node', 'cli', 'b'])
+    cli.process(['node', 'cli', 'b'])
     expect(run).toBeCalled()
   })
   test('invoke command by alias2', () => {
@@ -105,7 +91,7 @@ describe('simple command', () => {
       alias: ['b', 'c'],
       run
     })
-    cli.run(['node', 'cli', 'c'])
+    cli.process(['node', 'cli', 'c'])
     expect(run).toBeCalled()
   })
 })
@@ -115,13 +101,10 @@ function createNoCommandCli(): any {
 }
 
 function createNoOpCli(): any {
-  return createCliWithCommands({
-    name: 'nop',
-    run: () => { return }
-  })
+  return createCliWithCommands(noopCommand)
 }
 
-function createCliWithCommands(...commands) {
+function createCliWithCommands(...commands: Command[]) {
   return create({
     name: 'cli',
     version: '0.2.1',

@@ -1,12 +1,14 @@
-import { Command, createLogger, Logger } from '../index'
+import { Command, createLogger } from '../index'
 
-export class SimpleCommand implements Command {
-  name: 'simple'
-  log: Logger
-  constructor() {
-    this.log = createLogger('SimpleCommand')
-  }
+export const simpleCommand = {
+  name: 'simple',
+  log: createLogger('SimpleCommand'),
   run(_argv: string[]) {
     return
   }
-}
+} as Command
+
+export const noopCommand = {
+  name: 'noop',
+  run() { return }
+} as Command

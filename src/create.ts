@@ -11,14 +11,14 @@ export interface Options {
   commands: Command[]
 }
 export interface Cli {
-  run(argv: string[]): void
+  process(argv: string[]): void
 }
 export function create(options: Options): Cli {
   return {
     name: options.name,
     version: options.version,
     commands: options.commands,
-    run(argv: string[]) {
+    process(argv: string[]) {
       const args = parseArgv(argv)
       const cmd = args._.shift()
       if (args.version) {

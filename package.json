@@ -23,10 +23,8 @@
     "verify": "npm run lint && npm run coverage && npm run dependency-check",
     "coverage": "nyc --check-coverage --branches 85 --functions 85 --lines 85 npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "remove-spec": "rimraf dist-es5/**/*.spec.*",
-    "testava": "npm run remove-spec && tsc && ava",
-    "watchava": "npm run remove-spec && node scripts/watch.js",
-    "test": "jest"
+    "test": "jest",
+    "watch": "jest --watch"
   },
   "repository": {
     "type": "git",

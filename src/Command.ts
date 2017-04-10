@@ -3,7 +3,7 @@ import { Command } from './interfaces'
 export function getCommand(nameOrAlias, commands: Command[]) {
   return commands.find(cmd => {
     return cmd.name === nameOrAlias ||
-      (!cmd.alias || cmd.alias.indexOf(nameOrAlias) !== -1)
+      (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)
   })
 }
 
