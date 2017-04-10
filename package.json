@@ -91,7 +91,7 @@
     "@types/minimist": "^1.2.0",
     "@types/node": "^7.0.12",
     "aurelia-logging-memory": "^0.2.0",
-    "ava": "^0.17.0",
+    "ava": "^0.19.1",
     "dependency-check": "^2.6.0",
     "jest": "^19.0.2",
     "rimraf": "^2.5.4",
