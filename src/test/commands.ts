@@ -1,11 +1,12 @@
-import events = require('events')
-
-import { Command } from '../Command'
-
+import { Command, createLogger, Logger } from '../index'
 
 export class SimpleCommand implements Command {
-  constructor(public emitter: events.EventEmitter) { }
-  run() {
-
+  name: 'simple'
+  log: Logger
+  constructor() {
+    this.log = createLogger('SimpleCommand')
+  }
+  run(_argv: string[]) {
+    return
   }
 }

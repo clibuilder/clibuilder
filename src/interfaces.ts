@@ -5,7 +5,7 @@ export interface Command extends CommandInputs {
   name: string
   description?: string
   alias?: string[],
-  run(...args: string[]): void
+  run(argv: string[]): void
 }
 export interface CommandInputs {
   arguments?: CommandArgument[]
