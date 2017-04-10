@@ -17,15 +17,15 @@
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev && dependency-check . --missing --no-dev",
     "lint": "tslint \"src/**/*.ts\"",
+    "prepare": "npm run build",
     "postpublish": "git push",
     "preversion": "git pull && npm run verify",
-    "version": "npm run remove-spec",
     "verify": "npm run lint && npm run coverage && npm run dependency-check",
     "coverage": "nyc --check-coverage --branches 85 --functions 85 --lines 85 npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "remove-spec": "rimraf dist-es5/**/*.spec.*",
-    "testava": "npm run clean && tsc && ava",
-    "watchava": "npm run clean && node scripts/watch.js",
+    "testava": "npm run remove-spec && tsc && ava",
+    "watchava": "npm run remove-spec && node scripts/watch.js",
     "test": "jest"
   },
   "repository": {

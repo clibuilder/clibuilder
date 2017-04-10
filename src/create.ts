@@ -42,7 +42,7 @@ export function create(options: Options): Cli {
           this.showHelp()
         }
         else {
-          command.run(...argv.slice(2))
+          command.run(argv.slice(2))
         }
       }
     },
