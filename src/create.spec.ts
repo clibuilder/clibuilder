@@ -88,6 +88,26 @@ describe('simple command', () => {
     cli.run(['node', 'cli', 'a'])
     expect(run).toBeCalled()
   })
+  test('invoke command by alias', () => {
+    const run = jest.fn()
+    const cli = createCliWithCommands({
+      name: 'a',
+      alias: ['b'],
+      run
+    })
+    cli.run(['node', 'cli', 'b'])
+    expect(run).toBeCalled()
+  })
+  test('invoke command by alias2', () => {
+    const run = jest.fn()
+    const cli = createCliWithCommands({
+      name: 'a',
+      alias: ['b', 'c'],
+      run
+    })
+    cli.run(['node', 'cli', 'c'])
+    expect(run).toBeCalled()
+  })
 })
 
 function createNoCommandCli(): any {
