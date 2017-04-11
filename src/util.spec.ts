@@ -1,25 +1,26 @@
-import { getCommandAndAliasNames } from './Command'
+import { getCommandAndAliasNames } from './util'
+import { Command } from './interfaces'
 
 describe('getCommandAndAliasNames()', () => {
   test('should return empty array with no commands defined', () => {
-    expect(getCommandAndAliasNames([])).toEqual([])
+    assertGettingNamesAndAlias([], [])
   })
 
   test('should return command name', () => {
-    assertNamesAre(getCommandAndAliasNames([{
+    assertGettingNamesAndAlias([{
       name: 'mycommand',
       run() { return }
-    }]), 'mycommand')
+    }], ['mycommand'])
   })
   test('should return alias too', () => {
-    assertNamesAre(getCommandAndAliasNames([{
+    assertGettingNamesAndAlias([{
       name: 'cmdWithAlias',
       alias: ['ca'],
       run() { return }
-    }]), 'ca', 'cmdWithAlias')
+    }], ['ca', 'cmdWithAlias'])
   })
   test('should sort names in alphabetical order', () => {
-    assertNamesAre(getCommandAndAliasNames([{
+    assertGettingNamesAndAlias([{
       name: 'd',
       alias: ['c'],
       run() { return }
@@ -27,9 +28,9 @@ describe('getCommandAndAliasNames()', () => {
       name: 'a',
       alias: ['b'],
       run() { return }
-    }]), 'a', 'b', 'c', 'd')
+    }], ['a', 'b', 'c', 'd'])
   })
-  function assertNamesAre(actual: string[], ...names: string[]) {
-    expect(actual).toEqual(names)
+  function assertGettingNamesAndAlias(actual: Command[], names: string[]) {
+    expect(getCommandAndAliasNames(actual)).toEqual(names)
   }
 })

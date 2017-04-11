@@ -1,9 +1,8 @@
 import minimist = require('minimist')
 import { setLevel, logLevel } from 'aurelia-logging'
 
-
-import { getCommandAndAliasNames, getCommand } from './Command'
 import { Command } from './interfaces'
+import { getCommandAndAliasNames, getCommand } from './util'
 
 export interface Options {
   name: string,

@@ -3,11 +3,47 @@
 [![NPM version][npm-image]][npm-url]
 [![Travis status][travis-image]][travis-url]
 
-A CLI building library influenced by [commander.js](https://github.com/tj/commander.js).
+Building CLI based on Command Pattern.
 
-`clibuilder` allows you to create drill down commands and support multiple alias.
+## Usage
 
-It is also more customizable and allow you to control how it prints out help messages.
+```ts
+import { create } from 'clibuilder'
+
+import { commandA, commandB } from './commands'
+
+const cli = create({
+  name: 'yourcli',
+  version: '1.0.0',
+  commands: [commandA, commandB]
+})
+
+cli.process(process.argv)
+
+// commandA.ts
+class CommandA implements Command {
+  name = 'echo'
+  log = createLogger('EchoCommand')
+  run(argv: string[]) {
+    this.log.info.apply(this.log, argv)
+    return
+  }
+}
+
+export const commandA: Command = new CommandA()
+
+// commandB.ts
+export const commandB = {
+  name: 'echo',
+  log: createLogger('EchoCommand'),
+  run(argv: string[]) {
+    this.log.info(...argv)
+    return
+  }
+} as Command
+```
+
+Although more verbose, I would prefer `commandA` approach as it provides better type support on `this`.
 
 ## Contribute
 
