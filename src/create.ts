@@ -28,20 +28,14 @@ export function create(options: Options): Cli {
         this.showHelp()
       }
       else {
-        if (args.verbose) {
-          this.setLevel(logLevel.debug)
-        }
-        else if (args.silent) {
-          this.setLevel(logLevel.none)
-        }
-        else {
-          this.setLevel(logLevel.info)
-        }
         const command = getCommand(cmd, this.commands)
         if (!command) {
           this.showHelp()
         }
         else {
+          this.setLevel(args.verbose ?
+            logLevel.debug : args.silent ?
+              logLevel.none : logLevel.info)
           command.run(argv.slice(2))
         }
       }
