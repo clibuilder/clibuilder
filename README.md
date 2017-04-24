@@ -29,8 +29,6 @@ export const commandA = new CommandA()
 
 ```
 
-Although more verbose, I would prefer `commandA` approach as it provides better type support on `this`.
-
 ## Contribute
 
 ```sh
