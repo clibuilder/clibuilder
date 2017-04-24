@@ -1,26 +1,30 @@
-import { Command, createLogger } from '../index'
+import { Command, CommandSpec, createLogger, parseArgv, HelpBuilder } from '../index'
 
-class EchoCommand implements Command {
+export function createCommand(config?: CommandSpec): Command {
+  return {
+    ...noopCommand,
+    ...config
+  }
+}
+
+class EchoCommand extends Command {
   name = 'echo'
   log = createLogger('EchoCommand')
-  run(argv: string[]) {
-    this.log.info.apply(this.log, argv)
+  process(args) {
+    this.log.info.apply(this.log, args)
     return
   }
 }
 
-export const echo2Command: Command = new EchoCommand()
+export const echoCommand: Command = new EchoCommand()
 
-export const echoCommand = {
-  name: 'echo',
-  log: createLogger('EchoCommand'),
-  run(argv: string[]) {
-    this.log.info(...argv)
-    return
+export const noopCommand = (() => {
+  return {
+    name: 'noop',
+    helpBuilder: new HelpBuilder(noopCommand),
+    run(argv) {
+      this.process(parseArgv(this, argv))
+    },
+    process() { return }
   }
-} as Command
-
-export const noopCommand = {
-  name: 'noop',
-  run() { return }
-} as Command
+})()

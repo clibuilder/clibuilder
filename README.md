@@ -8,39 +8,25 @@ Building CLI based on Command Pattern.
 ## Usage
 
 ```ts
-import { create } from 'clibuilder'
+import { Cli } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
-const cli = create({
-  name: 'yourcli',
-  version: '1.0.0',
-  commands: [commandA, commandB]
-})
+const cli = new Cli('yourcli', '1.0.0',[commandA, commandB])
 
-cli.process(process.argv)
+cli.run(process.argv)
 
 // commandA.ts
-class CommandA implements Command {
+class CommandA extends Command {
   name = 'echo'
   log = createLogger('EchoCommand')
   run(argv: string[]) {
     this.log.info.apply(this.log, argv)
-    return
   }
 }
 
-export const commandA: Command = new CommandA()
+export const commandA = new CommandA()
 
-// commandB.ts
-export const commandB = {
-  name: 'echo',
-  log: createLogger('EchoCommand'),
-  run(argv: string[]) {
-    this.log.info(...argv)
-    return
-  }
-} as Command
 ```
 
 Although more verbose, I would prefer `commandA` approach as it provides better type support on `this`.
