@@ -8,7 +8,7 @@ Building CLI based on Command Pattern.
 ## Usage
 
 ```ts
-import { Cli } from 'clibuilder'
+import { Cli, createLogger } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
