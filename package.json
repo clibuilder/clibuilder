@@ -96,7 +96,7 @@
     "rimraf": "^2.5.4",
     "ts-jest": "^19.0.8",
     "tslint": "^5.0.0",
-    "tslint-config-unional": "^0.7.0",
+    "tslint-config-unional": "^0.8.0",
     "typescript": "^2.3.0-dev.20170422",
     "typings": "^2.0.0"
   }
