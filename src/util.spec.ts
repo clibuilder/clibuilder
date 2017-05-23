@@ -1,5 +1,5 @@
 import { getCommandAndAliasNames } from './util'
-import { Command } from './interfaces'
+import { Command } from './Command'
 
 describe('getCommandAndAliasNames()', () => {
   test('should return empty array with no commands defined', () => {

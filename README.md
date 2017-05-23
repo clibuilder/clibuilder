@@ -12,16 +12,16 @@ import { Cli, createLogger } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
-const cli = new Cli('yourcli', '1.0.0',[commandA, commandB])
+const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
 
 cli.run(process.argv)
 
 // commandA.ts
 class CommandA extends Command {
   name = 'echo'
-  log = createLogger('EchoCommand')
+  log = createLogger('echo')
   run(argv: string[]) {
-    this.log.info.apply(this.log, argv)
+    this.log.info(...argv)
   }
 }
 

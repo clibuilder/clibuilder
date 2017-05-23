@@ -1,4 +1,4 @@
-import { Command } from './interfaces'
+import { Command } from './Command'
 
 export function getCommand(nameOrAlias, commands: Command[]) {
   return commands.find(cmd => {

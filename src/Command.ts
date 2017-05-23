@@ -11,7 +11,7 @@ export interface CommandSpec {
   arguments?: Argument[]
   commands?: Command[]
   description?: string
-  options: {
+  options?: {
     boolean?: BooleanOptions,
     string?: StringOptions
   }
@@ -25,7 +25,8 @@ export class Command {
     string?: StringOptions
   }
   helpBuilder: HelpBuilder
-  constructor(config) {
+  alias: string[]
+  constructor(config?: CommandSpec) {
     merge(this, config)
     this.helpBuilder = this.helpBuilder || new HelpBuilder(this)
   }
