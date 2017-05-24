@@ -21,7 +21,7 @@ export function parseArgv(command: CommandSpec, rawArgv: string[]) {
   return args
 }
 
-function toMinimistOption(options): minimist.Options {
+function toMinimistOption(options) {
   if (!options) {
     return {}
   }
