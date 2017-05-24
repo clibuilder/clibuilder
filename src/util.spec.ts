@@ -1,4 +1,4 @@
-import test, { ContextualTestContext } from 'ava'
+import test, { TestContext } from 'ava'
 
 import { getCommandAndAliasNames } from './util'
 
@@ -26,6 +26,6 @@ test('should sort names in alphabetical order', t => {
     alias: ['b']
   }], ['a', 'b', 'c', 'd'])
 })
-function assertGettingNamesAndAlias(t: ContextualTestContext, actual: { name: string, alias?: string[] }[], names: string[]) {
+function assertGettingNamesAndAlias(t: TestContext, actual: { name: string, alias?: string[] }[], names: string[]) {
   t.deepEqual(getCommandAndAliasNames(actual), names)
 }
