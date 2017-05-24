@@ -7,7 +7,7 @@ export function getCommand(nameOrAlias, commands: Command[]) {
   })
 }
 
-export function getCommandAndAliasNames(commands: Command[]) {
+export function getCommandAndAliasNames(commands: { name: string, alias?: string[] }[]) {
   const names: string[] = []
   commands.forEach(cmd => {
     names.push(cmd.name)

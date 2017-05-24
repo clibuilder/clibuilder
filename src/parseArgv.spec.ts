@@ -1,48 +1,50 @@
+import test from 'ava'
+
 import { parseArgv } from './parseArgv'
 import { createCommand } from './test/commands'
 
-test('no arguments and options', () => {
+test('no arguments and options', t => {
   const cmd = createCommand({ name: 'a' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  expect(actual).toEqual({ _: [] })
+  t.deepEqual(actual, { _: [] })
 })
 
-test('throws with additional argument', () => {
+test('throws with additional argument', t => {
   const cmd = createCommand({ name: 'a', arguments: [{ name: 'b' }] })
   const argv = ['a', 'b', 'c']
-  expect(() => parseArgv(cmd, argv)).toThrow()
+  t.throws(() => parseArgv(cmd, argv))
 })
 
-test('throws with missing argument', () => {
+test('throws with missing argument', t => {
   const cmd = createCommand({ name: 'a', arguments: [{ name: 'b', required: true }] })
   const argv = ['a']
-  expect(() => parseArgv(cmd, argv)).toThrow()
+  t.throws(() => parseArgv(cmd, argv))
 })
 
-test('not throw when there are sub-commands', () => {
+test('not throw when there are sub-commands', t => {
   const cmd = createCommand({
     name: 'a',
     commands: [createCommand({ name: 'b' })]
   })
 
   let argv = ['a', 'b']
-  expect(() => parseArgv(cmd, argv)).not.toThrow()
+  t.notThrows(() => parseArgv(cmd, argv))
   argv = ['a', '--verbose']
-  expect(() => parseArgv(cmd, argv)).not.toThrow()
+  t.notThrows(() => parseArgv(cmd, argv))
 })
 
-test('with arguments', () => {
+test('with arguments', t => {
   const cmd = createCommand({
     name: 'a',
     arguments: [{ name: 'x', required: true }]
   })
   const argv = ['a', 'c']
   const actual = parseArgv(cmd, argv)
-  expect(actual).toEqual({ _: ['c'] })
+  t.deepEqual(actual, { _: ['c'] })
 })
 
-test('throw with unknown options', () => {
+test('throw with unknown options', t => {
   const cmd = createCommand({
     name: 'a',
     options: {
@@ -55,10 +57,10 @@ test('throw with unknown options', () => {
     }
   })
   const argv = ['a', '--something']
-  expect(() => parseArgv(cmd, argv)).toThrow()
+  t.throws(() => parseArgv(cmd, argv))
 })
 
-test('with boolean options', () => {
+test('with boolean options', t => {
   const cmd = createCommand({
     name: 'a',
     options: {
@@ -76,9 +78,9 @@ test('with boolean options', () => {
   let actual = parseArgv(cmd, argv)
   const expected = { _: [], 'verbose': true, 'V': true }
 
-  expect(actual).toEqual(expected)
+  t.deepEqual(actual, expected)
 
   argv = ['a', '-V']
   actual = parseArgv(cmd, argv)
-  expect(actual).toEqual(expected)
+  t.deepEqual(actual, expected)
 })

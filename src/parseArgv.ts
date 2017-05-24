@@ -1,6 +1,12 @@
 import * as minimist from 'minimist'
 import { CommandSpec } from './Command'
 
+export class ParseError extends Error {
+  constructor(public name, public type, public value) {
+    super()
+  }
+}
+
 export function parseArgv(command: CommandSpec, rawArgv: string[]) {
   const options = toMinimistOption(command.options)
   const args = minimist(rawArgv, options)
@@ -86,12 +92,6 @@ function validateOptions(command, args) {
 
   if (errors.length !== 0) {
     throw new Error('Extra options')
-  }
-}
-
-export class ParseError extends Error {
-  constructor(public name, public type, public value) {
-    super()
   }
 }
 
