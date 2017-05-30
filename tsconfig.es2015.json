@@ -3,9 +3,5 @@
   "compilerOptions": {
     "outDir": "dist-es2015",
     "target": "es2015"
-  },
-  "files": [
-    "src/index.ts",
-    "typings/index.d.ts"
-  ]
+  }
 }
