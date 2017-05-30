@@ -8,7 +8,8 @@ Building CLI based on Command Pattern.
 ## Usage
 
 ```ts
-import { Cli, createLogger } from 'clibuilder'
+// bin.ts
+import { Cli } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
@@ -17,6 +18,8 @@ const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
 cli.run(process.argv)
 
 // commandA.ts
+import { Command, createLogger } from 'clibuilder'
+
 class CommandA extends Command {
   name = 'echo'
   log = createLogger('echo')
