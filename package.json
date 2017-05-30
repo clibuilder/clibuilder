@@ -25,7 +25,7 @@
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run clean && tsc && ava",
-    "ci-check": "tsc --version && tsc",
+    "ci-check": "tsc --version && tsc --diagnostics",
     "watch": "npm run clean && node scripts/watch.js"
   },
   "repository": {
