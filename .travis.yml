@@ -9,5 +9,4 @@ node_js:
   - "stable"
 
 before_script:
-  - npm run ci-check
   - npm run verify
