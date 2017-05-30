@@ -20,12 +20,10 @@
     "prepare": "typings i && npm run build",
     "postpublish": "git push",
     "preversion": "git pull && npm run verify",
-    "verify2": "npm run lint && npm run coverage && npm run dependency-check",
-    "verify": "npm run test && npm run dependency-check",
+    "verify": "npm run lint && npm run coverage && npm run dependency-check",
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run clean && tsc && ava",
-    "ci-check": "tsc --version && tsc --diagnostics",
     "watch": "npm run clean && node scripts/watch.js"
   },
   "repository": {

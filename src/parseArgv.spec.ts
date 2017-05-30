@@ -1,5 +1,4 @@
 import test from 'ava'
-import { ParsedArgs } from 'minimist'
 
 import { parseArgv } from './parseArgv'
 import { createCommand } from './test/util'
@@ -76,12 +75,11 @@ test('with boolean options', t => {
   })
 
   let argv = ['a', '--verbose']
-  let actual: ParsedArgs = parseArgv(cmd, argv)
-  const expected = { _: [], 'verbose': true, 'V': true }
+  let actual = parseArgv(cmd, argv)
 
-  t.deepEqual(actual, expected)
+  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
 
   argv = ['a', '-V']
   actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, expected)
+  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
 })
