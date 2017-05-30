@@ -2,7 +2,7 @@
 import test from 'ava'
 import { stub } from 'sinon'
 
-import { createCliWithCommands } from './test/commands'
+import { createCliWithCommands, createArgv } from './test/util'
 
 test('invoke command by name', t => {
   const process = stub()
@@ -10,7 +10,7 @@ test('invoke command by name', t => {
     name: 'a',
     process
   })
-  cli.run(['node', 'cli', 'a'])
+  cli.run(createArgv('a'))
 
   t.true(process.called)
 })
@@ -21,7 +21,7 @@ test('invoke command by alias', t => {
     alias: ['b'],
     process
   })
-  cli.run(['node', 'cli', 'b'])
+  cli.run(createArgv('b'))
   t.true(process.called)
 })
 test('invoke command by second alias', t => {
@@ -31,6 +31,6 @@ test('invoke command by second alias', t => {
     alias: ['b', 'c'],
     process
   })
-  cli.run(['node', 'cli', 'c'])
+  cli.run(createArgv('c'))
   t.true(process.called)
 })

@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import { parseArgv } from './parseArgv'
-import { createCommand } from './test/commands'
+import { createCommand } from './test/util'
 
 test('no arguments and options', t => {
   const cmd = createCommand({ name: 'a' })
@@ -76,11 +76,10 @@ test('with boolean options', t => {
 
   let argv = ['a', '--verbose']
   let actual = parseArgv(cmd, argv)
-  const expected = { _: [], 'verbose': true, 'V': true }
 
-  t.deepEqual(actual, expected)
+  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
 
   argv = ['a', '-V']
   actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, expected)
+  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
 })

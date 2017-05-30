@@ -1,11 +1,11 @@
 {
+  "extends": "./tsconfig.es5.json",
   "atom": {
     "rewriteTsconfig": false
   },
   "buildOnSave": false,
   "compileOnSave": false,
-  "extends": "./tsconfig.es5.json",
   "include": [
-    "src"
+    "src/**/*.ts"
   ]
 }
