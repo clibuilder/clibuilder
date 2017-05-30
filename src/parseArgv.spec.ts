@@ -2,7 +2,7 @@ import test from 'ava'
 import { ParsedArgs } from 'minimist'
 
 import { parseArgv } from './parseArgv'
-import { createCommand } from './test/commands'
+import { createCommand } from './test/util'
 
 test('no arguments and options', t => {
   const cmd = createCommand({ name: 'a' })

@@ -1,4 +1,4 @@
-import { Cli, Command, CommandSpec, createLogger, parseArgv, HelpBuilder } from '../index'
+import { Command, createLogger, parseArgv, HelpBuilder } from '../index'
 
 export const noopCommand = (() => {
   return {
@@ -11,13 +11,6 @@ export const noopCommand = (() => {
   }
 })()
 
-export function createCommand(config?: CommandSpec): Command {
-  return {
-    ...noopCommand,
-    ...config
-  }
-}
-
 class EchoCommand extends Command {
   name = 'echo'
   log = createLogger('EchoCommand')
@@ -28,16 +21,3 @@ class EchoCommand extends Command {
 }
 
 export const echoCommand: Command = new EchoCommand()
-
-
-export function createNoCommandCli(): any {
-  return createCliWithCommands()
-}
-
-export function createNoOpCli(): any {
-  return createCliWithCommands(noopCommand)
-}
-
-export function createCliWithCommands(...commands: Array<CommandSpec & { process: any }>) {
-  return new Cli('cli', '0.2.1', commands.map(c => createCommand(c)))
-}

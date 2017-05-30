@@ -1,7 +1,7 @@
 import test from 'ava'
 import { stub, SinonStub } from 'sinon'
 
-import { createNoCommandCli } from './test/commands'
+import { createNoCommandCli, createArgv } from './test/util'
 
 const cli = createNoCommandCli()
 let showVersion: SinonStub
@@ -12,11 +12,11 @@ test.afterEach(() => {
   showVersion.restore()
 })
 test('with -v', t => {
-  cli.run(['node', 'cli', '-v'])
+  cli.run(createArgv('-v'))
   t.true(showVersion.called)
 })
 
 test('with --version', t => {
-  cli.run(['node', 'cli', '-v'])
+  cli.run(createArgv('--version'))
   t.true(showVersion.called)
 })
