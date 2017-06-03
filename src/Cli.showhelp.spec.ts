@@ -1,21 +1,22 @@
 import test from 'ava'
+import { stub, SinonStub } from 'sinon'
 
-import { memoryAppender } from './test/setup'
 import { createNoCommandCli, createArgv } from './test/util'
 
-const cli = createNoCommandCli('showHelp')
+const cli = createNoCommandCli('showVersion')
+let showVersion: SinonStub
 test.beforeEach(() => {
-  memoryAppender.logs = []
+  showVersion = stub(cli, 'showVersion')
 })
-test('when called with no parameter', t => {
-  cli.run(createArgv())
+test.afterEach(() => {
+  showVersion.restore()
 })
-test('when called with -h', t => {
-  cli.run(createArgv('-h'))
+test('with -v', t => {
+  cli.run(createArgv('-v'))
+  t.true(showVersion.called)
 })
-test('when called with --help', t => {
-  cli.run(createArgv('--help'))
-})
-test('when command not found', t => {
-  cli.run(createArgv('some'))
+
+test('with --version', t => {
+  cli.run(createArgv('--version'))
+  t.true(showVersion.called)
 })
