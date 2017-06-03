@@ -9,16 +9,16 @@ export function createCommand(config?: CommandSpec): Command {
   }
 }
 
-export function createNoCommandCli(): any {
-  return createCliWithCommands()
+export function createNoCommandCli(name: string) {
+  return createCliWithCommands(name)
 }
 
-export function createNoOpCli(): any {
-  return createCliWithCommands(noopCommand)
+export function createNoOpCli(name: string) {
+  return createCliWithCommands(name, noopCommand)
 }
 
-export function createCliWithCommands(...commands: Array<CommandSpec & { process: any }>) {
-  return new Cli('cli', '0.2.1', commands.map(c => createCommand(c)))
+export function createCliWithCommands(name: string, ...commands: Array<CommandSpec & { process: any }>) {
+  return new Cli(name, '0.0.0', commands.map(c => createCommand(c)))
 }
 
 export function createArgv(...args) {

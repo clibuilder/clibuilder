@@ -3,7 +3,7 @@ import test from 'ava'
 
 import { createNoOpCli, createArgv } from './test/util'
 
-const cli = createNoOpCli()
+const cli = createNoOpCli('logLevel')
 
 test('with -V', t => {
   cli.run(createArgv('noop', '-V'))

@@ -6,7 +6,7 @@ import { createCliWithCommands, createArgv } from './test/util'
 
 test('invoke command by name', t => {
   const process = stub()
-  const cli = createCliWithCommands({
+  const cli = createCliWithCommands('cmdByName', {
     name: 'a',
     process
   })
@@ -16,7 +16,7 @@ test('invoke command by name', t => {
 })
 test('invoke command by alias', t => {
   const process = stub()
-  const cli = createCliWithCommands({
+  const cli = createCliWithCommands('cmdByAlias', {
     name: 'a',
     alias: ['b'],
     process
@@ -26,7 +26,7 @@ test('invoke command by alias', t => {
 })
 test('invoke command by second alias', t => {
   const process = stub()
-  const cli = createCliWithCommands({
+  const cli = createCliWithCommands('cmdByAlias2', {
     name: 'a',
     alias: ['b', 'c'],
     process

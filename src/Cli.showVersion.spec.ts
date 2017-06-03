@@ -1,22 +1,19 @@
 import test from 'ava'
-import { stub, SinonStub } from 'sinon'
 
+import { memoryAppender } from './test/setup'
 import { createNoCommandCli, createArgv } from './test/util'
 
-const cli = createNoCommandCli()
-let showVersion: SinonStub
+const cli = createNoCommandCli('showVersion')
 test.beforeEach(() => {
-  showVersion = stub(cli, 'showVersion')
+  memoryAppender.logs = []
 })
-test.afterEach(() => {
-  showVersion.restore()
-})
+
 test('with -v', t => {
   cli.run(createArgv('-v'))
-  t.true(showVersion.called)
+  t.is(memoryAppender.logs[0].messages[0], '0.0.0')
 })
 
 test('with --version', t => {
   cli.run(createArgv('--version'))
-  t.true(showVersion.called)
+  t.is(memoryAppender.logs[0].messages[0], '0.0.0')
 })
