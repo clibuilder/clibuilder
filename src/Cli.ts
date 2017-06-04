@@ -1,16 +1,14 @@
-import { setLevel, logLevel, addAppender, getLogger, Logger } from 'aurelia-logging'
-import { ColorAppender } from 'aurelia-logging-color'
+import { setLevel, logLevel, Logger } from 'aurelia-logging'
 
 import { Command } from './Command'
 import { getCommand } from './util'
+import { parseArgv } from './parseArgv'
 
 export interface Config {
   ui: Logger
 }
 
-let defaultAppender: any
-
-export class Cli extends Command {
+export class Cli {
   options = {
     boolean: {
       'version': {
@@ -26,33 +24,22 @@ export class Cli extends Command {
       }
     }
   }
-  constructor(name: string, public version: string, public commands: Command[], config: Config = {} as any) {
-    super({ name })
-    if (config.ui) {
-      this.ui = config.ui
-    }
-    else {
-      if (!defaultAppender) {
-        defaultAppender = new ColorAppender()
-        addAppender(defaultAppender)
-      }
-      this.ui = getLogger(name)
-    }
+  constructor(public name: string, public version: string, public commands: Command[], private ui) {
   }
 
-  run(rawArgv: string[]) {
-    super.run(rawArgv.slice(1))
+  parse(rawArgv: string[]) {
+    const args = parseArgv(this, rawArgv.slice(1))
+    this.process(args, rawArgv.slice(1))
   }
 
   process(args, rawArgv) {
-    super.process(args, rawArgv)
     if (args.version) {
       this.showVersion()
     }
     else {
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
-        this.showHelp()
+        this.ui.showHelp(this)
       }
       else {
         setLevel(args.verbose ?

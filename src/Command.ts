@@ -1,9 +1,6 @@
-import { Logger } from 'aurelia-logging'
-
 import merge = require('lodash.merge')
 
 import { parseArgv } from './parseArgv'
-import { HelpBuilder } from './HelpBuilder'
 
 export interface CommandSpec {
   /**
@@ -26,12 +23,11 @@ export class Command {
     boolean?: BooleanOptions,
     string?: StringOptions
   }
-  helpBuilder: HelpBuilder
   alias: string[]
   parentCommand?: Command
   commands?: Command[]
-  ui: Logger
-  constructor(config?: CommandSpec) {
+  ui: any
+  constructor(spec?: CommandSpec) {
     merge(this, {
       options: {
         boolean: {
@@ -41,11 +37,10 @@ export class Command {
           }
         }
       }
-    }, config)
+    }, spec)
     if (this.commands) {
       this.commands.forEach(c => c.parentCommand = this)
     }
-    this.helpBuilder = this.helpBuilder || new HelpBuilder(this)
   }
   run(rawArgv: string[]): void {
     const args = parseArgv(this, rawArgv)
@@ -53,11 +48,8 @@ export class Command {
   }
   process(args, _rawArgv): void {
     if (args.help) {
-      this.showHelp()
+      this.ui.showHelp(this)
     }
-  }
-  showHelp() {
-    console.info(this.helpBuilder.build())
   }
 }
 

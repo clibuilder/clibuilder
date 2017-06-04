@@ -1,4 +1,4 @@
-import { Command, createLogger, parseArgv, HelpBuilder } from '../index'
+import { Command, parseArgv, HelpBuilder } from '../index'
 
 export const noopCommand = (() => {
   return {
@@ -13,10 +13,8 @@ export const noopCommand = (() => {
 
 class EchoCommand extends Command {
   name = 'echo'
-  log = createLogger('EchoCommand')
   process(args) {
-    this.log.info.apply(this.log, args)
-    return
+    this.ui.info(...args)
   }
 }
 

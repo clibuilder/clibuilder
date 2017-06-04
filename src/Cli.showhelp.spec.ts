@@ -1,22 +1,32 @@
-import test from 'ava'
-import { stub, SinonStub } from 'sinon'
+// import test from 'ava'
+// import { stub, SinonStub } from 'sinon'
 
-import { createNoCommandCli, createArgv } from './test/util'
+// import { createNoCommandCli, createArgv } from './test/util'
 
-const cli = createNoCommandCli('showVersion')
-let showVersion: SinonStub
-test.beforeEach(() => {
-  showVersion = stub(cli, 'showVersion')
-})
-test.afterEach(() => {
-  showVersion.restore()
-})
-test('with -v', t => {
-  cli.run(createArgv('-v'))
-  t.true(showVersion.called)
-})
+// const cli = createNoCommandCli('showHelp')
+// let showHelp: SinonStub
+// test.beforeEach(() => {
+//   showHelp = stub(cli, 'showHelp')
+// })
+// test.afterEach(() => {
+//   showHelp.restore()
+// })
+// test('when called with no parameter', t => {
+//   cli.run(createArgv())
+//   t.true(showHelp.called)
+// })
+// test('when called with -h', t => {
+//   cli.run(createArgv('-h'))
 
-test('with --version', t => {
-  cli.run(createArgv('--version'))
-  t.true(showVersion.called)
-})
+//   t.true(showHelp.called)
+// })
+// test('when called with --help', t => {
+//   cli.run(createArgv('--help'))
+
+//   t.true(showHelp.called)
+// })
+// test('when command not found', t => {
+//   cli.run(createArgv('some'))
+
+//   t.true(showHelp.called)
+// })
