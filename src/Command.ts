@@ -24,7 +24,7 @@ export class Command {
     string?: StringOptions
   }
   alias: string[]
-  parentCommand?: Command
+  parent?: Command
   commands?: Command[]
   ui: any
   constructor(spec?: CommandSpec) {
@@ -39,7 +39,7 @@ export class Command {
       }
     }, spec)
     if (this.commands) {
-      this.commands.forEach(c => c.parentCommand = this)
+      this.commands.forEach(c => c.parent = this)
     }
   }
   run(rawArgv: string[]): void {

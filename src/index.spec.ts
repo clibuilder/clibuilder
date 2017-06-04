@@ -3,30 +3,29 @@ import test from 'ava'
 import { create } from './index'
 
 import { noopCommand } from './test/commands'
-
 import { createArgv } from './test/util'
-import { InMemoryDisplay } from './test/InMemoryDisplay'
+import { InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
 
-test('create cli with no command', t => {
-  const name = 'cmd'
+test('given single command cli, when called with no argument, then help will be shown', t => {
   const display = new InMemoryDisplay()
   const cli = create({
-    name,
+    name: 'cmd',
     version: '0.0.0',
     commands: [noopCommand],
     display
   })
 
   cli.parse(createArgv())
-  const infos = getMessage(display.infoMessages)
+
+  const infos = generateDisplayedMessage(display.infoMessages)
   t.deepEqual(infos, `
-Usage: ${name} <command>
+Usage: cmd <command>
 
 Commands:
   noop
 
-${name} <command> -h      Get help for <command>
+cmd <command> -h     Get help for <command>
 
 Options:
   [-v|--version]         Print the CLI version
@@ -34,7 +33,3 @@ Options:
   [--silent]             Turn off logging
 `)
 })
-
-function getMessage(messages) {
-  return messages.map(m => m.join(' ')).join('\n')
-}

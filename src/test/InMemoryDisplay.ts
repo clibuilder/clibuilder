@@ -18,3 +18,7 @@ export class InMemoryDisplay implements Display {
     this.errorMessages.push(args)
   }
 }
+
+export function generateDisplayedMessage(messages) {
+  return messages.map(m => m.join(' ')).join('\n')
+}

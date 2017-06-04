@@ -5,6 +5,9 @@ import { Command } from './Command'
 import { DisplayAppender } from './DisplayAppender'
 import { Display } from './interfaces'
 
+const INDENT = 2
+const RIGHT_PADDING = 2
+const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 let display: Display
 
@@ -21,49 +24,65 @@ export class UI {
   }
 
   showHelp(command: Command) {
-    const help = getHelp(command)
-    this.display.info(help)
+    this.display.info(generateHelpMessage(command))
   }
 }
 
-function getSubCommandNames(command: Command) {
-  const commandNames: string[] = []
-  if (command.commands) {
-    command.commands.forEach(c => {
-      commandNames.push(c.name)
+function generateHelpMessage(command: Command) {
+  const helpSections = [
+    generateUsageSection(command),
+    generateCommandsSection(command),
+    generateArgumentsSection(command),
+    generateOptionsSection(command),
+    generateAliasSection(command)
+  ].filter(m => !!m)
+  return `
+${helpSections.join('\n\n')}
+`
+}
+
+function generateUsageSection(command: Command) {
+  const nameChain = getCommandNameChain(command)
+  return `Usage: ${nameChain.join(' ')} <command>`
+}
+
+function getCommandNameChain(command: Command) {
+  const commands = [command]
+  while (command.parent) {
+    commands.unshift(command.parent)
+    command = command.parent
+  }
+  return commands.map(c => c.name)
+}
+
+function generateCommandsSection(command: Command) {
+  const commandNames = getCommandsNamesAndAlias(command.commands)
+  return `Commands:
+  ${wrap(commandNames.join(', '))}
+
+${command.name} <command> -h     Get help for <command>`
+}
+
+function getCommandsNamesAndAlias(commands: Command[] | undefined) {
+  const result: string[] = []
+  if (commands) {
+    commands.forEach(c => {
+      result.push(c.name)
       if (c.alias) {
-        commandNames.push(...c.alias)
+        result.push(...c.alias)
       }
-      if (c.commands) {
-        c.commands.forEach(sub => {
-          commandNames.push(...getSubCommandNames(sub))
-        })
-      }
+
+      result.push(...getCommandsNamesAndAlias(c.commands))
     })
   }
-  return commandNames
+  return result
 }
 
-function getHelp(command: Command) {
-  const messages = [
-    `Usage: ${command.name} <command>`,
-    getCommandMessages(command),
-    `${command.name} <command> -h      Get help for <command>`,
-    getOptionMessages(command),
-    getAliasMessages(command)
-  ].filter(m => m)
-  return '\n' + messages.join('\n\n') + '\n'
+function generateArgumentsSection(_command: Command) {
+  return ''
 }
 
-function getCommandMessages(command: Command) {
-  const commandNames = getSubCommandNames(command)
-  return `Commands:
-  ${commandNames.join(', ')}`
-}
-function formatKeyValue(key, value) {
-  return `[${value.alias ? '-' + value.alias + '|' : ''}--${key}]`
-}
-function getOptionMessages(command: Command) {
+function generateOptionsSection(command: Command) {
   if (!command.options) {
     return ''
   }
@@ -87,11 +106,7 @@ function getOptionMessages(command: Command) {
     }
   }
 
-  // pad 4 space if there are enough space, otherwise only 2
-  const INDENT = 2
-  const RIGHT_PADDING = 2
-  const MIN_OPTION_STR_WIDTH = 25
-  const alignedWidth = Math.max(MIN_OPTION_STR_WIDTH - INDENT, maxOptionStrWidth + RIGHT_PADDING)
+  const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxOptionStrWidth + RIGHT_PADDING)
 
   if (entries.length > 0) {
     message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
@@ -99,7 +114,11 @@ function getOptionMessages(command: Command) {
   return message
 }
 
-function getAliasMessages(command: Command) {
+function formatKeyValue(key, value) {
+  return `[${value.alias ? '-' + value.alias + '|' : ''}--${key}]`
+}
+
+function generateAliasSection(command: Command) {
   if (!command.alias)
     return ''
   return `Alias:
