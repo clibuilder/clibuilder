@@ -1,6 +1,7 @@
 import merge = require('lodash.merge')
 
 import { parseArgv } from './parseArgv'
+import { UI } from './UI'
 
 export interface CommandSpec {
   /**
@@ -16,17 +17,19 @@ export interface CommandSpec {
   }
   alias?: string[]
 }
-
-export class Command {
-  name: string
-  options: {
+export namespace Command {
+  export interface Options {
     boolean?: BooleanOptions,
     string?: StringOptions
   }
-  alias: string[]
+}
+export class Command {
+  name: string
+  options: Command.Options
+  alias?: string[]
   parent?: Command
   commands?: Command[]
-  ui: any
+  ui: UI
   constructor(spec?: CommandSpec) {
     merge(this, {
       options: {

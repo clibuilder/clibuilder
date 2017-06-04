@@ -11,6 +11,14 @@ const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 let display: Display
 
+export interface ICommand {
+  parent?: ICommand
+  name: string
+  commands?: ICommand[]
+  alias?: string[]
+  options?: Command.Options
+}
+
 export function createDefaultDisplay(name: string) {
   if (!display) {
     addAppender(new DisplayAppender())
@@ -23,12 +31,24 @@ export class UI {
   constructor(private display: Display) {
   }
 
-  showHelp(command: Command) {
+  showHelp(command: ICommand) {
     this.display.info(generateHelpMessage(command))
+  }
+  info(...args: any[]) {
+    this.display.info(...args)
+  }
+  warn(...args: any[]) {
+    this.display.warn(...args)
+  }
+  error(...args: any[]) {
+    this.display.error(...args)
+  }
+  debug(...args: any[]) {
+    this.display.debug(...args)
   }
 }
 
-function generateHelpMessage(command: Command) {
+function generateHelpMessage(command: ICommand) {
   const helpSections = [
     generateUsageSection(command),
     generateCommandsSection(command),
@@ -41,12 +61,12 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(command: Command) {
+function generateUsageSection(command: ICommand) {
   const nameChain = getCommandNameChain(command)
   return `Usage: ${nameChain.join(' ')} <command>`
 }
 
-function getCommandNameChain(command: Command) {
+function getCommandNameChain(command: ICommand) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
@@ -55,15 +75,18 @@ function getCommandNameChain(command: Command) {
   return commands.map(c => c.name)
 }
 
-function generateCommandsSection(command: Command) {
+function generateCommandsSection(command: ICommand) {
   const commandNames = getCommandsNamesAndAlias(command.commands)
+  if (commandNames.length === 0)
+    return ''
+
   return `Commands:
   ${wrap(commandNames.join(', '))}
 
-${command.name} <command> -h     Get help for <command>`
+${padRight(command.name + ' <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
 }
 
-function getCommandsNamesAndAlias(commands: Command[] | undefined) {
+function getCommandsNamesAndAlias(commands: ICommand[] | undefined) {
   const result: string[] = []
   if (commands) {
     commands.forEach(c => {
@@ -78,11 +101,11 @@ function getCommandsNamesAndAlias(commands: Command[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(_command: Command) {
+function generateArgumentsSection(_command: ICommand) {
   return ''
 }
 
-function generateOptionsSection(command: Command) {
+function generateOptionsSection(command: ICommand) {
   if (!command.options) {
     return ''
   }
@@ -118,7 +141,7 @@ function formatKeyValue(key, value) {
   return `[${value.alias ? '-' + value.alias + '|' : ''}--${key}]`
 }
 
-function generateAliasSection(command: Command) {
+function generateAliasSection(command: ICommand) {
   if (!command.alias)
     return ''
   return `Alias:

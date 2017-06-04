@@ -3,6 +3,7 @@ import { setLevel, logLevel, Logger } from 'aurelia-logging'
 import { Command } from './Command'
 import { getCommand } from './util'
 import { parseArgv } from './parseArgv'
+import { UI } from './UI'
 
 export interface Config {
   ui: Logger
@@ -24,7 +25,7 @@ export class Cli {
       }
     }
   }
-  constructor(public name: string, public version: string, public commands: Command[], private ui) {
+  constructor(public name: string, public version: string, public commands: Command[], public ui: UI) {
   }
 
   parse(rawArgv: string[]) {
