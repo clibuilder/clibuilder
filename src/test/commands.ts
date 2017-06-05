@@ -1,23 +1,37 @@
-import { Command, createLogger, parseArgv, HelpBuilder } from '../index'
+import { CommandSpec } from '../Command'
 
-export const noopCommand = (() => {
-  return {
-    name: 'noop',
-    helpBuilder: new HelpBuilder(noopCommand),
-    run(argv) {
-      this.process(parseArgv(this, argv))
-    },
-    process() { return }
-  }
-})()
-
-class EchoCommand extends Command {
-  name = 'echo'
-  log = createLogger('EchoCommand')
-  process(args) {
-    this.log.info.apply(this.log, args)
+export const noopCommandSpec: CommandSpec = {
+  name: 'noop',
+  run() {
     return
   }
 }
 
-export const echoCommand: Command = new EchoCommand()
+export const echoCommandSpec: CommandSpec = {
+  name: 'echo',
+  run(args) {
+    this.ui.info(...args)
+  }
+}
+
+export const verboseCommandSpec: CommandSpec = {
+  name: 'verbose',
+  alias: ['vb', 'detail'],
+  options: {
+    boolean: {
+      verbose: {
+        description: 'print verbose messages'
+      }
+    }
+  },
+  run() {
+    this.ui.debug('print verbosely')
+  }
+}
+
+export const errorCommandSpec: CommandSpec = {
+  name: 'error',
+  run() {
+    this.ui.error('error...')
+  }
+}

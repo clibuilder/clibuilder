@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import { parseArgv } from './parseArgv'
-import { createCommand } from './test/util'
+import { createCommand } from './Command'
 
 test('no arguments and options', t => {
   const cmd = createCommand({ name: 'a' })

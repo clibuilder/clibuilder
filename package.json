@@ -24,7 +24,8 @@
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run clean && tsc && ava",
-    "watch": "npm run clean && node scripts/watch.js"
+    "watch": "npm run clean && node scripts/watch.js",
+    "debug": "node scripts/debug.js"
   },
   "repository": {
     "type": "git",
@@ -74,14 +75,16 @@
     "exclude": [
       "scripts",
       "**/*.spec.*",
-      "**/fixtures/**/*"
+      "**/fixtures/**/*",
+      "**/test/**/*"
     ]
   },
   "dependencies": {
     "aurelia-logging": "^1.3.1",
-    "aurelia-logging-color": "^0.5.4",
     "lodash.merge": "^4.6.0",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "pad-right": "^0.2.2",
+    "wordwrap": "^1.0.0"
   },
   "devDependencies": {
     "@types/jest": "^19.2.3",
