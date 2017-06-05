@@ -24,7 +24,8 @@
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run clean && tsc && ava",
-    "watch": "npm run clean && node scripts/watch.js"
+    "watch": "npm run clean && node scripts/watch.js",
+    "debug": "node scripts/debug.js"
   },
   "repository": {
     "type": "git",
