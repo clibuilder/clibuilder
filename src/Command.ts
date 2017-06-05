@@ -1,6 +1,5 @@
 import merge = require('lodash.merge')
 
-import { parseArgv } from './parseArgv'
 import { UI } from './UI'
 
 export interface CommandSpec {
@@ -16,44 +15,32 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
+  run?: (this: Command, args) => void
 }
+
+export function createCommand(spec: CommandSpec): Command {
+  const result = merge({
+    run: () => { return }
+  }, spec)
+
+  if (result.commands) {
+    result.commands.forEach(c => c.parent = result)
+  }
+
+  return result
+}
+
 export namespace Command {
   export interface Options {
     boolean?: BooleanOptions,
     string?: StringOptions
   }
 }
-export class Command {
+export interface Command extends CommandSpec {
   name: string
   options: Command.Options
-  alias?: string[]
-  parent?: Command
-  commands?: Command[]
   ui: UI
-  constructor(spec?: CommandSpec) {
-    merge(this, {
-      options: {
-        boolean: {
-          'help': {
-            description: 'Print this help message',
-            alias: ['h']
-          }
-        }
-      }
-    }, spec)
-    if (this.commands) {
-      this.commands.forEach(c => c.parent = this)
-    }
-  }
-  run(rawArgv: string[]): void {
-    const args = parseArgv(this, rawArgv)
-    this.process(args, rawArgv)
-  }
-  process(args, _rawArgv): void {
-    if (args.help) {
-      this.ui.showHelp(this)
-    }
-  }
+  run(this: Command, args): void
 }
 
 export interface Argument {

@@ -1,6 +1,6 @@
 import { setLevel, logLevel, Logger } from 'aurelia-logging'
 
-import { Command } from './Command'
+import { Command, CommandSpec, createCommand } from './Command'
 import { getCommand } from './util'
 import { parseArgv } from './parseArgv'
 import { UI } from './UI'
@@ -9,9 +9,18 @@ export interface Config {
   ui: Logger
 }
 
+export interface ICommand {
+  name: string
+  process(argv, rawArgv): void
+}
+
 export class Cli {
   options = {
     boolean: {
+      'help': {
+        description: 'Print help message',
+        alias: ['h']
+      },
       'version': {
         description: 'Print the CLI version',
         alias: ['v']
@@ -25,7 +34,13 @@ export class Cli {
       }
     }
   }
-  constructor(public name: string, public version: string, public commands: Command[], public ui: UI) {
+  commands: Command[]
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], public ui: UI) {
+    this.commands = commandSpecs.map(s => {
+      const cmd = createCommand(s)
+      cmd.ui = ui
+      return cmd
+    })
   }
 
   parse(rawArgv: string[]) {
@@ -43,9 +58,10 @@ export class Cli {
         this.ui.showHelp(this)
       }
       else {
-        setLevel(args.verbose ?
+        const l = args.verbose ?
           logLevel.debug : args.silent ?
-            logLevel.none : logLevel.info)
+            logLevel.none : logLevel.info
+        setLevel(l)
         command.run(rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1))
       }
     }

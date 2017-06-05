@@ -1,24 +1,52 @@
+import { addAppender, getLogger, logLevel } from 'aurelia-logging'
+
+import { MemoryAppender } from 'aurelia-logging-memory'
+
 import { Display } from '../interfaces'
 
-export class InMemoryDisplay implements Display {
-  debugMessages: any[] = []
-  infoMessages: any[] = []
-  warnMessages: any[] = []
-  errorMessages: any[] = []
-  debug(...args: any[]): void {
-    this.debugMessages.push(args)
-  }
-  info(...args: any[]): void {
-    this.infoMessages.push(args)
-  }
-  warn(...args: any[]): void {
-    this.warnMessages.push(args)
-  }
-  error(...args: any[]): void {
-    this.errorMessages.push(args)
-  }
+let appender: MemoryAppender
+let nameMap = {}
+
+function getUniqueName(name: string) {
+  if (!nameMap[name])
+    nameMap[name] = 1
+  else
+    nameMap[name] += 1
+
+  return name + nameMap[name]
 }
 
-export function generateDisplayedMessage(messages) {
-  return messages.map(m => m.join(' ')).join('\n')
+export function createInMemoryDisplay(name: string): InMemoryDisplay {
+  if (!appender) {
+    appender = new MemoryAppender()
+    addAppender(appender)
+  }
+
+  name = getUniqueName(name)
+
+  const display: any = getLogger(name)
+  display.getErrorLogs = function () {
+    return appender.logs.filter(l => l.id === name && l.level === logLevel.error).map(l => l.messages)
+  }
+  display.getWarnLogs = function () {
+    return appender.logs.filter(l => l.id === name && l.level === logLevel.warn).map(l => l.messages)
+  }
+  display.getInfoLogs = function () {
+    return appender.logs.filter(l => l.id === name && l.level === logLevel.info).map(l => l.messages)
+  }
+  display.getDebugLogs = function () {
+    return appender.logs.filter(l => l.id === name && l.level === logLevel.debug).map(l => l.messages)
+  }
+  return display
+}
+
+export interface InMemoryDisplay extends Display {
+  getErrorLogs(): string[][]
+  getWarnLogs(): string[][]
+  getInfoLogs(): string[][]
+  getDebugLogs(): string[][]
+}
+
+export function generateDisplayedMessage(entries: string[][]) {
+  return entries.map(e => e.join(' ')).join('\n')
 }
