@@ -17,7 +17,7 @@ export interface ICli {
   parse(rawArgv: string[])
 }
 
-export function create({ name, version, commandSpecs = [], display }: Options): ICli {
+export function create({ name, version, commandSpecs, display }: Options): ICli {
   display = display || createDefaultDisplay(name)
   return new Cli(name, version, commandSpecs, new UI(display))
 }
