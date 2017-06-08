@@ -9,26 +9,22 @@ Building CLI based on Command Pattern.
 
 ```ts
 // bin.ts
-import { Cli } from 'clibuilder'
+import { create } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
-const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
+const cli = create('yourcli', '1.0.0', [commandA, commandB])
+cli.parse(process.argv)
 
-cli.run(process.argv)
+// commands.ts
+import { createCommandCommand, createLogger } from 'clibuilder'
 
-// commandA.ts
-import { Command, createLogger } from 'clibuilder'
-
-class CommandA extends Command {
-  name = 'echo'
-  log = createLogger('echo')
-  run(argv: string[]) {
-    this.log.info(...argv)
+export const commandA = createCommand({
+  name: 'echo',
+  run(argv) {
+    this.ui.info(...argv)
   }
-}
-
-export const commandA = new CommandA()
+})
 
 ```
 
