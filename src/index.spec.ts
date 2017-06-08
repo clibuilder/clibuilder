@@ -265,5 +265,4 @@ then will echo 'abc --some'
     cli.parse(createArgv('echo', 'abc', '--some'))
     const infos = generateDisplayedMessage(display.getInfoLogs())
     t.is(infos, 'echo abc --some')
-    console.log(infos)
   })
