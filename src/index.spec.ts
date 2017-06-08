@@ -178,7 +178,6 @@ then the verbosed message is shown`,
     t.is(display.getDebugLogs().length, 1)
   })
 
-
 test(`given cli with verbose command
 when called with 'verbose -V'
 then the verbosed message is shown`,
@@ -209,4 +208,24 @@ then no message is shown`,
 
     cli.parse(createArgv('error', '--silent'))
     t.is(display.getErrorLogs().length, 0)
+  })
+
+test(`given cli with echo command
+when called with 'echo -h
+then the help message for each is shwon`,
+  t => {
+    const display: InMemoryDisplay = t.context.display
+    const cli = create({
+      name: 'cmd',
+      version: '0.0.0',
+      commandSpecs: [commandSpecs.echoCommandSpec],
+      display
+    })
+    cli.parse(createArgv('echo', '-h'))
+    const infos = generateDisplayedMessage(display.getInfoLogs())
+    t.is(infos, `
+Usage: cmd echo
+
+  Echoing input arguments
+`)
   })

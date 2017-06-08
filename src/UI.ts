@@ -1,7 +1,7 @@
 import { getLogger, addAppender } from 'aurelia-logging'
 import wordwrap = require('wordwrap')
 import padRight = require('pad-right')
-import { Command } from './Command'
+import { Command, CommandBase } from './Command'
 import { DisplayAppender } from './DisplayAppender'
 import { Display } from './interfaces'
 
@@ -11,10 +11,9 @@ const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 let display: Display
 
-export interface ICommand {
-  parent?: ICommand
-  name: string
-  commands?: ICommand[]
+export interface CommandViewModel extends CommandBase {
+  description?: string
+  commands?: CommandViewModel[]
   alias?: string[]
   options?: Command.Options
 }
@@ -31,8 +30,9 @@ export class UI {
   constructor(private display: Display) {
   }
 
-  showHelp(command: ICommand) {
-    this.display.info(generateHelpMessage(command))
+  showHelp(command: CommandViewModel) {
+    const msg = generateHelpMessage(command)
+    this.display.info(msg)
   }
   info(...args: any[]) {
     this.display.info(...args)
@@ -48,9 +48,10 @@ export class UI {
   }
 }
 
-function generateHelpMessage(command: ICommand) {
+function generateHelpMessage(command: CommandViewModel) {
   const helpSections = [
     generateUsageSection(command),
+    generateDescriptionSection(command),
     generateCommandsSection(command),
     generateArgumentsSection(command),
     generateOptionsSection(command),
@@ -61,12 +62,16 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(command: ICommand) {
+function generateUsageSection(command: CommandViewModel) {
   const nameChain = getCommandNameChain(command)
-  return `Usage: ${nameChain.join(' ')} <command>`
+  return `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
 }
 
-function getCommandNameChain(command: ICommand) {
+function generateDescriptionSection(command: CommandViewModel) {
+  return command.description ? '  ' + command.description : ''
+}
+
+function getCommandNameChain(command: CommandViewModel) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
@@ -75,7 +80,7 @@ function getCommandNameChain(command: ICommand) {
   return commands.map(c => c.name)
 }
 
-function generateCommandsSection(command: ICommand) {
+function generateCommandsSection(command: CommandViewModel) {
   const commandNames = getCommandsNamesAndAlias(command.commands)
   if (commandNames.length === 0)
     return ''
@@ -86,7 +91,7 @@ function generateCommandsSection(command: ICommand) {
 ${padRight(command.name + ' <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
 }
 
-function getCommandsNamesAndAlias(commands: ICommand[] | undefined) {
+function getCommandsNamesAndAlias(commands: CommandViewModel[] | undefined) {
   const result: string[] = []
   if (commands) {
     commands.forEach(c => {
@@ -101,11 +106,11 @@ function getCommandsNamesAndAlias(commands: ICommand[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(_command: ICommand) {
+function generateArgumentsSection(_command: CommandViewModel) {
   return ''
 }
 
-function generateOptionsSection(command: ICommand) {
+function generateOptionsSection(command: CommandViewModel) {
   if (!command.options) {
     return ''
   }
@@ -141,7 +146,7 @@ function formatKeyValue(key, value) {
   return `[${value.alias ? '-' + value.alias + '|' : ''}--${key}]`
 }
 
-function generateAliasSection(command: ICommand) {
+function generateAliasSection(command: CommandViewModel) {
   if (!command.alias)
     return ''
   return `Alias:

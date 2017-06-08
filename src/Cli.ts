@@ -39,6 +39,7 @@ export class Cli {
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s)
       cmd.ui = ui
+      cmd.parent = this
       return cmd
     })
   }
@@ -53,15 +54,19 @@ export class Cli {
       this.showVersion()
     }
     else {
+      const l = args.verbose ?
+        logLevel.debug : args.silent ?
+          logLevel.none : logLevel.info
+      setLevel(l)
+
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
         this.ui.showHelp(this)
       }
+      else if (args.help) {
+        this.ui.showHelp(command)
+      }
       else {
-        const l = args.verbose ?
-          logLevel.debug : args.silent ?
-            logLevel.none : logLevel.info
-        setLevel(l)
         command.run(rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1))
       }
     }

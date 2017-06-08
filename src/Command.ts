@@ -36,8 +36,13 @@ export namespace Command {
     string?: StringOptions
   }
 }
-export interface Command extends CommandSpec {
+
+export interface CommandBase {
   name: string
+  parent?: CommandBase
+}
+
+export interface Command extends CommandBase, CommandSpec {
   options: Command.Options
   ui: UI
   run(this: Command, args): void

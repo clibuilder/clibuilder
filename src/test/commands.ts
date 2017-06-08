@@ -9,6 +9,7 @@ export const noopCommandSpec: CommandSpec = {
 
 export const echoCommandSpec: CommandSpec = {
   name: 'echo',
+  description: 'Echoing input arguments',
   run(args) {
     this.ui.info(...args)
   }

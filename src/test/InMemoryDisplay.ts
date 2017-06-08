@@ -41,6 +41,7 @@ export function createInMemoryDisplay(name: string): InMemoryDisplay {
 }
 
 export interface InMemoryDisplay extends Display {
+  id: string
   getErrorLogs(): string[][]
   getWarnLogs(): string[][]
   getInfoLogs(): string[][]
