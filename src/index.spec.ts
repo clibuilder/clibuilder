@@ -79,6 +79,25 @@ then the help message will be shown`,
     t.is(infos, noopHelpMessage)
   })
 
+test(`
+given cli with noop command
+when called with '--silent'
+then the help message is shwon
+`,
+  t => {
+    const display: InMemoryDisplay = t.context.display
+    const cli = create({
+      name: 'cmd',
+      version: '0.0.0',
+      commandSpecs: [commandSpecs.noopCommandSpec],
+      display
+    })
+
+    cli.parse(createArgv('--silent'))
+    const infos = generateDisplayedMessage(display.getInfoLogs())
+    t.is(infos, noopHelpMessage)
+  })
+
 test(`given cli with noop command
 when called with unknown command 'oh'
 then the help message will be shown`,

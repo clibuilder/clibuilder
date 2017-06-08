@@ -54,16 +54,20 @@ export class Cli {
       this.showVersion()
     }
     else {
-      const l = args.verbose ?
+      const level = args.verbose ?
         logLevel.debug : args.silent ?
           logLevel.none : logLevel.info
-      setLevel(l)
+      setLevel(level)
 
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
+        // no matter what, the help message will be shown
+        setLevel(logLevel.info)
         this.ui.showHelp(this)
       }
       else if (args.help) {
+        // no matter what, the help message will be shown
+        setLevel(logLevel.info)
         this.ui.showHelp(command)
       }
       else {
