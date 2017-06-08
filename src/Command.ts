@@ -15,7 +15,7 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
-  run?: (this: Command, args) => void
+  run?: (this: Command, argv: string[]) => void
 }
 
 export function createCommand(spec: CommandSpec): Command {
@@ -45,7 +45,7 @@ export interface CommandBase {
 export interface Command extends CommandBase, CommandSpec {
   options: Command.Options
   ui: UI
-  run(this: Command, args): void
+  run(this: Command, argv: string[]): void
 }
 
 export interface Argument {

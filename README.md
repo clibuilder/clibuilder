@@ -17,12 +17,13 @@ const cli = create('yourcli', '1.0.0', [commandA, commandB])
 cli.parse(process.argv)
 
 // commands.ts
-import { createCommandCommand, createLogger } from 'clibuilder'
+import { createCommand, parseArgv } from 'clibuilder'
 
 export const commandA = createCommand({
   name: 'echo',
-  run(argv) {
-    this.ui.info(...argv)
+  run(argv: string[]) {
+    const args = parseArgv(this, argv)
+    this.ui.info(args)
   }
 })
 

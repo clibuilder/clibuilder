@@ -248,3 +248,22 @@ Usage: cmd echo
   Echoing input arguments
 `)
   })
+
+test(`
+given cli with echo command
+when called with 'echo abc --some'
+then will echo 'abc --some'
+`,
+  t => {
+    const display: InMemoryDisplay = t.context.display
+    const cli = create({
+      name: 'cmd',
+      version: '0.0.0',
+      commandSpecs: [commandSpecs.echoCommandSpec],
+      display
+    })
+    cli.parse(createArgv('echo', 'abc', '--some'))
+    const infos = generateDisplayedMessage(display.getInfoLogs())
+    t.is(infos, 'echo abc --some')
+    console.log(infos)
+  })

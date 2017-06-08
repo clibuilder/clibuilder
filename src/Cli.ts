@@ -71,7 +71,8 @@ export class Cli {
         this.ui.showHelp(command)
       }
       else {
-        command.run(rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1))
+        const cmdArgs = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+        command.run(cmdArgs)
       }
     }
   }
