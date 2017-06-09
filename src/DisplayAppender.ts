@@ -1,4 +1,6 @@
-import { Appender, Logger } from 'aurelia-logging'
+import { Appender, Logger, addAppender } from 'aurelia-logging'
+
+import store from './store'
 
 export class DisplayAppender implements Appender {
   debug(_logger: Logger, ...rest: any[]): void {
@@ -13,4 +15,14 @@ export class DisplayAppender implements Appender {
   error(_logger: Logger, ...rest: any[]): void {
     console.error.apply(console, rest)
   }
+}
+
+export { Appender, Logger }
+
+export function setAppender(appender: Appender) {
+  if (store.isAppenderSet) {
+    throw new Error('Cannot set Appender twice')
+  }
+  addAppender(appender)
+  store.isAppenderSet = true
 }

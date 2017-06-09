@@ -1,7 +1,7 @@
 import test from 'ava'
 import merge = require('lodash.merge')
 
-import { create } from './index'
+import { create, setAppender, DisplayAppender } from './index'
 
 import * as commandSpecs from './test/commands'
 import { createArgv } from './test/util'
@@ -294,4 +294,14 @@ then will echo 'abc --some'
     cli.parse(createArgv('echo', 'abc', '--some'))
     const infos = generateDisplayedMessage(display.getInfoLogs())
     t.is(infos, 'echo abc --some')
+  })
+
+test(`
+given display appender is already set
+when set appender again
+then it will throw an error
+`,
+  t => {
+    setAppender(new DisplayAppender())
+    t.throws(() => setAppender(new DisplayAppender()))
   })

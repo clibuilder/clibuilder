@@ -3,7 +3,6 @@ import { CommandSpec } from './Command'
 import { createDefaultDisplay } from './UI'
 import { Display } from './interfaces'
 
-
 export interface Options {
   name: string,
   version: string,

@@ -17,16 +17,51 @@ const cli = create('yourcli', '1.0.0', [commandA, commandB])
 cli.parse(process.argv)
 
 // commands.ts
-import { createCommand, parseArgv } from 'clibuilder'
+import { parseArgv, CommandSpec } from 'clibuilder'
 
-export const commandA = createCommand({
+export const commandA: CommandSpec = {
   name: 'echo',
   run(argv: string[]) {
     const args = parseArgv(this, argv)
     this.ui.info(args)
   }
+}
+```
+
+You can override the display mechanism.
+
+```ts
+import { create, addAppender, Appender, Display } from 'clibuilder'
+
+const yourDisplay: Display = { ... }
+
+// You can override the display at cli level
+const cli = create({
+  name: 'yourcli',
+  version: '1.0.0',
+  commandSpecs: [],
+  display: yourDisplay
 })
 
+cli.parse(process.argv)
+
+// or your can override per command (or both)
+const cli = create({
+  name: 'yourcli',
+  version: '1.0.0',
+  commandSpecs: [{
+    name: 'somecommand',
+    ...,
+    display: someOtherDisplay
+  }],
+  display: yourDisplay
+})
+
+// you can also use a different display appender
+const yourOwnAppender: Appender = { ...}
+addAppender(yourOwnAppender)
+
+cli.parse(process.argv)
 ```
 
 ## Contribute

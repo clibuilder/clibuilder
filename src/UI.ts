@@ -1,8 +1,8 @@
-import { getLogger, addAppender } from 'aurelia-logging'
+import { getLogger } from 'aurelia-logging'
 import wordwrap = require('wordwrap')
 import padRight = require('pad-right')
 import { Command, CommandBase } from './Command'
-import { DisplayAppender } from './DisplayAppender'
+import { DisplayAppender, setAppender } from './DisplayAppender'
 import { Display } from './interfaces'
 
 const INDENT = 2
@@ -20,7 +20,7 @@ export interface CommandViewModel extends CommandBase {
 
 export function createDefaultDisplay(name: string) {
   if (!display) {
-    addAppender(new DisplayAppender())
+    setAppender(new DisplayAppender())
     display = getLogger(name)
   }
   return display
