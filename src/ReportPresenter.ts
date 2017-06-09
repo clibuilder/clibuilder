@@ -1,15 +1,14 @@
-import { getLogger } from 'aurelia-logging'
-import wordwrap = require('wordwrap')
 import padRight = require('pad-right')
+import wordwrap = require('wordwrap')
+
 import { Command, CommandBase } from './Command'
-import { DisplayAppender, setAppender } from './DisplayAppender'
-import { Display } from './interfaces'
+import { Display, ConsoleDisplay } from './Display'
+import { displayLevel, DisplayLevel } from './DisplayLevel'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
-let display: Display
 
 export interface CommandViewModel extends CommandBase {
   description?: string
@@ -18,33 +17,40 @@ export interface CommandViewModel extends CommandBase {
   options?: Command.Options
 }
 
-export function createDefaultDisplay(name: string) {
-  if (!display) {
-    setAppender(new DisplayAppender())
-    display = getLogger(name)
-  }
-  return display
+export interface ReportPresenter {
+  showHelp(command: CommandViewModel): void
+  info(...args: any[]): void
+  warn(...args: any[]): void
+  error(...args: any[]): void
+  debug(...args: any[]): void
 }
 
-export class UI {
-  constructor(private display: Display) {
-  }
+
+export class PlainReportPresenter implements ReportPresenter {
+  display: Display = new ConsoleDisplay()
 
   showHelp(command: CommandViewModel) {
+    // caller: UI.render(HelpView, HelpModel) <- app defined the View and Model. clibuilder provide a default View and Model for help and logs.
+    // react: HelpView.render(HelpModel) <- this render method can change depends on display.
+    // in HelpView: this.display.show(renderedResult)
     const msg = generateHelpMessage(command)
     this.display.info(msg)
   }
   info(...args: any[]) {
-    this.display.info(...args)
+    if (displayLevel >= DisplayLevel.Normal)
+      this.display.info(...args)
   }
   warn(...args: any[]) {
-    this.display.warn(...args)
+    if (displayLevel >= DisplayLevel.Normal)
+      this.display.warn(...args)
   }
   error(...args: any[]) {
-    this.display.error(...args)
+    if (displayLevel >= DisplayLevel.Normal)
+      this.display.error(...args)
   }
   debug(...args: any[]) {
-    this.display.debug(...args)
+    if (displayLevel >= DisplayLevel.Verbose)
+      this.display.debug(...args)
   }
 }
 

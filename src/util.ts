@@ -1,4 +1,18 @@
-import { Command } from './Command'
+import merge = require('lodash.merge')
+
+import { Command, CommandSpec } from './Command'
+
+export function createCommand(spec: CommandSpec): Command {
+  const result = merge({
+    run: () => { return }
+  }, spec)
+
+  if (result.commands) {
+    result.commands.forEach(c => c.parent = result)
+  }
+
+  return result
+}
 
 export function getCommand(nameOrAlias, commands: Command[]) {
   return commands.find(cmd => {

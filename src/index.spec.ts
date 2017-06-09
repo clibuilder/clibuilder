@@ -1,14 +1,14 @@
 import test from 'ava'
 import merge = require('lodash.merge')
 
-import { create, setAppender, DisplayAppender } from './index'
+import { Cli } from './index'
 
 import * as commandSpecs from './test/commands'
 import { createArgv } from './test/util'
-import { createInMemoryDisplay, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
+import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
-test.beforeEach(t => {
-  t.context.display = createInMemoryDisplay('bdd')
+test.beforeEach(() => {
+  Cli.ReportPresenterClass = InMemoryPresenter
 })
 
 const noopHelpMessage = `
@@ -30,17 +30,12 @@ test(`given cli with noop command
 when called with no argument
 then help will be shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv())
 
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
 
@@ -48,17 +43,12 @@ test(`given cli with noop command
 when called with '-help'
 then the help message will be shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('--help'))
 
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
 
@@ -66,17 +56,12 @@ test(`given cli with noop command
 when called with '-h'
 then the help message will be shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('-h'))
 
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
 
@@ -86,16 +71,11 @@ when called with '--silent'
 then the help message is shwon
 `,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('--silent'))
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
 
@@ -103,17 +83,12 @@ test(`given cli with noop command
 when called with unknown command 'oh'
 then the help message will be shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('oh'))
 
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
 
@@ -121,16 +96,11 @@ test(`given cli with noop command
 when called with '-v'
 then version will be shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.noopCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.noopCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('-v'))
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '0.0.0')
   })
 
@@ -138,111 +108,77 @@ test(`given cli with verbose command
 when called with 'verbose'
 then no message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.verboseCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('verbose'))
-    t.is(display.getDebugLogs().length, 0)
+    t.is(display.debugLogs.length, 0)
   })
 
 test(`given cli with verbose command
 when called with 'verbose --verbose'
 then the verbosed message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.verboseCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('verbose', '--verbose'))
-    t.is(display.getDebugLogs().length, 1)
+    t.is(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
 when called with alias 'vb --verbose'
 then the verbosed message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.verboseCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('vb', '--verbose'))
-    t.is(display.getDebugLogs().length, 1)
+    t.is(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
 when called with second alias 'detail --verbose'
 then the verbosed message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.verboseCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('detail', '--verbose'))
-    t.is(display.getDebugLogs().length, 1)
+    t.is(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
 when called with 'verbose -V'
 then the verbosed message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.verboseCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('verbose', '-V'))
-    t.is(display.getDebugLogs().length, 1)
+    t.is(display.debugLogs.length, 1)
   })
 
 test(`given cli with error command
 when called with 'error --silent'
 then no message is shown`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.errorCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.errorCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('error', '--silent'))
-    t.is(display.getErrorLogs().length, 0)
+    t.is(display.errorLogs.length, 0)
   })
 
 test(`given cli with echo command
 when called with 'echo -h'
 then the help message for each is shwon`,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.echoCommandSpec],
-      display
-    })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
+
     cli.parse(createArgv('echo', '-h'))
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, `
 Usage: cmd echo
 
@@ -250,27 +186,22 @@ Usage: cmd echo
 `)
   })
 
-
 test(`given cli with echo command
 and echo command has its own display
 when called with 'echo -h'
 then the help message for each is shwon on the echo command display
 and not on the main display`,
   t => {
-    const echoDisplay = createInMemoryDisplay('echo')
-    const eSpec = merge({ display: echoDisplay }, commandSpecs.echoCommandSpec)
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [eSpec],
-      display
-    })
+    const eSpec = merge({ ReportPresenterClass: InMemoryPresenter }, commandSpecs.echoCommandSpec)
+    const cli = new Cli('cmd', '0.0.0', [eSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
+    const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']
+
     cli.parse(createArgv('echo', '-h'))
-    const infos = generateDisplayedMessage(display.getInfoLogs())
+    const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '')
 
-    const eInfos = generateDisplayedMessage(echoDisplay.getInfoLogs())
+    const eInfos = generateDisplayedMessage(echoDisplay.infoLogs)
     t.is(eInfos, `
 Usage: cmd echo
 
@@ -284,24 +215,10 @@ when called with 'echo abc --some'
 then will echo 'abc --some'
 `,
   t => {
-    const display: InMemoryDisplay = t.context.display
-    const cli = create({
-      name: 'cmd',
-      version: '0.0.0',
-      commandSpecs: [commandSpecs.echoCommandSpec],
-      display
-    })
-    cli.parse(createArgv('echo', 'abc', '--some'))
-    const infos = generateDisplayedMessage(display.getInfoLogs())
-    t.is(infos, 'echo abc --some')
-  })
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoCommandSpec])
+    const display: InMemoryDisplay = (cli as any).ui.display
 
-test(`
-given display appender is already set
-when set appender again
-then it will throw an error
-`,
-  t => {
-    setAppender(new DisplayAppender())
-    t.throws(() => setAppender(new DisplayAppender()))
+    cli.parse(createArgv('echo', 'abc', '--some'))
+    const infos = generateDisplayedMessage(display.infoLogs)
+    t.is(infos, 'echo abc --some')
   })

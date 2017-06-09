@@ -9,11 +9,11 @@ Building CLI based on Command Pattern.
 
 ```ts
 // bin.ts
-import { create } from 'clibuilder'
+import { Cli } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
-const cli = create('yourcli', '1.0.0', [commandA, commandB])
+const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
 cli.parse(process.argv)
 
 // commands.ts
@@ -28,38 +28,29 @@ export const commandA: CommandSpec = {
 }
 ```
 
-You can override the display mechanism.
+You can override the display mechanism:
 
 ```ts
-import { create, addAppender, Appender, Display } from 'clibuilder'
+import { Cli, PlainReportPresenter, ReportPresenter } from 'clibuilder'
 
-const yourDisplay: Display = { ... }
+class YourPresenter extends PlainReportPresenter { ... }
+
+class AnotherPresenter implements ReportPresenter { ... }
 
 // You can override the display at cli level
-const cli = create({
-  name: 'yourcli',
-  version: '1.0.0',
-  commandSpecs: [],
-  display: yourDisplay
-})
+Cli.ReportPresenterClass = YourPresenter
+
+const cli = new Cli('yourcli', '1.0.0', [])
 
 cli.parse(process.argv)
 
 // or your can override per command (or both)
-const cli = create({
-  name: 'yourcli',
-  version: '1.0.0',
-  commandSpecs: [{
+const cli = new Cli('yourcli', '1.0.0', [{
     name: 'somecommand',
     ...,
-    display: someOtherDisplay
-  }],
-  display: yourDisplay
+    ReportPresenterClass: AnotherPresenter
+  }]
 })
-
-// you can also use a different display appender
-const yourOwnAppender: Appender = { ...}
-addAppender(yourOwnAppender)
 
 cli.parse(process.argv)
 ```

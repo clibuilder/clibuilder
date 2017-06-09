@@ -1,8 +1,4 @@
-import merge = require('lodash.merge')
-
-import { Display } from './interfaces'
-
-import { UI } from './UI'
+import { ReportPresenter, CommandViewModel } from './ReportPresenter'
 
 export interface CommandSpec {
   /**
@@ -18,19 +14,7 @@ export interface CommandSpec {
   }
   alias?: string[]
   run?: (this: Command, argv: string[]) => void,
-  display?: Display
-}
-
-export function createCommand(spec: CommandSpec): Command {
-  const result = merge({
-    run: () => { return }
-  }, spec)
-
-  if (result.commands) {
-    result.commands.forEach(c => c.parent = result)
-  }
-
-  return result
+  ReportPresenterClass?: new (command: CommandViewModel) => ReportPresenter
 }
 
 export namespace Command {
@@ -47,7 +31,7 @@ export interface CommandBase {
 
 export interface Command extends CommandBase, CommandSpec {
   options: Command.Options
-  ui: UI
+  ui: ReportPresenter
   run(this: Command, argv: string[]): void
 }
 

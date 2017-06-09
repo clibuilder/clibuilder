@@ -1,4 +1,5 @@
 import * as minimist from 'minimist'
+
 import { CommandSpec } from './Command'
 
 export class ParseError extends Error {

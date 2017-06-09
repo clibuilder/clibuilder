@@ -1,22 +1,11 @@
-import { setLevel, logLevel, Logger } from 'aurelia-logging'
-
-import { Command, CommandSpec, createCommand } from './Command'
-import { Display } from './interfaces'
-
-import { getCommand } from './util'
+import { Command, CommandSpec } from './Command'
+import { setDisplayLevel, DisplayLevel } from './DisplayLevel'
 import { parseArgv } from './parseArgv'
-import { UI } from './UI'
-
-export interface Config {
-  ui: Logger
-}
-
-export interface ICommand {
-  name: string
-  process(argv, rawArgv): void
-}
+import { ReportPresenter, PlainReportPresenter, CommandViewModel } from './ReportPresenter'
+import { createCommand, getCommand } from './util'
 
 export class Cli {
+  static ReportPresenterClass: new (command: CommandViewModel) => ReportPresenter = PlainReportPresenter
   options = {
     boolean: {
       'help': {
@@ -37,12 +26,12 @@ export class Cli {
     }
   }
   commands: Command[]
-  ui: UI
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], display: Display) {
-    this.ui = new UI(display)
+  private ui: ReportPresenter
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
+    this.ui = new Cli.ReportPresenterClass(this)
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s)
-      cmd.ui = s.display ? new UI(s.display) : this.ui
+      cmd.ui = s.ReportPresenterClass ? new s.ReportPresenterClass(cmd) : this.ui
       cmd.parent = this
       return cmd
     })
@@ -53,25 +42,25 @@ export class Cli {
     this.process(args, rawArgv.slice(1))
   }
 
-  process(args, rawArgv) {
+  private process(args, rawArgv) {
     if (args.version) {
       this.showVersion()
     }
     else {
       const level = args.verbose ?
-        logLevel.debug : args.silent ?
-          logLevel.none : logLevel.info
-      setLevel(level)
+        DisplayLevel.Verbose : args.silent ?
+          DisplayLevel.Silent : DisplayLevel.Normal
+      setDisplayLevel(level)
 
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
         // no matter what, the help message will be shown
-        setLevel(logLevel.info)
+        setDisplayLevel(DisplayLevel.Normal)
         this.ui.showHelp(this)
       }
       else if (args.help) {
         // no matter what, the help message will be shown
-        setLevel(logLevel.info)
+        setDisplayLevel(DisplayLevel.Normal)
         command.ui.showHelp(command)
       }
       else {
