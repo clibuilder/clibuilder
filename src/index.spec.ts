@@ -1,4 +1,5 @@
 import test from 'ava'
+import merge = require('lodash.merge')
 
 import { create } from './index'
 
@@ -230,7 +231,7 @@ then no message is shown`,
   })
 
 test(`given cli with echo command
-when called with 'echo -h
+when called with 'echo -h'
 then the help message for each is shwon`,
   t => {
     const display: InMemoryDisplay = t.context.display
@@ -243,6 +244,34 @@ then the help message for each is shwon`,
     cli.parse(createArgv('echo', '-h'))
     const infos = generateDisplayedMessage(display.getInfoLogs())
     t.is(infos, `
+Usage: cmd echo
+
+  Echoing input arguments
+`)
+  })
+
+
+test(`given cli with echo command
+and echo command has its own display
+when called with 'echo -h'
+then the help message for each is shwon on the echo command display
+and not on the main display`,
+  t => {
+    const echoDisplay = createInMemoryDisplay('echo')
+    const eSpec = merge({ display: echoDisplay }, commandSpecs.echoCommandSpec)
+    const display: InMemoryDisplay = t.context.display
+    const cli = create({
+      name: 'cmd',
+      version: '0.0.0',
+      commandSpecs: [eSpec],
+      display
+    })
+    cli.parse(createArgv('echo', '-h'))
+    const infos = generateDisplayedMessage(display.getInfoLogs())
+    t.is(infos, '')
+
+    const eInfos = generateDisplayedMessage(echoDisplay.getInfoLogs())
+    t.is(eInfos, `
 Usage: cmd echo
 
   Echoing input arguments

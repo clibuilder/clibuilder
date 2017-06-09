@@ -1,6 +1,8 @@
 import { setLevel, logLevel, Logger } from 'aurelia-logging'
 
 import { Command, CommandSpec, createCommand } from './Command'
+import { Display } from './interfaces'
+
 import { getCommand } from './util'
 import { parseArgv } from './parseArgv'
 import { UI } from './UI'
@@ -35,10 +37,12 @@ export class Cli {
     }
   }
   commands: Command[]
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], public ui: UI) {
+  ui: UI
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], display: Display) {
+    this.ui = new UI(display)
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s)
-      cmd.ui = ui
+      cmd.ui = s.display ? new UI(s.display) : this.ui
       cmd.parent = this
       return cmd
     })
@@ -68,7 +72,7 @@ export class Cli {
       else if (args.help) {
         // no matter what, the help message will be shown
         setLevel(logLevel.info)
-        this.ui.showHelp(command)
+        command.ui.showHelp(command)
       }
       else {
         const cmdArgs = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)

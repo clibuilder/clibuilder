@@ -1,5 +1,7 @@
 import merge = require('lodash.merge')
 
+import { Display } from './interfaces'
+
 import { UI } from './UI'
 
 export interface CommandSpec {
@@ -15,7 +17,8 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
-  run?: (this: Command, argv: string[]) => void
+  run?: (this: Command, argv: string[]) => void,
+  display?: Display
 }
 
 export function createCommand(spec: CommandSpec): Command {

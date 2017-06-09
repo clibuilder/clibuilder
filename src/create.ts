@@ -1,6 +1,6 @@
 import { Cli } from './Cli'
 import { CommandSpec } from './Command'
-import { UI, createDefaultDisplay } from './UI'
+import { createDefaultDisplay } from './UI'
 import { Display } from './interfaces'
 
 
@@ -19,5 +19,5 @@ export interface ICli {
 
 export function create({ name, version, commandSpecs, display }: Options): ICli {
   display = display || createDefaultDisplay(name)
-  return new Cli(name, version, commandSpecs, new UI(display))
+  return new Cli(name, version, commandSpecs, display)
 }
