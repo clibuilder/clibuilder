@@ -8,7 +8,7 @@ import { createArgv } from './test/util'
 import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
 test.beforeEach(() => {
-  Cli.ReportPresenterClass = InMemoryPresenter
+  Cli.PresenterClass = InMemoryPresenter
 })
 
 const noopHelpMessage = `
@@ -189,10 +189,10 @@ Usage: cmd echo
 test(`given cli with echo command
 and echo command has its own display
 when called with 'echo -h'
-then the help message for each is shwon on the echo command display
+then the help message for each is shown on the echo command display
 and not on the main display`,
   t => {
-    const eSpec = merge({ ReportPresenterClass: InMemoryPresenter }, commandSpecs.echoCommandSpec)
+    const eSpec = merge({ PresenterClass: InMemoryPresenter }, commandSpecs.echoCommandSpec)
     const cli = new Cli('cmd', '0.0.0', [eSpec])
     const display: InMemoryDisplay = (cli as any).ui.display
     const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']

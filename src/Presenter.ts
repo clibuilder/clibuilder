@@ -1,60 +1,73 @@
 import padRight = require('pad-right')
 import wordwrap = require('wordwrap')
 
+import { Cli } from './Cli'
+
 import { Command, CommandBase } from './Command'
-import { Display, ConsoleDisplay } from './Display'
-import { displayLevel, DisplayLevel } from './DisplayLevel'
+import { Display, DisplayLevel, ConsoleDisplay } from './Display'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
-export interface CommandViewModel extends CommandBase {
+export interface CommandModel extends CommandBase {
   description?: string
-  commands?: CommandViewModel[]
+  commands?: CommandModel[]
   alias?: string[]
   options?: Command.Options
 }
 
-export interface ReportPresenter {
-  showHelp(command: CommandViewModel): void
+export interface LogPresenter {
   info(...args: any[]): void
   warn(...args: any[]): void
   error(...args: any[]): void
   debug(...args: any[]): void
 }
 
+export interface HelpPresenter {
+  showHelp(command: CommandModel): void
+}
+export interface VersionPresenter {
+  showVersion(): void
+}
 
-export class PlainReportPresenter implements ReportPresenter {
+export interface Presenter extends LogPresenter, HelpPresenter, VersionPresenter {
+}
+
+export class PlainPresenter implements Presenter {
   display: Display = new ConsoleDisplay()
 
-  showHelp(command: CommandViewModel) {
-    // caller: UI.render(HelpView, HelpModel) <- app defined the View and Model. clibuilder provide a default View and Model for help and logs.
-    // react: HelpView.render(HelpModel) <- this render method can change depends on display.
-    // in HelpView: this.display.show(renderedResult)
+  constructor(public cli: Cli) {
+  }
+
+  showVersion() {
+    this.display.info(this.cli.version)
+  }
+
+  showHelp(command: CommandModel) {
     const msg = generateHelpMessage(command)
     this.display.info(msg)
   }
   info(...args: any[]) {
-    if (displayLevel >= DisplayLevel.Normal)
+    if (this.cli.displayLevel >= DisplayLevel.Normal)
       this.display.info(...args)
   }
   warn(...args: any[]) {
-    if (displayLevel >= DisplayLevel.Normal)
+    if (this.cli.displayLevel >= DisplayLevel.Normal)
       this.display.warn(...args)
   }
   error(...args: any[]) {
-    if (displayLevel >= DisplayLevel.Normal)
+    if (this.cli.displayLevel >= DisplayLevel.Normal)
       this.display.error(...args)
   }
   debug(...args: any[]) {
-    if (displayLevel >= DisplayLevel.Verbose)
+    if (this.cli.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
   }
 }
 
-function generateHelpMessage(command: CommandViewModel) {
+function generateHelpMessage(command: CommandModel) {
   const helpSections = [
     generateUsageSection(command),
     generateDescriptionSection(command),
@@ -68,16 +81,16 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(command: CommandViewModel) {
+function generateUsageSection(command: CommandModel) {
   const nameChain = getCommandNameChain(command)
   return `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
 }
 
-function generateDescriptionSection(command: CommandViewModel) {
+function generateDescriptionSection(command: CommandModel) {
   return command.description ? '  ' + command.description : ''
 }
 
-function getCommandNameChain(command: CommandViewModel) {
+function getCommandNameChain(command: CommandModel) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
@@ -86,7 +99,7 @@ function getCommandNameChain(command: CommandViewModel) {
   return commands.map(c => c.name)
 }
 
-function generateCommandsSection(command: CommandViewModel) {
+function generateCommandsSection(command: CommandModel) {
   const commandNames = getCommandsNamesAndAlias(command.commands)
   if (commandNames.length === 0)
     return ''
@@ -97,7 +110,7 @@ function generateCommandsSection(command: CommandViewModel) {
 ${padRight(command.name + ' <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
 }
 
-function getCommandsNamesAndAlias(commands: CommandViewModel[] | undefined) {
+function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
   const result: string[] = []
   if (commands) {
     commands.forEach(c => {
@@ -112,11 +125,11 @@ function getCommandsNamesAndAlias(commands: CommandViewModel[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(_command: CommandViewModel) {
+function generateArgumentsSection(_command: CommandModel) {
   return ''
 }
 
-function generateOptionsSection(command: CommandViewModel) {
+function generateOptionsSection(command: CommandModel) {
   if (!command.options) {
     return ''
   }
@@ -152,7 +165,7 @@ function formatKeyValue(key, value) {
   return `[${value.alias ? '-' + value.alias + '|' : ''}--${key}]`
 }
 
-function generateAliasSection(command: CommandViewModel) {
+function generateAliasSection(command: CommandModel) {
   if (!command.alias)
     return ''
   return `Alias:

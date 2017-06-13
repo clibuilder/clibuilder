@@ -1,4 +1,4 @@
-import { Display, PlainReportPresenter } from '../index'
+import { Display, PlainPresenter } from '../index'
 
 export function generateDisplayedMessage(entries: string[][]) {
   return entries.map(e => e.join(' ')).join('\n')
@@ -22,6 +22,6 @@ export class InMemoryDisplay implements Display {
     this.errorLogs.push(args)
   }
 }
-export class InMemoryPresenter extends PlainReportPresenter {
+export class InMemoryPresenter extends PlainPresenter {
   display = new InMemoryDisplay()
 }

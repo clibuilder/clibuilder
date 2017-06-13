@@ -1,11 +1,11 @@
 import { Command, CommandSpec } from './Command'
-import { setDisplayLevel, DisplayLevel } from './DisplayLevel'
+import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
-import { ReportPresenter, PlainReportPresenter, CommandViewModel } from './ReportPresenter'
+import { Presenter, PlainPresenter } from './Presenter'
 import { createCommand, getCommand } from './util'
 
 export class Cli {
-  static ReportPresenterClass: new (command: CommandViewModel) => ReportPresenter = PlainReportPresenter
+  static PresenterClass: new (cli: Cli) => Presenter = PlainPresenter
   options = {
     boolean: {
       'help': {
@@ -26,12 +26,13 @@ export class Cli {
     }
   }
   commands: Command[]
-  private ui: ReportPresenter
+  displayLevel: DisplayLevel
+  private ui: Presenter
   constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
-    this.ui = new Cli.ReportPresenterClass(this)
+    this.ui = new Cli.PresenterClass(this)
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s)
-      cmd.ui = s.ReportPresenterClass ? new s.ReportPresenterClass(cmd) : this.ui
+      cmd.ui = s.PresenterClass ? new s.PresenterClass(this) : this.ui
       cmd.parent = this
       return cmd
     })
@@ -43,24 +44,23 @@ export class Cli {
   }
 
   private process(args, rawArgv) {
+    this.displayLevel = args.verbose ?
+      DisplayLevel.Verbose : args.silent ?
+        DisplayLevel.Silent : DisplayLevel.Normal
+
     if (args.version) {
-      this.showVersion()
+      this.ui.showVersion()
     }
     else {
-      const level = args.verbose ?
-        DisplayLevel.Verbose : args.silent ?
-          DisplayLevel.Silent : DisplayLevel.Normal
-      setDisplayLevel(level)
-
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
         // no matter what, the help message will be shown
-        setDisplayLevel(DisplayLevel.Normal)
+        this.displayLevel = DisplayLevel.Normal
         this.ui.showHelp(this)
       }
       else if (args.help) {
         // no matter what, the help message will be shown
-        setDisplayLevel(DisplayLevel.Normal)
+        this.displayLevel = DisplayLevel.Normal
         command.ui.showHelp(command)
       }
       else {
@@ -68,8 +68,5 @@ export class Cli {
         command.run(cmdArgs)
       }
     }
-  }
-  showVersion() {
-    this.ui.info(this.version)
   }
 }

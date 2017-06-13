@@ -1,4 +1,6 @@
-import { ReportPresenter, CommandViewModel } from './ReportPresenter'
+import { Cli } from './Cli'
+
+import { Presenter } from './Presenter'
 
 export interface CommandSpec {
   /**
@@ -14,7 +16,7 @@ export interface CommandSpec {
   }
   alias?: string[]
   run?: (this: Command, argv: string[]) => void,
-  ReportPresenterClass?: new (command: CommandViewModel) => ReportPresenter
+  PresenterClass?: new (cli: Cli) => Presenter
 }
 
 export namespace Command {
@@ -31,7 +33,7 @@ export interface CommandBase {
 
 export interface Command extends CommandBase, CommandSpec {
   options: Command.Options
-  ui: ReportPresenter
+  ui: Presenter
   run(this: Command, argv: string[]): void
 }
 

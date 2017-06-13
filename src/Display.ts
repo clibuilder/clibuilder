@@ -5,6 +5,12 @@ export interface Display {
   error(...args: any[]): void
 }
 
+export enum DisplayLevel {
+  Silent = 0,
+  Normal = 10,
+  Verbose = 20
+}
+
 export class ConsoleDisplay implements Display {
   debug(...args: any[]): void {
     console.log.apply(console, args)
