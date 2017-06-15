@@ -1,8 +1,6 @@
 import padRight = require('pad-right')
 import wordwrap = require('wordwrap')
 
-import { Cli } from './Cli'
-
 import { Command, CommandBase } from './Command'
 import { Display, DisplayLevel, ConsoleDisplay } from './Display'
 
@@ -19,6 +17,7 @@ export interface CommandModel extends CommandBase {
 }
 
 export interface LogPresenter {
+  setDisplayLevel(displayLevel: DisplayLevel): void
   info(...args: any[]): void
   warn(...args: any[]): void
   error(...args: any[]): void
@@ -29,41 +28,60 @@ export interface HelpPresenter {
   showHelp(command: CommandModel): void
 }
 export interface VersionPresenter {
-  showVersion(): void
+  showVersion(version: string): void
 }
 
 export interface Presenter extends LogPresenter, HelpPresenter, VersionPresenter {
+
+}
+
+export interface PresenterOption {
+  name: string
 }
 
 export class PlainPresenter implements Presenter {
   display: Display = new ConsoleDisplay()
-
-  constructor(public cli: Cli) {
+  name: string
+  displayLevel: DisplayLevel
+  constructor(options: PresenterOption) {
+    this.name = options.name
   }
 
-  showVersion() {
-    this.display.info(this.cli.version)
+  showVersion(version) {
+    this.display.info(version)
   }
 
   showHelp(command: CommandModel) {
     const msg = generateHelpMessage(command)
     this.display.info(msg)
   }
+  setDisplayLevel(displayLevel: DisplayLevel) {
+    this.displayLevel = displayLevel
+  }
   info(...args: any[]) {
-    if (this.cli.displayLevel >= DisplayLevel.Normal)
+    if (this.displayLevel >= DisplayLevel.Normal)
       this.display.info(...args)
   }
   warn(...args: any[]) {
-    if (this.cli.displayLevel >= DisplayLevel.Normal)
+    if (this.displayLevel >= DisplayLevel.Normal)
       this.display.warn(...args)
   }
   error(...args: any[]) {
-    if (this.cli.displayLevel >= DisplayLevel.Normal)
+    if (this.displayLevel >= DisplayLevel.Normal)
       this.display.error(...args)
   }
   debug(...args: any[]) {
-    if (this.cli.displayLevel >= DisplayLevel.Verbose)
+    if (this.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
+  }
+}
+
+export class PresenterFactory {
+  createCliPresenter(options: PresenterOption): Presenter {
+    return new PlainPresenter(options)
+  }
+  createCommandPresenter(options: PresenterOption): Presenter {
+    return new PlainPresenter(options)
   }
 }
 

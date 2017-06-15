@@ -1,11 +1,11 @@
 import { Command, CommandSpec } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
-import { Presenter, PlainPresenter } from './Presenter'
+import { Presenter, PresenterFactory } from './Presenter'
 import { createCommand, getCommand } from './util'
 
 export class Cli {
-  static PresenterClass: new (cli: Cli) => Presenter = PlainPresenter
+  static PresenterFactory: PresenterFactory = new PresenterFactory()
   options = {
     boolean: {
       'help': {
@@ -29,10 +29,10 @@ export class Cli {
   displayLevel: DisplayLevel
   private ui: Presenter
   constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
-    this.ui = new Cli.PresenterClass(this)
+    this.ui = Cli.PresenterFactory.createCliPresenter(this)
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s)
-      cmd.ui = s.PresenterClass ? new s.PresenterClass(this) : this.ui
+      cmd.ui = Cli.PresenterFactory.createCommandPresenter(cmd)
       cmd.parent = this
       return cmd
     })
@@ -44,26 +44,22 @@ export class Cli {
   }
 
   private process(args, rawArgv) {
-    this.displayLevel = args.verbose ?
-      DisplayLevel.Verbose : args.silent ?
-        DisplayLevel.Silent : DisplayLevel.Normal
-
     if (args.version) {
-      this.ui.showVersion()
+      this.ui.showVersion(this.version)
     }
     else {
       const command = getCommand(args._.shift(), this.commands)
       if (!command) {
-        // no matter what, the help message will be shown
-        this.displayLevel = DisplayLevel.Normal
         this.ui.showHelp(this)
       }
       else if (args.help) {
-        // no matter what, the help message will be shown
-        this.displayLevel = DisplayLevel.Normal
         command.ui.showHelp(command)
       }
       else {
+        const displayLevel = args.verbose ?
+          DisplayLevel.Verbose : args.silent ?
+            DisplayLevel.Silent : DisplayLevel.Normal
+        command.ui.setDisplayLevel(displayLevel)
         const cmdArgs = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
         command.run(cmdArgs)
       }

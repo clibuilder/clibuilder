@@ -8,7 +8,10 @@ import { createArgv } from './test/util'
 import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
 test.beforeEach(() => {
-  Cli.PresenterClass = InMemoryPresenter
+  Cli.PresenterFactory = {
+    createCliPresenter(options) { return new InMemoryPresenter(options) },
+    createCommandPresenter(options) { return new InMemoryPresenter(options) }
+  }
 })
 
 const noopHelpMessage = `
@@ -109,7 +112,7 @@ when called with 'verbose'
 then no message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('verbose'))
     t.is(display.debugLogs.length, 0)
@@ -120,7 +123,7 @@ when called with 'verbose --verbose'
 then the verbosed message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('verbose', '--verbose'))
     t.is(display.debugLogs.length, 1)
@@ -131,7 +134,7 @@ when called with alias 'vb --verbose'
 then the verbosed message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('vb', '--verbose'))
     t.is(display.debugLogs.length, 1)
@@ -142,7 +145,7 @@ when called with second alias 'detail --verbose'
 then the verbosed message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('detail', '--verbose'))
     t.is(display.debugLogs.length, 1)
@@ -153,7 +156,7 @@ when called with 'verbose -V'
 then the verbosed message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.verboseCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('verbose', '-V'))
     t.is(display.debugLogs.length, 1)
@@ -164,7 +167,7 @@ when called with 'error --silent'
 then no message is shown`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.errorCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('error', '--silent'))
     t.is(display.errorLogs.length, 0)
@@ -175,7 +178,7 @@ when called with 'echo -h'
 then the help message for each is shwon`,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
@@ -216,7 +219,7 @@ then will echo 'abc --some'
 `,
   t => {
     const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoCommandSpec])
-    const display: InMemoryDisplay = (cli as any).ui.display
+    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('echo', 'abc', '--some'))
     const infos = generateDisplayedMessage(display.infoLogs)
