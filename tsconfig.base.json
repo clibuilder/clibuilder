@@ -16,7 +16,6 @@
     "strictNullChecks": true
   },
   "files": [
-    "src/index.ts",
-    "typings/index.d.ts"
+    "src/index.ts"
   ]
 }
