@@ -1,6 +1,4 @@
-import { Cli } from './Cli'
-
-import { Presenter } from './Presenter'
+import { LogPresenter, HelpPresenter } from './Presenter'
 
 export interface CommandSpec {
   /**
@@ -15,8 +13,7 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
-  run?: (this: Command, argv: string[]) => void,
-  PresenterClass?: new (cli: Cli) => Presenter
+  run?: (this: Command, argv: string[]) => void
 }
 
 export namespace Command {
@@ -33,7 +30,7 @@ export interface CommandBase {
 
 export interface Command extends CommandBase, CommandSpec {
   options: Command.Options
-  ui: Presenter
+  ui: LogPresenter & HelpPresenter
   run(this: Command, argv: string[]): void
 }
 

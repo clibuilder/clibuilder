@@ -31,15 +31,12 @@ export interface VersionPresenter {
   showVersion(version: string): void
 }
 
-export interface Presenter extends LogPresenter, HelpPresenter, VersionPresenter {
-
-}
 
 export interface PresenterOption {
   name: string
 }
 
-export class PlainPresenter implements Presenter {
+export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter {
   display: Display = new ConsoleDisplay()
   name: string
   displayLevel: DisplayLevel
@@ -77,10 +74,10 @@ export class PlainPresenter implements Presenter {
 }
 
 export class PresenterFactory {
-  createCliPresenter(options: PresenterOption): Presenter {
+  createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter {
     return new PlainPresenter(options)
   }
-  createCommandPresenter(options: PresenterOption): Presenter {
+  createCommandPresenter(options: PresenterOption): LogPresenter & HelpPresenter {
     return new PlainPresenter(options)
   }
 }

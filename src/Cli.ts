@@ -1,7 +1,7 @@
 import { Command, CommandSpec } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
-import { Presenter, PresenterFactory } from './Presenter'
+import { PresenterFactory, LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { createCommand, getCommand } from './util'
 
 export class Cli {
@@ -27,7 +27,7 @@ export class Cli {
   }
   commands: Command[]
   displayLevel: DisplayLevel
-  private ui: Presenter
+  private ui: LogPresenter & HelpPresenter & VersionPresenter
   constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
     this.ui = Cli.PresenterFactory.createCliPresenter(this)
     this.commands = commandSpecs.map(s => {
