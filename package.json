@@ -17,7 +17,7 @@
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/minimist && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json --type-check \"src/**/*.ts\"",
-    "prepare": "typings i && npm run build",
+    "prepare": "npm run build",
     "postpublish": "git push",
     "preversion": "git pull && npm run verify",
     "verify": "npm run lint && npm run coverage && npm run dependency-check",
@@ -86,13 +86,13 @@
   "devDependencies": {
     "@types/jest": "^20.0.0",
     "@types/node": "^7.0.29",
+    "@types/wordwrap": "github:types/wordwrap",
     "ava": "^0.19.1",
     "dependency-check": "^2.8.0",
     "nyc": "^11.0.2",
     "rimraf": "^2.6.1",
     "tslint": "^5.4.3",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.3.4",
-    "typings": "^2.1.1"
+    "typescript": "^2.3.4"
   }
 }
