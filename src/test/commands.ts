@@ -1,4 +1,4 @@
-import { CommandSpec } from '../Command'
+import { CommandSpec, parseArgv } from '../index'
 
 export const noopCommandSpec: CommandSpec = {
   name: 'noop',
@@ -36,3 +36,21 @@ export const errorCommandSpec: CommandSpec = {
     this.ui.error('error...')
   }
 }
+
+export const echoNameOptionCommandSpec = {
+  name: 'echoNameOption',
+  alias: ['eno'],
+  description: 'Echo the input "name" option',
+  options: {
+    string: {
+      name: {
+        default: 'abc',
+        description: 'Name option to be echoed'
+      }
+    }
+  },
+  run(argv) {
+    const args = parseArgv(this, argv)
+    this.ui.info(args.name)
+  }
+} as CommandSpec

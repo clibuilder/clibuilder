@@ -225,3 +225,29 @@ then will echo 'abc --some'
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'echo abc --some')
   })
+
+test(`
+given cli with echoNameOption command
+when called with 'eno --name=abc'
+then will each 'abc'`,
+  t => {
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoNameOptionCommandSpec])
+    const display = (cli.commands[0].ui as any).display as InMemoryDisplay
+
+    cli.parse(createArgv('eno', '--name=abc'))
+    const infos = generateDisplayedMessage(display.infoLogs)
+    t.is(infos, 'abc')
+  })
+
+test(`
+given cli with echoNameOption command
+when called with 'eno --name'
+then will each 'abc'`,
+  t => {
+    const cli = new Cli('cmd', '0.0.0', [commandSpecs.echoNameOptionCommandSpec])
+    const display = (cli.commands[0].ui as any).display as InMemoryDisplay
+
+    cli.parse(createArgv('eno'))
+    const infos = generateDisplayedMessage(display.infoLogs)
+    t.is(infos, 'abc')
+  })
