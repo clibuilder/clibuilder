@@ -83,3 +83,37 @@ test('with boolean options', t => {
   actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
 })
+
+test('fill default for boolean option', t => {
+  const cmd = createCommand({
+    name: 'a',
+    options: {
+      boolean: {
+        x: {
+          description: 'xx',
+          default: true
+        }
+      }
+    }
+  })
+  const argv = ['a']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [], x: true })
+})
+
+test('fill default for string option', t => {
+  const cmd = createCommand({
+    name: 'a',
+    options: {
+      string: {
+        x: {
+          description: 'xx',
+          default: 'abc'
+        }
+      }
+    }
+  })
+  const argv = ['a']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [], x: 'abc' })
+})

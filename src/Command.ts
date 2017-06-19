@@ -51,6 +51,6 @@ export interface StringOptions {
   [optionName: string]: {
     description: string
     alias?: string[]
-    default?: boolean
+    default?: string
   }
 }
