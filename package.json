@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@types/jest": "^19.2.4",
-    "@types/node": "^8.0.0",
+    "@types/node": "^8.0.1",
     "@types/wordwrap": "github:types/wordwrap",
     "ava": "^0.19.1",
     "dependency-check": "^2.8.0",
