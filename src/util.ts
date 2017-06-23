@@ -2,9 +2,10 @@ import merge = require('lodash.merge')
 
 import { Command, CommandSpec } from './Command'
 
-export function createCommand(spec: CommandSpec): Command {
+export function createCommand(spec: CommandSpec, { cwd }): Command {
   const result = merge({
-    run: () => { return }
+    run: () => { return },
+    cwd
   }, spec)
 
   if (result.commands) {

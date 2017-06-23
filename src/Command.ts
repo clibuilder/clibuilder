@@ -29,6 +29,7 @@ export interface CommandBase {
 }
 
 export interface Command extends CommandBase, CommandSpec {
+  cwd: string
   options: Command.Options
   ui: LogPresenter & HelpPresenter
   run(this: Command, argv: string[]): void

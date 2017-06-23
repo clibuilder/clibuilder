@@ -6,6 +6,7 @@ import { createCommand, getCommand } from './util'
 
 export class Cli {
   static PresenterFactory: PresenterFactory = new PresenterFactory()
+  cwd: string
   options = {
     boolean: {
       'help': {
@@ -28,10 +29,11 @@ export class Cli {
   commands: Command[]
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context = { cwd: process.cwd() }) {
+    const cwd = this.cwd = context.cwd
     this.ui = Cli.PresenterFactory.createCliPresenter(this)
     this.commands = commandSpecs.map(s => {
-      const cmd = createCommand(s)
+      const cmd = createCommand(s, { cwd })
       cmd.ui = Cli.PresenterFactory.createCommandPresenter(cmd)
       cmd.parent = this
       return cmd
