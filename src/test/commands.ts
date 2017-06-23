@@ -54,3 +54,13 @@ export const echoNameOptionCommandSpec = {
     this.ui.info(args.name)
   }
 } as CommandSpec
+
+export const asyncCommandSpec = {
+  name: 'async',
+  description: 'async command',
+  async run() {
+    await new Promise(r => {
+      setImmediate(r)
+    })
+  }
+} as CommandSpec

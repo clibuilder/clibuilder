@@ -4,8 +4,13 @@ import { parseArgv } from './parseArgv'
 import { PresenterFactory, LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { createCommand, getCommand } from './util'
 
+export interface CliContext {
+  cwd: string
+  presenterFactory: PresenterFactory
+}
+
 export class Cli {
-  static PresenterFactory: PresenterFactory = new PresenterFactory()
+  cwd: string
   options = {
     boolean: {
       'help': {
@@ -28,11 +33,14 @@ export class Cli {
   commands: Command[]
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[]) {
-    this.ui = Cli.PresenterFactory.createCliPresenter(this)
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<CliContext> = {}) {
+    const cwd = context.cwd || process.cwd()
+    const presenterFactory = context.presenterFactory || new PresenterFactory()
+
+    this.ui = presenterFactory.createCliPresenter(this)
     this.commands = commandSpecs.map(s => {
-      const cmd = createCommand(s)
-      cmd.ui = Cli.PresenterFactory.createCommandPresenter(cmd)
+      const cmd = createCommand(s, { cwd })
+      cmd.ui = presenterFactory.createCommandPresenter(cmd)
       cmd.parent = this
       return cmd
     })
@@ -40,7 +48,7 @@ export class Cli {
 
   parse(rawArgv: string[]) {
     const args = parseArgv(this, rawArgv.slice(1))
-    this.process(args, rawArgv.slice(1))
+    return this.process(args, rawArgv.slice(1))
   }
 
   private process(args, rawArgv) {
@@ -61,7 +69,7 @@ export class Cli {
             DisplayLevel.Silent : DisplayLevel.Normal
         command.ui.setDisplayLevel(displayLevel)
         const cmdArgs = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
-        command.run(cmdArgs)
+        return command.run(cmdArgs)
       }
     }
   }
