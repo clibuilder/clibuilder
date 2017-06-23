@@ -1,19 +1,10 @@
 import test from 'ava'
 import merge = require('lodash.merge')
 
-import { Cli } from './index'
-
 import * as commandSpecs from './test/commands'
-import { createArgv } from './test/util'
+import { createArgv, createFakeCli } from './test/util'
 import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
-function createFakeCli(...commandSpecs) {
-  const presenterFactory = {
-    createCliPresenter(options) { return new InMemoryPresenter(options) },
-    createCommandPresenter(options) { return new InMemoryPresenter(options) }
-  }
-  return new Cli('cmd', '0.0.0', commandSpecs, { presenterFactory })
-}
 
 const noopHelpMessage = `
 Usage: cmd <command>
