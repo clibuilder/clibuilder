@@ -85,6 +85,7 @@
   },
   "devDependencies": {
     "@types/jest": "^19.2.4",
+    "@types/lodash.merge": "^4.6.2",
     "@types/node": "^8.0.1",
     "@types/wordwrap": "github:types/wordwrap",
     "ava": "^0.19.1",

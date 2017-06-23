@@ -12,7 +12,7 @@ export function createCommand(spec: CommandSpec, { cwd }): Command {
     result.commands.forEach(c => c.parent = result)
   }
 
-  return result
+  return result as any
 }
 
 export function getCommand(nameOrAlias, commands: Command[]) {

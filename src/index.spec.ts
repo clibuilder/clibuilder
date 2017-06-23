@@ -243,3 +243,13 @@ then will each 'abc'`,
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'abc')
   })
+
+test(`
+  given cli with async comand
+  when called with 'async'
+  then can await on parse`,
+  async t => {
+    const cli = createFakeCli(commandSpecs.asyncCommandSpec)
+    await cli.parse(createArgv('async'))
+    t.pass()
+  })
