@@ -4,8 +4,12 @@ import { parseArgv } from './parseArgv'
 import { PresenterFactory, LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { createCommand, getCommand } from './util'
 
+export interface CliContext {
+  cwd: string
+  presenterFactory: PresenterFactory
+}
+
 export class Cli {
-  static PresenterFactory: PresenterFactory = new PresenterFactory()
   cwd: string
   options = {
     boolean: {
@@ -29,12 +33,14 @@ export class Cli {
   commands: Command[]
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context = { cwd: process.cwd() }) {
-    const cwd = this.cwd = context.cwd
-    this.ui = Cli.PresenterFactory.createCliPresenter(this)
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<CliContext> = {}) {
+    const cwd = context.cwd || process.cwd()
+    const presenterFactory = context.presenterFactory || new PresenterFactory()
+
+    this.ui = presenterFactory.createCliPresenter(this)
     this.commands = commandSpecs.map(s => {
       const cmd = createCommand(s, { cwd })
-      cmd.ui = Cli.PresenterFactory.createCommandPresenter(cmd)
+      cmd.ui = presenterFactory.createCommandPresenter(cmd)
       cmd.parent = this
       return cmd
     })
