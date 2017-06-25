@@ -39,7 +39,7 @@ export interface PresenterOption {
 export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter {
   display: Display = new ConsoleDisplay()
   name: string
-  displayLevel: DisplayLevel
+  displayLevel: DisplayLevel = DisplayLevel.Normal
   constructor(options: PresenterOption) {
     this.name = options.name
   }
