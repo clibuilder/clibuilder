@@ -1,7 +1,8 @@
 import { Command, CommandSpec } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
-import { PresenterFactory, LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
+import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
+import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
 
 export interface CliContext {
