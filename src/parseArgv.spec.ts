@@ -117,3 +117,94 @@ test('fill default for string option', t => {
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], x: 'abc' })
 })
+
+test('zero or more args should accept 0 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'zero-or-more',
+        multiple: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = []
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [] })
+})
+
+
+test('zero or more args should accept 1 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'zero-or-more',
+        multiple: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = ['a', 'b']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: ['b'] })
+})
+
+test('zero or more args should accept 2 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'zero-or-more',
+        multiple: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = ['a', 'b', 'c']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: ['b', 'c'] })
+})
+
+test('one or more args should not accept 0 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'one-or-more',
+        multiple: true,
+        required: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = ['cli']
+  t.throws(() => parseArgv(cmd, argv))
+})
+test('one or more args should not accept 1 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'one-or-more',
+        multiple: true,
+        required: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = ['cli', 'a']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: ['a'] })
+})
+test('one or more args should not accept 2 args', t => {
+  const cmd = createCommand({
+    name: 'args',
+    arguments: [
+      {
+        name: 'one-or-more',
+        multiple: true,
+        required: true
+      }
+    ]
+  }, { cwd: '' })
+  const argv = ['cli', 'a', 'b']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: ['a', 'b'] })
+})

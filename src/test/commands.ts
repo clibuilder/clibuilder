@@ -1,4 +1,4 @@
-import { CommandSpec, parseArgv } from '../index'
+import { CommandSpec } from '../index'
 
 export const noopCommandSpec: CommandSpec = {
   name: 'noop',
@@ -9,8 +9,13 @@ export const noopCommandSpec: CommandSpec = {
 
 export const echoCommandSpec: CommandSpec = {
   name: 'echo',
+  arguments: [{
+    name: 'args',
+    description: 'any argument(s)',
+    multiple: true
+  }],
   description: 'Echoing input arguments',
-  run(argv) {
+  run(_args, argv) {
     this.ui.info(...argv)
   }
 }
@@ -49,8 +54,7 @@ export const echoNameOptionCommandSpec = {
       }
     }
   },
-  run(argv) {
-    const args = parseArgv(this, argv)
+  run(args) {
     this.ui.info(args.name)
   }
 } as CommandSpec
@@ -63,4 +67,19 @@ export const asyncCommandSpec = {
       setImmediate(r)
     })
   }
+} as CommandSpec
+
+export const argCommandSpec = {
+  name: 'arg',
+  arguments: [
+    {
+      name: 'some-arg',
+      description: 'Some Required Arguments',
+      required: true
+    },
+    {
+      name: 'opt-arg',
+      description: 'Some Optional Arguments'
+    }
+  ]
 } as CommandSpec

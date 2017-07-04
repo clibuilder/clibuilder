@@ -58,6 +58,7 @@ export class Cli {
     }
     else {
       const command = getCommand(args._.shift(), this.commands)
+
       if (!command) {
         this.ui.showHelp(this)
       }
@@ -65,12 +66,23 @@ export class Cli {
         command.ui.showHelp(command)
       }
       else {
+        const cmdArgv = rawArgv.slice(2).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+
+        let cmdArgs
+        try {
+          cmdArgs = parseArgv(command, cmdArgv)
+        }
+        catch (e) {
+          command.ui.error(e.message)
+          command.ui.showHelp(command)
+          return
+        }
+
         const displayLevel = args.verbose ?
           DisplayLevel.Verbose : args.silent ?
             DisplayLevel.Silent : DisplayLevel.Normal
         command.ui.setDisplayLevel(displayLevel)
-        const cmdArgs = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
-        return command.run(cmdArgs)
+        return command.run(cmdArgs, cmdArgv)
       }
     }
   }

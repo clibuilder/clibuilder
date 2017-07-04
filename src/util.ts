@@ -17,8 +17,12 @@ export function createCommand(spec: CommandSpec, { cwd }): Command {
 
 export function getCommand(nameOrAlias, commands: Command[]) {
   return commands.find(cmd => {
-    return cmd.name === nameOrAlias ||
+    const match = cmd.name === nameOrAlias ||
       (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)
+    if (!match && cmd.commands) {
+      return getCommand(nameOrAlias, cmd.commands)
+    }
+    return match
   })
 }
 

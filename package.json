@@ -84,9 +84,8 @@
     "wordwrap": "^1.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^19.2.4",
     "@types/lodash.merge": "^4.6.2",
-    "@types/node": "^8.0.1",
+    "@types/node": "^8.0.7",
     "@types/wordwrap": "github:types/wordwrap",
     "ava": "^0.20.0",
     "dependency-check": "^2.8.0",
@@ -94,6 +93,6 @@
     "rimraf": "^2.6.1",
     "tslint": "^5.4.3",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.3.4"
+    "typescript": "^2.4.1"
   }
 }

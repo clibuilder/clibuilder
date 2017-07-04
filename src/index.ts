@@ -1,7 +1,6 @@
 export * from './Cli'
 export * from './Command'
 export * from './Display'
-export * from './parseArgv'
 export * from './PlainPresenter'
 export * from './Presenter'
 export * from './PresenterFactory'

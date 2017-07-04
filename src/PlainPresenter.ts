@@ -105,8 +105,26 @@ function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(_command: CommandModel) {
-  return ''
+function generateArgumentsSection(command: CommandModel) {
+  if (!command.arguments) {
+    return ''
+  }
+
+  let message = 'Arguments:\n'
+  let entries: string[][] = []
+  let maxWidth = 0
+  command.arguments.forEach(a => {
+    const argStr = a.required ? `<${a.name}>` : `[${a.name}]`
+    maxWidth = Math.max(maxWidth, argStr.length)
+    entries.push([argStr, a.description || ''])
+  })
+
+  const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxWidth + RIGHT_PADDING)
+
+  if (entries.length > 0) {
+    message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
+  }
+  return message
 }
 
 function generateOptionsSection(command: CommandModel) {
