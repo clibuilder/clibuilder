@@ -223,13 +223,13 @@ then will echo 'abc'
 
     cli.parse(createArgv('echo', 'abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.is(infos, 'abc')
+    t.is(infos, 'echo abc')
   })
 
 test(`
 given cli with echoNameOption command
 when called with 'eno --name=abc'
-then will each 'abc'`,
+then will echo 'abc'`,
   t => {
     const cli = createFakeCli(commandSpecs.echoNameOptionCommandSpec)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
@@ -274,4 +274,18 @@ then show report missing argument`,
 
     const actual = generateDisplayedMessage(display.errorLogs)
     t.is(actual, 'Missing argument(s)')
+  })
+
+test(`
+Given cli with arg command
+when called with 'arg x'
+then echo`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.argCommandSpec])
+    const display = spyDisplay(cli, 'arg')
+
+    await cli.parse(createArgv('arg', 'x'))
+
+    const actual = generateDisplayedMessage(display.infoLogs)
+    t.is(actual, 'x')
   })

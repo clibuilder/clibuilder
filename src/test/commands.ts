@@ -81,5 +81,8 @@ export const argCommandSpec = {
       name: 'opt-arg',
       description: 'Some Optional Arguments'
     }
-  ]
+  ],
+  run(args) {
+    this.ui.info(...args._)
+  }
 } as CommandSpec

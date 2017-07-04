@@ -66,7 +66,7 @@ export class Cli {
         command.ui.showHelp(command)
       }
       else {
-        const cmdArgv = rawArgv.slice(2).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+        const cmdArgv = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
 
         let cmdArgs
         try {
