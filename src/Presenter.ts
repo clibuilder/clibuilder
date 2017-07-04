@@ -1,9 +1,10 @@
-import { Command, CommandBase } from './Command'
+import { Command, CommandBase, Argument } from './Command'
 import { DisplayLevel } from './Display'
 
 export interface CommandModel extends CommandBase {
   description?: string
   commands?: CommandModel[]
+  arguments?: Argument[],
   alias?: string[]
   options?: Command.Options
 }

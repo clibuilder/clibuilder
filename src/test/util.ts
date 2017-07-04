@@ -1,5 +1,7 @@
 import { Cli } from '../Cli'
-import { InMemoryPresenter } from './InMemoryDisplay'
+
+import { CompositeDisplay } from './CompositeDisplay'
+import { InMemoryPresenter, InMemoryDisplay } from './InMemoryDisplay'
 
 export function createArgv(...args) {
   args.unshift('node', 'cli')
@@ -12,4 +14,17 @@ export function createFakeCli(...commandSpecs) {
     createCommandPresenter(options) { return new InMemoryPresenter(options) }
   }
   return new Cli('cmd', '0.0.0', commandSpecs, { presenterFactory })
+}
+
+export function spyDisplay(cli, cmdName?: string) {
+  const memDisplay = new InMemoryDisplay()
+  if (cmdName) {
+    const cmd = cli.commands.find(c => c.name === cmdName)
+    cmd.ui.display = new CompositeDisplay(cmd.ui.display, memDisplay)
+  }
+  else {
+    cli.ui.display = new CompositeDisplay(cli.ui.display, memDisplay)
+  }
+
+  return memDisplay
 }

@@ -1,14 +1,29 @@
 import * as minimist from 'minimist'
 
-import { CommandSpec } from './Command'
+import { BooleanOptions, StringOptions, Argument } from './Command'
 
-export class ParseError extends Error {
+export class InvalidOptionError extends Error {
   constructor(public name, public type, public value) {
-    super()
+    super(`Option '${name}' expects ${type} but received ${value}`)
   }
 }
 
-export function parseArgv(command: CommandSpec, rawArgv: string[]) {
+export class UnknownOptionError extends Error {
+  constructor(public name) {
+    super(`Unknown option '${name}'`)
+  }
+}
+
+export interface Parseable {
+  arguments?: Argument[]
+  commands?: Parseable[]
+  options?: {
+    boolean?: BooleanOptions
+    string?: StringOptions
+  }
+}
+
+export function parseArgv(command: Parseable, rawArgv: string[]) {
   const options = toMinimistOption(command.options)
   const args = minimist(rawArgv, options)
   args._.shift()
@@ -49,19 +64,28 @@ function toMinimistOption(options) {
   }
 }
 
-function validateArguments(command, args) {
+function validateArguments(command: Parseable, args) {
   if (command.arguments) {
     const total = command.arguments.length
-    const required = command.arguments.reduce((p, a) => {
-      return a.required ? p + 1 : p
-    }, 0)
-    if (args._.length > total || args._.length < required) {
-      throw new Error('Argument count mismatch')
+    let required = 0
+    let multiple = false
+    command.arguments.forEach(a => {
+      if (a.required)
+        required++
+      if (a.multiple)
+        multiple = true
+    })
+
+    if (args._.length > total && !multiple) {
+      throw new Error('Too many arguments')
+    }
+    if (args._.length < required) {
+      throw new Error('Missing argument(s)')
     }
   }
   else {
     if (args._.length > 0) {
-      throw new Error('Extra arguments')
+      throw new Error('Too many arguments')
     }
   }
 }
@@ -76,24 +100,19 @@ function validateOptions(command, args) {
     map = { ...map, ...extractTypes(command.options.string, 'string') }
   }
 
-  const errors: any = []
   Object.keys(args).forEach(name => {
     if (map[name]) {
       if (map[name] === 'boolean' && typeof args[name] !== 'boolean') {
-        errors.push(new ParseError(name, 'boolean', args[name]))
+        throw new InvalidOptionError(name, 'boolean', args[name])
       }
       if (map[name] === 'string' && typeof args[name] !== 'string') {
-        errors.push(new ParseError(name, 'string', args[name]))
+        throw new InvalidOptionError(name, 'string', args[name])
       }
     }
     else {
-      errors.push(new ParseError(name, 'extra', args[name]))
+      throw new UnknownOptionError(name)
     }
   })
-
-  if (errors.length !== 0) {
-    throw new Error('Extra options')
-  }
 }
 
 function extractTypes(sourceMap, valueType) {

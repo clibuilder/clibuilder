@@ -1,8 +1,10 @@
 import test from 'ava'
 import merge = require('lodash.merge')
 
+import { Cli } from './index'
+
 import * as commandSpecs from './test/commands'
-import { createArgv, createFakeCli } from './test/util'
+import { createArgv, createFakeCli, spyDisplay } from './test/util'
 import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
 
 
@@ -178,6 +180,9 @@ then the help message for each is shwon`,
 Usage: cmd echo
 
   Echoing input arguments
+
+Arguments:
+  [args]                 any argument(s)
 `)
   })
 
@@ -201,21 +206,24 @@ and not on the main display`,
 Usage: cmd echo
 
   Echoing input arguments
+
+Arguments:
+  [args]                 any argument(s)
 `)
   })
 
 test(`
 given cli with echo command
-when called with 'echo abc --some'
-then will echo 'abc --some'
+when called with 'echo abc'
+then will echo 'abc'
 `,
   t => {
-    const cli = createFakeCli(commandSpecs.echoCommandSpec)
-    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.echoCommandSpec])
+    const display = spyDisplay(cli, 'echo')
 
-    cli.parse(createArgv('echo', 'abc', '--some'))
+    cli.parse(createArgv('echo', 'abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.is(infos, 'echo abc --some')
+    t.is(infos, 'abc')
   })
 
 test(`
@@ -252,4 +260,18 @@ test(`
     const cli = createFakeCli(commandSpecs.asyncCommandSpec)
     await cli.parse(createArgv('async'))
     t.pass()
+  })
+
+test(`
+Given cli with arg command
+when called with 'arg'
+then show report missing argument`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.argCommandSpec])
+    const display = spyDisplay(cli, 'arg')
+
+    await cli.parse(createArgv('arg'))
+
+    const actual = generateDisplayedMessage(display.errorLogs)
+    t.is(actual, 'Missing argument(s)')
   })

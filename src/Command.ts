@@ -13,7 +13,7 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
-  run?: (this: Command, argv: string[]) => void
+  run?: (this: Command, args: { _: string[], [name: string]: any }, argv: string[]) => void
 }
 
 export namespace Command {
@@ -32,12 +32,14 @@ export interface Command extends CommandBase, CommandSpec {
   cwd: string
   options: Command.Options
   ui: LogPresenter & HelpPresenter
-  run(this: Command, argv: string[]): Promise<void>
+  run(this: Command, args: { _: string[], [name: string]: any }, argv: string[]): Promise<void>
 }
 
 export interface Argument {
   name: string,
+  description?: string
   required?: boolean
+  multiple?: boolean
 }
 
 export interface BooleanOptions {
