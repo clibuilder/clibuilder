@@ -1,7 +1,10 @@
 # CLI Builder
 
+[![unstable][unstable-image]][unstable-url]
 [![NPM version][npm-image]][npm-url]
-[![Travis status][travis-image]][travis-url]
+[![NPM downloads][downloads-image]][downloads-url]
+[![Build status][travis-image]][travis-url]
+[![Coverage Status][coveralls-image]][coveralls-url]
 
 Building CLI based on Command Pattern.
 
@@ -19,13 +22,14 @@ cli.parse(process.argv)
 // commands.ts
 import { parseArgv, CommandSpec } from 'clibuilder'
 
-export const commandA: CommandSpec = {
+export const commandA = {
   name: 'echo',
-  run(argv: string[]) {
-    const args = parseArgv(this, argv)
-    this.ui.info(args)
+  // `args` is the parsed args.
+  // `argv` is the raw argv.
+  run(args, argv) {
+    this.ui.info(argv)
   }
-}
+} as CommandSpec
 ```
 
 You can override the display mechanism:
@@ -33,24 +37,14 @@ You can override the display mechanism:
 ```ts
 import { Cli, PlainReportPresenter, ReportPresenter } from 'clibuilder'
 
-class YourPresenter extends PlainReportPresenter { ... }
+class YourPresenter extends PlainPresenter { ... }
 
-class AnotherPresenter implements ReportPresenter { ... }
+const presenterFactory = {
+  createCliPresenter(options) { return new YourPresenter(options) },
+  createCommandPresenter(options) { return new YourPresenter(options) }
+}
 
-// You can override the display at cli level
-Cli.ReportPresenterClass = YourPresenter
-
-const cli = new Cli('yourcli', '1.0.0', [])
-
-cli.parse(process.argv)
-
-// or your can override per command (or both)
-const cli = new Cli('yourcli', '1.0.0', [{
-    name: 'somecommand',
-    ...,
-    ReportPresenterClass: AnotherPresenter
-  }]
-})
+const cli = new Cli('yourcli', '1.0.0', [], { presenterFactory })
 
 cli.parse(process.argv)
 ```
@@ -66,7 +60,14 @@ npm run watch
 
 ```
 
+
+[unstable-image]: http://badges.github.io/stability-badges/dist/unstable.svg
+[unstable-url]: http://github.com/badges/stability-badges
 [npm-image]: https://img.shields.io/npm/v/clibuilder.svg?style=flat
 [npm-url]: https://npmjs.org/package/clibuilder
-[travis-image]: https://travis-ci.org/unional/clibuilder.svg?branch=master
+[downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
+[downloads-url]: https://npmjs.org/package/clibuilder
+[travis-image]: https://img.shields.io/travis/unional/clibuilder.svg?style=flat
 [travis-url]: https://travis-ci.org/unional/clibuilder
+[coveralls-image]: https://coveralls.io/repos/github/unional/clibuilder/badge.svg
+[coveralls-url]: https://coveralls.io/github/unional/clibuilder
