@@ -279,7 +279,7 @@ then show report missing argument`,
 test(`
 Given cli with arg command
 when called with 'arg x'
-then echo`,
+then echo x`,
   async t => {
     const cli = new Cli('cli', '0.0.0', [commandSpecs.argCommandSpec])
     const display = spyDisplay(cli, 'arg')
@@ -288,4 +288,16 @@ then echo`,
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'x')
+  })
+
+test(`
+Given cli with noop command
+When setting 'cli.cwd' after the cli is created
+Then the 'noopCommand.cwd' should be updated too`,
+  t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.noopCommandSpec])
+
+    cli.cwd = `fake`
+
+    t.is(cli.commands[0].cwd, 'fake')
   })

@@ -11,7 +11,14 @@ export interface CliContext {
 }
 
 export class Cli {
-  cwd: string
+  get cwd() {
+    return this._cwd
+  }
+  set cwd(value) {
+    this._cwd = value
+    this.commands.forEach(c => c.cwd = value)
+  }
+  _cwd: string
   options = {
     boolean: {
       'help': {
