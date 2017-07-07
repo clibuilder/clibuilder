@@ -20,7 +20,7 @@ const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
 cli.parse(process.argv)
 
 // commands.ts
-import { parseArgv, CommandSpec } from 'clibuilder'
+import { CommandSpec } from 'clibuilder'
 
 export const commandA = {
   name: 'echo',
