@@ -10,3 +10,5 @@ node_js:
 
 before_script:
   - npm run verify
+after_script:
+  - npm install coveralls && npm run coveralls
