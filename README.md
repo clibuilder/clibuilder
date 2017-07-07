@@ -8,6 +8,8 @@
 
 Building CLI based on Command Pattern.
 
+[`clibuilder-testutil`](https://github.com/unional/clibuilder-testutil) contains test utilities to help you test against your application.
+
 ## Usage
 
 ```ts
@@ -35,7 +37,7 @@ export const commandA = {
 You can override the display mechanism:
 
 ```ts
-import { Cli, PlainReportPresenter, ReportPresenter } from 'clibuilder'
+import { Cli, PlainPresenter } from 'clibuilder'
 
 class YourPresenter extends PlainPresenter { ... }
 
