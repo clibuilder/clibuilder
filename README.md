@@ -26,7 +26,7 @@ import { CommandSpec } from 'clibuilder'
 
 export const commandA = {
   name: 'echo',
-  // `args` is the parsed args.
+  // `args` is the parsed minimist args.
   // `argv` is the raw argv.
   run(args, argv) {
     this.ui.info(argv)
