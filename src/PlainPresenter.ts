@@ -139,7 +139,8 @@ function generateOptionsSection(command: CommandModel) {
       const value = command.options.string[key]
       const optionStr = `${formatKeyValue(key, value)}=value`
       maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-      entries.push([optionStr, value.description])
+      const description = value.default ? `${value.description} (default '${value.default}')` : value.description
+      entries.push([optionStr, description])
     }
   }
   if (command.options.boolean) {
@@ -147,7 +148,8 @@ function generateOptionsSection(command: CommandModel) {
       const value = command.options.boolean[key]
       const optionStr = `${formatKeyValue(key, value)}`
       maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-      entries.push([optionStr, value.description])
+      const description = value.default ? `${value.description} (default true)` : value.description
+      entries.push([optionStr, description])
     }
   }
 
