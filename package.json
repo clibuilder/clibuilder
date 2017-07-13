@@ -87,7 +87,7 @@
     "@types/lodash.merge": "^4.6.2",
     "@types/node": "^8.0.7",
     "@types/wordwrap": "github:types/wordwrap",
-    "ava": "^0.20.0",
+    "ava": "^0.21.0",
     "dependency-check": "^2.8.0",
     "nyc": "^11.0.2",
     "rimraf": "^2.6.1",
