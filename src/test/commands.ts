@@ -117,7 +117,7 @@ export const groupOptionsCommand = {
         description: 'b'
       }
     },
-    groups: {
+    group: {
       'x': ['a', 'b']
     }
   },

@@ -24,17 +24,17 @@ export interface Parseable {
   }
 }
 
-export function parseArgv(command: Parseable, rawArgv: string[]) {
-  const options = toMinimistOption(command.options)
+export function parseArgv(parsable: Parseable, rawArgv: string[]) {
+  const options = toMinimistOption(parsable.options)
   const args = minimist(rawArgv, options)
   args._.shift()
-  if (command.commands) {
+  if (parsable.commands) {
     return args
   }
 
-  validateArguments(command, args)
-  validateOptions(command, args)
-  handleGroupedOptions(command, args, rawArgv)
+  validateArguments(parsable, args)
+  validateOptions(parsable, args)
+  handleGroupedOptions(parsable, args, rawArgv)
 
   return args
 }
@@ -135,6 +135,7 @@ function extractTypes(sourceMap, valueType) {
 
 function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, rawArgv: string[]) {
   const noDefaults = minimist(rawArgv)
+
   if (!(parsable.options && parsable.options.group))
     return
 
@@ -148,9 +149,7 @@ function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, ra
 
     if (usedOptions.length > 0) {
       group.forEach(g => {
-        // console.log(g, usedOptions, usedOptions.indexOf(g))
         if (usedOptions.indexOf(g) === -1) {
-          // console.log(g)
           const namesAndAlias = findOptionNameAndAlias(parsable, g)
           namesAndAlias.forEach(n => {
             if (args[n] === true) {
