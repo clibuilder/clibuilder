@@ -208,3 +208,62 @@ test('one or more args should not accept 2 args', t => {
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: ['a', 'b'] })
 })
+
+test(`group option should not set default if passed in`, t => {
+  const cmd = createCommand({
+    name: 'opts',
+    options: {
+      boolean: {
+        a: {
+          description: 'a',
+          default: true
+        },
+        b: {
+          description: 'b'
+        }
+      },
+      string: {
+        c: {
+          default: 'c',
+          description: 'c'
+        }
+      },
+      group: {
+        x: ['a', 'b', 'c']
+      }
+    }
+  }, { cwd: '' })
+  const argv = ['cli', '-b']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [], a: false, b: true })
+})
+
+test(`group option should not set default if alias of one of the options is passed in`, t => {
+  const cmd = createCommand({
+    name: 'opts',
+    options: {
+      boolean: {
+        a111: {
+          description: 'a',
+          default: true
+        },
+        b111: {
+          alias: ['b'],
+          description: 'b'
+        }
+      },
+      string: {
+        c111: {
+          default: 'c',
+          description: 'c'
+        }
+      },
+      group: {
+        x: ['a111', 'b111', 'c111']
+      }
+    }
+  }, { cwd: '' })
+  const argv = ['cli', '-b']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [], a111: false, b: true, b111: true })
+})

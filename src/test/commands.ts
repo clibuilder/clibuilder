@@ -86,3 +86,43 @@ export const argCommandSpec = {
     this.ui.info(...args._)
   }
 } as CommandSpec
+
+export const optionsCommand = {
+  name: 'opt',
+  options: {
+    boolean: {
+      'a': {
+        description: 'a',
+        default: true
+      },
+      'b': {
+        description: 'b'
+      }
+    }
+  },
+  run(args) {
+    this.ui.info(`a: ${args.a}, b: ${args.b}`)
+  }
+} as CommandSpec
+
+export const groupOptionsCommand = {
+  name: 'opt',
+  options: {
+    boolean: {
+      'a': {
+        description: 'a',
+        default: true
+      },
+      'b': {
+        description: 'b'
+      }
+    },
+    group: {
+      'x': ['a', 'b']
+    }
+  },
+  run(args) {
+    this.ui.info(`a: ${args.a}, b: ${args.b}`)
+  }
+} as CommandSpec
+

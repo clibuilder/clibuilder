@@ -301,3 +301,60 @@ Then the 'noopCommand.cwd' should be updated too`,
 
     t.is(cli.commands[0].cwd, 'fake')
   })
+
+test(`
+Given cli with opt command
+When called with 'opt'
+Then options 'a' is true and 'b' is false`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const display = spyDisplay(cli, 'opt')
+
+    await cli.parse(createArgv('opt'))
+
+    const actual = generateDisplayedMessage(display.infoLogs)
+    t.is(actual, 'a: true, b: false')
+  })
+
+test(`
+Given cli with opt command
+When called with 'opt a'
+Then options 'a' is true and 'b' is false`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const display = spyDisplay(cli, 'opt')
+
+    await cli.parse(createArgv('opt', '-a'))
+
+    const actual = generateDisplayedMessage(display.infoLogs)
+    t.is(actual, 'a: true, b: false')
+  })
+
+test(`
+Given cli with opt command
+When called with 'opt b'
+Then options 'a' is true and 'b' is true`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const display = spyDisplay(cli, 'opt')
+
+    await cli.parse(createArgv('opt', '-b'))
+
+    const actual = generateDisplayedMessage(display.infoLogs)
+    t.is(actual, 'a: true, b: true')
+  })
+
+
+test(`
+Given cli with groupOption command
+When called with 'opt b'
+Then options 'a' is false and 'b' is true`,
+  async t => {
+    const cli = new Cli('cli', '0.0.0', [commandSpecs.groupOptionsCommand])
+    const display = spyDisplay(cli, 'opt')
+
+    await cli.parse(createArgv('opt', '-b'))
+
+    const actual = generateDisplayedMessage(display.infoLogs)
+    t.is(actual, 'a: false, b: true')
+  })
