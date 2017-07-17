@@ -20,6 +20,7 @@ export interface Parseable {
   options?: {
     boolean?: BooleanOptions
     string?: StringOptions
+    group?: { [name: string]: string[] }
   }
 }
 
@@ -33,6 +34,7 @@ export function parseArgv(command: Parseable, rawArgv: string[]) {
 
   validateArguments(command, args)
   validateOptions(command, args)
+  handleGroupedOptions(command, args, rawArgv)
 
   return args
 }
@@ -129,4 +131,46 @@ function extractTypes(sourceMap, valueType) {
     })
   }
   return map
+}
+
+function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, rawArgv: string[]) {
+  const noDefaults = minimist(rawArgv)
+  if (!(parsable.options && parsable.options.group))
+    return
+
+  const keys = Object.keys(parsable.options.group)
+  keys.forEach(k => {
+    const group = parsable.options!.group![k]
+    const usedOptions = group.filter(g => {
+      const namesAndAlias = findOptionNameAndAlias(parsable, g)
+      return namesAndAlias.find(n => noDefaults[n])
+    })
+
+    if (usedOptions.length > 0) {
+      group.forEach(g => {
+        // console.log(g, usedOptions, usedOptions.indexOf(g))
+        if (usedOptions.indexOf(g) === -1) {
+          // console.log(g)
+          const namesAndAlias = findOptionNameAndAlias(parsable, g)
+          namesAndAlias.forEach(n => {
+            if (args[n] === true) {
+              args[n] = false
+            }
+            else if (args[n]) {
+              delete args[n]
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+function findOptionNameAndAlias({ options }: Pick<Parseable, 'options'>, name: string) {
+  const result = [name]
+  const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name])
+  if (o && o.alias) {
+    result.push(...o.alias)
+  }
+  return result
 }
