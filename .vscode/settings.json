@@ -7,5 +7,10 @@
       ],
       "url": "http://json.schemastore.org/tsconfig"
     }
-  ]
+  ],
+  "search.exclude": {
+    "dist-es5": true,
+    "**/node_modules": true,
+    "**/bower_components": true
+  }
 }

@@ -20,7 +20,6 @@ export interface Parseable {
   options?: {
     boolean?: BooleanOptions
     string?: StringOptions
-    group?: { [name: string]: string[] }
   }
 }
 
@@ -134,14 +133,40 @@ function extractTypes(sourceMap, valueType) {
 }
 
 function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, rawArgv: string[]) {
-  const noDefaults = minimist(rawArgv)
-
-  if (!(parsable.options && parsable.options.group))
+  if (!parsable.options)
     return
 
-  const keys = Object.keys(parsable.options.group)
+  const noDefaults = minimist(rawArgv)
+  const groups = getAllGroups(parsable.options)
+  function getAllGroups(opts) {
+    const groups = {}
+    if (opts.boolean) {
+      for (let key in opts.boolean) {
+        if (opts.boolean[key].group) {
+          const id = opts.boolean[key].group
+          if (groups[id])
+            groups[id].push(key)
+          else
+            groups[id] = [key]
+        }
+      }
+    }
+    if (opts.string) {
+      for (let key in opts.string) {
+        if (opts.string[key].group) {
+          const id = opts.string[key].group
+          if (groups[id])
+            groups[id].push(key)
+          else
+            groups[id] = [key]
+        }
+      }
+    }
+    return groups
+  }
+  const keys = Object.keys(groups)
   keys.forEach(k => {
-    const group = parsable.options!.group![k]
+    const group = groups[k]
     const usedOptions = group.filter(g => {
       const namesAndAlias = findOptionNameAndAlias(parsable, g)
       return namesAndAlias.find(n => noDefaults[n])

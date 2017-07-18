@@ -111,14 +111,13 @@ export const groupOptionsCommand = {
     boolean: {
       'a': {
         description: 'a',
-        default: true
+        default: true,
+        group: 'x'
       },
       'b': {
-        description: 'b'
+        description: 'b',
+        group: 'x'
       }
-    },
-    group: {
-      'x': ['a', 'b']
     }
   },
   run(args) {

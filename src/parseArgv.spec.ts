@@ -216,20 +216,20 @@ test(`group option should not set default if passed in`, t => {
       boolean: {
         a: {
           description: 'a',
-          default: true
+          default: true,
+          group: 'x'
         },
         b: {
-          description: 'b'
+          description: 'b',
+          group: 'x'
         }
       },
       string: {
         c: {
           default: 'c',
-          description: 'c'
+          description: 'c',
+          group: 'x'
         }
-      },
-      group: {
-        x: ['a', 'b', 'c']
       }
     }
   }, { cwd: '' })
@@ -245,21 +245,21 @@ test(`group option should not set default if alias of one of the options is pass
       boolean: {
         a111: {
           description: 'a',
-          default: true
+          default: true,
+          group: 'x'
         },
         b111: {
           alias: ['b'],
-          description: 'b'
+          description: 'b',
+          group: 'x'
         }
       },
       string: {
         c111: {
           default: 'c',
-          description: 'c'
+          description: 'c',
+          group: 'x'
         }
-      },
-      group: {
-        x: ['a111', 'b111', 'c111']
       }
     }
   }, { cwd: '' })

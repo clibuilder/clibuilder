@@ -10,8 +10,7 @@ export interface CommandSpec {
   description?: string
   options?: {
     boolean?: BooleanOptions,
-    string?: StringOptions,
-    group?: { [name: string]: string[] }
+    string?: StringOptions
   }
   alias?: string[]
   run?: (this: Command, args: { _: string[], [name: string]: any }, argv: string[]) => void
@@ -20,13 +19,7 @@ export interface CommandSpec {
 export namespace Command {
   export interface Options {
     boolean?: BooleanOptions,
-    string?: StringOptions,
-    /**
-     * An option group this option belongs to.
-     * If the option belongs to a group and one of the options has be set,
-     * the other options will not have their default value.
-     */
-    group?: { [name: string]: string[] }
+    string?: StringOptions
   }
 }
 
@@ -53,7 +46,13 @@ export interface BooleanOptions {
   [optionName: string]: {
     description: string
     alias?: string[]
-    default?: boolean
+    default?: boolean,
+    /**
+     * An option group this option belongs to.
+     * If the option belongs to a group and one of the options has be set,
+     * the other options will not have their default value.
+     */
+    group?: string
   }
 }
 
@@ -61,6 +60,12 @@ export interface StringOptions {
   [optionName: string]: {
     description: string
     alias?: string[]
-    default?: string
+    default?: string,
+    /**
+     * An option group this option belongs to.
+     * If the option belongs to a group and one of the options has be set,
+     * the other options will not have their default value.
+     */
+    group?: string
   }
 }
