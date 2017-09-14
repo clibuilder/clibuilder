@@ -82,6 +82,7 @@
     "lodash.merge": "^4.6.0",
     "minimist": "^1.2.0",
     "pad-right": "^0.2.2",
+    "sinon": "^3.2.1",
     "wordwrap": "^1.0.0"
   },
   "devDependencies": {

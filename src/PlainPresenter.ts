@@ -1,5 +1,6 @@
 import padRight = require('pad-right')
 import wordwrap = require('wordwrap')
+import inquirer = require('inquirer');
 
 import { Display, ConsoleDisplay, DisplayLevel } from './Display'
 import {
@@ -14,7 +15,7 @@ const wrap = wordwrap(80)
 
 
 export class PlainPresenter implements LogPresenter, HelpPresenter, PromptPresenter, VersionPresenter {
-  display: Display = new ConsoleDisplay()
+  display: Display = new ConsoleDisplay(inquirer.prompt)
   name: string
   displayLevel: DisplayLevel = DisplayLevel.Normal
   constructor(options: PresenterOption) {
