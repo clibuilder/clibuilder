@@ -1,8 +1,11 @@
+var inquirer = require('inquirer');
+
 export interface Display {
   debug(...args: any[]): void
   info(...args: any[]): void
   warn(...args: any[]): void
   error(...args: any[]): void
+  prompt(...args: any[]): Promise<any[]>
 }
 
 export enum DisplayLevel {
@@ -23,5 +26,8 @@ export class ConsoleDisplay implements Display {
   }
   error(...args: any[]): void {
     console.error.apply(console, args)
+  }
+  prompt(...args: any[]): Promise<any[]> {
+    return inquirer.prompt(args[0])
   }
 }

@@ -21,6 +21,7 @@ export interface Parseable {
     boolean?: BooleanOptions
     string?: StringOptions
   }
+  prompts?: any[];
 }
 
 export function parseArgv(parsable: Parseable, rawArgv: string[]) {
@@ -34,6 +35,7 @@ export function parseArgv(parsable: Parseable, rawArgv: string[]) {
   validateArguments(parsable, args)
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
+  handleGroupedPrompts(parsable, args)
 
   return args
 }
@@ -188,6 +190,12 @@ function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, ra
       })
     }
   })
+}
+
+function handleGroupedPrompts(parsable: Parseable, args: minimist.ParsedArgs) {
+  if (!parsable.prompts)
+    return
+  args.prompts = parsable.prompts;
 }
 
 function findOptionNameAndAlias({ options }: Pick<Parseable, 'options'>, name: string) {

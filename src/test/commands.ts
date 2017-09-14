@@ -125,8 +125,12 @@ export const groupOptionsCommand = {
   }
 } as CommandSpec
 
-export const groupsOptionsCommand = {
-  name: 'opt',
+
+export const groupPromptsCommand = {
+  name: 'prompt',
+  questions:[
+
+  ],
   options: {
     boolean: {
       'a': {
@@ -141,6 +145,9 @@ export const groupsOptionsCommand = {
     }
   },
   run(args) {
-    this.ui.info(`a: ${args.a}, b: ${args.b}`)
+    this.ui.prompt(args.prompts)
+      .then(answers =>{
+        console.log(JSON.stringify(answers, null, '  '));
+      });
   }
 } as CommandSpec

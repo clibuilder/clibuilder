@@ -17,6 +17,10 @@ export interface LogPresenter {
   debug(...args: any[]): void
 }
 
+export interface PromptPresenter{
+  prompt(...args: any[]): Promise<any[]>
+}
+
 export interface HelpPresenter {
   showHelp(command: CommandModel): void
 }

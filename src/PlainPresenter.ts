@@ -2,7 +2,10 @@ import padRight = require('pad-right')
 import wordwrap = require('wordwrap')
 
 import { Display, ConsoleDisplay, DisplayLevel } from './Display'
-import { LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel } from './Presenter'
+import {
+  LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel,
+  PromptPresenter
+} from './Presenter'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -10,7 +13,7 @@ const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
 
-export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter {
+export class PlainPresenter implements LogPresenter, HelpPresenter, PromptPresenter, VersionPresenter {
   display: Display = new ConsoleDisplay()
   name: string
   displayLevel: DisplayLevel = DisplayLevel.Normal
@@ -41,10 +44,15 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
     if (this.displayLevel >= DisplayLevel.Normal)
       this.display.error(...args)
   }
+  prompt(...args: any[]) : any {
+    if (this.displayLevel >= DisplayLevel.Normal)
+      return this.display.prompt(...args)
+  }
   debug(...args: any[]) {
     if (this.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
   }
+
 }
 
 function generateHelpMessage(command: CommandModel) {
