@@ -125,3 +125,22 @@ export const groupOptionsCommand = {
   }
 } as CommandSpec
 
+export const groupsOptionsCommand = {
+  name: 'opt',
+  options: {
+    boolean: {
+      'a': {
+        description: 'a',
+        default: true,
+        group: 'x'
+      },
+      'b': {
+        description: 'b',
+        group: 'x'
+      }
+    }
+  },
+  run(args) {
+    this.ui.info(`a: ${args.a}, b: ${args.b}`)
+  }
+} as CommandSpec
