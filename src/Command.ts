@@ -81,6 +81,6 @@ export interface InquirerPrompts {
   choices?: string[],
   filter?: Function,
   paginated?: boolean,
-  
+  default?: Function,
 }
 

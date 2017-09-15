@@ -128,22 +128,18 @@ export const groupOptionsCommand = {
 
 export const groupPromptsCommand = {
   name: 'prompt',
-  questions:[
-
-  ],
-  options: {
-    boolean: {
-      'a': {
-        description: 'a',
-        default: true,
-        group: 'x'
-      },
-      'b': {
-        description: 'b',
-        group: 'x'
-      }
+  prompts:  [
+    {
+      type: 'input',
+      name: 'first_name',
+      message: 'What\'s your first name'
+    },
+    {
+      type: 'input',
+      name: 'last_name',
+      message: 'What\'s your last name',
     }
-  },
+  ],
   run(args) {
     this.ui.prompt(args.prompts)
       .then(answers =>{
