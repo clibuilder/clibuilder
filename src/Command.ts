@@ -8,7 +8,7 @@ export interface CommandSpec {
   arguments?: Argument[]
   commands?: Command[]
   description?: string
-  prompts?: any[]
+  prompts?: InquirerPrompts[]
   options?: {
     boolean?: BooleanOptions,
     string?: StringOptions
@@ -70,3 +70,17 @@ export interface StringOptions {
     group?: string
   }
 }
+
+
+export interface InquirerPrompts {
+  type: string,
+  message: string,
+  name: string,
+  mask?: string,
+  validate?: Function,
+  choices?: string[],
+  filter?: Function,
+  paginated?: boolean,
+  
+}
+

@@ -37,5 +37,6 @@ export class ConsoleDisplay implements Display {
       throw new Error();
     }
     return this._prompt(args[0]);
+    //TODO: support nested prompt
   }
 }
