@@ -1,5 +1,7 @@
 # CLI Builder
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/unional/clibuilder.svg)](https://greenkeeper.io/)
+
 [![unstable][unstable-image]][unstable-url]
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][downloads-image]][downloads-url]
