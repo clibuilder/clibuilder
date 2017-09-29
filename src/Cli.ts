@@ -1,7 +1,7 @@
 import { Command, CommandSpec } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
-import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
+import { LogPresenter, HelpPresenter, VersionPresenter, PromptPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
 
@@ -40,7 +40,7 @@ export class Cli {
   }
   commands: Command[]
   displayLevel: DisplayLevel
-  private ui: LogPresenter & HelpPresenter & VersionPresenter
+  private ui: LogPresenter & HelpPresenter & VersionPresenter & PromptPresenter
   constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<CliContext> = {}) {
     const cwd = context.cwd || process.cwd()
     const presenterFactory = context.presenterFactory || new PresenterFactory()

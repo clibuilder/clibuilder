@@ -21,6 +21,7 @@ export class InMemoryDisplay implements Display {
   error(...args: any[]): void {
     this.errorLogs.push(args)
   }
+  prompt(..._args: any[]): any { }
 }
 export class InMemoryPresenter extends PlainPresenter {
   display = new InMemoryDisplay()

@@ -1,4 +1,4 @@
-import { LogPresenter, HelpPresenter } from './Presenter'
+import { LogPresenter, HelpPresenter, PromptPresenter } from './Presenter'
 
 export interface CommandSpec {
   /**
@@ -8,6 +8,7 @@ export interface CommandSpec {
   arguments?: Argument[]
   commands?: Command[]
   description?: string
+  prompts?: InquirerPrompts[]
   options?: {
     boolean?: BooleanOptions,
     string?: StringOptions
@@ -31,7 +32,7 @@ export interface CommandBase {
 export interface Command extends CommandBase, CommandSpec {
   cwd: string
   options: Command.Options
-  ui: LogPresenter & HelpPresenter
+  ui: LogPresenter & HelpPresenter & PromptPresenter
   run(this: Command, args: { _: string[], [name: string]: any }, argv: string[]): Promise<void>
 }
 
@@ -69,3 +70,17 @@ export interface StringOptions {
     group?: string
   }
 }
+
+
+export interface InquirerPrompts {
+  type: string,
+  message: string,
+  name: string,
+  mask?: string,
+  validate?: Function,
+  choices?: string[],
+  filter?: Function,
+  paginated?: boolean,
+  default?: Function,
+}
+

@@ -125,3 +125,25 @@ export const groupOptionsCommand = {
   }
 } as CommandSpec
 
+
+export const groupPromptsCommand = {
+  name: 'prompt',
+  prompts:  [
+    {
+      type: 'input',
+      name: 'first_name',
+      message: 'What\'s your first name'
+    },
+    {
+      type: 'input',
+      name: 'last_name',
+      message: 'What\'s your last name',
+    }
+  ],
+  run(args) {
+    this.ui.prompt(args.prompts)
+      .then(answers =>{
+        console.log(JSON.stringify(answers, null, '  '));
+      });
+  }
+} as CommandSpec

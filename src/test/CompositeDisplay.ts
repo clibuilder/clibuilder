@@ -17,4 +17,5 @@ export class CompositeDisplay implements Display {
   error(...args: any[]): void {
     this.displays.forEach(d => d.error(...args))
   }
+  prompt(..._args: any[]): any { }
 }
