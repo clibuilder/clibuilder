@@ -1,6 +1,6 @@
 import { LogPresenter, HelpPresenter } from './Presenter'
 
-export interface CommandSpec {
+export interface CommandSpec<Context = any> {
   /**
    * Name of the command.
    */
@@ -13,7 +13,7 @@ export interface CommandSpec {
     string?: StringOptions
   }
   alias?: string[]
-  run?: (this: Command, args: { _: string[], [name: string]: any }, argv: string[]) => void
+  run?: (this: Command & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void
 }
 
 export namespace Command {
