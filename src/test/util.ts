@@ -1,4 +1,4 @@
-import { Cli, CliContext } from '../Cli'
+import { Cli } from '../Cli'
 
 import { CompositeDisplay } from './CompositeDisplay'
 import { InMemoryPresenter, InMemoryDisplay } from './InMemoryDisplay'
@@ -8,7 +8,7 @@ export function createArgv(...args) {
   return args
 }
 
-export function createFakeCli<Context extends CliContext>(...commandSpecs): Cli<Context> {
+export function createFakeCli(...commandSpecs): Cli<any> {
   const presenterFactory = {
     createCliPresenter(options) { return new InMemoryPresenter(options) },
     createCommandPresenter(options) { return new InMemoryPresenter(options) }
