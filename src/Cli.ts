@@ -10,7 +10,7 @@ export interface CliContext {
   presenterFactory: PresenterFactory
 }
 
-export class Cli {
+export class Cli<Context> {
   get cwd() {
     return this._cwd
   }
@@ -41,7 +41,7 @@ export class Cli {
   commands: Command[]
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<CliContext> = {}) {
+  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<CliContext & Context> = {}) {
     const cwd = context.cwd || process.cwd()
     const presenterFactory = context.presenterFactory || new PresenterFactory()
 
