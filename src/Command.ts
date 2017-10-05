@@ -1,6 +1,6 @@
 import { LogPresenter, HelpPresenter } from './Presenter'
 
-export interface CommandSpec<Context = any> {
+export interface CommandSpec<Context = {}> {
   /**
    * Name of the command.
    */

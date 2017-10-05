@@ -11,4 +11,14 @@ test('using custom context', t => {
   } as CommandSpec<{ x: string }>
 
   t.truthy(spec)
+
+  const spec2 = {
+    name: 'b',
+    run() {
+      // `this` should be `Command` by default
+      t.truthy(this.ui)
+    }
+  } as CommandSpec
+
+  t.truthy(spec2)
 })
