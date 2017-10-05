@@ -1,12 +1,11 @@
 # CLI Builder
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/unional/clibuilder.svg)](https://greenkeeper.io/)
-
 [![unstable][unstable-image]][unstable-url]
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][downloads-image]][downloads-url]
 [![Build status][travis-image]][travis-url]
 [![Coverage Status][coveralls-image]][coveralls-url]
+[![Greenkeeper badge][greenkeeper-image]][greenkeeper-url]
 
 Building CLI based on Command Pattern.
 
@@ -74,3 +73,5 @@ npm run watch
 [travis-url]: https://travis-ci.org/unional/clibuilder
 [coveralls-image]: https://coveralls.io/repos/github/unional/clibuilder/badge.svg
 [coveralls-url]: https://coveralls.io/github/unional/clibuilder
+[greenkeeper-image]: https://badges.greenkeeper.io/unional/clibuilder.svg
+[greenkeeper-url]: https://greenkeeper.io/
