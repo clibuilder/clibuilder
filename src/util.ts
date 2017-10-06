@@ -3,7 +3,7 @@ import _ = require('lodash')
 import { Command, CommandSpec } from './Command'
 
 export function createCommand(spec: CommandSpec, { cwd }): Command {
-  const result = _.merge({
+  const result = _.merge<Command>({
     run: () => { return },
     cwd
   }, spec)

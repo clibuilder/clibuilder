@@ -1,10 +1,14 @@
 import { Command, CommandSpec } from './Command'
 import { DisplayLevel } from './Display'
-import { CliContext } from './interfaces'
 import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
+
+export interface CliContext {
+  cwd: string
+  presenterFactory: PresenterFactory
+}
 
 export class Cli<Context extends CliContext & { [i: string]: any } = CliContext> {
   get cwd() {
