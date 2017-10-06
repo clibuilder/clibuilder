@@ -1,10 +1,23 @@
 import test from 'ava'
 import _ = require('lodash')
 
-import { Cli, testUtil } from './index'
-
-type InMemoryDisplay = testUtil.InMemoryDisplay
-const { createArgv, createFakeCli, spyDisplay, InMemoryPresenter, generateDisplayedMessage } = testUtil
+import { Cli } from './index'
+import {
+  createArgv,
+  createFakeCli,
+  InMemoryDisplay,
+  InMemoryPresenter,
+  spyDisplay,
+  generateDisplayedMessage,
+  noopCommand,
+  verboseCommand,
+  argCommand,
+  echoCommand,
+  errorCommand,
+  echoNameOptionCommand,
+  optionsCommand,
+  groupOptionsCommand
+} from './testUtil'
 
 const noopHelpMessage = `
 Usage: cmd <command>
@@ -25,7 +38,7 @@ test(`given cli with noop command
 when called with no argument
 then help will be shown`,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli'))
@@ -38,7 +51,7 @@ test(`given cli with noop command
 when called with '-help'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli', '--help'))
@@ -51,7 +64,7 @@ test(`given cli with noop command
 when called with '-h'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli', '-h'))
@@ -66,7 +79,7 @@ when called with '--silent'
 then the help message is shwon
 `,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli', '--silent'))
@@ -78,7 +91,7 @@ test(`given cli with noop command
 when called with unknown command 'oh'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli', 'oh'))
@@ -91,7 +104,7 @@ test(`given cli with noop command
 when called with '-v'
 then version will be shown`,
   t => {
-    const cli = createFakeCli(testUtil.noopCommand)
+    const cli = createFakeCli(noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
     cli.parse(createArgv('cli', '-v'))
@@ -103,7 +116,7 @@ test(`given cli with verbose command
 when called with 'verbose'
 then no message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.verboseCommand)
+    const cli = createFakeCli(verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'verbose'))
@@ -114,7 +127,7 @@ test(`given cli with verbose command
 when called with 'verbose --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.verboseCommand)
+    const cli = createFakeCli(verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'verbose', '--verbose'))
@@ -125,7 +138,7 @@ test(`given cli with verbose command
 when called with alias 'vb --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.verboseCommand)
+    const cli = createFakeCli(verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'vb', '--verbose'))
@@ -136,7 +149,7 @@ test(`given cli with verbose command
 when called with second alias 'detail --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.verboseCommand)
+    const cli = createFakeCli(verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'detail', '--verbose'))
@@ -147,7 +160,7 @@ test(`given cli with verbose command
 when called with 'verbose -V'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.verboseCommand)
+    const cli = createFakeCli(verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'verbose', '-V'))
@@ -158,7 +171,7 @@ test(`given cli with error command
 when called with 'error --silent'
 then no message is shown`,
   t => {
-    const cli = createFakeCli(testUtil.errorCommand)
+    const cli = createFakeCli(errorCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'error', '--silent'))
@@ -169,7 +182,7 @@ test(`given cli with echo command
 when called with 'echo -h'
 then the help message for each is shwon`,
   t => {
-    const cli = createFakeCli(testUtil.echoCommand)
+    const cli = createFakeCli(echoCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     cli.parse(createArgv('cli', 'echo', '-h'))
@@ -190,7 +203,7 @@ when called with 'echo -h'
 then the help message for each is shown on the echo command display
 and not on the main display`,
   t => {
-    const eSpec = _.merge({ PresenterClass: InMemoryPresenter }, testUtil.echoCommand)
+    const eSpec = _.merge({ PresenterClass: InMemoryPresenter }, echoCommand)
     const cli = createFakeCli(eSpec)
     const display: InMemoryDisplay = (cli as any).ui.display
     const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']
@@ -216,7 +229,7 @@ when called with 'echo abc'
 then will echo 'abc'
 `,
   t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.echoCommand])
+    const cli = new Cli('cli', '0.0.0', [echoCommand])
     const display = spyDisplay(cli, 'echo')
 
     cli.parse(createArgv('cli', 'echo', 'abc'))
@@ -229,7 +242,7 @@ given cli with echoNameOption command
 when called with 'eno --name=abc'
 then will echo 'abc'`,
   t => {
-    const cli = createFakeCli(testUtil.echoNameOptionCommand)
+    const cli = createFakeCli(echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
     cli.parse(createArgv('cli', 'eno', '--name=abc'))
@@ -242,7 +255,7 @@ given cli with echoNameOption command
 when called with 'eno --name'
 then will each 'abc'`,
   t => {
-    const cli = createFakeCli(testUtil.echoNameOptionCommand)
+    const cli = createFakeCli(echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
     cli.parse(createArgv('cli', 'eno'))
@@ -255,7 +268,7 @@ test(`
   when called with 'async'
   then can await on parse`,
   async t => {
-    const cli = createFakeCli(testUtil.argCommand)
+    const cli = createFakeCli(argCommand)
     await cli.parse(createArgv('cli', 'async'))
     t.pass()
   })
@@ -265,7 +278,7 @@ Given cli with arg command
 when called with 'arg'
 then show report missing argument`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.argCommand])
+    const cli = new Cli('cli', '0.0.0', [argCommand])
     const display = spyDisplay(cli, 'arg')
 
     await cli.parse(createArgv('cli', 'arg'))
@@ -279,7 +292,7 @@ Given cli with arg command
 when called with 'arg x'
 then echo x`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.argCommand])
+    const cli = new Cli('cli', '0.0.0', [argCommand])
     const display = spyDisplay(cli, 'arg')
 
     await cli.parse(createArgv('cli', 'arg', 'x'))
@@ -293,7 +306,7 @@ Given cli with noop command
 When setting 'cli.cwd' after the cli is created
 Then the 'noopCommand.cwd' should be updated too`,
   t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.noopCommand])
+    const cli = new Cli('cli', '0.0.0', [noopCommand])
 
     cli.cwd = `fake`
 
@@ -305,7 +318,7 @@ Given cli with opt command
 When called with 'opt'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt'))
@@ -319,7 +332,7 @@ Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-a'))
@@ -333,7 +346,7 @@ Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-b'))
@@ -348,7 +361,7 @@ Given cli with groupOption command
 When called with 'opt b'
 Then options 'a' is false and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [testUtil.groupOptionsCommand])
+    const cli = new Cli('cli', '0.0.0', [groupOptionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-b'))
