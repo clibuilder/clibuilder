@@ -1,6 +1,5 @@
-import { PresenterFactory } from './PresenterFactory'
-
-export interface CliContext {
-  cwd: string
-  presenterFactory: PresenterFactory
+import { CommandSpec } from './Command'
+export interface PluginConfig {
+  name: string
+  commands: CommandSpec[]
 }

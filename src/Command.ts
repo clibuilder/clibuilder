@@ -1,22 +1,23 @@
 import { LogPresenter, HelpPresenter } from './Presenter'
-
-export interface CommandSpec<Context = {}> {
-  /**
-   * Name of the command.
-   */
-  name: string
-  arguments?: Argument[]
-  commands?: Command[]
-  description?: string
-  options?: {
-    boolean?: BooleanOptions,
-    string?: StringOptions
-  }
-  alias?: string[]
-  run?: (this: Command & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void
-}
-
 export namespace Command {
+  /**
+   * This interface is shared between `CommandSpec` and `Command`
+   */
+  export interface Shared<Context> {
+    /**
+     * Name of the command.
+     */
+    name: string
+    arguments?: Argument[]
+    description?: string
+    options?: {
+      boolean?: BooleanOptions,
+      string?: StringOptions
+    }
+    alias?: string[]
+    run?: (this: Command & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+  }
+
   export interface Options {
     boolean?: BooleanOptions,
     string?: StringOptions
@@ -28,11 +29,11 @@ export interface CommandBase {
   parent?: CommandBase
 }
 
-export interface Command extends CommandBase, CommandSpec {
+export interface Command<Context = {}> extends CommandBase, Command.Shared<Context> {
   cwd: string
+  commands?: Command[]
   options: Command.Options
   ui: LogPresenter & HelpPresenter
-  run(this: Command, args: { _: string[], [name: string]: any }, argv: string[]): Promise<void>
 }
 
 export interface Argument {
@@ -68,4 +69,8 @@ export interface StringOptions {
      */
     group?: string
   }
+}
+
+export interface CommandSpec<Context = {}> extends Command.Shared<Context> {
+  commands?: CommandSpec[]
 }
