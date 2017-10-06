@@ -1,3 +1,4 @@
+
 import { Display } from '../Display'
 
 export class CompositeDisplay implements Display {
