@@ -1,12 +1,10 @@
 import test from 'ava'
-import merge = require('lodash.merge')
+import _ = require('lodash')
 
-import { Cli } from './index'
+import { Cli, testUtil } from './index'
 
-import * as commandSpecs from './test/commands'
-import { createArgv, createFakeCli, spyDisplay } from './test/util'
-import { InMemoryPresenter, InMemoryDisplay, generateDisplayedMessage } from './test/InMemoryDisplay'
-
+type InMemoryDisplay = testUtil.InMemoryDisplay
+const { createArgv, createFakeCli, spyDisplay, InMemoryPresenter, generateDisplayedMessage } = testUtil
 
 const noopHelpMessage = `
 Usage: cmd <command>
@@ -27,10 +25,10 @@ test(`given cli with noop command
 when called with no argument
 then help will be shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv())
+    cli.parse(createArgv('cli'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -40,10 +38,10 @@ test(`given cli with noop command
 when called with '-help'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv('--help'))
+    cli.parse(createArgv('cli', '--help'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -53,10 +51,10 @@ test(`given cli with noop command
 when called with '-h'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv('-h'))
+    cli.parse(createArgv('cli', '-h'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -68,10 +66,10 @@ when called with '--silent'
 then the help message is shwon
 `,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv('--silent'))
+    cli.parse(createArgv('cli', '--silent'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
@@ -80,10 +78,10 @@ test(`given cli with noop command
 when called with unknown command 'oh'
 then the help message will be shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv('oh'))
+    cli.parse(createArgv('cli', 'oh'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -93,10 +91,10 @@ test(`given cli with noop command
 when called with '-v'
 then version will be shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.noopCommandSpec)
+    const cli = createFakeCli(testUtil.noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    cli.parse(createArgv('-v'))
+    cli.parse(createArgv('cli', '-v'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '0.0.0')
   })
@@ -105,10 +103,10 @@ test(`given cli with verbose command
 when called with 'verbose'
 then no message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.verboseCommandSpec)
+    const cli = createFakeCli(testUtil.verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('verbose'))
+    cli.parse(createArgv('cli', 'verbose'))
     t.is(display.debugLogs.length, 0)
   })
 
@@ -116,10 +114,10 @@ test(`given cli with verbose command
 when called with 'verbose --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.verboseCommandSpec)
+    const cli = createFakeCli(testUtil.verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('verbose', '--verbose'))
+    cli.parse(createArgv('cli', 'verbose', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -127,10 +125,10 @@ test(`given cli with verbose command
 when called with alias 'vb --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.verboseCommandSpec)
+    const cli = createFakeCli(testUtil.verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('vb', '--verbose'))
+    cli.parse(createArgv('cli', 'vb', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -138,10 +136,10 @@ test(`given cli with verbose command
 when called with second alias 'detail --verbose'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.verboseCommandSpec)
+    const cli = createFakeCli(testUtil.verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('detail', '--verbose'))
+    cli.parse(createArgv('cli', 'detail', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -149,10 +147,10 @@ test(`given cli with verbose command
 when called with 'verbose -V'
 then the verbosed message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.verboseCommandSpec)
+    const cli = createFakeCli(testUtil.verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('verbose', '-V'))
+    cli.parse(createArgv('cli', 'verbose', '-V'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -160,10 +158,10 @@ test(`given cli with error command
 when called with 'error --silent'
 then no message is shown`,
   t => {
-    const cli = createFakeCli(commandSpecs.errorCommandSpec)
+    const cli = createFakeCli(testUtil.errorCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('error', '--silent'))
+    cli.parse(createArgv('cli', 'error', '--silent'))
     t.is(display.errorLogs.length, 0)
   })
 
@@ -171,10 +169,10 @@ test(`given cli with echo command
 when called with 'echo -h'
 then the help message for each is shwon`,
   t => {
-    const cli = createFakeCli(commandSpecs.echoCommandSpec)
+    const cli = createFakeCli(testUtil.echoCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    cli.parse(createArgv('echo', '-h'))
+    cli.parse(createArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, `
 Usage: cmd echo
@@ -192,12 +190,12 @@ when called with 'echo -h'
 then the help message for each is shown on the echo command display
 and not on the main display`,
   t => {
-    const eSpec = merge({ PresenterClass: InMemoryPresenter }, commandSpecs.echoCommandSpec)
+    const eSpec = _.merge({ PresenterClass: InMemoryPresenter }, testUtil.echoCommand)
     const cli = createFakeCli(eSpec)
     const display: InMemoryDisplay = (cli as any).ui.display
     const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']
 
-    cli.parse(createArgv('echo', '-h'))
+    cli.parse(createArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '')
 
@@ -218,10 +216,10 @@ when called with 'echo abc'
 then will echo 'abc'
 `,
   t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.echoCommandSpec])
+    const cli = new Cli('cli', '0.0.0', [testUtil.echoCommand])
     const display = spyDisplay(cli, 'echo')
 
-    cli.parse(createArgv('echo', 'abc'))
+    cli.parse(createArgv('cli', 'echo', 'abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'echo abc')
   })
@@ -231,10 +229,10 @@ given cli with echoNameOption command
 when called with 'eno --name=abc'
 then will echo 'abc'`,
   t => {
-    const cli = createFakeCli(commandSpecs.echoNameOptionCommandSpec)
+    const cli = createFakeCli(testUtil.echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
-    cli.parse(createArgv('eno', '--name=abc'))
+    cli.parse(createArgv('cli', 'eno', '--name=abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'abc')
   })
@@ -244,10 +242,10 @@ given cli with echoNameOption command
 when called with 'eno --name'
 then will each 'abc'`,
   t => {
-    const cli = createFakeCli(commandSpecs.echoNameOptionCommandSpec)
+    const cli = createFakeCli(testUtil.echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
-    cli.parse(createArgv('eno'))
+    cli.parse(createArgv('cli', 'eno'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'abc')
   })
@@ -257,8 +255,8 @@ test(`
   when called with 'async'
   then can await on parse`,
   async t => {
-    const cli = createFakeCli(commandSpecs.asyncCommandSpec)
-    await cli.parse(createArgv('async'))
+    const cli = createFakeCli(testUtil.argCommand)
+    await cli.parse(createArgv('cli', 'async'))
     t.pass()
   })
 
@@ -267,10 +265,10 @@ Given cli with arg command
 when called with 'arg'
 then show report missing argument`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.argCommandSpec])
+    const cli = new Cli('cli', '0.0.0', [testUtil.argCommand])
     const display = spyDisplay(cli, 'arg')
 
-    await cli.parse(createArgv('arg'))
+    await cli.parse(createArgv('cli', 'arg'))
 
     const actual = generateDisplayedMessage(display.errorLogs)
     t.is(actual, 'Missing argument(s)')
@@ -281,10 +279,10 @@ Given cli with arg command
 when called with 'arg x'
 then echo x`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.argCommandSpec])
+    const cli = new Cli('cli', '0.0.0', [testUtil.argCommand])
     const display = spyDisplay(cli, 'arg')
 
-    await cli.parse(createArgv('arg', 'x'))
+    await cli.parse(createArgv('cli', 'arg', 'x'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'x')
@@ -295,7 +293,7 @@ Given cli with noop command
 When setting 'cli.cwd' after the cli is created
 Then the 'noopCommand.cwd' should be updated too`,
   t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.noopCommandSpec])
+    const cli = new Cli('cli', '0.0.0', [testUtil.noopCommand])
 
     cli.cwd = `fake`
 
@@ -307,10 +305,10 @@ Given cli with opt command
 When called with 'opt'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
-    await cli.parse(createArgv('opt'))
+    await cli.parse(createArgv('cli', 'opt'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: false')
@@ -321,10 +319,10 @@ Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
-    await cli.parse(createArgv('opt', '-a'))
+    await cli.parse(createArgv('cli', 'opt', '-a'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: false')
@@ -335,10 +333,10 @@ Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.optionsCommand])
+    const cli = new Cli('cli', '0.0.0', [testUtil.optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
-    await cli.parse(createArgv('opt', '-b'))
+    await cli.parse(createArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: true')
@@ -350,10 +348,10 @@ Given cli with groupOption command
 When called with 'opt b'
 Then options 'a' is false and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [commandSpecs.groupOptionsCommand])
+    const cli = new Cli('cli', '0.0.0', [testUtil.groupOptionsCommand])
     const display = spyDisplay(cli, 'opt')
 
-    await cli.parse(createArgv('opt', '-b'))
+    await cli.parse(createArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: false, b: true')

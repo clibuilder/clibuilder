@@ -78,13 +78,13 @@
   },
   "dependencies": {
     "@types/minimist": "^1.2.0",
-    "lodash.merge": "^4.6.0",
+    "lodash": "^4.17.4",
     "minimist": "^1.2.0",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0"
   },
   "devDependencies": {
-    "@types/lodash.merge": "^4.6.2",
+    "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.7",
     "@types/wordwrap": "github:types/wordwrap",
     "ava": "^0.22.0",
