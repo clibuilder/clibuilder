@@ -2,7 +2,7 @@ import test from 'ava'
 import Order from 'assert-order'
 
 import { Task } from './Task'
-import { setupTaskTest } from './testUtil/setup'
+import { setupTaskTest } from './test-util/setup'
 
 test('task runner can run task', t => {
 

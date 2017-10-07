@@ -9,17 +9,15 @@
 
 Building CLI based on Command Pattern.
 
-[`clibuilder-testutil`](https://github.com/unional/clibuilder-testutil) contains test utilities to help you test against your application.
-
 ## Usage
 
 ```ts
 // bin.ts
 import { Cli } from 'clibuilder'
 
-import { commandA, commandB } from './commands'
+import { commandSpecA, commandSpecB } from './commands'
 
-const cli = new Cli('yourcli', '1.0.0', [commandA, commandB])
+const cli = new Cli('yourcli', '1.0.0', [commandSpecA, commandSpecB])
 cli.parse(process.argv)
 
 // commands.ts
@@ -35,7 +33,8 @@ export const commandA = {
 } as CommandSpec
 ```
 
-You can override the display mechanism:
+It comes with a plain presenter.
+You can override it to display your cli in any way you want:
 
 ```ts
 import { Cli, PlainPresenter } from 'clibuilder'
@@ -50,6 +49,14 @@ const presenterFactory = {
 const cli = new Cli('yourcli', '1.0.0', [], { presenterFactory })
 
 cli.parse(process.argv)
+```
+
+There are some utilities I use internally when developing this library.
+These utilities could also be helpful to you when you develop your application.
+They can be accessed from deep referencing:
+
+```ts
+import { ... } for 'clibuilder/dist-es5/test-util'
 ```
 
 ## Contribute

@@ -1,5 +1,5 @@
 import test from 'ava'
-import { InMemoryDisplay } from './testUtil/InMemoryDisplay'
+import { InMemoryDisplay } from './test-util/InMemoryDisplay'
 
 import { PlainPresenter } from './PlainPresenter'
 
