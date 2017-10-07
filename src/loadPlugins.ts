@@ -1,13 +1,13 @@
 import path = require('path')
 
 import { findPlugins } from './findPlugins'
-import { PluginConfig } from './interfaces'
+import { CommandSpec } from './Command'
 
-class Registrar {
-  config: PluginConfig
+class CliRegistrar {
+  command: CommandSpec
 
-  register(config: PluginConfig) {
-    this.config = config
+  addCommand(command: CommandSpec) {
+    this.command = command
   }
 }
 
@@ -45,7 +45,7 @@ function isValidPlugin(m) {
 }
 
 function activatePlugin(m) {
-  const registrar = new Registrar()
+  const registrar = new CliRegistrar()
   m.activate(registrar)
-  return registrar.config
+  return registrar.command
 }

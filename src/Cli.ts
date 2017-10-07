@@ -8,6 +8,7 @@ import { createCommand, getCommand } from './util'
 export interface CliOption {
   name: string
   version: string
+  commands: CommandSpec[]
 }
 
 export interface CliContext {
@@ -48,14 +49,14 @@ export class Cli<Context extends CliContext & { [i: string]: any } = CliContext>
   version: string
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(option: CliOption, commandSpecs: CommandSpec[], context: Partial<Context> = {} as any) {
+  constructor(option: CliOption, context: Partial<Context> = {} as any) {
     this.name = option.name
     this.version = option.version
     const cwd = context.cwd || process.cwd()
     const presenterFactory = context.presenterFactory || new PresenterFactory()
 
     this.ui = presenterFactory.createCliPresenter(this)
-    this.commands = commandSpecs.map(s => {
+    this.commands = option.commands.map(s => {
       const cmd = createCommand(s, { cwd })
       cmd.ui = presenterFactory.createCommandPresenter(cmd)
       cmd.parent = this
