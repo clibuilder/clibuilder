@@ -113,9 +113,9 @@ export function activate(cli: CliRegistrar) {
 }
 ```
 
-It determines that a package is by plugin by looking at the `keywords` in its `package.json`.
+It determines that a package is a plugin by looking at the `keywords` in its `package.json`.
 
-My default it is looking for `${name}-plugin`
+By default it is looking for `${name}-plugin`
 You can override this by supplying your own keyword:
 
 ```ts
