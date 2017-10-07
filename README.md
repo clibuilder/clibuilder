@@ -25,8 +25,9 @@ import { commandSpecA, commandSpecB } from './commands'
 
 const cli = new Cli({
   name: 'yourapp',
-  version: '1.0.0'
-}, [commandSpecA, commandSpecB])
+  version: '1.0.0',
+  commands: [commandSpecA, commandSpecB]Ï
+}, )
 cli.parse(process.argv)
 
 // commands.ts
@@ -57,8 +58,9 @@ const presenterFactory = {
 
 const cli = new Cli({
   name: 'yourapp',
-  version: '1.0.0'
-}, [], { presenterFactory })
+  version: '1.0.0',
+  commands: [...]
+}, { presenterFactory })
 
 cli.parse(process.argv)
 ```
@@ -80,8 +82,9 @@ const cmd = {
 
 const cli = new Cli({
   name: 'yourapp',
-  version: '1.0.0'
-}, [cmd], { config })
+  version: '1.0.0',
+  commands: [cmd]
+}, { config })
 ```
 
 ## PluginCli

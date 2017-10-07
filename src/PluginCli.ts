@@ -12,11 +12,10 @@ export interface PluginCliContext extends CliContext {
 
 export class PluginCli<Context extends CliContext & { [i: string]: any } = PluginCliContext> extends Cli {
   constructor(options: PluginCliOption, context: Partial<Context> = {} as any) {
-    let { keyword = `${options.name}-plugin` } = options
+    let { name, version, keyword = `${options.name}-plugin` } = options
     const cwd = context.cwd || process.cwd()
-    const pluginConfigs = loadPlugins(keyword, { cwd })
 
-    // PluginConfigs has the shape needed for CommandSpec
-    super(options, pluginConfigs, context)
+    const commands = loadPlugins(keyword, { cwd })
+    super({ name, version, commands }, context)
   }
 }
