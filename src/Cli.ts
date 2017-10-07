@@ -5,6 +5,11 @@ import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
 
+export interface CliOption {
+  name: string
+  version: string
+}
+
 export interface CliContext {
   cwd: string
   presenterFactory: PresenterFactory
@@ -39,9 +44,13 @@ export class Cli<Context extends CliContext & { [i: string]: any } = CliContext>
     }
   }
   commands: Command[]
+  name: string
+  version: string
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(public name: string, public version: string, commandSpecs: CommandSpec[], context: Partial<Context> = {} as any) {
+  constructor(option: CliOption, commandSpecs: CommandSpec[], context: Partial<Context> = {} as any) {
+    this.name = option.name
+    this.version = option.version
     const cwd = context.cwd || process.cwd()
     const presenterFactory = context.presenterFactory || new PresenterFactory()
 

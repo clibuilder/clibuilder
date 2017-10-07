@@ -7,9 +7,15 @@
 [![Coverage Status][coveralls-image]][coveralls-url]
 [![Greenkeeper badge][greenkeeper-image]][greenkeeper-url]
 
-Building CLI based on Command Pattern.
+`clibuilder` is a CLI building library.
 
-## Usage
+This library supplies two CLI builders: `Cli` and `PluginCli`.
+
+## Cli
+
+`Cli` is a simple, Command Pattern based cli builder.
+
+The benefit of using Command Pattern is that you can develop your CLI command separately from the application itself.
 
 ```ts
 // bin.ts
@@ -17,7 +23,10 @@ import { Cli } from 'clibuilder'
 
 import { commandSpecA, commandSpecB } from './commands'
 
-const cli = new Cli('yourcli', '1.0.0', [commandSpecA, commandSpecB])
+const cli = new Cli({
+  name: 'yourapp',
+  version: '1.0.0'
+}, [commandSpecA, commandSpecB])
 cli.parse(process.argv)
 
 // commands.ts
@@ -46,10 +55,105 @@ const presenterFactory = {
   createCommandPresenter(options) { return new YourPresenter(options) }
 }
 
-const cli = new Cli('yourcli', '1.0.0', [], { presenterFactory })
+const cli = new Cli({
+  name: 'yourapp',
+  version: '1.0.0'
+}, [], { presenterFactory })
 
 cli.parse(process.argv)
 ```
+
+You can add addition information in the context, which will be passed to your commands:
+
+```ts
+import { Cli } from 'clibuilder'
+
+const config = { ... }
+
+const cmd = {
+  name: 'cmd',
+  run() {
+    // this.config is typed and accessible
+    this.ui.info(this.config)
+  }
+} CommandSpec<{ config: typeof config }>
+
+const cli = new Cli({
+  name: 'yourapp',
+  version: '1.0.0'
+}, [cmd], { config })
+```
+
+## PluginCli
+
+`PluginCli` allows you to build plugins to add commands to your application.
+i.e. You can build your application is a distributed fashion.
+
+```ts
+import { PluginCli } from 'clibuilder'
+
+const cli = new PluginCli({
+  name: 'yourapp',
+  version: '1.0.0'
+})
+
+// in another package
+import { CommandSpec, CliRegistrar } from 'clibuilder'
+
+export function activate(cli: CliRegistrar) {
+  cli.register({
+    name: 'plug-x'
+    commands: [...]
+  })
+}
+
+// the other package's package.json
+{
+  "keywords": ['yourapp-plugin']
+}
+```
+
+It determines that a package is by plugin by looking at the `keywords` in its `package.json`.
+
+My default it is looking for `${name}-plugin`
+You can override this by supplying your own keyword:
+
+```ts
+new PluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
+```
+
+## Task
+
+Besides `Cli` and `PluginCli`,
+`clibuilder` also provides a simple `Task` system for you to easily separate your business logic and view logic within your command.
+
+```ts
+import { CommandSpec, createTaskRunner, Task } from 'clibuilder'
+
+class AddTask extends Task {
+  run(a: number, b: number) {
+    const result = a + b
+    this.emitter.emit('AddTask/run', { a, b, result })
+  }
+}
+
+function addViewBuilder(emitter: EventEmitter2, { ui }) {
+  emitter.on('AddTask/run', ({ a, b, result}) => {
+    ui.info(`${a} + ${b} = ${result}`)
+  })
+}
+
+export const MyCommandSpec = {
+  name: 'my-command',
+  run() {
+    const runner = createTaskRunner(this, AddTask, addViewBuilder)
+    return runner.run(1, 2)
+  }
+}
+
+```
+
+## test-util
 
 There are some utilities I use internally when developing this library.
 These utilities could also be helpful to you when you develop your application.

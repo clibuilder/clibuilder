@@ -17,7 +17,7 @@ import {
   echoNameOptionCommand,
   optionsCommand,
   groupOptionsCommand
-} from './testUtil'
+} from './test-util'
 
 const noopHelpMessage = `
 Usage: cli <command>
@@ -229,7 +229,7 @@ when called with 'echo abc'
 then will echo 'abc'
 `,
   t => {
-    const cli = new Cli('cli', '0.0.0', [echoCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [echoCommand])
     const display = spyDisplay(cli, 'echo')
 
     cli.parse(createArgv('cli', 'echo', 'abc'))
@@ -278,7 +278,7 @@ Given cli with arg command
 when called with 'arg'
 then show report missing argument`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [argCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [argCommand])
     const display = spyDisplay(cli, 'arg')
 
     await cli.parse(createArgv('cli', 'arg'))
@@ -292,7 +292,7 @@ Given cli with arg command
 when called with 'arg x'
 then echo x`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [argCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [argCommand])
     const display = spyDisplay(cli, 'arg')
 
     await cli.parse(createArgv('cli', 'arg', 'x'))
@@ -306,7 +306,7 @@ Given cli with noop command
 When setting 'cli.cwd' after the cli is created
 Then the 'noopCommand.cwd' should be updated too`,
   t => {
-    const cli = new Cli('cli', '0.0.0', [noopCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [noopCommand])
 
     cli.cwd = `fake`
 
@@ -318,7 +318,7 @@ Given cli with opt command
 When called with 'opt'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [optionsCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt'))
@@ -332,7 +332,7 @@ Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [optionsCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-a'))
@@ -346,7 +346,7 @@ Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [optionsCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [optionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-b'))
@@ -361,7 +361,7 @@ Given cli with groupOption command
 When called with 'opt b'
 Then options 'a' is false and 'b' is true`,
   async t => {
-    const cli = new Cli('cli', '0.0.0', [groupOptionsCommand])
+    const cli = new Cli({ name: 'cli', version: '0.0.0' }, [groupOptionsCommand])
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createArgv('cli', 'opt', '-b'))

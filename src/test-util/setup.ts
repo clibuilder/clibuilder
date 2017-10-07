@@ -19,10 +19,12 @@ export function createViewContext(name) {
 }
 
 export function createInMemoryCli(name: string, ...commandSpecs): Cli<any> {
-  return new Cli(name, '1.0.0', commandSpecs, {
-    presenterFactory: {
-      createCliPresenter(options) { return new InMemoryPresenter(options) },
-      createCommandPresenter(options) { return new InMemoryPresenter(options) }
-    }
-  })
+  return new Cli(
+    { name, version: '1.0.0' },
+    commandSpecs, {
+      presenterFactory: {
+        createCliPresenter(options) { return new InMemoryPresenter(options) },
+        createCommandPresenter(options) { return new InMemoryPresenter(options) }
+      }
+    })
 }
