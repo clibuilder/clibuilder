@@ -1,10 +1,10 @@
 import test from 'ava'
 
-import { createCli } from './createCli'
+import { createInMemoryCli } from './setup'
 import { getDisplay } from './getDisplay'
 
 test('mem', t => {
-  const cli = createCli('abc')
+  const cli = createInMemoryCli('abc')
   const actual = getDisplay(cli)
   t.truthy(actual)
   t.truthy(actual.debugLogs)
