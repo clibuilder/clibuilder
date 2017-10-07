@@ -27,7 +27,7 @@ const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
   commands: [commandSpecA, commandSpecB]Ï
-}, )
+})
 cli.parse(process.argv)
 
 // commands.ts
