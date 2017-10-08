@@ -1,6 +1,6 @@
 import * as minimist from 'minimist'
 
-import { BooleanOptions, StringOptions, Argument } from './Command'
+import { Command } from './Command'
 
 export class InvalidOptionError extends Error {
   constructor(public name, public type, public value) {
@@ -15,11 +15,11 @@ export class UnknownOptionError extends Error {
 }
 
 export interface Parseable {
-  arguments?: Argument[]
+  arguments?: Command.Argument[]
   commands?: Parseable[]
   options?: {
-    boolean?: BooleanOptions
-    string?: StringOptions
+    boolean?: Command.BooleanOptions
+    string?: Command.StringOptions
   }
 }
 

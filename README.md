@@ -21,17 +21,17 @@ The benefit of using Command Pattern is that you can develop your CLI command se
 // bin.ts
 import { Cli } from 'clibuilder'
 
-import { commandSpecA, commandSpecB } from './commands'
+import { commandA, commandB } from './commands'
 
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
-  commands: [commandSpecA, commandSpecB]Ï
+  commands: [commandA, commandB]Ï
 })
 cli.parse(process.argv)
 
 // commands.ts
-import { CommandSpec } from 'clibuilder'
+import { Command } from 'clibuilder'
 
 export const commandA = {
   name: 'echo',
@@ -40,7 +40,7 @@ export const commandA = {
   run(args, argv) {
     this.ui.info(argv)
   }
-} as CommandSpec
+} as Command
 ```
 
 It comes with a plain presenter.
@@ -78,7 +78,7 @@ const cmd = {
     // this.config is typed and accessible
     this.ui.info(this.config)
   }
-} CommandSpec<{ config: typeof config }>
+} Command<{ config: typeof config }>
 
 const cli = new Cli({
   name: 'yourapp',
@@ -101,7 +101,7 @@ const cli = new PluginCli({
 })
 
 // in another package
-import { CommandSpec, CliRegistrar } from 'clibuilder'
+import { Command, CliRegistrar } from 'clibuilder'
 
 export function activate(cli: CliRegistrar) {
   cli.register({
@@ -131,7 +131,7 @@ Besides `Cli` and `PluginCli`,
 `clibuilder` also provides a simple `Task` system for you to easily separate your business logic and view logic within your command.
 
 ```ts
-import { CommandSpec, createTaskRunner, Task } from 'clibuilder'
+import { Command, createTaskRunner, Task } from 'clibuilder'
 
 class AddTask extends Task {
   run(a: number, b: number) {
@@ -146,7 +146,7 @@ function addViewBuilder(emitter: EventEmitter2, { ui }) {
   })
 }
 
-export const MyCommandSpec = {
+export const MyCommand = {
   name: 'my-command',
   run() {
     const runner = createTaskRunner(this, AddTask, addViewBuilder)

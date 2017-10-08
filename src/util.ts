@@ -1,9 +1,9 @@
 import _ = require('lodash')
 
-import { Command, CommandSpec } from './Command'
+import { Command } from './Command'
 
-export function createCommand(spec: CommandSpec, { cwd }): Command {
-  const result = _.merge<Command>({
+export function createCommand(spec: Command, { cwd }): Command.Instance {
+  const result = _.merge<Command.Instance>({
     run: () => { return },
     cwd
   }, spec)
@@ -15,7 +15,7 @@ export function createCommand(spec: CommandSpec, { cwd }): Command {
   return result as any
 }
 
-export function getCommand(nameOrAlias, commands: Command[]) {
+export function getCommand(nameOrAlias, commands: Command.Instance[]) {
   return commands.find(cmd => {
     const match = cmd.name === nameOrAlias ||
       (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)

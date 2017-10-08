@@ -1,6 +1,6 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
-export const echoCommand: CommandSpec = {
+export const echoCommand: Command = {
   name: 'echo',
   arguments: [{
     name: 'args',

@@ -1,6 +1,6 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
-export const noopCommand: CommandSpec = {
+export const noopCommand: Command = {
   name: 'noop',
   run() {
     return

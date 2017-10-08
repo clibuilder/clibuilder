@@ -1,8 +1,8 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
 export const asyncCommand = {
   name: 'async',
   run() {
     return Promise.resolve()
   }
-} as CommandSpec
+} as Command
