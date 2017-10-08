@@ -1,4 +1,4 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
 export const echoNameOptionCommand = {
   name: 'echoNameOption',
@@ -15,4 +15,4 @@ export const echoNameOptionCommand = {
   run(args) {
     this.ui.info(args.name)
   }
-} as CommandSpec
+} as Command

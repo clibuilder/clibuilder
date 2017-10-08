@@ -1,4 +1,4 @@
-import { Command, CommandSpec } from './Command'
+import { Command } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
@@ -8,7 +8,7 @@ import { createCommand, getCommand } from './util'
 export interface CliOption {
   name: string
   version: string
-  commands: CommandSpec[]
+  commands: Command[]
 }
 
 export interface CliContext {
@@ -44,7 +44,7 @@ export class Cli<Context extends CliContext & { [i: string]: any } = CliContext>
       }
     }
   }
-  commands: Command[]
+  commands: Command.Instance[]
   name: string
   version: string
   displayLevel: DisplayLevel

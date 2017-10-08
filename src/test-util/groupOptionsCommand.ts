@@ -1,4 +1,4 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
 export const groupOptionsCommand = {
   name: 'opt',
@@ -18,4 +18,4 @@ export const groupOptionsCommand = {
   run(args) {
     this.ui.info(`a: ${args.a}, b: ${args.b}`)
   }
-} as CommandSpec
+} as Command

@@ -1,6 +1,6 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
-export const verboseCommand: CommandSpec = {
+export const verboseCommand: Command = {
   name: 'verbose',
   alias: ['vb', 'detail'],
   options: {

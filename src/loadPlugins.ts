@@ -1,12 +1,12 @@
 import path = require('path')
 
 import { findPlugins } from './findPlugins'
-import { CommandSpec } from './Command'
+import { Command } from './Command'
 
 class CliRegistrar {
-  command: CommandSpec
+  command: Command
 
-  addCommand(command: CommandSpec) {
+  addCommand(command: Command) {
     this.command = command
   }
 }

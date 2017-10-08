@@ -1,4 +1,4 @@
-import { CommandSpec } from '../Command'
+import { Command } from '../Command'
 
 export const argCommand = {
   name: 'arg',
@@ -16,4 +16,4 @@ export const argCommand = {
   run(args) {
     this.ui.info(...args._)
   }
-} as CommandSpec
+} as Command
