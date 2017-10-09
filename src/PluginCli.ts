@@ -10,8 +10,8 @@ export interface PluginCliOption {
 export interface PluginCliContext extends CliContext {
 }
 
-export class PluginCli<Context extends CliContext & { [i: string]: any } = PluginCliContext> extends Cli {
-  constructor(options: PluginCliOption, context: Partial<Context> = {} as any) {
+export class PluginCli<Context extends { [i: string]: any } = {}> extends Cli {
+  constructor(options: PluginCliOption, context: Partial<PluginCliContext> & Context = {} as any) {
     let { name, version, keyword = `${options.name}-plugin` } = options
     const cwd = context.cwd || process.cwd()
 

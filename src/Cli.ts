@@ -16,7 +16,7 @@ export interface CliContext {
   presenterFactory: PresenterFactory
 }
 
-export class Cli<Context extends CliContext & { [i: string]: any } = CliContext> {
+export class Cli<Context extends { [i: string]: any } = {}> {
   get cwd() {
     return this._cwd
   }
@@ -49,7 +49,7 @@ export class Cli<Context extends CliContext & { [i: string]: any } = CliContext>
   version: string
   displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(option: CliOption, context: Partial<Context> = {} as any) {
+  constructor(option: CliOption, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name
     this.version = option.version
     const cwd = context.cwd || process.cwd()

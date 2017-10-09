@@ -1,4 +1,4 @@
-import { Cli, CliContext, PresenterFactory, PlainPresenter, Display, PresenterOption, LogPresenter, HelpPresenter, VersionPresenter } from '../index'
+import { Cli, PresenterFactory, PlainPresenter, Display, PresenterOption, LogPresenter, HelpPresenter, VersionPresenter } from '../index'
 
 class ColorDisplay implements Display {
   debug(...args: any[]): void {
@@ -27,8 +27,10 @@ class ColorFactory extends PresenterFactory {
   }
 }
 
-export const cli = new Cli<CliContext>({
+const cli = new Cli({
   name: 'dummy',
   version: '1.0.0',
   commands: []
 }, { presenterFactory: new ColorFactory() })
+
+cli.parse([])
