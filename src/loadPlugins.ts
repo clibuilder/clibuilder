@@ -3,7 +3,11 @@ import path = require('path')
 import { findPlugins } from './findPlugins'
 import { Command } from './Command'
 
-class CliRegistrar {
+export interface CliRegistrar {
+  addCommand(command: Command<any>): void
+}
+
+class CliRegistrarImpl {
   command: Command
 
   addCommand(command: Command) {
@@ -45,7 +49,7 @@ function isValidPlugin(m) {
 }
 
 function activatePlugin(m) {
-  const registrar = new CliRegistrar()
+  const registrar = new CliRegistrarImpl()
   m.activate(registrar)
   return registrar.command
 }
