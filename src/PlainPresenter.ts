@@ -98,8 +98,6 @@ function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
       if (c.alias) {
         result.push(...c.alias)
       }
-
-      result.push(...getCommandsNamesAndAlias(c.commands))
     })
   }
   return result
