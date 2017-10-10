@@ -17,7 +17,7 @@ class CliRegistrarImpl {
 
 export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   const pluginNames = findPlugins(keyword, cwd)
-  const globalPluginNames = findPlugins(keyword, process.env.PWD)
+  const globalPluginNames = findPlugins(keyword, getGlobalPackageFolder())
 
   let r = activatePlugins(pluginNames, cwd);
 
@@ -30,6 +30,10 @@ export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   })
 
   return r
+}
+
+function getGlobalPackageFolder(): string {
+  return path.resolve(__dirname, '..');
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
