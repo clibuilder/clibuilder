@@ -51,3 +51,34 @@ Options:
   [--some-option]=value  some description (default 'yes')
 `)
 })
+
+test('nested command shows only top level', t => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.showHelp({
+    name: 'cli',
+    options: {
+      string: { 'some-option': { description: 'some description', default: 'yes' } }
+    },
+    commands: [{
+      name: 'command-1',
+      commands: [{
+        name: 'nested-command'
+      }]
+    }, {
+      name: 'command-2'
+    }]
+  })
+  t.is(display.infoLogs[0][0], `
+Usage: cli <command>
+
+Commands:
+  command-1, command-2
+
+cli <command> -h         Get help for <command>
+
+Options:
+  [--some-option]=value  some description (default 'yes')
+`)
+})
