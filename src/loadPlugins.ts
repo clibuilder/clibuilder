@@ -18,7 +18,7 @@ class CliRegistrarImpl {
 
 export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   const pluginNames = findPlugins(keyword, cwd)
-  const globalPluginNames = findPlugins(keyword, getGlobalPackageFolder())
+  const globalPluginNames = findPlugins(keyword, getGlobalPackageFolder(__dirname))
 
   let r = activatePlugins(pluginNames, cwd);
 
@@ -33,8 +33,10 @@ export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   return r
 }
 
-function getGlobalPackageFolder(): string {
-  return path.resolve(findup.sync('node_modules', { cwd: __dirname }), '..')
+function getGlobalPackageFolder(folder): string {
+  const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
+  const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
+  return path.resolve(findup.sync('node_modules', { cwd: basePath }), '..')
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
