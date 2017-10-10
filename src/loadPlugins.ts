@@ -1,4 +1,5 @@
 import path = require('path')
+import findup = require('find-up')
 
 import { findPlugins } from './findPlugins'
 import { Command } from './Command'
@@ -33,7 +34,7 @@ export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
 }
 
 function getGlobalPackageFolder(): string {
-  return path.resolve(__dirname, '..');
+  return path.resolve(findup.sync('node_modules', { cwd: __dirname }), '..')
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
