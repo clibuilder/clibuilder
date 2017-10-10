@@ -18,14 +18,15 @@ class CliRegistrarImpl {
 
 export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   const pluginNames = findPlugins(keyword, cwd)
-  const globalPluginNames = findPlugins(keyword, getGlobalPackageFolder(__dirname))
+  const globalFolder = getGlobalPackageFolder(__dirname)
+  const globalPluginNames = findPlugins(keyword, globalFolder)
 
   let r = activatePlugins(pluginNames, cwd);
 
   globalPluginNames.forEach(p => {
     if (pluginNames.indexOf(p) !== -1)
       return
-    const m = loadModule(p, process.env.PWD!)
+    const m = loadModule(p, globalFolder)
     if (isValidPlugin(m))
       r.push(activatePlugin(m))
   })
