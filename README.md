@@ -26,7 +26,7 @@ import { commandA, commandB } from './commands'
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
-  commands: [commandA, commandB]Ï
+  commands: [commandA, commandB]
 })
 cli.parse(process.argv)
 
