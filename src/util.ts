@@ -21,13 +21,17 @@ export function getCommand(args: string[], commands: Command.Instance[]): Comman
   if (args.length === 0)
     return undefined
   const nameOrAlias = args.shift()!
-
   let matchedCommand
   commands.forEach(cmd => {
     const match = cmd.name === nameOrAlias ||
       (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)
     if (match) {
-      matchedCommand = cmd.commands ? getCommand(args, cmd.commands) : cmd
+      matchedCommand = cmd
+      if (cmd.commands) {
+        const nested = getCommand(args, cmd.commands)
+        if (nested)
+          matchedCommand = nested
+      }
     }
   })
   return matchedCommand
