@@ -3,7 +3,7 @@ import { PresenterFactory } from './PresenterFactory';
 
 export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: { [index: string]: any }): Command.Instance {
   const result = {
-    run: () => { return },
+    run: () => { return undefined },
     ...context,
     ...spec
   } as Command.Instance
