@@ -17,14 +17,7 @@ export interface CliContext {
 }
 
 export class Cli<Context extends { [i: string]: any } = {}> {
-  get cwd() {
-    return this._cwd
-  }
-  set cwd(value) {
-    this._cwd = value
-    this.commands.forEach(c => c.cwd = value)
-  }
-  _cwd: string
+  cwd: string
   options = {
     boolean: {
       'help': {
@@ -52,12 +45,15 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   constructor(option: CliOption, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name
     this.version = option.version
-    const cwd = context.cwd || process.cwd()
+
+    context.cwd = context.cwd || process.cwd()
     const presenterFactory = context.presenterFactory || new PresenterFactory()
+    delete context.presenterFactory
+    context['parent'] = this
 
     this.ui = presenterFactory.createCliPresenter(this)
     this.commands = option.commands.map(s => {
-      return createCommand(s, { cwd, presenterFactory, parent: this })
+      return createCommand(s, presenterFactory, context)
     })
   }
 
@@ -69,36 +65,37 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   private process(args, rawArgv) {
     if (args.version) {
       this.ui.showVersion(this.version)
+      return Promise.resolve()
     }
-    else {
-      const command = getCommand(args._, this.commands)
-      const cmdChainCount = getCmdChainCount(command)
-      if (!command) {
-        this.ui.showHelp(this)
-      }
-      else if (args.help) {
-        command.ui.showHelp(command)
-      }
-      else {
-        const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
-
-        let cmdArgs
-        try {
-          cmdArgs = parseArgv(command, cmdArgv)
-        }
-        catch (e) {
-          command.ui.error(e.message)
-          command.ui.showHelp(command)
-          return undefined
-        }
-
-        const displayLevel = args.verbose ?
-          DisplayLevel.Verbose : args.silent ?
-            DisplayLevel.Silent : DisplayLevel.Normal
-        command.ui.setDisplayLevel(displayLevel)
-        return command.run(cmdArgs, cmdArgv)
-      }
+    const command = getCommand(args._, this.commands)
+    const cmdChainCount = getCmdChainCount(command)
+    if (!command) {
+      this.ui.showHelp(this)
+      return Promise.resolve()
     }
+
+    if (args.help) {
+      command.ui.showHelp(command)
+      return Promise.resolve()
+    }
+
+    const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+
+    let cmdArgs
+    try {
+      cmdArgs = parseArgv(command, cmdArgv)
+    }
+    catch (e) {
+      command.ui.error(e.message)
+      command.ui.showHelp(command)
+      return Promise.resolve()
+    }
+
+    const displayLevel = args.verbose ?
+      DisplayLevel.Verbose : args.silent ?
+        DisplayLevel.Silent : DisplayLevel.Normal
+    command.ui.setDisplayLevel(displayLevel)
+    return Promise.resolve(command.run(cmdArgs, cmdArgv))
   }
 }
 

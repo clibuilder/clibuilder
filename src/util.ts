@@ -1,17 +1,15 @@
-import _ = require('lodash')
-
 import { Command } from './Command'
 
-export function createCommand(spec: Command, { cwd, parent, presenterFactory }): Command.Instance {
-  const result = _.merge<Command.Instance>({
+export function createCommand(spec: Command, presenterFactory, context): Command.Instance {
+  const result = {
     run: () => { return },
-    cwd,
-    parent
-  }, spec)
+    ...context,
+    ...spec
+  }
   result.ui = presenterFactory.createCommandPresenter(result)
-
+  context.parent = result
   if (result.commands) {
-    result.commands = result.commands.map(c => createCommand(c, { cwd, parent: result, presenterFactory}))
+    result.commands = result.commands.map(c => createCommand(c, presenterFactory, context))
   }
 
   return result as any

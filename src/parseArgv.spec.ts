@@ -6,8 +6,7 @@ import { Command } from './Command';
 import { InMemoryPresenterFactory } from './test-util/InMemoryPresenterFactory';
 
 function createParsable(command: Command, context) {
-  context.presenterFactory = new InMemoryPresenterFactory()
-  return createCommand(command, context)
+  return createCommand(command, new InMemoryPresenterFactory(), context)
 }
 
 test('no arguments and options', t => {

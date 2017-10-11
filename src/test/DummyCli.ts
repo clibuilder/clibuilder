@@ -33,4 +33,4 @@ const cli = new Cli({
   commands: []
 }, { presenterFactory: new ColorFactory() })
 
-cli.parse([])
+cli.parse([]).then(process.exit, process.exit)
