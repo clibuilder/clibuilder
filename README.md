@@ -90,7 +90,7 @@ const cli = new Cli({
 ## PluginCli
 
 `PluginCli` allows you to build plugins to add commands to your application.
-i.e. You can build your application is a distributed fashion.
+i.e. You can build your application in a distributed fashion.
 
 ```ts
 import { PluginCli } from 'clibuilder'
