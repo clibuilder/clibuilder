@@ -57,10 +57,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
 
     this.ui = presenterFactory.createCliPresenter(this)
     this.commands = option.commands.map(s => {
-      const cmd = createCommand(s, { cwd })
-      cmd.ui = presenterFactory.createCommandPresenter(cmd)
-      cmd.parent = this
-      return cmd
+      return createCommand(s, { cwd, presenterFactory, parent: this })
     })
   }
 
@@ -74,8 +71,8 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       this.ui.showVersion(this.version)
     }
     else {
-      const command = getCommand(args._.shift(), this.commands)
-
+      const command = getCommand(args._, this.commands)
+      const cmdChainCount = getCmdChainCount(command)
       if (!command) {
         this.ui.showHelp(this)
       }
@@ -83,7 +80,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
         command.ui.showHelp(command)
       }
       else {
-        const cmdArgv = rawArgv.slice(1).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+        const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
 
         let cmdArgs
         try {
@@ -92,7 +89,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
         catch (e) {
           command.ui.error(e.message)
           command.ui.showHelp(command)
-          return
+          return undefined
         }
 
         const displayLevel = args.verbose ?
@@ -103,4 +100,14 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       }
     }
   }
+}
+
+function getCmdChainCount(command) {
+  let count = 0
+  let p = command
+  while (p) {
+    p = p.parent
+    count++
+  }
+  return count - 1
 }
