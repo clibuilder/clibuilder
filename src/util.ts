@@ -1,6 +1,7 @@
 import { Command } from './Command'
+import { PresenterFactory } from './PresenterFactory';
 
-export function createCommand(spec: Command, presenterFactory, context): Command.Instance {
+export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: {}): Command.Instance {
   const result = {
     run: () => { return },
     ...context,
