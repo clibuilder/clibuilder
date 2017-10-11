@@ -1,19 +1,19 @@
 import { Command } from './Command'
 import { PresenterFactory } from './PresenterFactory';
 
-export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: {}): Command.Instance {
+export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: { [index: string]: any }): Command.Instance {
   const result = {
     run: () => { return },
     ...context,
     ...spec
-  }
+  } as Command.Instance
   result.ui = presenterFactory.createCommandPresenter(result)
   context.parent = result
   if (result.commands) {
     result.commands = result.commands.map(c => createCommand(c, presenterFactory, context))
   }
 
-  return result as any
+  return result
 }
 
 export function getCommand(args: string[], commands: Command.Instance[]): Command.Instance | undefined {
