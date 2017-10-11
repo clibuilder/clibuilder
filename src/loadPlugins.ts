@@ -4,8 +4,8 @@ import findup = require('find-up')
 import { findPlugins } from './findPlugins'
 import { Command } from './Command'
 
-export interface CliRegistrar {
-  addCommand(command: Command<any>): void
+export interface Registrar {
+  addCommand(command: Command<{ [x: string]: any }>): void
 }
 
 class CliRegistrarImpl {

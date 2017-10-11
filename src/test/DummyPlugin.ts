@@ -1,4 +1,4 @@
-import { CliRegistrar, Command, createTaskRunner, Task, ViewContext, EventEmitter2 } from '../index'
+import { Registrar, Command, createTaskRunner, Task, ViewContext, EventEmitter2 } from '../index'
 
 class DummyTask extends Task {
   run() {
@@ -20,6 +20,6 @@ const DummyCommand = {
   }
 } as Command
 
-export function activate(cli: CliRegistrar) {
+export function activate(cli: Registrar) {
   cli.addCommand(DummyCommand)
 }
