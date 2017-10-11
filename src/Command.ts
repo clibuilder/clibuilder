@@ -69,6 +69,7 @@ export namespace Command {
     commands?: Instance[]
     options: Options
     ui: LogPresenter & HelpPresenter
+    run: (this: Instance & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 }
 

@@ -2,30 +2,37 @@ import test from 'ava'
 
 import { parseArgv } from './parseArgv'
 import { createCommand } from './util'
+import { Command } from './Command';
+import { InMemoryPresenterFactory } from './test-util/InMemoryPresenterFactory';
+
+function createParsable(command: Command, context) {
+  context.presenterFactory = new InMemoryPresenterFactory()
+  return createCommand(command, context)
+}
 
 test('no arguments and options', t => {
-  const cmd = createCommand({ name: 'a' }, { cwd: '' })
+  const cmd = createParsable({ name: 'a' }, { cwd: '' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [] })
 })
 
 test('throws with additional argument', t => {
-  const cmd = createCommand({ name: 'a', arguments: [{ name: 'b' }] }, { cwd: '' })
+  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b' }] }, { cwd: '' })
   const argv = ['a', 'b', 'c']
   t.throws(() => parseArgv(cmd, argv))
 })
 
 test('throws with missing argument', t => {
-  const cmd = createCommand({ name: 'a', arguments: [{ name: 'b', required: true }] }, { cwd: '' })
+  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b', required: true }] }, { cwd: '' })
   const argv = ['a']
   t.throws(() => parseArgv(cmd, argv))
 })
 
 test('not throw when there are sub-commands', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
-    commands: [createCommand({ name: 'b' }, { cwd: '' })]
+    commands: [createParsable({ name: 'b' }, { cwd: '' })]
   }, { cwd: '' })
 
   let argv = ['a', 'b']
@@ -35,7 +42,7 @@ test('not throw when there are sub-commands', t => {
 })
 
 test('with arguments', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'x', required: true }]
   }, { cwd: '' })
@@ -45,7 +52,7 @@ test('with arguments', t => {
 })
 
 test('throw with unknown options', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
     options: {
       boolean: {
@@ -61,7 +68,7 @@ test('throw with unknown options', t => {
 })
 
 test('with boolean options', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
     options: {
       boolean: {
@@ -85,7 +92,7 @@ test('with boolean options', t => {
 })
 
 test('fill default for boolean option', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
     options: {
       boolean: {
@@ -102,7 +109,7 @@ test('fill default for boolean option', t => {
 })
 
 test('fill default for string option', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'a',
     options: {
       string: {
@@ -119,7 +126,7 @@ test('fill default for string option', t => {
 })
 
 test('zero or more args should accept 0 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -135,7 +142,7 @@ test('zero or more args should accept 0 args', t => {
 
 
 test('zero or more args should accept 1 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -150,7 +157,7 @@ test('zero or more args should accept 1 args', t => {
 })
 
 test('zero or more args should accept 2 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -165,7 +172,7 @@ test('zero or more args should accept 2 args', t => {
 })
 
 test('one or more args should not accept 0 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -179,7 +186,7 @@ test('one or more args should not accept 0 args', t => {
   t.throws(() => parseArgv(cmd, argv))
 })
 test('one or more args should not accept 1 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -194,7 +201,7 @@ test('one or more args should not accept 1 args', t => {
   t.deepEqual(actual, { _: ['a'] })
 })
 test('one or more args should not accept 2 args', t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'args',
     arguments: [
       {
@@ -210,7 +217,7 @@ test('one or more args should not accept 2 args', t => {
 })
 
 test(`group option should not set default if passed in`, t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'opts',
     options: {
       boolean: {
@@ -239,7 +246,7 @@ test(`group option should not set default if passed in`, t => {
 })
 
 test(`group option should not set default if alias of one of the options is passed in`, t => {
-  const cmd = createCommand({
+  const cmd = createParsable({
     name: 'opts',
     options: {
       boolean: {

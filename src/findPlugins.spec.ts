@@ -11,6 +11,5 @@ test('find one plugin on one-plugin folder', t => {
 })
 
 test('find one plugin in scoped-plugin folder', t => {
-  console.log(process.env.PWD)
   t.deepEqual(findPlugins('clibuilder-plugin', 'fixtures/scoped-plugin'), ['@cli/y'])
 })
