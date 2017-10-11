@@ -41,7 +41,7 @@ test('run 1st level command', t => {
       }]
     }]
   }
-  const cmd = createCommand(cli, { cwd: '.', parent: undefined, presenterFactory: new InMemoryPresenterFactory() })
+  const cmd = createCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
   const actual = getCommand(['clibuilder', 'cmd'], [cmd])
   t.not(actual, undefined)
   t.is(actual!.name, 'cmd')

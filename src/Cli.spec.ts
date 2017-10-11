@@ -1,8 +1,8 @@
 import test from 'ava'
-import Order from 'assert-order'
 
 import { Cli } from './Cli'
 import { createArgv } from './test-util/index';
+import { Command } from './Command';
 
 test('Cli context shape should follow input literal', t => {
   const cli = new Cli({
@@ -20,8 +20,7 @@ test('Cli context shape should follow input literal', t => {
   t.truthy(cli2)
 })
 
-test('run nested command', t => {
-  const order = new Order(1)
+test('run nested command', async t => {
   const cli = new Cli({
     name: 'clibuilder',
     version: '1.1.11',
@@ -33,12 +32,24 @@ test('run nested command', t => {
       commands: [{
         name: 'nested-cmd',
         run() {
-          order.once(0)
+          t.pass()
         }
       }]
     }]
   }, { cwd: '', abc: '123' })
-  cli.parse(createArgv('clibuilder', 'cmd', 'nested-cmd'))
-  order.end()
-  t.pass()
+  await cli.parse(createArgv('clibuilder', 'cmd', 'nested-cmd'))
+})
+
+test('support extending context', t => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.2.1',
+    commands: [{
+      name: 'cmd',
+      run() {
+        t.not(this.custom, undefined)
+      }
+    } as Command<{ custom: boolean }>]
+  }, { cwd: '', custom: true })
+  return cli.parse(createArgv('cli', 'cmd'))
 })
