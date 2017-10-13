@@ -3,7 +3,7 @@ import _ = require('lodash')
 
 import { Cli } from './index'
 import {
-  createArgv,
+  createCliArgv,
   createInMemoryCli,
   InMemoryDisplay,
   InMemoryPresenter,
@@ -41,7 +41,7 @@ then help will be shown`,
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli'))
+    await cli.parse(createCliArgv('cli'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -54,7 +54,7 @@ then the help message will be shown`,
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli', '--help'))
+    await cli.parse(createCliArgv('cli', '--help'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -67,7 +67,7 @@ then the help message will be shown`,
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli', '-h'))
+    await cli.parse(createCliArgv('cli', '-h'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -82,7 +82,7 @@ then the help message is shwon
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli', '--silent'))
+    await cli.parse(createCliArgv('cli', '--silent'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
   })
@@ -94,7 +94,7 @@ then the help message will be shown`,
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli', 'oh'))
+    await cli.parse(createCliArgv('cli', 'oh'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, noopHelpMessage)
@@ -107,7 +107,7 @@ then version will be shown`,
     const cli = createInMemoryCli('cli', noopCommand)
     const display: InMemoryDisplay = (cli as any).ui.display
 
-    await cli.parse(createArgv('cli', '-v'))
+    await cli.parse(createCliArgv('cli', '-v'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '1.0.0')
   })
@@ -119,7 +119,7 @@ then no message is shown`,
     const cli = createInMemoryCli('cli', verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'verbose'))
+    await cli.parse(createCliArgv('cli', 'verbose'))
     t.is(display.debugLogs.length, 0)
   })
 
@@ -130,7 +130,7 @@ then the verbosed message is shown`,
     const cli = createInMemoryCli('cli', verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'verbose', '--verbose'))
+    await cli.parse(createCliArgv('cli', 'verbose', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -141,7 +141,7 @@ then the verbosed message is shown`,
     const cli = createInMemoryCli('cli', verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'vb', '--verbose'))
+    await cli.parse(createCliArgv('cli', 'vb', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -152,7 +152,7 @@ then the verbosed message is shown`,
     const cli = createInMemoryCli('cli', verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'detail', '--verbose'))
+    await cli.parse(createCliArgv('cli', 'detail', '--verbose'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -163,7 +163,7 @@ then the verbosed message is shown`,
     const cli = createInMemoryCli('cli', verboseCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'verbose', '-V'))
+    await cli.parse(createCliArgv('cli', 'verbose', '-V'))
     t.is(display.debugLogs.length, 1)
   })
 
@@ -174,7 +174,7 @@ then no message is shown`,
     const cli = createInMemoryCli('cli', errorCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'error', '--silent'))
+    await cli.parse(createCliArgv('cli', 'error', '--silent'))
     t.is(display.errorLogs.length, 0)
   })
 
@@ -185,7 +185,7 @@ then the help message for each is shwon`,
     const cli = createInMemoryCli('cli', echoCommand)
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
-    await cli.parse(createArgv('cli', 'echo', '-h'))
+    await cli.parse(createCliArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, `
 Usage: cli echo
@@ -208,7 +208,7 @@ and not on the main display`,
     const display: InMemoryDisplay = (cli as any).ui.display
     const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']
 
-    await cli.parse(createArgv('cli', 'echo', '-h'))
+    await cli.parse(createCliArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, '')
 
@@ -232,7 +232,7 @@ then will echo 'abc'
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [echoCommand] })
     const display = spyDisplay(cli, 'echo')
 
-    await cli.parse(createArgv('cli', 'echo', 'abc'))
+    await cli.parse(createCliArgv('cli', 'echo', 'abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'echo abc')
   })
@@ -245,7 +245,7 @@ then will echo 'abc'`,
     const cli = createInMemoryCli('cli', echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
-    await cli.parse(createArgv('cli', 'eno', '--name=abc'))
+    await cli.parse(createCliArgv('cli', 'eno', '--name=abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'abc')
   })
@@ -258,7 +258,7 @@ then will each 'abc'`,
     const cli = createInMemoryCli('cli', echoNameOptionCommand)
     const display = (cli.commands[0].ui as any).display as InMemoryDisplay
 
-    await cli.parse(createArgv('cli', 'eno'))
+    await cli.parse(createCliArgv('cli', 'eno'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.is(infos, 'abc')
   })
@@ -269,7 +269,7 @@ test(`
   then can await on parse`,
   async t => {
     const cli = createInMemoryCli('cli', argCommand)
-    await await cli.parse(createArgv('cli', 'async'))
+    await await cli.parse(createCliArgv('cli', 'async'))
     t.pass()
   })
 
@@ -281,7 +281,7 @@ then show report missing argument`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
     const display = spyDisplay(cli, 'arg')
 
-    await await cli.parse(createArgv('cli', 'arg'))
+    await await cli.parse(createCliArgv('cli', 'arg'))
 
     const actual = generateDisplayedMessage(display.errorLogs)
     t.is(actual, 'Missing argument(s)')
@@ -295,7 +295,7 @@ then echo x`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
     const display = spyDisplay(cli, 'arg')
 
-    await await cli.parse(createArgv('cli', 'arg', 'x'))
+    await await cli.parse(createCliArgv('cli', 'arg', 'x'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'x')
@@ -309,7 +309,7 @@ Then options 'a' is true and 'b' is false`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createArgv('cli', 'opt'))
+    await await cli.parse(createCliArgv('cli', 'opt'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: false')
@@ -323,7 +323,7 @@ Then options 'a' is true and 'b' is false`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createArgv('cli', 'opt', '-a'))
+    await await cli.parse(createCliArgv('cli', 'opt', '-a'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: false')
@@ -337,7 +337,7 @@ Then options 'a' is true and 'b' is true`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createArgv('cli', 'opt', '-b'))
+    await await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: true')
@@ -352,7 +352,7 @@ Then options 'a' is false and 'b' is true`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [groupOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createArgv('cli', 'opt', '-b'))
+    await await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: false, b: true')
