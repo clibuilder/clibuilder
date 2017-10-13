@@ -14,16 +14,17 @@ export class UnknownOptionError extends Error {
   }
 }
 
-export interface Parseable {
+export interface Parsable {
+  name: string
   arguments?: Command.Argument[]
-  commands?: Parseable[]
+  commands?: Parsable[]
   options?: {
     boolean?: Command.BooleanOptions
     string?: Command.StringOptions
   }
 }
 
-export function parseArgv(parsable: Parseable, rawArgv: string[]) {
+export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toMinimistOption(parsable.options)
   const args = minimist(rawArgv, options)
   args._.shift()
@@ -65,7 +66,7 @@ function toMinimistOption(options) {
   }
 }
 
-function validateArguments(command: Parseable, args) {
+function validateArguments(command: Parsable, args) {
   if (command.arguments) {
     const total = command.arguments.length
     let required = 0
@@ -132,7 +133,7 @@ function extractTypes(sourceMap, valueType) {
   return map
 }
 
-function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, rawArgv: string[]) {
+function handleGroupedOptions(parsable: Parsable, args: minimist.ParsedArgs, rawArgv: string[]) {
   if (!parsable.options)
     return
 
@@ -190,7 +191,7 @@ function handleGroupedOptions(parsable: Parseable, args: minimist.ParsedArgs, ra
   })
 }
 
-function findOptionNameAndAlias({ options }: Pick<Parseable, 'options'>, name: string) {
+function findOptionNameAndAlias({ options }: Pick<Parsable, 'options'>, name: string) {
   const result = [name]
   const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name])
   if (o && o.alias) {

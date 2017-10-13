@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import { Cli } from './Cli'
-import { createArgv } from './test-util/index';
+import { createCliArgv } from './test-util/index';
 import { Command } from './Command';
 
 test('Cli context shape should follow input literal', t => {
@@ -37,7 +37,7 @@ test('run nested command', async t => {
       }]
     }]
   }, { cwd: '', abc: '123' })
-  await cli.parse(createArgv('clibuilder', 'cmd', 'nested-cmd'))
+  await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
 })
 
 test('support extending context', t => {
@@ -51,5 +51,5 @@ test('support extending context', t => {
       }
     } as Command<{ custom: boolean }>]
   }, { cwd: '', custom: true })
-  return cli.parse(createArgv('cli', 'cmd'))
+  return cli.parse(createCliArgv('cli', 'cmd'))
 })
