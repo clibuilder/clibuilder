@@ -1,6 +1,6 @@
 import { Command } from '../Command'
 
-export const optionsCommand = {
+export const booleanOptionsCommand = {
   name: 'opt',
   options: {
     boolean: {

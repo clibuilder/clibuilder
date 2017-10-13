@@ -15,7 +15,7 @@ import {
   echoCommand,
   errorCommand,
   echoNameOptionCommand,
-  optionsCommand,
+  booleanOptionsCommand,
   groupOptionsCommand
 } from './test-util'
 
@@ -306,7 +306,7 @@ Given cli with opt command
 When called with 'opt'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand] })
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
     await await cli.parse(createCliArgv('cli', 'opt'))
@@ -320,7 +320,7 @@ Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true and 'b' is false`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand]})
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
     await await cli.parse(createCliArgv('cli', 'opt', '-a'))
@@ -334,7 +334,7 @@ Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [optionsCommand]})
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
     await await cli.parse(createCliArgv('cli', 'opt', '-b'))

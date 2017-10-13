@@ -4,7 +4,7 @@ import { createCommandArgs } from './index'
 
 import { noopCommand } from './noopCommand'
 import { argCommand } from './argCommand'
-import { optionsCommand } from './optionsCommand'
+import { booleanOptionsCommand } from './booleanOptionsCommand'
 import { stringOptionCommand } from './stringOptionCommand'
 
 test('empty argv', t => {
@@ -20,7 +20,7 @@ test(`one argv`, t => {
 })
 
 test(`boolean option using with '--'`, t => {
-  const args = createCommandArgs(optionsCommand, ['--a'])
+  const args = createCommandArgs(booleanOptionsCommand, ['--a'])
 
   t.deepEqual(args, { a: true, b: false, _: [] })
 })
