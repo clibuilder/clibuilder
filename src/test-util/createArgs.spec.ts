@@ -19,24 +19,25 @@ test(`one argv`, t => {
   t.deepEqual(args, { _: ['arg1'] })
 })
 
-test(`using --option[--a]`, t => {
+test(`boolean option using with '--'`, t => {
   const args = createCommandArgs(optionsCommand, ['--a'])
+
   t.deepEqual(args, { a: true, b: false, _: [] })
 })
 
-test('named option with =', t => {
+test('string option with =', t => {
   const args = createCommandArgs(stringOptionCommand, ['--a=abc'])
 
   t.deepEqual(args, { a: 'abc', _: [] })
 })
 
-test.failing('named option with space', t => {
+test.failing('string option with space', t => {
   const args = createCommandArgs(stringOptionCommand, ['-a 3'])
 
   t.deepEqual(args, { a: '3', _: [] })
 })
 
-test('named option without space', t => {
+test('string option without space', t => {
   const args = createCommandArgs(stringOptionCommand, ['-a5'])
 
   t.deepEqual(args, { a: '5', _: [] })
