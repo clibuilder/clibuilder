@@ -1,4 +1,4 @@
-import * as minimist from 'minimist'
+import minimist = require('minimist')
 
 import { Command } from './Command'
 
