@@ -1,10 +1,10 @@
-import { LogPresenter } from './Presenter'
+import { LogPresenter, HelpPresenter } from './Presenter'
 
 import { EventEmitter2 } from 'eventemitter2'
 import _ = require('lodash')
 
 export interface ViewContext {
-  ui: LogPresenter
+  ui: LogPresenter & HelpPresenter
 }
 
 export type ViewBuilder<Context extends ViewContext = ViewContext> = (emitter: EventEmitter2, context: Context) => void
