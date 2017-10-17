@@ -4,7 +4,8 @@ import path = require('path')
 export function findPlugins(keyword, cwd) {
   const folders = findPackageFolders(cwd)
   return folders.filter(f => {
-    const pjson = JSON.parse(readFileSafe(path.resolve(cwd, 'node_modules', f, 'package.json')))
+    const content = readFileSafe(path.resolve(cwd, 'node_modules', f, 'package.json'))
+    const pjson = content ? JSON.parse(content) : undefined
     if (!pjson || !pjson.keywords)
       return false
     return pjson.keywords.indexOf(keyword) !== -1
@@ -49,7 +50,7 @@ function readFileSafe(path) {
   }
   catch (err) {
     if (err.code === 'ENOENT')
-      return ''
+      return undefined
     throw err
   }
 }
