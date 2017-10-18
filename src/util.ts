@@ -8,9 +8,8 @@ export function createCommand(spec: Command, presenterFactory: PresenterFactory,
     ...spec
   } as Command.Instance
   result.ui = presenterFactory.createCommandPresenter(result)
-  context.parent = result
   if (result.commands) {
-    result.commands = result.commands.map(c => createCommand(c, presenterFactory, context))
+    result.commands = result.commands.map(c => createCommand(c, presenterFactory, {...context, parent: result}))
   }
 
   return result

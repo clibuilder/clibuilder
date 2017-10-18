@@ -46,3 +46,18 @@ test('run 1st level command', t => {
   t.not(actual, undefined)
   t.is(actual!.name, 'cmd')
 })
+
+test('two sub commands should have the same parent', t => {
+  const cli = {
+    name: 'clibuilder',
+    commands: [{
+      name: 'cmd1'
+    }, {
+      name: 'cmd2'
+    }]
+  }
+  const cmd = createCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
+  cmd.commands!.forEach(c => {
+    t.is(c.parent, cmd)
+  })
+})
