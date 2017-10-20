@@ -34,6 +34,39 @@ Options:
 `)
 })
 
+test('single character option should use with single dash', t => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.showHelp({
+    name: 'a', options: {
+      boolean: { 'x': { description: 'some description', default: true } }
+    }
+  })
+  t.is(display.infoLogs[0][0], `
+Usage: a
+
+Options:
+  [-x]                   some description (default true)
+`)
+})
+
+test('multi-character option alias should be use with double dash', t => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.showHelp({
+    name: 'a', options: {
+      boolean: { 'some-option': { alias: ['sopt'], description: 'some description', default: true } }
+    }
+  })
+  t.is(display.infoLogs[0][0], `
+Usage: a
+
+Options:
+  [--sopt|--some-option]  some description (default true)
+`)
+})
 
 test('help message indicates default string option', t => {
   const p = new PlainPresenter({ name: 'a' })

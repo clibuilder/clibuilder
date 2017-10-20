@@ -273,19 +273,3 @@ test(`group option should not set default if alias of one of the options is pass
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], a111: false, b: true, b111: true })
 })
-
-test(`option alias can only be single character`, t => {
-  const cmd = createParsable({
-    name: 'badOpt',
-    options: {
-      boolean: {
-        a1: {
-          alias: ['abc'],
-          description: 'a'
-        }
-      }
-    }
-  }, { cwd: '' })
-  const argv = ['cli', '-abc']
-  t.throws(() => parseArgv(cmd, argv), 'Option alias can only be single character: a1')
-})
