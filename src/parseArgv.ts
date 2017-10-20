@@ -26,6 +26,9 @@ export interface Parsable {
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toMinimistOption(parsable.options)
+
+  validateNoMultipleCharOptionAlias(options)
+
   const args = minimist(rawArgv, options)
   args._.shift()
   if (parsable.commands) {
@@ -62,6 +65,17 @@ function toMinimistOption(options) {
           result.default[k] = v.default
         }
       })
+    }
+  }
+}
+
+function validateNoMultipleCharOptionAlias(options) {
+  if (options.alias) {
+    const optionWithBadAlias = Object.keys(options.alias).find(k => {
+      return options.alias[k].some(a => a.length > 1)
+    })
+    if (optionWithBadAlias) {
+      throw new Error(`Option alias can only be single character: ${optionWithBadAlias}`)
     }
   }
 }
