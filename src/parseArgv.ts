@@ -26,6 +26,7 @@ export interface Parsable {
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toMinimistOption(parsable.options)
+
   const args = minimist(rawArgv, options)
   args._.shift()
   if (parsable.commands) {
