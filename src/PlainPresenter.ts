@@ -160,7 +160,7 @@ function generateOptionsSection(command: CommandModel) {
 }
 
 function formatKeyValue(key, value) {
-  const values = value.alias ? [...value.alias, key] : [key]
+  const values = value.alias ? [...value.alias, key].sort((a, b) => a.length - b.length) : [key]
   return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]`
 }
 

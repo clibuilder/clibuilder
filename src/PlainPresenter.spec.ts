@@ -68,6 +68,24 @@ Options:
 `)
 })
 
+test('option and its alias should be sorted by length', t => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.showHelp({
+    name: 'a', options: {
+      boolean: { 'some-option': { alias: ['sopt', 'o'], description: 'some description', default: true } }
+    }
+  })
+  t.is(display.infoLogs[0][0], `
+Usage: a
+
+Options:
+  [-o|--sopt|--some-option]  some description (default true)
+`)
+})
+
+
 test('help message indicates default string option', t => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
