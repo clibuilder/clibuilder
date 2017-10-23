@@ -1,4 +1,4 @@
-import minimist = require('minimist')
+import yargs = require('yargs-parser')
 
 import { Command } from './Command'
 
@@ -20,14 +20,15 @@ export interface Parsable {
   commands?: Parsable[]
   options?: {
     boolean?: Command.BooleanOptions
-    string?: Command.StringOptions
+    string?: Command.StringOptions,
+    number?: Command.NumberOption
   }
 }
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
-  const options = toMinimistOption(parsable.options)
+  const options = toYargsOption(parsable.options)
 
-  const args = minimist(rawArgv, options)
+  const args = yargs(rawArgv, options)
   args._.shift()
   if (parsable.commands) {
     return args
@@ -40,13 +41,14 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   return args
 }
 
-function toMinimistOption(options) {
+function toYargsOption(options) {
   if (!options) {
     return {}
   }
   const result: any = { alias: {}, default: {} }
   fillOptions('boolean')
   fillOptions('string')
+  fillOptions('number')
 
   return result
 
@@ -101,6 +103,7 @@ function validateOptions(command, args) {
   if (command.options) {
     map = { ...map, ...extractTypes(command.options.boolean, 'boolean') }
     map = { ...map, ...extractTypes(command.options.string, 'string') }
+    map = { ...map, ...extractTypes(command.options.number, 'number') }
   }
 
   Object.keys(args).forEach(name => {
@@ -110,6 +113,9 @@ function validateOptions(command, args) {
       }
       if (map[name] === 'string' && typeof args[name] !== 'string') {
         throw new InvalidOptionError(name, 'string', args[name])
+      }
+      if (map[name] === 'number' && typeof args[name] !== 'number') {
+        throw new InvalidOptionError(name, 'number', args[name])
       }
     }
     else {
@@ -134,11 +140,11 @@ function extractTypes(sourceMap, valueType) {
   return map
 }
 
-function handleGroupedOptions(parsable: Parsable, args: minimist.ParsedArgs, rawArgv: string[]) {
+function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArgv: string[]) {
   if (!parsable.options)
     return
 
-  const noDefaults = minimist(rawArgv)
+  const noDefaults = yargs(rawArgv)
   const groups = getAllGroups(parsable.options)
   function getAllGroups(opts) {
     const groups = {}
