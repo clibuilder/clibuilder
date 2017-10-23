@@ -33,7 +33,7 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   if (parsable.commands) {
     return args
   }
-
+  fixStringOptions(args)
   validateArguments(parsable, args)
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
@@ -67,6 +67,14 @@ function toYargsOption(options) {
       })
     }
   }
+}
+
+function fixStringOptions(args) {
+  Object.keys(args).forEach(k => {
+    if (typeof args[k] === 'string') {
+      args[k] = args[k].trim()
+    }
+  })
 }
 
 function validateArguments(command: Parsable, args) {
