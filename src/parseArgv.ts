@@ -1,4 +1,4 @@
-import minimist = require('minimist')
+import yargs = require('yargs-parser')
 
 import { Command } from './Command'
 
@@ -27,7 +27,7 @@ export interface Parsable {
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toMinimistOption(parsable.options)
 
-  const args = minimist(rawArgv, options)
+  const args = yargs(rawArgv, options)
   args._.shift()
   if (parsable.commands) {
     return args
@@ -134,11 +134,11 @@ function extractTypes(sourceMap, valueType) {
   return map
 }
 
-function handleGroupedOptions(parsable: Parsable, args: minimist.ParsedArgs, rawArgv: string[]) {
+function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArgv: string[]) {
   if (!parsable.options)
     return
 
-  const noDefaults = minimist(rawArgv)
+  const noDefaults = yargs(rawArgv)
   const groups = getAllGroups(parsable.options)
   function getAllGroups(opts) {
     const groups = {}
