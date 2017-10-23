@@ -5,8 +5,6 @@ import { createCommandArgs } from './index'
 import { noopCommand } from './noopCommand'
 import { argCommand } from './argCommand'
 import { booleanOptionsCommand } from './booleanOptionsCommand'
-import { stringOptionCommand } from './stringOptionCommand'
-import { numberOptionCommand } from './numberOptionCommand';
 
 test('empty argv', t => {
   const args = createCommandArgs(noopCommand)
@@ -24,28 +22,4 @@ test(`boolean option using with '--'`, t => {
   const args = createCommandArgs(booleanOptionsCommand, ['--a'])
 
   t.deepEqual(args, { a: true, b: false, _: [] })
-})
-
-test('string option with =', t => {
-  const args = createCommandArgs(stringOptionCommand, ['--a=abc'])
-
-  t.deepEqual(args, { a: 'abc', _: [] })
-})
-
-test.failing('string option with space', t => {
-  const args = createCommandArgs(stringOptionCommand, ['-a 3'])
-
-  t.deepEqual(args, { a: '3', _: [] })
-})
-
-test('string option without space', t => {
-  const args = createCommandArgs(stringOptionCommand, ['-a5'])
-
-  t.deepEqual(args, { a: '5', _: [] })
-})
-
-test('number option', t => {
-  const args = createCommandArgs(numberOptionCommand, ['-a 3'])
-
-  t.deepEqual(args, { a: 3, _: [] })
 })
