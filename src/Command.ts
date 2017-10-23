@@ -31,13 +31,21 @@ export namespace Command {
     [optionName: string]: {
       description: string
       alias?: string[]
-      default?: string,
+      default?: string
       /**
        * An option group this option belongs to.
        * If the option belongs to a group and one of the options has be set,
        * the other options will not have their default value.
        */
       group?: string
+    }
+  }
+
+  export interface NumberOption {
+    [optionName: string]: {
+      description: string
+      alias?: string[]
+      default?: string
     }
   }
 

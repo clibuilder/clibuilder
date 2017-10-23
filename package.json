@@ -77,13 +77,12 @@
     ]
   },
   "dependencies": {
-    "@types/minimist": "^1.2.0",
     "eventemitter2": "^4.1.2",
     "find-up": "^2.1.0",
     "lodash": "^4.17.4",
-    "minimist": "^1.2.0",
     "pad-right": "^0.2.2",
-    "wordwrap": "^1.0.0"
+    "wordwrap": "^1.0.0",
+    "yargs-parser": "^8.0.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.77",
@@ -97,6 +96,6 @@
     "rimraf": "^2.6.2",
     "tslint": "^5.7.0",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.6.0-dev.20171012"
+    "typescript": "^2.6.0-rc"
   }
 }
