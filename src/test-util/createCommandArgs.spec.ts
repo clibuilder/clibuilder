@@ -6,6 +6,7 @@ import { noopCommand } from './noopCommand'
 import { argCommand } from './argCommand'
 import { booleanOptionsCommand } from './booleanOptionsCommand'
 import { stringOptionCommand } from './stringOptionCommand'
+import { numberOptionCommand } from './numberOptionCommand';
 
 test('empty argv', t => {
   const args = createCommandArgs(noopCommand)
@@ -41,4 +42,10 @@ test('string option without space', t => {
   const args = createCommandArgs(stringOptionCommand, ['-a5'])
 
   t.deepEqual(args, { a: '5', _: [] })
+})
+
+test('number option', t => {
+  const args = createCommandArgs(numberOptionCommand, ['-a 3'])
+
+  t.deepEqual(args, { a: 3, _: [] })
 })
