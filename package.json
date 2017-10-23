@@ -96,6 +96,6 @@
     "rimraf": "^2.6.2",
     "tslint": "^5.7.0",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.6.0-dev.20171012"
+    "typescript": "^2.6.0-rc"
   }
 }
