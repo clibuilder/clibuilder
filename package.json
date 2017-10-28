@@ -77,8 +77,8 @@
     ]
   },
   "dependencies": {
-    "eventemitter2": "^4.1.2",
     "find-up": "^2.1.0",
+    "fsa-emitter": "^0.1.1",
     "lodash": "^4.17.4",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",

@@ -1,15 +1,15 @@
-import { LogPresenter, HelpPresenter } from './Presenter'
-
-import { EventEmitter2 } from 'eventemitter2'
+import { Emitter } from 'fsa-emitter'
 import _ = require('lodash')
+
+import { LogPresenter, HelpPresenter } from './Presenter'
 
 export interface ViewContext {
   ui: LogPresenter & HelpPresenter
 }
 
-export type ViewBuilder<Context extends ViewContext = ViewContext> = (emitter: EventEmitter2, context: Context) => void
+export type ViewBuilder<Context extends ViewContext = ViewContext> = (emitter: Emitter, context: Context) => void
 export interface TaskContext {
-  emitter: EventEmitter2
+  emitter: Emitter
 }
 
 export type TaskConstructor<T extends Task = Task> = new (context: TaskContext) => T
@@ -19,7 +19,7 @@ export type TaskConstructor<T extends Task = Task> = new (context: TaskContext) 
  * Communication to UI is done through emitter.
  */
 export abstract class Task {
-  protected emitter: EventEmitter2
+  protected emitter: Emitter
   constructor(context: TaskContext) {
     _.defaults(this, context)
   }
@@ -32,7 +32,7 @@ export abstract class Task {
 }
 
 export function createTaskRunner<T extends Task, VC extends ViewContext = ViewContext>(context: VC, Task: TaskConstructor<T>, emitterBuilder: ViewBuilder<VC> = () => { return }) {
-  const emitter = new EventEmitter2()
+  const emitter = new Emitter()
   emitterBuilder(emitter, context)
 
   return {

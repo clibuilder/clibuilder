@@ -1,14 +1,18 @@
-import { Registrar, Command, createTaskRunner, Task, ViewContext, EventEmitter2 } from '../index'
+import { Emitter, createActionCreator } from 'fsa-emitter'
+
+import { Registrar, Command, createTaskRunner, Task, ViewContext } from '../index'
+
+const message = createActionCreator<string>('dummy')
 
 class DummyTask extends Task {
   run() {
-    this.emitter.emit('dummy')
+    this.emitter.emit(message('dummy', undefined))
   }
 }
 
-function dummyViewBuilder(emitter: EventEmitter2, { ui }: ViewContext) {
-  emitter.on('dummy', () => {
-    ui.info('dummy!')
+function dummyViewBuilder(emitter: Emitter, { ui }: ViewContext) {
+  emitter.addListener(message, action => {
+    ui.info(action.payload)
   })
 }
 
