@@ -11,8 +11,8 @@ class DummyTask extends Task {
 }
 
 function dummyViewBuilder(emitter: Emitter, { ui }: ViewContext) {
-  emitter.addListener(message, action => {
-    ui.info(action.payload)
+  emitter.on(message, payload => {
+    ui.info(payload)
   })
 }
 
