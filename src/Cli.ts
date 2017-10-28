@@ -40,7 +40,6 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   commands: Command.Instance[]
   name: string
   version: string
-  displayLevel: DisplayLevel
   private ui: LogPresenter & HelpPresenter & VersionPresenter
   constructor(option: CliOption, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name

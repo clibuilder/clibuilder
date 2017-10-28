@@ -1,20 +1,21 @@
 import test from 'ava'
 import Order from 'assert-order'
+import { createActionCreator } from 'fsa-emitter';
 
 import { Task } from './Task'
 import { setupTaskTest } from './test-util/setup'
 
 test('task runner can run task', t => {
-
+  const event = createActionCreator('event')
   class TestTask extends Task {
     run() {
-      this.emitter.emit('TestTask')
+      this.emitter.emit(event(undefined, undefined))
     }
   }
 
   const order = new Order(1)
   const { runner } = setupTaskTest(TestTask, (emitter) => {
-    emitter.on('TestTask', () => {
+    emitter.addListener(event, () => {
       order.once(0)
     })
   })
