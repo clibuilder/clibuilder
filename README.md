@@ -145,7 +145,7 @@ class AddTask extends Task {
 }
 
 function addViewBuilder(emitter: EventEmitter2, { ui }) {
-  emitter.on(addTaskRan, ({ a, b, result}) => {
+  emitter.on(addTaskRan, ({ a, b, result }) => {
     ui.info(`${a} + ${b} = ${result}`)
   })
 }
