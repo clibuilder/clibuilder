@@ -187,8 +187,8 @@ npm run watch
 [npm-url]: https://npmjs.org/package/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
 [downloads-url]: https://npmjs.org/package/clibuilder
-[travis-image]: https://img.shields.io/travis/unional/clibuilder.svg?style=flat
-[travis-url]: https://travis-ci.org/unional/clibuilder
+[travis-image]: https://img.shields.io/travis/unional/clibuilder/master.svg?style=flat
+[travis-url]: https://travis-ci.org/unional/clibuilder?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/unional/clibuilder/badge.svg
 [coveralls-url]: https://coveralls.io/github/unional/clibuilder
 [greenkeeper-image]: https://badges.greenkeeper.io/unional/clibuilder.svg
