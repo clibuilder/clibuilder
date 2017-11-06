@@ -129,19 +129,23 @@ new PluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
 
 Besides `Cli` and `PluginCli`,
 `clibuilder` also provides a simple `Task` system for you to easily separate your business logic and view logic within your command.
+It uses [`fsa-emitter`](https://github.com/unional/fsa-emitter)
 
 ```ts
 import { Command, createTaskRunner, Task } from 'clibuilder'
+import { createActionCreator } from 'fsa-emitter'
+
+const addTaskRan = createActionCreator<{ a: number, b: number, result: number }>('AddTask/run')
 
 class AddTask extends Task {
   run(a: number, b: number) {
     const result = a + b
-    this.emitter.emit('AddTask/run', { a, b, result })
+    this.emitter.emit(addTaskRan({ a, b, result }, undefined))
   }
 }
 
 function addViewBuilder(emitter: EventEmitter2, { ui }) {
-  emitter.on('AddTask/run', ({ a, b, result}) => {
+  emitter.on(addTaskRan, ({ a, b, result}) => {
     ui.info(`${a} + ${b} = ${result}`)
   })
 }
