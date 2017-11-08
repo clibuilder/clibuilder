@@ -1,8 +1,8 @@
-import { Emitter, createActionCreator } from 'fsa-emitter'
+import { Emitter, createEvent } from 'fsa-emitter'
 
 import { Registrar, Command, createTaskRunner, Task, ViewContext } from '../index'
 
-const message = createActionCreator<string>('dummy')
+const message = createEvent<string>('dummy')
 
 class DummyTask extends Task {
   run() {

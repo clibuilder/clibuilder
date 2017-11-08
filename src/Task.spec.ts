@@ -1,12 +1,12 @@
 import test from 'ava'
 import Order from 'assert-order'
-import { createActionCreator } from 'fsa-emitter';
+import { createEvent } from 'fsa-emitter';
 
 import { Task } from './Task'
 import { setupTaskTest } from './test-util/setup'
 
 test('task runner can run task', t => {
-  const event = createActionCreator('event')
+  const event = createEvent('event')
   class TestTask extends Task {
     run() {
       this.emitter.emit(event(undefined, undefined))
