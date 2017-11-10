@@ -15,7 +15,7 @@
     "build-es5": "tsc -p tsconfig.es5.json",
     "clean": "rimraf dist-es5 dist-es2015",
     "dc": "npm run dependency-check",
-    "dependency-check": "dependency-check . --unused --no-dev -i @types/minimist && dependency-check . --missing --no-dev",
+    "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "prepare": "npm run build",
     "postpublish": "git push",
