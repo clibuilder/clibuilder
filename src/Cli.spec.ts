@@ -1,8 +1,9 @@
 import test from 'ava'
 
 import { Cli } from './Cli'
-import { createCliArgv } from './test-util/index';
+import { createCliArgv, InMemoryPresenter } from './test-util/index';
 import { Command } from './Command';
+import { PresenterFactory } from './index';
 
 test('Cli context shape should follow input literal', t => {
   const cli = new Cli({
@@ -52,4 +53,28 @@ test('support extending context', t => {
     } as Command<{ custom: boolean }>]
   }, { cwd: '', custom: true })
   return cli.parse(createCliArgv('cli', 'cmd'))
+})
+
+function createInquirePresenterFactory(answers) {
+  const presenterFactory = new PresenterFactory()
+  presenterFactory.createCommandPresenter = options => new InMemoryPresenter(options, answers)
+  return presenterFactory
+}
+
+test('prompt for input', async t => {
+  const presenterFactory = createInquirePresenterFactory({ username: 'me' })
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.2.1',
+    commands: [{
+      name: 'ask',
+      async run() {
+        const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+        t.is(answers.username, 'me')
+      }
+    }]
+  }, { presenterFactory })
+
+  t.plan(1)
+  await cli.parse(createCliArgv('cli', 'ask'))
 })

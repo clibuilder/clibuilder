@@ -1,3 +1,4 @@
+import inquirer = require('inquirer')
 import { Command } from './Command'
 import { DisplayLevel } from './Display'
 
@@ -26,4 +27,8 @@ export interface VersionPresenter {
 
 export interface PresenterOption {
   name: string
+}
+
+export interface Inquirer {
+  prompt(questions: inquirer.Question[]): Promise<inquirer.Answers>
 }

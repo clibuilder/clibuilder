@@ -1,4 +1,4 @@
-import { LogPresenter, HelpPresenter } from './Presenter'
+import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
 export namespace Command {
 
   export interface Base {
@@ -76,7 +76,7 @@ export namespace Command {
     cwd: string
     commands?: Instance[]
     options: Options
-    ui: LogPresenter & HelpPresenter
+    ui: LogPresenter & HelpPresenter & Inquirer
     run: (this: Instance & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 }
