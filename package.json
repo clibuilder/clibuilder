@@ -1,6 +1,6 @@
 {
   "name": "clibuilder",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "description": "A CLI building library",
   "main": "dist-es5/index.js",
   "module": "dist-es2015/index.js",
