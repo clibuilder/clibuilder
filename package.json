@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "find-up": "^2.1.0",
-    "fsa-emitter": "^0.3.0",
+    "fsa-emitter": "^0.4.0",
     "lodash": "^4.17.4",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",
@@ -88,14 +88,14 @@
     "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.33",
     "@types/wordwrap": "github:types/wordwrap",
-    "assert-order": "^3.0.0",
+    "assert-order": "^3.1.1",
     "ava": "^0.23.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^2.9.1",
-    "nyc": "^11.2.1",
+    "nyc": "^11.3.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.7.0",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.6.0-rc"
+    "typescript": "^2.6.1"
   }
 }
