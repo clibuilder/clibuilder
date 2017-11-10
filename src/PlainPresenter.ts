@@ -1,8 +1,9 @@
+import inquirer = require('inquirer')
 import padRight = require('pad-right')
 import wordwrap = require('wordwrap')
 
 import { Display, ConsoleDisplay, DisplayLevel } from './Display'
-import { LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel } from './Presenter'
+import { LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel, Inquirer } from './Presenter'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -10,9 +11,10 @@ const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
 
-export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter {
+export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter, Inquirer {
   display: Display = new ConsoleDisplay()
   name: string
+  inquire = inquirer.createPromptModule()
   displayLevel: DisplayLevel = DisplayLevel.Normal
   constructor(options: PresenterOption) {
     this.name = options.name
@@ -44,6 +46,9 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
   debug(...args: any[]) {
     if (this.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
+  }
+  prompt(questions: inquirer.Question[]): Promise<inquirer.Answers> {
+    return this.inquire(questions)
   }
 }
 

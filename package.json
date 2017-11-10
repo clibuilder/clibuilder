@@ -15,8 +15,8 @@
     "build-es5": "tsc -p tsconfig.es5.json",
     "clean": "rimraf dist-es5 dist-es2015",
     "dc": "npm run dependency-check",
-    "dependency-check": "dependency-check . --unused --no-dev -i @types/minimist && dependency-check . --missing --no-dev",
-    "lint": "tslint -p tsconfig.json --type-check \"src/**/*.ts\"",
+    "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
+    "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "prepare": "npm run build",
     "postpublish": "git push",
     "preversion": "git pull && npm run verify",
@@ -77,8 +77,10 @@
     ]
   },
   "dependencies": {
+    "@types/inquirer": "0.0.35",
     "find-up": "^2.1.0",
     "fsa-emitter": "^0.4.0",
+    "inquirer": "^3.3.0",
     "lodash": "^4.17.4",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",
