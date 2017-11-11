@@ -2,7 +2,6 @@ import test from 'ava'
 
 import { createParsable } from './createParsable';
 import { parseArgv } from './parseArgv'
-import { booleanOptionsCommand, verboseCommand } from './test-util/index';
 
 test('throw with unknown options', t => {
   const cmd = createParsable({
