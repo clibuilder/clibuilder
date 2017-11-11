@@ -42,6 +42,7 @@ export function createTaskRunner<T extends Task, VC extends ViewContext = ViewCo
         return task.run(...args)
       }
       catch (e) {
+        // istanbul ignore next
         context.ui.error(e)
       }
     }
