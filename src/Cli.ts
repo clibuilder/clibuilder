@@ -1,4 +1,5 @@
-import { logLevel } from '@unional/logging'
+import { addAppender, logLevel } from '@unional/logging'
+import { ColorAppender } from 'aurelia-logging-color'
 import yargs = require('yargs-parser')
 
 import { Command } from './Command'
@@ -24,6 +25,7 @@ export interface CliContext {
 const args = yargs(process.argv)
 // istanbul ignore next
 if (args['debug-cli']) {
+  addAppender(new ColorAppender())
   log.setLevel(logLevel.debug)
 }
 

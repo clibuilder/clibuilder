@@ -82,6 +82,7 @@
   "dependencies": {
     "@types/inquirer": "0.0.35",
     "@unional/logging": "^0.2.3",
+    "aurelia-logging-color": "^0.5.10",
     "find-up": "^2.1.0",
     "fsa-emitter": "^0.4.0",
     "inquirer": "^3.3.0",
@@ -96,7 +97,6 @@
     "@types/node": "^8.0.33",
     "@types/wordwrap": "github:types/wordwrap",
     "assert-order": "^3.1.1",
-    "aurelia-logging-color": "^0.5.10",
     "ava": "^0.23.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^2.9.1",
