@@ -3,6 +3,7 @@ import findup = require('find-up')
 
 import { findPlugins } from './findPlugins'
 import { Command } from './Command'
+import { log } from './log';
 
 export interface Registrar {
   addCommand(command: Command<{ [x: string]: any }>): void
@@ -17,9 +18,13 @@ class CliRegistrarImpl {
 }
 
 export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
+  log.debug('loading plugins')
   const pluginNames = findPlugins(keyword, cwd)
+  log.debug('found local plugins', pluginNames)
+
   const globalFolder = getGlobalPackageFolder(__dirname)
   const globalPluginNames = findPlugins(keyword, globalFolder)
+  log.debug('found global plugins', globalPluginNames)
 
   let r = activatePlugins(pluginNames, cwd);
 
@@ -42,9 +47,25 @@ function getGlobalPackageFolder(folder): string {
 
 function activatePlugins(pluginNames: string[], cwd: string) {
   return pluginNames
-    .map(p => loadModule(p, cwd))
-    .filter(isValidPlugin)
-    .map(m => activatePlugin(m))
+    .map(p => {
+      return {
+        name: p,
+        pluginModule: loadModule(p, cwd)
+      }
+    })
+    .filter(({ name, pluginModule }) => {
+      if (!isValidPlugin(pluginModule)) {
+        log.debug('not a valid plugin', name)
+        return false
+      }
+      return true
+    })
+    .map(({ name, pluginModule }) => {
+      log.debug('activating plugin', name)
+      const plugin = activatePlugin(pluginModule)
+      log.debug('activated plugin', name)
+      return plugin
+    })
 }
 
 function loadModule(name, cwd) {

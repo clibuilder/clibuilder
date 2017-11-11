@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "@types/inquirer": "0.0.35",
+    "@unional/logging": "^0.2.3",
     "find-up": "^2.1.0",
     "fsa-emitter": "^0.4.0",
     "inquirer": "^3.3.0",

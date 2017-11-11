@@ -1,7 +1,10 @@
 import { Command } from './Command'
 import { PresenterFactory } from './PresenterFactory';
+import { log } from './log';
 
 export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: { [index: string]: any }): Command.Instance {
+  if (spec)
+    log.debug('creatingCommand', spec.name)
   const result = {
     run: () => { return undefined },
     ...context,
@@ -9,7 +12,7 @@ export function createCommand(spec: Command, presenterFactory: PresenterFactory,
   } as Command.Instance
   result.ui = presenterFactory.createCommandPresenter(result)
   if (result.commands) {
-    result.commands = result.commands.map(c => createCommand(c, presenterFactory, {...context, parent: result}))
+    result.commands = result.commands.map(c => createCommand(c, presenterFactory, { ...context, parent: result }))
   }
 
   return result

@@ -4,6 +4,9 @@ import { Cli } from './Cli'
 import { createCliArgv, InMemoryPresenter } from './test-util/index';
 import { Command } from './Command';
 import { PresenterFactory } from './index';
+import { echoAllCommand } from './test-util/echoAllCommand';
+import { logLevel, getLevel } from '@unional/logging';
+import { log } from './log';
 
 test('Cli context shape should follow input literal', t => {
   const cli = new Cli({
@@ -77,4 +80,17 @@ test('prompt for input', async t => {
 
   t.plan(1)
   await cli.parse(createCliArgv('cli', 'ask'))
+})
+
+// This is not testable because the flag has to be check and turn on logging before `Cli` is created. i.e. has to do it in initialization time.
+test.skip('turn on debug-cli sets the log level to debug locally', async t => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '0.0.1',
+    commands: [echoAllCommand]
+  })
+
+  await cli.parse(createCliArgv('cli', 'echo', '--debug-cli'))
+  t.is(log.level, logLevel.debug)
+  t.is(getLevel(), logLevel.none)
 })
