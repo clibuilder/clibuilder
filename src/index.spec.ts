@@ -269,7 +269,7 @@ test(`
   then can await on parse`,
   async t => {
     const cli = createInMemoryCli('cli', argCommand)
-    await await cli.parse(createCliArgv('cli', 'async'))
+    await cli.parse(createCliArgv('cli', 'async'))
     t.pass()
   })
 
@@ -281,7 +281,7 @@ then show report missing argument`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
     const display = spyDisplay(cli, 'arg')
 
-    await await cli.parse(createCliArgv('cli', 'arg'))
+    await cli.parse(createCliArgv('cli', 'arg'))
 
     const actual = generateDisplayedMessage(display.errorLogs)
     t.is(actual, 'Missing argument(s)')
@@ -295,7 +295,7 @@ then echo x`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
     const display = spyDisplay(cli, 'arg')
 
-    await await cli.parse(createCliArgv('cli', 'arg', 'x'))
+    await cli.parse(createCliArgv('cli', 'arg', 'x'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'x')
@@ -309,24 +309,24 @@ Then options 'a' is true and 'b' is false`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createCliArgv('cli', 'opt'))
+    await cli.parse(createCliArgv('cli', 'opt'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.is(actual, 'a: true, b: false')
+    t.is(actual, 'a: true, b: undefined')
   })
 
 test(`
 Given cli with opt command
 When called with 'opt a'
-Then options 'a' is true and 'b' is false`,
+Then options 'a' is true`,
   async t => {
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createCliArgv('cli', 'opt', '-a'))
+    await cli.parse(createCliArgv('cli', 'opt', '-a'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.is(actual, 'a: true, b: false')
+    t.is(actual, 'a: true, b: undefined')
   })
 
 test(`
@@ -337,7 +337,7 @@ Then options 'a' is true and 'b' is true`,
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createCliArgv('cli', 'opt', '-b'))
+    await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
     t.is(actual, 'a: true, b: true')
@@ -347,13 +347,13 @@ Then options 'a' is true and 'b' is true`,
 test(`
 Given cli with groupOption command
 When called with 'opt b'
-Then options 'a' is false and 'b' is true`,
+Then options 'a' is undefined and 'b' is true`,
   async t => {
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [groupOptionsCommand]})
     const display = spyDisplay(cli, 'opt')
 
-    await await cli.parse(createCliArgv('cli', 'opt', '-b'))
+    await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.is(actual, 'a: false, b: true')
+    t.is(actual, 'a: undefined, b: true')
   })

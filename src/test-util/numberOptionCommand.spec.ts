@@ -5,7 +5,7 @@ import { numberOptionCommand } from './numberOptionCommand'
 
 test('number option', t => {
   const args = createCommandArgs(numberOptionCommand, ['-a 3'])
-  t.deepEqual(args, { a: 3, _: [] })
+  t.deepEqual(args, { a: 3, _: [], _defaults: [] })
 })
 
 test('log option', t => {

@@ -9,17 +9,17 @@ import { booleanOptionsCommand } from './booleanOptionsCommand'
 test('empty argv', t => {
   const args = createCommandArgs(noopCommand)
 
-  t.deepEqual(args, { _: [] })
+  t.deepEqual(args, { _: [], _defaults: [] })
 })
 
 test(`one argv`, t => {
   const args = createCommandArgs(argCommand, ['arg1'])
 
-  t.deepEqual(args, { _: ['arg1'] })
+  t.deepEqual(args, { _: ['arg1'], _defaults: [] })
 })
 
 test(`boolean option using with '--'`, t => {
   const args = createCommandArgs(booleanOptionsCommand, ['--a'])
 
-  t.deepEqual(args, { a: true, b: false, _: [] })
+  t.deepEqual(args, { _: [], _defaults: [], a: true })
 })
