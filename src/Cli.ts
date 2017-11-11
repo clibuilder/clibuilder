@@ -1,11 +1,13 @@
+import { logLevel } from '@unional/logging'
+import yargs = require('yargs-parser')
+
 import { Command } from './Command'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
-import { log } from './log';
-import { logLevel } from '@unional/logging';
+import { log } from './log'
 
 export interface CliOption {
   name: string
@@ -17,6 +19,12 @@ export interface CliContext {
   cwd: string
   presenterFactory: PresenterFactory
 }
+
+const args = yargs(process.argv)
+if (args['debug-cli']) {
+  log.setLevel(logLevel.debug)
+}
+
 
 export class Cli<Context extends { [i: string]: any } = {}> {
   cwd: string
@@ -70,9 +78,6 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     if (args.version) {
       this.ui.showVersion(this.version)
       return Promise.resolve()
-    }
-    if (args['debug-cli']) {
-      log.setLevel(logLevel.debug)
     }
     const command = getCommand(args._, this.commands)
     const cmdChainCount = getCmdChainCount(command)
