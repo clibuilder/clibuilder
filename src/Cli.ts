@@ -21,6 +21,7 @@ export interface CliContext {
 }
 
 const args = yargs(process.argv)
+// istanbul ignore next
 if (args['debug-cli']) {
   log.setLevel(logLevel.debug)
 }
@@ -59,6 +60,8 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     this.version = option.version
 
     context.cwd = context.cwd || process.cwd()
+    log.debug('cwd', context.cwd)
+
     const presenterFactory = context.presenterFactory || new PresenterFactory()
     delete context.presenterFactory
     context['parent'] = this

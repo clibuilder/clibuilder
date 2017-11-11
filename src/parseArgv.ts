@@ -23,14 +23,14 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const args = yargs(rawArgv, options)
   args._.shift()
 
+  fixStringOptions(args)
+  fixBooleanOptions(args, rawArgv)
   clearAlias(parsable, args)
 
   if (parsable.commands) {
     return args
   }
 
-  fixStringOptions(args)
-  fixBooleanOptions(args, rawArgv)
   validateArguments(parsable, args)
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
