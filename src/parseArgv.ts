@@ -6,15 +6,16 @@ import { toYargsOption } from './toYargsOption'
 export class InvalidOptionError extends Error {
   constructor(public name, public type, public value) {
     super(`Option '${name}' expects ${type} but received ${value}`)
+    Object.setPrototypeOf(this, InvalidOptionError.prototype)
   }
 }
 
 export class UnknownOptionError extends Error {
   constructor(public name) {
     super(`Unknown option '${name}'`)
+    Object.setPrototypeOf(this, UnknownOptionError.prototype)
   }
 }
-
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toYargsOption(parsable.options)
