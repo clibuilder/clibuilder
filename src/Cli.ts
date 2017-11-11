@@ -60,9 +60,9 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     this.name = option.name
     this.version = option.version
 
-    context.cwd = context.cwd || process.cwd()
+    const cwd = context.cwd = context.cwd || process.cwd()
     log.debug('cwd', context.cwd)
-    context.config = loadConfig(`${this.name}.json`, context.cwd)
+    context.config = loadConfig(`${this.name}.json`, { cwd })
     log.debug('Loaded config', context.config)
 
     const presenterFactory = context.presenterFactory || new PresenterFactory()
