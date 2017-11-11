@@ -32,6 +32,7 @@ Options:
   [-v|--version]         Print the CLI version
   [-V|--verbose]         Turn on verbose logging
   [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
 `
 
 test(`given cli with noop command

@@ -4,6 +4,8 @@ import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
+import { log } from './log';
+import { logLevel } from '@unional/logging';
 
 export interface CliOption {
   name: string
@@ -34,6 +36,9 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       },
       'silent': {
         description: 'Turn off logging'
+      },
+      'debug-cli': {
+        description: 'Display clibuilder debug messages'
       }
     }
   }
@@ -65,6 +70,9 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     if (args.version) {
       this.ui.showVersion(this.version)
       return Promise.resolve()
+    }
+    if (args['debug-cli']) {
+      log.setLevel(logLevel.debug)
     }
     const command = getCommand(args._, this.commands)
     const cmdChainCount = getCmdChainCount(command)
