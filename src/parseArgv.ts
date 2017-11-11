@@ -1,6 +1,7 @@
 import yargs = require('yargs-parser')
 
-import { Command } from './Command'
+import { Parsable } from './interfaces'
+import { toYargsOption } from './toYargsOption'
 
 export class InvalidOptionError extends Error {
   constructor(public name, public type, public value) {
@@ -14,16 +15,6 @@ export class UnknownOptionError extends Error {
   }
 }
 
-export interface Parsable {
-  name: string
-  arguments?: Command.Argument[]
-  commands?: Parsable[]
-  options?: {
-    boolean?: Command.BooleanOptions
-    string?: Command.StringOptions,
-    number?: Command.NumberOption
-  }
-}
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toYargsOption(parsable.options)
@@ -34,39 +25,13 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
     return args
   }
   fixStringOptions(args)
+  fixBooleanOptions(args, rawArgv)
   validateArguments(parsable, args)
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
+  fillDefaults(parsable, args, rawArgv)
 
   return args
-}
-
-function toYargsOption(options) {
-  if (!options) {
-    return {}
-  }
-  const result: any = { alias: {}, default: {} }
-  fillOptions('boolean')
-  fillOptions('string')
-  fillOptions('number')
-
-  return result
-
-  function fillOptions(typeName) {
-    if (options[typeName]) {
-      const values = options[typeName]
-      result[typeName] = Object.keys(values)
-      result[typeName].forEach(k => {
-        const v = values[k]
-        if (v.alias) {
-          result.alias[k] = v.alias
-        }
-        if (v.default) {
-          result.default[k] = v.default
-        }
-      })
-    }
-  }
 }
 
 function fixStringOptions(args) {
@@ -74,6 +39,18 @@ function fixStringOptions(args) {
     if (typeof args[k] === 'string') {
       args[k] = args[k].trim()
     }
+  })
+}
+
+/**
+ * `yargs-parser` will fill in `false` on boolean even if the option does not have default set.
+ * This will fix that issue by deleting the values and alias.
+ */
+function fixBooleanOptions(args, argv) {
+  const inputArgs = yargs(argv)
+  Object.keys(args).forEach(k => {
+    if (args[k] === false && inputArgs[k] === undefined)
+      delete args[k]
   })
 }
 
@@ -154,32 +131,6 @@ function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArg
 
   const noDefaults = yargs(rawArgv)
   const groups = getAllGroups(parsable.options)
-  function getAllGroups(opts) {
-    const groups = {}
-    if (opts.boolean) {
-      for (let key in opts.boolean) {
-        if (opts.boolean[key].group) {
-          const id = opts.boolean[key].group
-          if (groups[id])
-            groups[id].push(key)
-          else
-            groups[id] = [key]
-        }
-      }
-    }
-    if (opts.string) {
-      for (let key in opts.string) {
-        if (opts.string[key].group) {
-          const id = opts.string[key].group
-          if (groups[id])
-            groups[id].push(key)
-          else
-            groups[id] = [key]
-        }
-      }
-    }
-    return groups
-  }
   const keys = Object.keys(groups)
   keys.forEach(k => {
     const group = groups[k]
@@ -193,12 +144,7 @@ function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArg
         if (usedOptions.indexOf(g) === -1) {
           const namesAndAlias = findOptionNameAndAlias(parsable, g)
           namesAndAlias.forEach(n => {
-            if (args[n] === true) {
-              args[n] = false
-            }
-            else if (args[n]) {
-              delete args[n]
-            }
+            delete args[n]
           })
         }
       })
@@ -206,11 +152,90 @@ function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArg
   })
 }
 
+function getAllGroups(opts) {
+  const groups = {}
+  if (opts.boolean) {
+    for (let key in opts.boolean) {
+      if (opts.boolean[key].group) {
+        const id = opts.boolean[key].group
+        if (groups[id])
+          groups[id].push(key)
+        else
+          groups[id] = [key]
+      }
+    }
+  }
+  if (opts.string) {
+    for (let key in opts.string) {
+      if (opts.string[key].group) {
+        const id = opts.string[key].group
+        if (groups[id])
+          groups[id].push(key)
+        else
+          groups[id] = [key]
+      }
+    }
+  }
+  if (opts.number) {
+    for (let key in opts.number) {
+      if (opts.number[key].group) {
+        const id = opts.number[key].group
+        if (groups[id])
+          groups[id].push(key)
+        else
+          groups[id] = [key]
+      }
+    }
+  }
+  return groups
+}
+
 function findOptionNameAndAlias({ options }: Pick<Parsable, 'options'>, name: string) {
   const result = [name]
-  const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name])
+  const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name]) ||
+  (options!.number && options!.number![name])
   if (o && o.alias) {
     result.push(...o.alias)
   }
   return result
+}
+
+function fillDefaults(parsable: Parsable, args, argv) {
+  if (!parsable.options) {
+    args._defaults = []
+    return
+  }
+
+  const optionsWithDefault: string[] = []
+  const optionGroups = {}
+  fillOptionsWithDefaults(parsable.options.boolean, optionsWithDefault, optionGroups)
+  fillOptionsWithDefaults(parsable.options.string, optionsWithDefault, optionGroups)
+  fillOptionsWithDefaults(parsable.options.number, optionsWithDefault, optionGroups)
+  function fillOptionsWithDefaults(options, optionsWithDefault, optionGroups) {
+    if (options) {
+      Object.keys(options).forEach(o => {
+        const option = options[o]
+        if (option.default !== undefined)
+          optionsWithDefault.push(o)
+        if (option.group !== undefined) {
+          optionGroups[option.group] = optionGroups[option.group] || []
+          optionGroups[option.group].push(o)
+          if (option.alias)
+            optionGroups[option.group] = optionGroups[option.group].concat(option.alias)
+        }
+      })
+    }
+  }
+
+  const inputKeys = Object.keys(yargs(argv))
+  const groupKeys = Object.keys(optionGroups)
+  args._defaults = optionsWithDefault.filter(o => {
+    return inputKeys.indexOf(o) === -1
+  })
+  groupKeys.forEach(k => {
+    const g: string[] = optionGroups[k]
+    if (g.some(k => inputKeys.indexOf(k) !== -1)) {
+      args._defaults = args._defaults.filter(d => g.indexOf(d) === -1)
+    }
+  })
 }

@@ -41,7 +41,7 @@ export namespace Command {
     }
   }
 
-  export interface NumberOption {
+  export interface NumberOptions {
     [optionName: string]: {
       description: string
       alias?: string[]
@@ -61,10 +61,11 @@ export namespace Command {
     description?: string
     options?: {
       boolean?: BooleanOptions,
-      string?: StringOptions
+      string?: StringOptions,
+      number?: NumberOptions
     }
     alias?: string[]
-    run?: (this: Instance & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+    run?: (this: Instance & Context, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 
   export interface Options {
@@ -77,7 +78,7 @@ export namespace Command {
     commands?: Instance[]
     options: Options
     ui: LogPresenter & HelpPresenter & Inquirer
-    run: (this: Instance & Context, args: { _: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+    run: (this: Instance & Context, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 }
 

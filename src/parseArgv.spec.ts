@@ -1,19 +1,14 @@
 import test from 'ava'
 
+import { createParsable } from './createParsable';
 import { parseArgv } from './parseArgv'
-import { createCommand } from './util'
-import { Command } from './Command';
-import { InMemoryPresenterFactory } from './test-util/InMemoryPresenterFactory';
-
-function createParsable(command: Command, context) {
-  return createCommand(command, new InMemoryPresenterFactory(), context)
-}
+import { booleanOptionsCommand } from './test-util/index';
 
 test('no arguments and options', t => {
   const cmd = createParsable({ name: 'a' }, { cwd: '' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [] })
+  t.deepEqual(actual, { _: [], _defaults: [] })
 })
 
 test('throws with additional argument', t => {
@@ -47,7 +42,7 @@ test('with arguments', t => {
   }, { cwd: '' })
   const argv = ['a', 'c']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['c'] })
+  t.deepEqual(actual, { _: ['c'], _defaults: [] })
 })
 
 test('throw with unknown options', t => {
@@ -73,8 +68,7 @@ test('with boolean options', t => {
       boolean: {
         verbose: {
           description: 'Turn on verbose',
-          alias: ['V'],
-          default: true
+          alias: ['V']
         }
       }
     }
@@ -83,11 +77,11 @@ test('with boolean options', t => {
   let argv = ['a', '--verbose']
   let actual = parseArgv(cmd, argv)
 
-  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
+  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true, _defaults: [] })
 
   argv = ['a', '-V']
   actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], 'verbose': true, 'V': true })
+  t.deepEqual(actual, { _: [], _defaults: [], 'verbose': true, 'V': true })
 })
 
 test('fill default for boolean option', t => {
@@ -104,7 +98,7 @@ test('fill default for boolean option', t => {
   }, { cwd: '' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], x: true })
+  t.deepEqual(actual, { _: [], _defaults: ['x'], x: true })
 })
 
 test('fill default for string option', t => {
@@ -121,7 +115,7 @@ test('fill default for string option', t => {
   }, { cwd: '' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], x: 'abc' })
+  t.deepEqual(actual, { _: [], _defaults: ['x'], x: 'abc' })
 })
 
 test('zero or more args should accept 0 args', t => {
@@ -136,7 +130,7 @@ test('zero or more args should accept 0 args', t => {
   }, { cwd: '' })
   const argv = []
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [] })
+  t.deepEqual(actual, { _: [], _defaults: [] })
 })
 
 
@@ -152,7 +146,7 @@ test('zero or more args should accept 1 args', t => {
   }, { cwd: '' })
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['b'] })
+  t.deepEqual(actual, { _: ['b'], _defaults: [] })
 })
 
 test('zero or more args should accept 2 args', t => {
@@ -167,7 +161,7 @@ test('zero or more args should accept 2 args', t => {
   }, { cwd: '' })
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['b', 'c'] })
+  t.deepEqual(actual, { _: ['b', 'c'], _defaults: [] })
 })
 
 test('one or more args should not accept 0 args', t => {
@@ -197,7 +191,7 @@ test('one or more args should not accept 1 args', t => {
   }, { cwd: '' })
   const argv = ['cli', 'a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['a'] })
+  t.deepEqual(actual, { _: ['a'], _defaults: [] })
 })
 test('one or more args should not accept 2 args', t => {
   const cmd = createParsable({
@@ -212,7 +206,7 @@ test('one or more args should not accept 2 args', t => {
   }, { cwd: '' })
   const argv = ['cli', 'a', 'b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['a', 'b'] })
+  t.deepEqual(actual, { _: ['a', 'b'], _defaults: [] })
 })
 
 test(`group option should not set default if passed in`, t => {
@@ -241,7 +235,7 @@ test(`group option should not set default if passed in`, t => {
   }, { cwd: '' })
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], a: false, b: true })
+  t.deepEqual(actual, { _: [], _defaults: [], b: true })
 })
 
 test(`group option should not set default if alias of one of the options is passed in`, t => {
@@ -271,5 +265,12 @@ test(`group option should not set default if alias of one of the options is pass
   }, { cwd: '' })
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], a111: false, b: true, b111: true })
+  t.deepEqual(actual, { _: [], _defaults: [], b: true, b111: true })
+})
+
+test('boolean option without default should not be set by default', t => {
+  const cmd = createParsable(booleanOptionsCommand, {})
+  const argv = ['cmd']
+  const actual = parseArgv(cmd, argv)
+  t.deepEqual(actual, { _: [], _defaults: ['a'], a: true })
 })
