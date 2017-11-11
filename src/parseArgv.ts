@@ -27,6 +27,7 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   }
   fixStringOptions(args)
   fixBooleanOptions(args, rawArgv)
+  clearAlias(parsable, args)
   validateArguments(parsable, args)
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
@@ -53,6 +54,25 @@ function fixBooleanOptions(args, argv) {
     if (args[k] === false && inputArgs[k] === undefined)
       delete args[k]
   })
+}
+
+function clearAlias(parsable: Parsable, args) {
+  if (!parsable.options)
+    return
+  const alias: string[] = []
+  alias.push(...getAlias(parsable.options.boolean))
+  alias.push(...getAlias(parsable.options.string))
+  alias.push(...getAlias(parsable.options.number))
+  Object.keys(args).forEach(k => {
+    if (alias.indexOf(k) !== -1)
+      delete args[k]
+  })
+}
+
+function getAlias(options) {
+  if (!options)
+    return []
+  return Object.keys(options).filter(k => options[k].alias).reduce((p, k) => p.concat(options[k].alias), [])
 }
 
 function validateArguments(command: Parsable, args) {

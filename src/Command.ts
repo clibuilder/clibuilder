@@ -45,7 +45,7 @@ export namespace Command {
     [optionName: string]: {
       description: string
       alias?: string[]
-      default?: string
+      default?: number
     }
   }
 
