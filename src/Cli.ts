@@ -1,4 +1,5 @@
-import { logLevel } from '@unional/logging'
+import { addAppender, logLevel } from '@unional/logging'
+import { ColorAppender } from 'aurelia-logging-color'
 import yargs = require('yargs-parser')
 
 import { Command } from './Command'
@@ -8,6 +9,7 @@ import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
 import { log } from './log'
+import { loadConfig } from './loadConfig'
 
 export interface CliOption {
   name: string
@@ -23,6 +25,7 @@ export interface CliContext {
 const args = yargs(process.argv)
 // istanbul ignore next
 if (args['debug-cli']) {
+  addAppender(new ColorAppender())
   log.setLevel(logLevel.debug)
 }
 
@@ -59,8 +62,10 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     this.name = option.name
     this.version = option.version
 
-    context.cwd = context.cwd || process.cwd()
+    const cwd = context.cwd = context.cwd || process.cwd()
     log.debug('cwd', context.cwd)
+    context.config = loadConfig(`${this.name}.json`, { cwd })
+    log.debug('Loaded config', context.config)
 
     const presenterFactory = context.presenterFactory || new PresenterFactory()
     delete context.presenterFactory

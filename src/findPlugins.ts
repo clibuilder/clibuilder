@@ -33,6 +33,7 @@ function readDirSafe(path: string) {
     if (err.code === 'ENOENT')
       dirs = []
     else
+      // istanbul ignore next
       throw err
   }
   return dirs
@@ -49,8 +50,10 @@ function readFileSafe(path) {
     return fs.readFileSync(path, 'utf8')
   }
   catch (err) {
+    // istanbul ignore next
     if (err.code === 'ENOENT')
       return undefined
+    // istanbul ignore next
     throw err
   }
 }

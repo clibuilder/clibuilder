@@ -62,6 +62,9 @@
     "files": [
       "dist-es5/**/*.spec.js"
     ],
+    "require": [
+      "./scripts/setup-test-env.js"
+    ],
     "source": [
       "scripts/*.js",
       "dist-es5/**/*.js",
@@ -79,6 +82,7 @@
   "dependencies": {
     "@types/inquirer": "0.0.35",
     "@unional/logging": "^0.2.3",
+    "aurelia-logging-color": "^0.5.10",
     "find-up": "^2.1.0",
     "fsa-emitter": "^0.4.0",
     "inquirer": "^3.3.0",
@@ -88,6 +92,7 @@
     "yargs-parser": "^8.0.0"
   },
   "devDependencies": {
+    "@types/find-up": "^2.1.1",
     "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.33",
     "@types/wordwrap": "github:types/wordwrap",

@@ -6,7 +6,7 @@ import { Command } from './Command'
 import { log } from './log';
 
 export interface Registrar {
-  addCommand(command: Command<{ [x: string]: any }>): void
+  addCommand(command: Command<any, { [x: string]: any }>): void
 }
 
 class CliRegistrarImpl {

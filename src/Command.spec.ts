@@ -8,7 +8,7 @@ test('using custom context', t => {
     run() {
       t.falsy(this.x)
     }
-  } as Command<{ x: string }>
+  } as Command<undefined, { x: string }>
 
   t.truthy(spec)
 
