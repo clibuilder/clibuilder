@@ -49,39 +49,36 @@ export namespace Command {
     }
   }
 
+  export interface Options {
+    boolean?: BooleanOptions,
+    string?: StringOptions,
+    number?: NumberOptions
+  }
+
   /**
    * This interface is shared between `CommandSpec` and `Command`
    */
-  export interface Shared<Context> {
+  export interface Shared<Config = {}, Context = {}> {
     /**
      * Name of the command.
      */
     name: string
     arguments?: Argument[]
     description?: string
-    options?: {
-      boolean?: BooleanOptions,
-      string?: StringOptions,
-      number?: NumberOptions
-    }
+    options?: Options
     alias?: string[]
-    run?: (this: Instance & Context, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+    run?: (this: Instance & Context & { config?: Config }, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 
-  export interface Options {
-    boolean?: BooleanOptions,
-    string?: StringOptions
-  }
-
-  export interface Instance<Context = {}> extends Base, Shared<Context> {
+  export interface Instance<Config = {}, Context = {}> extends Base, Shared<Config, Context> {
     cwd: string
     commands?: Instance[]
-    options: Options
+    config?: Config
     ui: LogPresenter & HelpPresenter & Inquirer
-    run: (this: Instance & Context, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+    run: (this: Instance & Context & { config?: Config }, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
   }
 }
 
-export interface Command<Context = {}> extends Command.Shared<Context> {
+export interface Command<Config = {}, Context = {}> extends Command.Shared<Config, Context> {
   commands?: Command[]
 }

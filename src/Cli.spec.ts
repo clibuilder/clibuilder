@@ -53,7 +53,7 @@ test('support extending context', t => {
       run() {
         t.not(this.custom, undefined)
       }
-    } as Command<{ custom: boolean }>]
+    } as Command<undefined, { custom: boolean }>]
   }, { cwd: '', custom: true })
   return cli.parse(createCliArgv('cli', 'cmd'))
 })
@@ -93,4 +93,34 @@ test.skip('turn on debug-cli sets the log level to debug locally', async t => {
   await cli.parse(createCliArgv('cli', 'echo', '--debug-cli'))
   t.is(log.level, logLevel.debug)
   t.is(getLevel(), logLevel.none)
+})
+
+test('read local json file', async t => {
+  const cli = new Cli({
+    name: 'test-cli',
+    version: '0.0.1',
+    commands: [{
+      name: 'cfg',
+      run() {
+        t.deepEqual(this.config, { a: 1 })
+      }
+    } as Command<{ a: number }, {}>]
+  }, { cwd: 'fixtures/has-config' })
+  t.plan(1)
+  await cli.parse(createCliArgv('cli', 'cfg'))
+})
+
+test(`read local json file in parent directory`, async t => {
+  const cli = new Cli({
+    name: 'test-cli',
+    version: '0.0.1',
+    commands: [{
+      name: 'cfg',
+      run() {
+        t.deepEqual(this.config, { a: 1 })
+      }
+    } as Command<{ a: number }, {}>]
+  }, { cwd: 'fixtures/has-config/sub-folder' })
+  t.plan(1)
+  await cli.parse(createCliArgv('cli', 'cfg'))
 })

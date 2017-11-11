@@ -8,6 +8,7 @@ import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
 import { createCommand, getCommand } from './util'
 import { log } from './log'
+import { loadConfig } from './loadConfig'
 
 export interface CliOption {
   name: string
@@ -61,6 +62,8 @@ export class Cli<Context extends { [i: string]: any } = {}> {
 
     context.cwd = context.cwd || process.cwd()
     log.debug('cwd', context.cwd)
+    context.config = loadConfig(`${this.name}.json`, context.cwd)
+    log.debug('Loaded config', context.config)
 
     const presenterFactory = context.presenterFactory || new PresenterFactory()
     delete context.presenterFactory
