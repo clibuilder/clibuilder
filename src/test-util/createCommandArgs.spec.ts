@@ -15,7 +15,7 @@ test('empty argv', t => {
 test(`one argv`, t => {
   const args = createCommandArgs(argCommand, ['arg1'])
 
-  t.deepEqual(args, { _: ['arg1'], _defaults: [] })
+  t.deepEqual(args, { _: [], _defaults: [], 'some-arg': 'arg1' })
 })
 
 test(`boolean option using with '--'`, t => {

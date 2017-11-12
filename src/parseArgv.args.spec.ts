@@ -4,20 +4,20 @@ import { createParsable } from './createParsable';
 import { parseArgv } from './parseArgv'
 
 test('no arguments and options', t => {
-  const cmd = createParsable({ name: 'a' }, { cwd: '' })
+  const cmd = createParsable({ name: 'a' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], _defaults: [] })
 })
 
 test('throws with additional argument', t => {
-  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b' }] }, { cwd: '' })
+  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b' }] })
   const argv = ['a', 'b', 'c']
   t.throws(() => parseArgv(cmd, argv))
 })
 
 test('throws with missing argument', t => {
-  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b', required: true }] }, { cwd: '' })
+  const cmd = createParsable({ name: 'a', arguments: [{ name: 'b', required: true }] })
   const argv = ['a']
   t.throws(() => parseArgv(cmd, argv))
 })
@@ -25,8 +25,8 @@ test('throws with missing argument', t => {
 test('not throw when there are sub-commands', t => {
   const cmd = createParsable({
     name: 'a',
-    commands: [createParsable({ name: 'b' }, { cwd: '' })]
-  }, { cwd: '' })
+    commands: [createParsable({ name: 'b' })]
+  })
 
   let argv = ['a', 'b']
   t.notThrows(() => parseArgv(cmd, argv))
@@ -38,10 +38,10 @@ test('with arguments', t => {
   const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'x', required: true }]
-  }, { cwd: '' })
+  })
   const argv = ['a', 'c']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['c'], _defaults: [] })
+  t.deepEqual(actual, { _: [], _defaults: [], x: 'c' })
 })
 
 test('zero or more args should accept 0 args', t => {
@@ -53,7 +53,7 @@ test('zero or more args should accept 0 args', t => {
         multiple: true
       }
     ]
-  }, { cwd: '' })
+  })
   const argv = []
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], _defaults: [] })
@@ -69,10 +69,10 @@ test('zero or more args should accept 1 args', t => {
         multiple: true
       }
     ]
-  }, { cwd: '' })
+  })
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['b'], _defaults: [] })
+  t.deepEqual(actual, { _: [], _defaults: [], 'zero-or-more': ['b'] })
 })
 
 test('zero or more args should accept 2 args', t => {
@@ -84,10 +84,10 @@ test('zero or more args should accept 2 args', t => {
         multiple: true
       }
     ]
-  }, { cwd: '' })
+  })
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['b', 'c'], _defaults: [] })
+  t.deepEqual(actual, { _: [], _defaults: [], 'zero-or-more': ['b', 'c'] })
 })
 
 test('one or more args should not accept 0 args', t => {
@@ -100,7 +100,7 @@ test('one or more args should not accept 0 args', t => {
         required: true
       }
     ]
-  }, { cwd: '' })
+  })
   const argv = ['cli']
   t.throws(() => parseArgv(cmd, argv))
 })
@@ -115,10 +115,10 @@ test('one or more args should not accept 1 args', t => {
         required: true
       }
     ]
-  }, { cwd: '' })
-  const argv = ['cli', 'a']
+  })
+  const argv = ['args', 'a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['a'], _defaults: [] })
+  t.deepEqual(actual, { _: [], _defaults: [], 'one-or-more': ['a'] })
 })
 
 test('one or more args should not accept 2 args', t => {
@@ -131,9 +131,8 @@ test('one or more args should not accept 2 args', t => {
         required: true
       }
     ]
-  }, { cwd: '' })
+  })
   const argv = ['cli', 'a', 'b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: ['a', 'b'], _defaults: [] })
+  t.deepEqual(actual, { _: [], _defaults: [], 'one-or-more': ['a', 'b'] })
 })
-

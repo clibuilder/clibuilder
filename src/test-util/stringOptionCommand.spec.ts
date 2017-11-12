@@ -1,5 +1,5 @@
 import { test } from 'ava'
-import { setupCommandTest } from './index'
+import { setupCommandTest, argCommand } from './index'
 import { stringOptionCommand } from './stringOptionCommand'
 
 
@@ -27,4 +27,13 @@ test('log option', t => {
   cmd.run(args, argv)
 
   t.is(ui.display.infoLogs[0][0], 'a: 3')
+})
+
+test('argument command', t => {
+  const { cmd, args, argv, ui } = setupCommandTest(argCommand, ['abc'])
+
+  t.deepEqual(args, { _: [], _defaults: [], 'some-arg': 'abc' })
+
+  cmd.run(args, argv)
+  t.is(ui.display.infoLogs[0][0], 'some-arg: abc')
 })
