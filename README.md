@@ -35,7 +35,7 @@ import { Command } from 'clibuilder'
 
 export const commandA = {
   name: 'echo',
-  // `args` is the parsed `yargs-parser` args.
+  // `args` is the parsed arguments.
   // `argv` is the raw argv.
   run(args, argv) {
     this.ui.info(argv)
