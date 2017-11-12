@@ -299,7 +299,7 @@ then echo x`,
     await cli.parse(createCliArgv('cli', 'arg', 'x'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.is(actual, 'x')
+    t.is(actual, 'some-arg: x opt-arg: undefined')
   })
 
 test(`

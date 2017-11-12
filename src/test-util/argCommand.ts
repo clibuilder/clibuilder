@@ -14,6 +14,6 @@ export const argCommand = {
     }
   ],
   run(args) {
-    this.ui.info(...args._)
+    this.ui.info(`some-arg: ${args['some-arg']}`, `opt-arg: ${args['opt-arg']}`)
   }
 } as Command

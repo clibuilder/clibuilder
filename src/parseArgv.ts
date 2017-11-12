@@ -28,6 +28,7 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   clearAlias(parsable, args)
 
   if (parsable.commands) {
+    fillArguments(parsable, args)
     return args
   }
 
@@ -35,8 +36,24 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   validateOptions(parsable, args)
   handleGroupedOptions(parsable, args, rawArgv)
   fillDefaults(parsable, args, rawArgv)
+  fillArguments(parsable, args)
 
   return args
+}
+
+function fillArguments(parsable: Parsable, args) {
+  if (!parsable.arguments)
+    return
+  parsable.arguments.forEach(a => {
+    if (args._.length <= 0)
+      return
+    if (a.multiple) {
+      args[a.name] = args._.splice(0, args._.length)
+    }
+    else {
+      args[a.name] = args._.shift()
+    }
+  })
 }
 
 function fixStringOptions(args) {

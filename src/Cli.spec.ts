@@ -44,6 +44,34 @@ test('run nested command', async t => {
   await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
 })
 
+test('run nested command with argument', async t => {
+  const cli = new Cli({
+    name: 'clibuilder',
+    version: '1.1.11',
+    commands: [{
+      name: 'cmd',
+      run() {
+        throw new Error('should not run')
+      },
+      commands: [{
+        name: 'nested-cmd',
+        arguments: [{
+          name: 'arg1',
+          description: 'arg1 argument'
+        }],
+        run(args) {
+          t.deepEqual(args._, [])
+          t.is(args.arg1, 'abc')
+        }
+      }]
+    }]
+  }, { cwd: '', abc: '123' })
+
+  t.plan(2)
+  await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd', 'abc'))
+})
+
+
 test('support extending context', t => {
   const cli = new Cli({
     name: 'cli',
