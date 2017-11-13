@@ -31,7 +31,7 @@ const cli = new Cli({
 cli.parse(process.argv)
 
 // commands.ts
-import { Command } from 'clibuilder'
+import { CliCommand } from 'clibuilder'
 
 export const commandA = {
   name: 'echo',
@@ -40,7 +40,7 @@ export const commandA = {
   run(args, argv) {
     this.ui.info(argv)
   }
-} as Command
+} as CliCommand
 ```
 
 It comes with a plain presenter.
