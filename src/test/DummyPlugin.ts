@@ -1,6 +1,6 @@
 import { Emitter, createEvent } from 'fsa-emitter'
 
-import { Registrar, Command, createTaskRunner, Task, ViewContext } from '../index'
+import { Registrar, CliCommand, createTaskRunner, Task, ViewContext } from '../index'
 
 const message = createEvent<string>('dummy')
 
@@ -22,7 +22,7 @@ const DummyCommand = {
     const runner = createTaskRunner(this, DummyTask, dummyViewBuilder)
     runner.run()
   }
-} as Command
+} as CliCommand
 
 export function activate(cli: Registrar) {
   cli.addCommand(DummyCommand)

@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { Command } from './Command'
+import { CliCommand } from './CliCommand'
 
 test('using custom context', t => {
   const spec = {
@@ -8,7 +8,7 @@ test('using custom context', t => {
     run() {
       t.falsy(this.x)
     }
-  } as Command<undefined, { x: string }>
+  } as CliCommand<undefined, { x: string }>
 
   t.truthy(spec)
 
@@ -18,7 +18,7 @@ test('using custom context', t => {
       // `this` should be `Command` by default
       t.truthy(this.ui)
     }
-  } as Command
+  } as CliCommand
 
   t.truthy(spec2)
 })

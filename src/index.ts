@@ -1,5 +1,5 @@
 export * from './Cli'
-export * from './Command'
+export * from './CliCommand'
 export * from './Display'
 export * from './PlainPresenter'
 export * from './PluginCli'

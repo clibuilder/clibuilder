@@ -1,12 +1,12 @@
-import { Command } from './Command'
+import { CliCommand } from './CliCommand'
 
 export interface Parsable {
   name: string
-  arguments?: Command.Argument[]
+  arguments?: CliCommand.Argument[]
   commands?: Parsable[]
   options?: {
-    boolean?: Command.BooleanOptions
-    string?: Command.StringOptions,
-    number?: Command.NumberOptions
+    boolean?: CliCommand.BooleanOptions
+    string?: CliCommand.StringOptions,
+    number?: CliCommand.NumberOptions
   }
 }

@@ -2,7 +2,7 @@ import { addAppender, logLevel } from '@unional/logging'
 import { ColorAppender } from 'aurelia-logging-color'
 import yargs = require('yargs-parser')
 
-import { Command } from './Command'
+import { CliCommand, CliCommandInstance } from './CliCommand'
 import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
@@ -14,7 +14,7 @@ import { loadConfig } from './loadConfig'
 export interface CliOption {
   name: string
   version: string
-  commands: Command[]
+  commands: CliCommand[]
 }
 
 export interface CliContext {
@@ -54,7 +54,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       }
     }
   }
-  commands: Command.Instance[]
+  commands: CliCommandInstance[]
   name: string
   version: string
   private ui: LogPresenter & HelpPresenter & VersionPresenter

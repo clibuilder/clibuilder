@@ -1,5 +1,9 @@
 import { Cli } from '../Cli';
-import { Command } from '../Command';
+import {
+  CliCommand,
+  // @ts-ignore
+  CliCommandInstance
+} from '../CliCommand';
 import { TaskConstructor, Task, ViewBuilder, createTaskRunner } from '../Task'
 import { createCommand } from '../util'
 
@@ -34,7 +38,7 @@ export function createInMemoryCli(name: string, ...commands): Cli<any> {
     })
 }
 
-export function setupCommandTest(command: Command, argv: string[], context = {}) {
+export function setupCommandTest(command: CliCommand, argv: string[], context = {}) {
   const presenterFactory = new InMemoryPresenterFactory()
   const args = createCommandArgs(command, argv)
   const cmd = createCommand(command, presenterFactory, context)

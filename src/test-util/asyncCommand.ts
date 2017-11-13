@@ -1,8 +1,8 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
 export const asyncCommand = {
   name: 'async',
   run() {
     return Promise.resolve()
   }
-} as Command
+} as CliCommand

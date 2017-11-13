@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
 export const numberOptionCommand = {
   name: 'num-opt',
@@ -12,4 +12,4 @@ export const numberOptionCommand = {
   run(args) {
     this.ui.info(`a: ${args.a}`)
   }
-} as Command
+} as CliCommand

@@ -2,7 +2,7 @@ import test from 'ava'
 
 import { Cli } from './Cli'
 import { createCliArgv, InMemoryPresenter } from './test-util/index';
-import { Command } from './Command';
+import { CliCommand } from './CliCommand';
 import { PresenterFactory } from './index';
 import { echoAllCommand } from './test-util/echoAllCommand';
 import { logLevel, getLevel } from '@unional/logging';
@@ -81,7 +81,7 @@ test('support extending context', t => {
       run() {
         t.not(this.custom, undefined)
       }
-    } as Command<undefined, { custom: boolean }>]
+    } as CliCommand<undefined, { custom: boolean }>]
   }, { cwd: '', custom: true })
   return cli.parse(createCliArgv('cli', 'cmd'))
 })
@@ -132,7 +132,7 @@ test('read local json file', async t => {
       run() {
         t.deepEqual(this.config, { a: 1 })
       }
-    } as Command<{ a: number }, {}>]
+    } as CliCommand<{ a: number }, {}>]
   }, { cwd: 'fixtures/has-config' })
   t.plan(1)
   await cli.parse(createCliArgv('cli', 'cfg'))
@@ -147,7 +147,7 @@ test(`read local json file in parent directory`, async t => {
       run() {
         t.deepEqual(this.config, { a: 1 })
       }
-    } as Command<{ a: number }, {}>]
+    } as CliCommand<{ a: number }, {}>]
   }, { cwd: 'fixtures/has-config/sub-folder' })
   t.plan(1)
   await cli.parse(createCliArgv('cli', 'cfg'))
