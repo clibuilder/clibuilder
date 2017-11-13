@@ -160,16 +160,6 @@ export const MyCommand = {
 
 ```
 
-## test-util
-
-There are some utilities I use internally when developing this library.
-These utilities could also be helpful to you when you develop your application.
-They can be accessed by deep referencing:
-
-```ts
-import { ... } form 'clibuilder/dist-es5/test-util'
-```
-
 ## Contribute
 
 ```sh
