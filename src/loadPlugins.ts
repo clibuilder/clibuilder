@@ -2,17 +2,17 @@ import path = require('path')
 import findup = require('find-up')
 
 import { findPlugins } from './findPlugins'
-import { Command } from './Command'
+import { CliCommand } from './CliCommand'
 import { log } from './log';
 
 export interface Registrar {
-  addCommand(command: Command<any, { [x: string]: any }>): void
+  addCommand(command: CliCommand<any, { [x: string]: any }>): void
 }
 
 class CliRegistrarImpl {
-  command: Command
+  command: CliCommand
 
-  addCommand(command: Command) {
+  addCommand(command: CliCommand) {
     this.command = command
   }
 }

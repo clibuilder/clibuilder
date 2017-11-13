@@ -1,13 +1,13 @@
 import inquirer = require('inquirer')
-import { Command } from './Command'
+import { CliCommand } from './CliCommand'
 import { DisplayLevel } from './Display'
 
-export interface CommandModel extends Command.Base {
+export interface CommandModel extends CliCommand.Base {
   description?: string
   commands?: CommandModel[]
-  arguments?: Command.Argument[],
+  arguments?: CliCommand.Argument[],
   alias?: string[]
-  options?: Command.Options
+  options?: CliCommand.Options
 }
 
 export interface LogPresenter {

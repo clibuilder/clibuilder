@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
 export const argCommand = {
   name: 'arg',
@@ -16,4 +16,4 @@ export const argCommand = {
   run(args) {
     this.ui.info(`some-arg: ${args['some-arg']}`, `opt-arg: ${args['opt-arg']}`)
   }
-} as Command
+} as CliCommand

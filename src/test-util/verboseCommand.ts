@@ -1,6 +1,6 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
-export const verboseCommand: Command = {
+export const verboseCommand: CliCommand = {
   name: 'verbose',
   alias: ['vb', 'detail'],
   options: {

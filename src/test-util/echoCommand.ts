@@ -1,6 +1,6 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
-export const echoCommand: Command = {
+export const echoCommand: CliCommand = {
   name: 'echo',
   arguments: [{
     name: 'args',

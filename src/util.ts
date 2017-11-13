@@ -1,15 +1,15 @@
-import { Command } from './Command'
+import { CliCommand, CliCommandInstance } from './CliCommand'
 import { PresenterFactory } from './PresenterFactory';
 import { log } from './log';
 
-export function createCommand(spec: Command, presenterFactory: PresenterFactory, context: { [index: string]: any }): Command.Instance {
+export function createCommand(spec: CliCommand, presenterFactory: PresenterFactory, context: { [index: string]: any }): CliCommandInstance {
   if (spec)
     log.debug('creatingCommand', spec.name)
   const result = {
     run: () => { return undefined },
     ...context,
     ...spec
-  } as Command.Instance
+  } as CliCommandInstance
   result.ui = presenterFactory.createCommandPresenter(result)
   if (result.commands) {
     result.commands = result.commands.map(c => createCommand(c, presenterFactory, { ...context, parent: result }))
@@ -18,7 +18,7 @@ export function createCommand(spec: Command, presenterFactory: PresenterFactory,
   return result
 }
 
-export function getCommand(args: string[], commands: Command.Instance[]): Command.Instance | undefined {
+export function getCommand(args: string[], commands: CliCommandInstance[]): CliCommandInstance | undefined {
   if (args.length === 0)
     return undefined
   const nameOrAlias = args.shift()!

@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
 export const booleanOptionsCommand = {
   name: 'opt',
@@ -16,4 +16,4 @@ export const booleanOptionsCommand = {
   run(args) {
     this.ui.info(`a: ${args.a}, b: ${args.b}`)
   }
-} as Command
+} as CliCommand

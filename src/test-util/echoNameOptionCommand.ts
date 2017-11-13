@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
 export const echoNameOptionCommand = {
   name: 'echoNameOption',
@@ -15,4 +15,4 @@ export const echoNameOptionCommand = {
   run(args) {
     this.ui.info(args.name)
   }
-} as Command
+} as CliCommand

@@ -1,6 +1,6 @@
-import { Command } from '../Command'
+import { CliCommand } from '../CliCommand'
 
-export const errorCommand: Command = {
+export const errorCommand: CliCommand = {
   name: 'error',
   run() {
     this.ui.error('error...')
