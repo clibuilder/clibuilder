@@ -12,7 +12,7 @@ import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
 import { createCommandArgs } from './createCommandArgs';
 
 
-export function setupTaskTest<J extends Task>(Task: TaskConstructor<J>, emitterBuilder: ViewBuilder = () => { return }) {
+export function setupTaskTest<T extends Task>(Task: TaskConstructor<T>, emitterBuilder: ViewBuilder = () => { return }) {
   const { ui } = createViewContext(Task.name)
   const runner = createTaskRunner({ ui }, Task, emitterBuilder)
   return {
@@ -27,7 +27,7 @@ export function createViewContext(name) {
   }
 }
 
-export function createInMemoryCli(name: string, ...commands): Cli<any> {
+export function createInMemoryCli(name: string, ...commands): Cli {
   return new Cli(
     { name, version: '1.0.0', commands },
     {
@@ -38,7 +38,7 @@ export function createInMemoryCli(name: string, ...commands): Cli<any> {
     })
 }
 
-export function setupCommandTest(command: CliCommand, argv: string[], context = {}) {
+export function setupCommandTest<Config, Context>(command: CliCommand<Config, Context>, argv: string[], context = {}) {
   const presenterFactory = new InMemoryPresenterFactory()
   const args = createCommandArgs(command, argv)
   const cmd = createCommand(command, presenterFactory, context)
