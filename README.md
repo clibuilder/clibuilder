@@ -65,10 +65,10 @@ const cli = new Cli({
 cli.parse(process.argv)
 ```
 
-You can add addition information in the context, which will be passed to your commands:
+You can specify the shape of the config, which will be loaded automatically using `<cli>.json` convension.
 
 ```ts
-import { Cli } from 'clibuilder'
+import { Cli, CliCommand } from 'clibuilder'
 
 const config = { ... }
 
@@ -78,13 +78,50 @@ const cmd = {
     // this.config is typed and accessible
     this.ui.info(this.config)
   }
-} Command<{ config: typeof config }>
+} CliCommand<typeof config>
 
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
   commands: [cmd]
-}, { config })
+})
+```
+
+When working with config, you may want to use the `overrideArgs(args, config)` helper function to get the args overridden by config in proper order:
+
+```ts
+import { CliCommand, overrideArgs } from 'clibuilder'
+
+interface Config { ... }
+
+const cmd = {
+  name: 'cmd',
+  // some options and arguments
+  run(args) {
+    const overridenConfig = overrideArgs(args, this.config)
+  }
+} CliCommand<Config>
+```
+
+You can add addition information in the context, which will be passed to your commands:
+
+```ts
+import { Cli, CliCommand } from 'clibuilder'
+
+const config = { ... }
+
+const cmd = {
+  name: 'cmd',
+  run() {
+    this.ui.info(this.something) // something is a number.
+  }
+} CliCommand<typeof config, { something: number }>
+
+const cli = new Cli({
+  name: 'yourapp',
+  version: '1.0.0',
+  commands: [cmd]
+}, { something: 10 })
 ```
 
 ## PluginCli

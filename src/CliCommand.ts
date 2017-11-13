@@ -1,4 +1,5 @@
 import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
+import { CliArgs } from './interfaces';
 export namespace CliCommand {
 
   export interface Base {
@@ -67,7 +68,7 @@ export namespace CliCommand {
     description?: string
     options?: Options
     alias?: string[]
-    run?: (this: CliCommandInstance & Context & { config?: Config }, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+    run?: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
   }
 
 }
@@ -77,7 +78,7 @@ export interface CliCommandInstance<Config = {}, Context = {}> extends CliComman
   commands?: CliCommandInstance[]
   config?: Config
   ui: LogPresenter & HelpPresenter & Inquirer
-  run: (this: CliCommandInstance & Context & { config?: Config }, args: { _: string[], _defaults: string[], [name: string]: any }, argv: string[]) => void | Promise<any>
+  run: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
 }
 
 export interface CliCommand<Config = {}, Context = {}> extends CliCommand.Shared<Config, Context> {

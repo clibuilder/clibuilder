@@ -1,6 +1,7 @@
 export * from './Cli'
 export * from './CliCommand'
 export * from './Display'
+export * from './overrideArgs'
 export * from './PlainPresenter'
 export * from './PluginCli'
 export * from './Presenter'
