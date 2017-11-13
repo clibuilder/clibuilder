@@ -1,6 +1,6 @@
 import { test } from 'ava'
 
-import { PluginCli } from './PluginCli'
+import { PluginCli } from './index'
 
 test('use "{name}-plugin" as keyword to look for plugins', t => {
   const cli = new PluginCli({

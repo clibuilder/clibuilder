@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { CliCommand } from './CliCommand'
+import { CliCommand } from './index'
 
 test('using custom context', t => {
   const spec = {

@@ -1,7 +1,7 @@
 import test, { TestContext } from 'ava'
 
 import { getCommandAndAliasNames, getCommand, createCommand } from './util'
-import { InMemoryPresenterFactory } from './test-util/InMemoryPresenterFactory';
+import { InMemoryPresenterFactory } from './index'
 
 test('should return empty array with no commands defined', t => {
   assertGettingNamesAndAlias(t, [], [])

@@ -1,9 +1,5 @@
 import test from 'ava'
-import { Cli } from '../Cli'
-
-import { createCliArgv } from './createCliArgv'
-import { echoAllCommand } from './echoAllCommand'
-import { spyDisplay } from './spyDisplay'
+import { Cli, createCliArgv, echoAllCommand, spyDisplay } from '../index'
 
 test('can spy on cli', async t => {
   const cli = new Cli({ name: 'a', version: '0.0.0', commands: [] })

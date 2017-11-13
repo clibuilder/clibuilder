@@ -1,12 +1,8 @@
 import test from 'ava'
+import { logLevel, getLevel } from '@unional/logging'
 
-import { Cli } from './Cli'
-import { createCliArgv, InMemoryPresenter } from './test-util/index';
-import { CliCommand } from './CliCommand';
-import { PresenterFactory } from './index';
-import { echoAllCommand } from './test-util/echoAllCommand';
-import { logLevel, getLevel } from '@unional/logging';
-import { log } from './log';
+import { Cli, CliCommand, createCliArgv, InMemoryPresenter, PresenterFactory, echoAllCommand } from './index'
+import { log } from './log'
 
 test('Cli context shape should follow input literal', t => {
   const cli = new Cli({

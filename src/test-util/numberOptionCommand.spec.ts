@@ -1,6 +1,5 @@
 import { test } from 'ava'
-import { createCommandArgs, createCommand, InMemoryPresenterFactory } from './index'
-import { numberOptionCommand } from './numberOptionCommand'
+import { createCommandArgs, createCommand, InMemoryPresenterFactory, numberOptionCommand } from '../index'
 
 
 test('number option', t => {

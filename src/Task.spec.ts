@@ -1,9 +1,8 @@
 import test from 'ava'
 import Order from 'assert-order'
-import { createEvent } from 'fsa-emitter';
+import { createEvent } from 'fsa-emitter'
 
-import { Task } from './Task'
-import { setupTaskTest } from './test-util/setup'
+import { Task, setupTaskTest } from './index'
 
 test('task runner can run task', t => {
   const event = createEvent('event')

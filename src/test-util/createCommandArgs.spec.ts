@@ -1,10 +1,6 @@
 import test from 'ava'
 
-import { createCommandArgs } from './index'
-
-import { noopCommand } from './noopCommand'
-import { argCommand } from './argCommand'
-import { booleanOptionsCommand } from './booleanOptionsCommand'
+import { createCommandArgs, argCommand, noopCommand, booleanOptionsCommand } from '../index'
 
 test('empty argv', t => {
   const args = createCommandArgs(noopCommand)

@@ -1,7 +1,5 @@
 import test from 'ava'
-import { DisplayLevel } from '../Display'
-
-import { InMemoryPresenter } from './InMemoryPresenter'
+import { DisplayLevel, InMemoryPresenter } from '../index'
 
 test('should default to verbose', t => {
   const p = new InMemoryPresenter({ name: 'a' })

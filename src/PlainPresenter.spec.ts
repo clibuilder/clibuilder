@@ -1,7 +1,6 @@
 import test from 'ava'
-import { InMemoryDisplay } from './test-util/InMemoryDisplay'
 
-import { PlainPresenter } from './PlainPresenter'
+import { PlainPresenter, InMemoryDisplay } from './index'
 
 test('should default to print info, warn, error messages', t => {
   const p = new PlainPresenter({ name: 'a' })

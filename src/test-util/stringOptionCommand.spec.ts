@@ -1,6 +1,5 @@
 import { test } from 'ava'
-import { setupCommandTest, argCommand } from './index'
-import { stringOptionCommand } from './stringOptionCommand'
+import { setupCommandTest, argCommand, stringOptionCommand } from '../index'
 
 
 test('string option with space', t => {

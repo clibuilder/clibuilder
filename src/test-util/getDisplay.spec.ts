@@ -1,7 +1,6 @@
 import test from 'ava'
 
-import { createInMemoryCli } from './setup'
-import { getDisplay } from './getDisplay'
+import { createInMemoryCli, getDisplay } from '../index'
 
 test('mem', t => {
   const cli = createInMemoryCli('abc')
