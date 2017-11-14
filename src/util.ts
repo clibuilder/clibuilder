@@ -1,6 +1,6 @@
 import { CliCommand, CliCommandInstance } from './CliCommand'
-import { PresenterFactory } from './PresenterFactory';
-import { log } from './log';
+import { PresenterFactory } from './PresenterFactory'
+import { log } from './log'
 
 export function createCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: { [index: string]: any }): CliCommandInstance<Config, Context> {
   if (spec)
@@ -26,14 +26,13 @@ export function getCommand<Config, Context>(args: string[], commands: CliCommand
   commands.forEach(cmd => {
     const match = cmd.name === nameOrAlias ||
       (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)
-    if (match) {
-      matchedCommand = cmd
-      if (cmd.commands) {
-        const nested = getCommand(args, cmd.commands)
-        if (nested)
-          matchedCommand = nested
-      }
-    }
+    if (!match) return
+    matchedCommand = cmd
+    if (!cmd.commands) return
+
+    const nested = getCommand(args, cmd.commands)
+    if (nested)
+      matchedCommand = nested
   })
   return matchedCommand
 }

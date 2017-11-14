@@ -1,5 +1,6 @@
+import { CliArgs } from './interfaces'
 import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
-import { CliArgs } from './interfaces';
+
 export namespace CliCommand {
 
   export interface Base {
