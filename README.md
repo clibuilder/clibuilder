@@ -162,41 +162,6 @@ You can override this by supplying your own keyword:
 new PluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
 ```
 
-## Task
-
-Besides `Cli` and `PluginCli`,
-`clibuilder` also provides a simple `Task` system for you to easily separate your business logic and view logic within your command.
-It uses [`fsa-emitter`](https://github.com/unional/fsa-emitter)
-
-```ts
-import { Command, createTaskRunner, Task } from 'clibuilder'
-import { createActionCreator } from 'fsa-emitter'
-
-const addTaskRan = createActionCreator<{ a: number, b: number, result: number }>('AddTask/run')
-
-class AddTask extends Task {
-  run(a: number, b: number) {
-    const result = a + b
-    this.emitter.emit(addTaskRan({ a, b, result }, undefined))
-  }
-}
-
-function addViewBuilder(emitter: EventEmitter2, { ui }) {
-  emitter.on(addTaskRan, ({ a, b, result }) => {
-    ui.info(`${a} + ${b} = ${result}`)
-  })
-}
-
-export const MyCommand = {
-  name: 'my-command',
-  run() {
-    const runner = createTaskRunner(this, AddTask, addViewBuilder)
-    return runner.run(1, 2)
-  }
-}
-
-```
-
 ## Contribute
 
 ```sh

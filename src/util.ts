@@ -9,7 +9,6 @@ export function createCommand<Config, Context = {}>(spec: CliCommand<Config, Con
   if (spec)
     log.debug('creatingCommand', spec.name)
   const result = {
-    run: () => { return undefined },
     ...context,
     ...spec
   } as CliCommandInstance<Config, Context>
