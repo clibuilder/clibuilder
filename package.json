@@ -1,6 +1,6 @@
 {
   "name": "clibuilder",
-  "version": "0.0.0-development",
+  "version": "0.28.6-development",
   "description": "A CLI building library",
   "main": "dist-es5/index.js",
   "module": "dist-es2015/index.js",
@@ -18,7 +18,6 @@
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "prepare": "npm run build",
-    "postpublish": "git push",
     "preversion": "git pull && npm run verify",
     "verify": "npm run lint && npm run coverage && npm run dependency-check",
     "coverage": "nyc npm test",
