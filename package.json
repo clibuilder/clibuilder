@@ -84,7 +84,6 @@
     "@unional/logging": "^0.2.3",
     "aurelia-logging-color": "^0.5.10",
     "find-up": "^2.1.0",
-    "fsa-emitter": "^0.4.5",
     "inquirer": "^4.0.0",
     "lodash": "^4.17.4",
     "pad-right": "^0.2.2",
