@@ -38,7 +38,7 @@ export function createInMemoryCli(name: string, ...commands): Cli {
     })
 }
 
-export function setupCommandTest<Config, Context = {}>(command: CliCommand<Config, Context>, argv: string[], context = {}) {
+export function setupCommandTest<Config, Context = {}>(command: CliCommand<Config, Context>, argv: string[], context: { config?: Config } & Context = {} as any) {
   const presenterFactory = new InMemoryPresenterFactory()
   const args = createCommandArgs(command, argv)
   const cmd = createCommand(command, presenterFactory, context)
