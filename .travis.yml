@@ -1,19 +1,21 @@
 language: node_js
-
+cache:
+  directories:
+    - ~/.npm
 notifications:
-  email:
-    on_success: never
-    on_failure: change
-
+  email: false
 node_js:
-  - "stable"
-
+  - 'stable'
+  - '8'
+  - '6'
+  - '4'
 branches:
   only:
-    - "master"
-
+    - 'master'
+  # except:
+    # - /^v\d+\.\d+\.\d+$/
 before_install:
-- npm install -g greenkeeper-lockfile@1
+  - npm install -g greenkeeper-lockfile@1
 
 before_script: greenkeeper-lockfile-update
 
@@ -24,3 +26,4 @@ after_script: greenkeeper-lockfile-upload
 
 after_success:
   - npm install coveralls && npm run coveralls
+  - npm run semantic-release
