@@ -2,7 +2,10 @@ import { CliCommand, CliCommandInstance } from './CliCommand'
 import { PresenterFactory } from './PresenterFactory'
 import { log } from './log'
 
-export function createCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: { [index: string]: any }): CliCommandInstance<Config, Context> {
+export function createCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: {
+  config?: Config,
+  [index: string]: any
+}): CliCommandInstance<Config, Context> {
   if (spec)
     log.debug('creatingCommand', spec.name)
   const result = {

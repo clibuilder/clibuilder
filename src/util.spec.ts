@@ -61,3 +61,16 @@ test('two sub commands should have the same parent', t => {
     t.is(c.parent, cmd)
   })
 })
+
+test('specifying Config will get completion support on context', t => {
+  const cli = {
+    name: 'clibuilder',
+    commands: [{
+      name: 'cmd1'
+    }]
+  }
+  const cmd = createCommand<{ foo: string }>(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined, config: { foo: 'a' } })
+  cmd.commands!.forEach(c => {
+    t.is(c.parent, cmd)
+  })
+})
