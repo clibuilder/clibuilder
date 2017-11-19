@@ -170,7 +170,6 @@ npm install
 
 # begin making changes
 npm run watch
-
 ```
 
 [unstable-image]: http://badges.github.io/stability-badges/dist/unstable.svg
