@@ -1,8 +1,9 @@
 import test from 'ava'
-import { Cli, createCliArgv, echoAllCommand, spyDisplay } from '../index'
+import { Cli, createCliArgv, echoAllCommand, spyDisplay, InMemoryPresenterFactory } from '../index'
 
 test('can spy on cli', async t => {
-  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [] })
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [] }, { presenterFactory })
   const display = spyDisplay(cli)
 
   await cli.parse(createCliArgv('a'))
@@ -12,7 +13,8 @@ test('can spy on cli', async t => {
 })
 
 test('can spy on cmd', async t => {
-  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [echoAllCommand] })
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [echoAllCommand] }, { presenterFactory })
   const display = spyDisplay(cli, 'echo-all')
 
   await cli.parse(createCliArgv('a', '--verbose', 'echo-all'))
