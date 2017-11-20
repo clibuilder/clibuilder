@@ -5,14 +5,12 @@ cache:
 notifications:
   email: false
 node_js:
-  - 'stable'
+  - '9'
   - '8'
   - '6'
 branches:
-  only:
-    - 'master'
-  # except:
-    # - /^v\d+\.\d+\.\d+$/
+  except:
+    - /^v\d+\.\d+\.\d+$/
 before_install:
   - npm install -g greenkeeper-lockfile@1
 
