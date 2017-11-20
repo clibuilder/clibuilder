@@ -27,24 +27,12 @@ async function findPackageFolders(cwd) {
 
 function readDirSafe(path: string) {
   return new Promise<string[]>((a, r) => {
-    try {
-      fs.readdir(path, (err, dirs) => {
-        if (err) {
-          if (err.code === 'ENOENT')
-            a([])
-          else
-            r(err)
-        }
-        a(dirs)
-      })
-    }
-    catch (err) {
-      if (err.code === 'ENOENT')
-        a([])
-      else
-        // istanbul ignore next
+    fs.readdir(path, (err, dirs = []) => {
+      // istanbul ignore next
+      if (err && err.code !== 'ENOENT')
         r(err)
-    }
+      a(dirs)
+    })
   })
 }
 
