@@ -60,7 +60,7 @@ export namespace CliCommand {
   /**
    * This interface is shared between `CommandSpec` and `Command`
    */
-  export interface Shared<Config = {}, Context = {}> {
+  export interface Shared {
     /**
      * Name of the command.
      */
@@ -69,19 +69,19 @@ export namespace CliCommand {
     description?: string
     options?: Options
     alias?: string[]
-    run?: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
   }
 
 }
 
-export interface CliCommandInstance<Config = {}, Context = {}> extends CliCommand.Base, CliCommand.Shared<Config, Context> {
+export interface CliCommandInstance<Config = {}, Context = {}> extends CliCommand.Base, CliCommand.Shared {
   cwd: string
   commands?: CliCommandInstance[]
   config?: Config
   ui: LogPresenter & HelpPresenter & Inquirer
-  run: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
+  run(this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]): void | Promise<any>
 }
 
-export interface CliCommand<Config = {}, Context = {}> extends CliCommand.Shared<Config, Context> {
-  commands?: CliCommand[]
+export interface CliCommand<Config = {}, Context = {}> extends CliCommand.Shared {
+  commands?: CliCommand[],
+  run?: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
 }
