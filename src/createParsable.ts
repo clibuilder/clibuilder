@@ -4,8 +4,8 @@ import {
   CliCommandInstance
 } from './CliCommand'
 import { InMemoryPresenterFactory } from './test-util/index'
-import { createCommand } from './util'
+import { createCliCommand } from './createCliCommand'
 
 export function createParsable(command: CliCommand, context = {}) {
-  return createCommand(command, new InMemoryPresenterFactory(), context)
+  return createCliCommand(command, new InMemoryPresenterFactory(), context)
 }

@@ -1,5 +1,5 @@
 import { test } from 'ava'
-import { createCommandArgs, createCommand, InMemoryPresenterFactory, numberOptionCommand } from '../index'
+import { createCommandArgs, createCliCommand, InMemoryPresenterFactory, numberOptionCommand } from '../index'
 
 
 test('number option', t => {
@@ -10,7 +10,7 @@ test('number option', t => {
 test('log option', t => {
   const args = createCommandArgs(numberOptionCommand, ['-a 3'])
 
-  const cmd = createCommand(numberOptionCommand, new InMemoryPresenterFactory(), {})
+  const cmd = createCliCommand(numberOptionCommand, new InMemoryPresenterFactory(), {})
   t.plan(1)
   cmd.ui.info = msg => t.is(msg, `a: ${args.a}`)
   cmd.run(args, ['-a 3'])
