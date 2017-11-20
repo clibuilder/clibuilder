@@ -55,10 +55,12 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       }
     }
   }
-  commands: CliCommandInstance[]
+  commands: CliCommandInstance[] = []
   name: string
   version: string
   private ui: LogPresenter & HelpPresenter & VersionPresenter
+  private presenterFactory: PresenterFactory
+  private context: Partial<CliContext> & Context
   constructor(option: CliOption, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name
     this.version = option.version
@@ -68,19 +70,24 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     context.config = loadConfig(`${this.name}.json`, { cwd })
     log.debug('Loaded config', context.config)
 
-    const presenterFactory = context.presenterFactory || new PresenterFactory()
+    const presenterFactory = this.presenterFactory = context.presenterFactory || new PresenterFactory()
     delete context.presenterFactory
     context['parent'] = this
+    this.context = context
 
     this.ui = presenterFactory.createCliPresenter(this)
-    this.commands = option.commands.map(s => {
-      return createCliCommand(s, presenterFactory, context)
+    option.commands.forEach(command => {
+      this.addCliCommand(command)
     })
   }
 
   parse(rawArgv: string[]) {
     const args = parseArgv(this, rawArgv.slice(1))
     return this.process(args, rawArgv.slice(1))
+  }
+
+  protected addCliCommand(command: CliCommand) {
+    this.commands.push(createCliCommand(command, this.presenterFactory, this.context))
   }
 
   private process(args, rawArgv) {

@@ -11,13 +11,21 @@ export interface PluginCliContext extends CliContext {
 }
 
 export class PluginCli<Context extends { [i: string]: any } = {}> extends Cli {
+  protected loadingPlugins: Promise<void>
+
   constructor(options: PluginCliOption, context: Partial<PluginCliContext> & Context = {} as any) {
     let { name, version, keyword = `${options.name}-plugin` } = options
 
     // istanbul ignore next
     const cwd = context.cwd || process.cwd()
 
-    const commands = loadPlugins(keyword, { cwd })
-    super({ name, version, commands }, context)
+    super({ name, version, commands: [] }, context)
+    this.loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
+      commands.forEach(command => this.addCliCommand(command))
+    })
+  }
+
+  parse(rawArgv: string[]) {
+    return this.loadingPlugins.then(() => super.parse(rawArgv))
   }
 }

@@ -17,26 +17,33 @@ class CliRegistrarImpl {
   }
 }
 
-export function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
+export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   log.debug('loading plugins')
-  const pluginNames = findPlugins(keyword, cwd)
-  log.debug('found local plugins', pluginNames)
 
-  const globalFolder = getGlobalPackageFolder(__dirname)
-  const globalPluginNames = findPlugins(keyword, globalFolder)
-  log.debug('found global plugins', globalPluginNames)
-
-  let r = activatePlugins(pluginNames, cwd);
-
-  globalPluginNames.forEach(p => {
-    if (pluginNames.indexOf(p) !== -1)
-      return
-    const m = loadModule(p, globalFolder)
-    if (isValidPlugin(m))
-      r.push(activatePlugin(m))
+  const findingLocal = findPlugins(keyword, cwd).then(pluginNames => {
+    log.debug('found local plugins', pluginNames)
+    return pluginNames
   })
 
-  return r
+  const globalFolder = getGlobalPackageFolder(__dirname)
+  const findingGlobal = findPlugins(keyword, globalFolder).then(globalPluginNames => {
+    log.debug('found global plugins', globalPluginNames)
+    return globalPluginNames
+  })
+
+  return Promise.all([findingLocal, findingGlobal]).then(([pluginNames, globalPluginNames]) => {
+    let commands = activatePlugins(pluginNames, cwd);
+
+    globalPluginNames.forEach(p => {
+      if (pluginNames.indexOf(p) !== -1)
+        return
+      const m = loadModule(p, globalFolder)
+      if (isValidPlugin(m))
+        commands.push(activatePlugin(m))
+    })
+
+    return commands
+  })
 }
 
 function getGlobalPackageFolder(folder): string {
