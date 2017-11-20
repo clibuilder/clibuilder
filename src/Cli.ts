@@ -7,7 +7,8 @@ import { DisplayLevel } from './Display'
 import { parseArgv } from './parseArgv'
 import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 import { PresenterFactory } from './PresenterFactory'
-import { createCommand, getCommand } from './util'
+import { createCliCommand } from './createCliCommand'
+import { getCliCommand } from './getCliCommand'
 import { log } from './log'
 import { loadConfig } from './loadConfig'
 
@@ -73,7 +74,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
 
     this.ui = presenterFactory.createCliPresenter(this)
     this.commands = option.commands.map(s => {
-      return createCommand(s, presenterFactory, context)
+      return createCliCommand(s, presenterFactory, context)
     })
   }
 
@@ -87,7 +88,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       this.ui.showVersion(this.version)
       return Promise.resolve()
     }
-    const command = getCommand(args._, this.commands)
+    const command = getCliCommand(args._, this.commands)
     const cmdChainCount = getCmdChainCount(command)
     if (!command) {
       this.ui.showHelp(this)

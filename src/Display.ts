@@ -11,6 +11,7 @@ export enum DisplayLevel {
   Verbose = 20
 }
 
+// istanbul ignore next
 export class ConsoleDisplay implements Display {
   debug(...args: any[]): void {
     console.log.apply(console, args)

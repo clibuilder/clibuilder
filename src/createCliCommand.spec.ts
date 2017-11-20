@@ -1,7 +1,23 @@
 import test, { TestContext } from 'ava'
 
-import { getCommandAndAliasNames, getCommand, createCommand } from './util'
+import { createCliCommand } from './createCliCommand'
+import { getCliCommand } from './getCliCommand'
 import { InMemoryPresenterFactory } from './index'
+
+function getCommandAndAliasNames(commands: { name: string, alias?: string[] }[]) {
+  const names: string[] = []
+  commands.forEach(cmd => {
+    names.push(cmd.name)
+    if (cmd.alias) {
+      names.push(...cmd.alias)
+    }
+  })
+  return names.sort()
+}
+
+function assertGettingNamesAndAlias(t: TestContext, actual: { name: string, alias?: string[] }[], names: string[]) {
+  t.deepEqual(getCommandAndAliasNames(actual), names)
+}
 
 test('should return empty array with no commands defined', t => {
   assertGettingNamesAndAlias(t, [], [])
@@ -27,9 +43,6 @@ test('should sort names in alphabetical order', t => {
     alias: ['b']
   }], ['a', 'b', 'c', 'd'])
 })
-function assertGettingNamesAndAlias(t: TestContext, actual: { name: string, alias?: string[] }[], names: string[]) {
-  t.deepEqual(getCommandAndAliasNames(actual), names)
-}
 
 test('run 1st level command', t => {
   const cli = {
@@ -41,8 +54,8 @@ test('run 1st level command', t => {
       }]
     }]
   }
-  const cmd = createCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
-  const actual = getCommand(['clibuilder', 'cmd'], [cmd])
+  const cmd = createCliCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
+  const actual = getCliCommand(['clibuilder', 'cmd'], [cmd])
   t.not(actual, undefined)
   t.is(actual!.name, 'cmd')
 })
@@ -56,7 +69,7 @@ test('two sub commands should have the same parent', t => {
       name: 'cmd2'
     }]
   }
-  const cmd = createCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
+  const cmd = createCliCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
   cmd.commands!.forEach(c => {
     t.is(c.parent, cmd)
   })
@@ -69,7 +82,7 @@ test('specifying Config will get completion support on context', t => {
       name: 'cmd1'
     }]
   }
-  const cmd = createCommand<{ foo: string }>(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined, config: { foo: 'a' } })
+  const cmd = createCliCommand<{ foo: string }>(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined, config: { foo: 'a' } })
   cmd.commands!.forEach(c => {
     t.is(c.parent, cmd)
   })

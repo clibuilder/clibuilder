@@ -132,3 +132,19 @@ Options:
   [--some-option]=value  some description (default 'yes')
 `)
 })
+
+test('help message shows alias', t => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.showHelp({
+    name: 'long-name',
+    alias: ['b']
+  })
+  t.is(display.infoLogs[0][0], `
+Usage: long-name
+
+Alias:
+  b
+`)
+})
