@@ -7,7 +7,7 @@ test('find no plugin in empty folder', t => {
 })
 
 test('find one plugin on one-plugin folder', t => {
-  t.deepEqual(findPlugins('clibuilder-plugin', 'fixtures/one-plugin'), ['cli-plugin-x'])
+  t.deepEqual(findPlugins('clibuilder-plugin', 'fixtures/one-plugin'), ['cli-plugin-one'])
 })
 
 test('find one plugin in scoped-plugin folder', t => {
