@@ -1,6 +1,6 @@
 import { test } from 'ava'
 
-import { PluginCli } from './index'
+import { PluginCli, InMemoryPresenterFactory, createCliArgv } from './index'
 
 class TestPluginCli extends PluginCli {
   ready = this.loadingPlugins
@@ -25,4 +25,16 @@ test('use custom keyword to look for plugins', async t => {
   }, { cwd: 'fixtures/alt-keyword-plugin' })
   await cli.ready
   t.is(cli.commands.length, 1)
+})
+
+test('command is loaded when parse', async t => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new PluginCli({
+    name: 'clibuilder',
+    version: '1.0.0'
+  }, { cwd: 'fixtures/one-plugin', presenterFactory })
+
+  await cli.parse(createCliArgv('clibuilder', 'x', 'echo'))
+  const presenter = presenterFactory.commandPresenter
+  t.is(presenter.display.infoLogs[0][0], 'echo')
 })
