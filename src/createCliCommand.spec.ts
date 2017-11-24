@@ -1,8 +1,7 @@
 import test, { TestContext } from 'ava'
 
-import { createCliCommand } from './createCliCommand'
 import { getCliCommand } from './getCliCommand'
-import { InMemoryPresenterFactory } from './index'
+import { InMemoryPresenterFactory, createCliCommand } from './index'
 
 function getCommandAndAliasNames(commands: { name: string, alias?: string[] }[]) {
   const names: string[] = []
