@@ -1,4 +1,5 @@
 import { test } from 'ava'
+
 import { createCommandArgs, createCliCommand, InMemoryPresenterFactory, numberOptionCommand } from '../index'
 
 

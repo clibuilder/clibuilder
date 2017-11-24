@@ -1,4 +1,5 @@
 import test from 'ava'
+
 import { DisplayLevel, InMemoryPresenter } from '../index'
 
 test('should default to verbose', t => {
