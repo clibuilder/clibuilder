@@ -95,15 +95,15 @@
     "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.33",
     "@types/wordwrap": "github:types/wordwrap",
-    "assert-order": "^3.1.1",
+    "assertron": "^3.3.1",
     "ava": "^0.23.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^2.9.1",
     "nyc": "^11.3.0",
     "rimraf": "^2.6.2",
+    "semantic-release": "^8.2.0",
     "tslint": "^5.7.0",
     "tslint-config-unional": "^0.8.0",
-    "typescript": "^2.6.1",
-    "semantic-release": "^8.2.0"
+    "typescript": "^2.6.1"
   }
 }

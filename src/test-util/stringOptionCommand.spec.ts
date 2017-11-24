@@ -1,4 +1,5 @@
 import { test } from 'ava'
+
 import { setupCliCommandTest, argCommand, stringOptionCommand } from '../index'
 
 
