@@ -21,6 +21,12 @@ test('string option without space', t => {
   t.deepEqual(args, { a: '5', _: [], _defaults: [] })
 })
 
+test('specify option multiple times', t => {
+  const { args } = setupCliCommandTest(stringOptionCommand, ['-a=abc', '-a=def'])
+
+  t.deepEqual(args, { a: ['abc', 'def'], _: [], _defaults: [] })
+})
+
 test('log option', t => {
   const { cmd, args, argv, ui } = setupCliCommandTest(stringOptionCommand, ['-a 3'])
 
