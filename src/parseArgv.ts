@@ -122,9 +122,7 @@ function validateArguments(command: Parsable, args) {
 }
 
 function validateOptions(command, args) {
-  let map = {
-    _: true
-  }
+  let map = {}
 
   if (command.options) {
     map = { ...map, ...extractTypes(command.options.boolean, 'boolean') }
@@ -133,23 +131,20 @@ function validateOptions(command, args) {
   }
 
   Object.keys(args).forEach(name => {
-    if (map[name]) {
-      if (map[name] === 'boolean' && typeof args[name] !== 'boolean') {
-        throw new InvalidOptionError(name, 'boolean', args[name])
-      }
-      if (map[name] === 'string' && typeof args[name] !== 'string') {
-        throw new InvalidOptionError(name, 'string', args[name])
-      }
-      if (map[name] === 'number' && typeof args[name] !== 'number') {
-        throw new InvalidOptionError(name, 'number', args[name])
-      }
+    if (name === '_')
+      return
+    const optionType = map[name]
+    if (optionType) {
+      const arg = args[name]
+      const argType = getArgType(arg)
+      if (optionType !== argType)
+        throw new InvalidOptionError(name, optionType, arg)
     }
     else {
       throw new UnknownOptionError(name)
     }
   })
 }
-
 function extractTypes(sourceMap, valueType) {
   const map = {}
   if (sourceMap) {
@@ -164,6 +159,12 @@ function extractTypes(sourceMap, valueType) {
     })
   }
   return map
+}
+
+function getArgType(arg) {
+  if (!Array.isArray(arg))
+    return typeof arg
+  return typeof arg[0]
 }
 
 function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArgv: string[]) {
@@ -234,7 +235,7 @@ function getAllGroups(opts) {
 function findOptionNameAndAlias({ options }: Pick<Parsable, 'options'>, name: string) {
   const result = [name]
   const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name]) ||
-  (options!.number && options!.number![name])
+    (options!.number && options!.number![name])
   if (o && o.alias) {
     result.push(...o.alias)
   }
