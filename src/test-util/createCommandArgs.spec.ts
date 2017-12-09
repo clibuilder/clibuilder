@@ -1,6 +1,7 @@
 import test from 'ava'
 
 import { createCommandArgs, argCommand, noopCommand, booleanOptionsCommand } from '../index'
+import { satisfy } from 'assertron';
 
 test('empty argv', t => {
   const args = createCommandArgs(noopCommand)
@@ -11,7 +12,8 @@ test('empty argv', t => {
 test(`one argv`, t => {
   const args = createCommandArgs(argCommand, ['arg1'])
 
-  t.deepEqual(args, { _: [], _defaults: [], 'some-arg': 'arg1' })
+  satisfy(args, { 'some-arg': 'arg1', someArg: 'arg1' })
+  t.pass()
 })
 
 test(`boolean option using with '--'`, t => {

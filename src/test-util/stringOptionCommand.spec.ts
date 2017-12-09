@@ -1,3 +1,4 @@
+import { satisfy } from 'assertron/dist-es5';
 import { test } from 'ava'
 
 import { setupCliCommandTest, argCommand, stringOptionCommand } from '../index'
@@ -38,7 +39,7 @@ test('log option', t => {
 test('argument command', t => {
   const { cmd, args, argv, ui } = setupCliCommandTest(argCommand, ['abc'])
 
-  t.deepEqual(args, { _: [], _defaults: [], 'some-arg': 'abc' })
+  satisfy(args, { 'some-arg': 'abc', someArg: 'abc' })
 
   cmd.run(args, argv)
   t.is(ui.display.infoLogs[0][0], 'some-arg: abc')
