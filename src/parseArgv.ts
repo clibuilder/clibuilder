@@ -1,3 +1,4 @@
+import camelCase = require('camel-case')
 import yargs = require('yargs-parser')
 
 import { Parsable } from './interfaces'
@@ -53,6 +54,7 @@ function fillArguments(parsable: Parsable, args) {
     else {
       args[a.name] = args._.shift()
     }
+    args[camelCase(a.name)] = args[a.name]
   })
 }
 
@@ -237,7 +239,9 @@ function findOptionNameAndAlias({ options }: Pick<Parsable, 'options'>, name: st
   const o = (options!.boolean && options!.boolean![name]) || (options!.string && options!.string![name]) ||
     (options!.number && options!.number![name])
   if (o && o.alias) {
-    result.push(...o.alias)
+    o.alias.forEach(a => {
+      result.push(a)
+    })
   }
   return result
 }
