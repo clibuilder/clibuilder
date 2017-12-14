@@ -80,7 +80,7 @@
     ]
   },
   "dependencies": {
-    "@types/inquirer": "0.0.35",
+    "@types/inquirer": "0.0.36",
     "@unional/logging": "^0.2.3",
     "aurelia-logging-color": "^0.5.11",
     "camel-case": "^3.0.0",
