@@ -103,7 +103,7 @@
     "nyc": "^11.4.0",
     "pascal-case": "^2.0.1",
     "rimraf": "^2.6.2",
-    "semantic-release": "^8.2.3",
+    "semantic-release": "^11.0.2",
     "tslint": "^5.8.0",
     "tslint-config-unional": "^0.8.0",
     "typescript": "^2.6.2"
