@@ -11,10 +11,10 @@ export interface Parsable {
   }
 }
 
-export interface CliArgsWithouDefaults {
+export interface CliArgsWithoutDefaults {
   _: string[],
   [name: string]: any
 }
-export interface CliArgs extends CliArgsWithouDefaults {
+export interface CliArgs extends CliArgsWithoutDefaults {
   _defaults: string[]
 }
