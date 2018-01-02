@@ -18,14 +18,13 @@
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "prepare": "npm run build",
-    "preversion": "git pull && npm run verify",
     "verify": "npm run lint && npm run coverage && npm run dependency-check",
     "coverage": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run clean && tsc && ava",
     "watch": "npm run clean && node scripts/watch.js",
     "debug": "node scripts/debug.js",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
