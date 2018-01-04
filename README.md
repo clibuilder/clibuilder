@@ -4,8 +4,12 @@
 [![NPM downloads][downloads-image]][downloads-url]
 [![Build status][travis-image]][travis-url]
 [![Coverage Status][coveralls-image]][coveralls-url]
-[![Greenkeeper badge][greenkeeper-image]][greenkeeper-url]
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+
+[![Greenkeeper][greenkeeper-image]][greenkeeper-url]
+[![Semantic Release][semantic-release-image]][semantic-release-url]
+
+[![Visual Studio Code][vscode-image]][vscode-url]
+[![Wallaby.js][wallaby-image]][wallaby-url]
 
 `clibuilder` is a CLI building library.
 
@@ -182,5 +186,11 @@ npm run watch
 [travis-url]: https://travis-ci.org/unional/clibuilder?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/unional/clibuilder/badge.svg
 [coveralls-url]: https://coveralls.io/github/unional/clibuilder
-[greenkeeper-image]: https://badges.greenkeeper.io/unional/clibuilder.svg
-[greenkeeper-url]: https://greenkeeper.io/
+[greenkeeper-image]:https://badges.greenkeeper.io/unional/color-map.svg
+[greenkeeper-url]:https://greenkeeper.io/
+[semantic-release-image]:https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
+[semantic-release-url]:https://github.com/semantic-release/semantic-release
+[wallaby-image]:https://img.shields.io/badge/wallaby.js-configured-green.svg
+[wallaby-url]:https://wallabyjs.com
+[vscode-image]:https://img.shields.io/badge/vscode-ready-green.svg
+[vscode-url]:https://code.visualstudio.com/
