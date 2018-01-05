@@ -10,10 +10,10 @@ export interface Registrar {
 }
 
 class CliRegistrarImpl {
-  command: CliCommand
+  commands: CliCommand[] = []
 
   addCommand(command: CliCommand) {
-    this.command = command
+    this.commands.push(command)
   }
 }
 
@@ -39,7 +39,7 @@ export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
         return
       const m = loadModule(p, globalFolder)
       if (isValidPlugin(m))
-        commands.push(activatePlugin(m))
+        commands.push(...activatePlugin(m))
     })
 
     return commands
@@ -53,7 +53,8 @@ function getGlobalPackageFolder(folder): string {
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
-  return pluginNames
+  const commands: CliCommand[] = []
+  pluginNames
     .map(p => {
       return {
         name: p,
@@ -67,12 +68,12 @@ function activatePlugins(pluginNames: string[], cwd: string) {
       }
       return true
     })
-    .map(({ name, pluginModule }) => {
+    .forEach(({ name, pluginModule }) => {
       log.debug('activating plugin', name)
-      const plugin = activatePlugin(pluginModule)
+      commands.push(...activatePlugin(pluginModule))
       log.debug('activated plugin', name)
-      return plugin
     })
+  return commands
 }
 
 function loadModule(name, cwd) {
@@ -87,5 +88,5 @@ function isValidPlugin(m) {
 function activatePlugin(m) {
   const registrar = new CliRegistrarImpl()
   m.activate(registrar)
-  return registrar.command
+  return registrar.commands
 }
