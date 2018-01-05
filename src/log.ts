@@ -1,9 +1,8 @@
 import {
   getLogger,
-  // @ts-ignore
   Logger
 } from '@unional/logging'
 
-const log = getLogger('clibuilder')
+const log: Logger = getLogger('clibuilder')
 
 export { log }
