@@ -176,8 +176,6 @@ npm install
 npm run watch
 ```
 
-[unstable-image]: http://badges.github.io/stability-badges/dist/unstable.svg
-[unstable-url]: http://github.com/badges/stability-badges
 [npm-image]: https://img.shields.io/npm/v/clibuilder.svg?style=flat
 [npm-url]: https://npmjs.org/package/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
