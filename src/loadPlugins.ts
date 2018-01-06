@@ -49,7 +49,10 @@ export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
 function getGlobalPackageFolder(folder): string {
   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
-  return path.resolve(findup.sync('node_modules', { cwd: basePath }), '..')
+  // `|| ''` to get around NodeJS@6 typings.
+  // This function should not fail to find the global package folder, so it would be no-op
+  // istanbul ignore next
+  return path.resolve(findup.sync('node_modules', { cwd: basePath }) || '', '..')
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
