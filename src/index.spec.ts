@@ -321,7 +321,7 @@ Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createCliArgv('cli', 'opt', '-a'))
@@ -335,7 +335,7 @@ Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand]})
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createCliArgv('cli', 'opt', '-b'))
@@ -350,7 +350,7 @@ Given cli with groupOption command
 When called with 'opt b'
 Then options 'a' is undefined and 'b' is true`,
   async t => {
-    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [groupOptionsCommand]})
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [groupOptionsCommand] })
     const display = spyDisplay(cli, 'opt')
 
     await cli.parse(createCliArgv('cli', 'opt', '-b'))
