@@ -11,21 +11,21 @@ test('no default arg gets argument only', t => {
 test('default values remains if no config', t => {
   const args = { _: ['a', 'b', 'c'], _defaults: ['x', 'y', 'z'], x: 1, y: true, z: 'z' }
 
-  const actual = overrideArgs(args, { x: 2, z: 'foo'})
+  const actual = overrideArgs(args, { x: 2, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 2, y: true, z: 'foo' })
 })
 
 test('config override default values', t => {
   const args = { _: ['a', 'b', 'c'], _defaults: ['x', 'y', 'z'], x: 1, y: true, z: 'z' }
 
-  const actual = overrideArgs(args, { x: 2, y: false, z: 'foo'})
+  const actual = overrideArgs(args, { x: 2, y: false, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 2, y: false, z: 'foo' })
 })
 
 test('non default values overrides config values', t => {
   const args = { _: ['a', 'b', 'c'], _defaults: [], x: 1, y: true, z: 'z' }
 
-  const actual = overrideArgs(args, { x: 2, y: false, z: 'foo'})
+  const actual = overrideArgs(args, { x: 2, y: false, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 1, y: true, z: 'z' })
 })
 

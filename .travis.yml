@@ -12,6 +12,7 @@ branches:
   only:
     - master
     - /^greenkeeper.*$/
+
 before_install:
   - npm install -g greenkeeper-lockfile@1
 
@@ -23,5 +24,7 @@ script:
 after_script: greenkeeper-lockfile-upload
 
 after_success:
-  - npm run semantic-release
+  - npm install -g travis-deploy-once@4
+  - travis-deploy-once "npm run semantic-release"
   - npm install --no-save coveralls && npm run coveralls
+  - npm install --no-save codecov && npm run codecov
