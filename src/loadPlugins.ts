@@ -49,7 +49,9 @@ export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
 function getGlobalPackageFolder(folder): string {
   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
-  return path.resolve(findup.sync('node_modules', { cwd: basePath }), '..')
+  // in NodeJS@6 the following fails tsc due to null is not assignable to string.
+  // in this context the `findup()` call should not fail and will not return null.
+  return path.resolve(findup.sync('node_modules', { cwd: basePath }) as string, '..')
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {

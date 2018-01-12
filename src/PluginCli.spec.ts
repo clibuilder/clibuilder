@@ -38,3 +38,13 @@ test('command is loaded when parse', async t => {
   const presenter = presenterFactory.commandPresenter
   t.is(presenter.display.infoLogs[0][0], 'echo')
 })
+
+test('use custom keyword to look for plugins', async t => {
+  const cli = new TestPluginCli({
+    name: 'clibuilder',
+    version: '1.0.0',
+    keyword: '2-cmd'
+  }, { cwd: 'fixtures/plugin-with-2-top-commands' })
+  await cli.ready
+  t.is(cli.commands.length, 2)
+})
