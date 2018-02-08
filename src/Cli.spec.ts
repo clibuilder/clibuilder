@@ -1,7 +1,8 @@
-import test from 'ava'
 import { logLevel, getLevel } from '@unional/logging'
+import AssertOrder from 'assertron'
+import test from 'ava'
 
-import { Cli, CliCommand, createCliArgv, InMemoryPresenter, PresenterFactory, echoAllCommand } from './index'
+import { Cli, CliCommand, createCliArgv, InMemoryPresenter, echoAllCommand, PlainPresenter } from './index'
 import { log } from './log'
 
 test('Cli context shape should follow input literal', t => {
@@ -83,9 +84,7 @@ test('support extending context', t => {
 })
 
 function createInquirePresenterFactory(answers) {
-  const presenterFactory = new PresenterFactory()
-  presenterFactory.createCommandPresenter = options => new InMemoryPresenter(options, answers)
-  return presenterFactory
+  return { createCommandPresenter: options => new InMemoryPresenter(options, answers) }
 }
 
 test('prompt for input', async t => {
@@ -146,5 +145,53 @@ test(`read local json file in parent directory`, async t => {
     } as CliCommand<{ a: number }, {}>]
   }, { cwd: 'fixtures/has-config/sub-folder' })
   t.plan(1)
-  await cli.parse(createCliArgv('cli', 'cfg'))
+  await cli.parse(createCliArgv('test-cli', 'cfg'))
+})
+
+test('can partially override the presenter factory implementation', async () => {
+  const o = new AssertOrder(1)
+  const cli = new Cli(
+    {
+      name: 'test-cli',
+      version: '',
+      commands: [{
+        name: 'cmd',
+        run() {
+          return
+        }
+      }]
+    },
+    {
+      presenterFactory: {
+        createCommandPresenter(options) {
+          o.once(1)
+          return new PlainPresenter(options)
+        }
+      }
+    })
+  await cli.parse(createCliArgv('test-cli', 'cmd'))
+  o.end()
+})
+
+
+test('custom command level ui', async () => {
+  const o = new AssertOrder(1)
+  const cli = new Cli(
+    {
+      name: 'test-cli',
+      version: '',
+      commands: [{
+        name: 'a',
+        run() {
+          this.ui.info()
+        },
+        ui: (() => {
+          const p = new PlainPresenter({ name: 'a' })
+          p.info = () => o.once(1)
+          return p
+        })()
+      }]
+    })
+  await cli.parse(createCliArgv('test-cli', 'a'))
+  o.end()
 })

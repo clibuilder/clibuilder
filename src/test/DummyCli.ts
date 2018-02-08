@@ -18,7 +18,7 @@ class ColorDisplay implements Display {
 class ColorPresenter extends PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter {
   display = new ColorDisplay()
 }
-class ColorFactory extends PresenterFactory {
+class ColorFactory implements PresenterFactory {
   createCliPresenter(option: PresenterOption) {
     return new ColorPresenter(option)
   }

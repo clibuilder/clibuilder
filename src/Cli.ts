@@ -3,14 +3,15 @@ import { ColorAppender } from 'aurelia-logging-color'
 import yargs = require('yargs-parser')
 
 import { CliCommand, CliCommandInstance } from './CliCommand'
-import { DisplayLevel } from './Display'
-import { parseArgv } from './parseArgv'
-import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
-import { PresenterFactory } from './PresenterFactory'
 import { createCliCommand } from './createCliCommand'
+import { DisplayLevel } from './Display'
 import { getCliCommand } from './getCliCommand'
+import { PresenterFactory } from './interfaces'
 import { log } from './log'
 import { loadConfig } from './loadConfig'
+import { parseArgv } from './parseArgv'
+import { plainPresenterFactory } from './plainPresenterFactory'
+import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
 
 export interface CliOption {
   name: string
@@ -20,7 +21,7 @@ export interface CliOption {
 
 export interface CliContext {
   cwd: string
-  presenterFactory: PresenterFactory
+  presenterFactory: Partial<PresenterFactory>
 }
 
 const args = yargs(process.argv)
@@ -30,6 +31,14 @@ if (args['debug-cli']) {
   log.setLevel(logLevel.debug)
 }
 
+function overridePresenterFactory(context): PresenterFactory {
+  const presenterFactory = context.presenterFactory || plainPresenterFactory
+
+  presenterFactory.createCliPresenter = presenterFactory.createCliPresenter || plainPresenterFactory.createCliPresenter
+  presenterFactory.createCommandPresenter = presenterFactory.createCommandPresenter || plainPresenterFactory.createCommandPresenter
+  delete context.presenterFactory
+  return presenterFactory
+}
 
 export class Cli<Context extends { [i: string]: any } = {}> {
   cwd: string
@@ -70,12 +79,11 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     context.config = loadConfig(`${this.name}.json`, { cwd })
     log.debug('Loaded config', context.config)
 
-    const presenterFactory = this.presenterFactory = context.presenterFactory || new PresenterFactory()
-    delete context.presenterFactory
+    this.presenterFactory = overridePresenterFactory(context)
+
     context['parent'] = this
     this.context = context
-
-    this.ui = presenterFactory.createCliPresenter(this)
+    this.ui = this.presenterFactory.createCliPresenter(this)
     option.commands.forEach(command => {
       this.addCliCommand(command)
     })
