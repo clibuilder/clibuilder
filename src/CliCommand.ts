@@ -69,6 +69,7 @@ export namespace CliCommand {
     description?: string
     options?: Options
     alias?: string[]
+    ui?: LogPresenter & HelpPresenter & Inquirer
   }
 
 }

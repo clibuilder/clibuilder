@@ -172,3 +172,26 @@ test('can partially override the presenter factory implementation', async () => 
   await cli.parse(createCliArgv('test-cli', 'cmd'))
   o.end()
 })
+
+
+test('custom command level ui', async () => {
+  const o = new AssertOrder(1)
+  const cli = new Cli(
+    {
+      name: 'test-cli',
+      version: '',
+      commands: [{
+        name: 'a',
+        run() {
+          this.ui.info()
+        },
+        ui: (() => {
+          const p = new PlainPresenter({ name: 'a' })
+          p.info = () => o.once(1)
+          return p
+        })()
+      }]
+    })
+  await cli.parse(createCliArgv('test-cli', 'a'))
+  o.end()
+})

@@ -12,7 +12,7 @@ export function createCliCommand<Config, Context = {}>(spec: CliCommand<Config, 
     ...context,
     ...spec
   } as CliCommandInstance<Config, Context>
-  result.ui = presenterFactory.createCommandPresenter(result)
+  result.ui = result.ui || presenterFactory.createCommandPresenter(result)
   if (result.commands) {
     result.commands = result.commands.map(c => createCliCommand(c, presenterFactory, { ...context, parent: result }))
   }
