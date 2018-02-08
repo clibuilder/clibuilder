@@ -1,5 +1,5 @@
 import { CliCommand, CliCommandInstance } from './CliCommand'
-import { PresenterFactory } from './PresenterFactory'
+import { PresenterFactory } from './interfaces'
 import { log } from './log'
 
 export function createCliCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: {
