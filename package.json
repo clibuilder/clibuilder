@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@types/inquirer": "0.0.36",
-    "@unional/logging": "^0.2.5",
+    "@unional/logging": "^0.3.0",
     "aurelia-logging-color": "^0.5.15",
     "camel-case": "^3.0.0",
     "find-up": "^2.1.0",
