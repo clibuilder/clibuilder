@@ -97,7 +97,7 @@
     "@types/lodash": "^4.14.102",
     "@types/node": "^9.4.2",
     "@types/wordwrap": "github:types/wordwrap",
-    "assertron": "^3.4.1",
+    "assertron": "^4.0.0",
     "ava": "^0.24.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^3.0.0",
