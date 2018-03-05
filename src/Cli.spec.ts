@@ -1,5 +1,5 @@
 import { logLevel, getLevel } from '@unional/logging'
-import AssertOrder from 'assertron'
+import { AssertOrder } from 'assertron'
 import test from 'ava'
 
 import { Cli, CliCommand, createCliArgv, InMemoryPresenter, echoAllCommand, PlainPresenter } from './index'
