@@ -16,7 +16,7 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
   name: string
   inquire = inquirer.createPromptModule()
   displayLevel: DisplayLevel = DisplayLevel.Normal
-  constructor(options: PresenterOption) {
+  constructor(options: PresenterOption = { name: '' }) {
     this.name = options.name
   }
 

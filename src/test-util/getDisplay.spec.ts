@@ -1,13 +1,13 @@
-import test from 'ava'
+import t from 'assert'
 
 import { createInMemoryCli, getDisplay } from '../index'
 
-test('mem', t => {
+test('mem', () => {
   const cli = createInMemoryCli('abc')
   const actual = getDisplay(cli)
-  t.truthy(actual)
-  t.truthy(actual.debugLogs)
-  t.truthy(actual.warnLogs)
-  t.truthy(actual.infoLogs)
-  t.truthy(actual.errorLogs)
+  t(actual)
+  t(actual.debugLogs)
+  t(actual.warnLogs)
+  t(actual.infoLogs)
+  t(actual.errorLogs)
 })

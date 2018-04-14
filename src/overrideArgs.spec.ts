@@ -1,41 +1,42 @@
-import { test } from 'ava'
-import { overrideArgs } from './index'
+import t from 'assert'
 
-test('no default arg gets argument only', t => {
+import { overrideArgs } from '.'
+
+test('no default arg gets argument only', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: [] }
 
   const actual = overrideArgs(args)
   t.deepEqual(actual, { _: ['a', 'b', 'c'] })
 })
 
-test('default values remains if no config', t => {
+test('default values remains if no config', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: ['x', 'y', 'z'], x: 1, y: true, z: 'z' }
 
   const actual = overrideArgs(args, { x: 2, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 2, y: true, z: 'foo' })
 })
 
-test('config override default values', t => {
+test('config override default values', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: ['x', 'y', 'z'], x: 1, y: true, z: 'z' }
 
   const actual = overrideArgs(args, { x: 2, y: false, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 2, y: false, z: 'foo' })
 })
 
-test('non default values overrides config values', t => {
+test('non default values overrides config values', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: [], x: 1, y: true, z: 'z' }
 
   const actual = overrideArgs(args, { x: 2, y: false, z: 'foo' })
   t.deepEqual(actual, { _: ['a', 'b', 'c'], x: 1, y: true, z: 'z' })
 })
 
-test('return value is a clone to avoid mutation by consumer', t => {
+test('return value is a clone to avoid mutation by consumer', () => {
   // Prevent consumer changing one args affects the other.
   const args = { _: ['a', 'b', 'c'], _defaults: [], x: [1, 2, 3] }
 
   const actual = overrideArgs(args)
-  t.not(args, actual)
-  t.not(args._, actual._)
-  t.not(args.x, actual.x)
+  t.notEqual(args, actual)
+  t.notEqual(args._, actual._)
+  t.notEqual(args.x, actual.x)
 })
 
