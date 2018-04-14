@@ -117,14 +117,15 @@ test('nested command shows only top level', t => {
         name: 'nested-command'
       }]
     }, {
-      name: 'command-2'
+      name: 'command-2',
+      alias: ['c2']
     }]
   })
   t.is(display.infoLogs[0][0], `
 Usage: cli <command>
 
 Commands:
-  command-1, command-2
+  command-1, command-2, c2
 
 cli <command> -h         Get help for <command>
 
