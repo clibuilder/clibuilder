@@ -23,6 +23,7 @@ function readConfig(filePath: string) {
   catch (err) {
     if (err.code === 'ENOENT')
       return
+    // istanbul ignore next
     throw err
   }
 }
