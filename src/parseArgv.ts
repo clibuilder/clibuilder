@@ -4,14 +4,16 @@ import yargs = require('yargs-parser')
 import { Parsable } from './interfaces'
 import { toYargsOption } from './toYargsOption'
 
-export class InvalidOptionError extends Error {
-  constructor(public name, public type, public value) {
-    super(`Option '${name}' expects ${type} but received ${value}`)
-    Object.setPrototypeOf(this, InvalidOptionError.prototype)
+export class NotNumberOption extends Error {
+  // istanbul ignore next
+  constructor(public name) {
+    super(`Option '${name}' only accepts number`)
+    Object.setPrototypeOf(this, NotNumberOption.prototype)
   }
 }
 
 export class UnknownOptionError extends Error {
+  // istanbul ignore next
   constructor(public name) {
     super(`Unknown option '${name}'`)
     Object.setPrototypeOf(this, UnknownOptionError.prototype)
@@ -138,15 +140,15 @@ function validateOptions(command, args) {
     const optionType = map[name]
     if (optionType) {
       const arg = args[name]
-      const argType = getArgType(arg)
-      if (optionType !== argType)
-        throw new InvalidOptionError(name, optionType, arg)
+      if (Number.isNaN(arg))
+        throw new NotNumberOption(name)
     }
     else {
       throw new UnknownOptionError(name)
     }
   })
 }
+
 function extractTypes(sourceMap, valueType) {
   const map = {}
   if (sourceMap) {
@@ -161,12 +163,6 @@ function extractTypes(sourceMap, valueType) {
     })
   }
   return map
-}
-
-function getArgType(arg) {
-  if (!Array.isArray(arg))
-    return typeof arg
-  return typeof arg[0]
 }
 
 function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArgv: string[]) {

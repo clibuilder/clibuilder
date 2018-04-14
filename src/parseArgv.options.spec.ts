@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import { createParsable } from './createParsable';
-import { parseArgv } from './parseArgv'
+import { parseArgv, NotNumberOption } from './parseArgv'
 
 test('throw with unknown options', t => {
   const cmd = createParsable({
@@ -93,4 +93,23 @@ test('fill default for number option', t => {
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], _defaults: ['x'], x: 1 })
+})
+
+test('options with wrong type will throws', t => {
+  const cmd = createParsable({
+    name: 'a',
+    options: {
+      string: {
+        stringOption: {
+          description: 'string'
+        }
+      },
+      number: {
+        numberOption: {
+          description: 'number'
+        }
+      }
+    }
+  }, {})
+  t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
 })
