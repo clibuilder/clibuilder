@@ -1,8 +1,8 @@
-import test from 'ava'
+import t from 'assert'
 
-import { PlainPresenter, InMemoryDisplay } from './index'
+import { PlainPresenter, InMemoryDisplay } from '.'
 
-test('should default to print info, warn, error messages', t => {
+test('should default to print info, warn, error messages', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -10,13 +10,13 @@ test('should default to print info, warn, error messages', t => {
   p.error('e')
   p.warn('w')
   p.info('i')
-  t.is(display.debugLogs.length, 0)
-  t.is(display.warnLogs[0][0], 'w')
-  t.is(display.errorLogs[0][0], 'e')
-  t.is(display.infoLogs[0][0], 'i')
+  t.equal(display.debugLogs.length, 0)
+  t.equal(display.warnLogs[0][0], 'w')
+  t.equal(display.errorLogs[0][0], 'e')
+  t.equal(display.infoLogs[0][0], 'i')
 })
 
-test('help message indicates default boolean option', t => {
+test('help message indicates default boolean option', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -25,7 +25,7 @@ test('help message indicates default boolean option', t => {
       boolean: { 'some-option': { description: 'some description', default: true } }
     }
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -33,7 +33,7 @@ Options:
 `)
 })
 
-test('single character option should use with single dash', t => {
+test('single character option should use with single dash', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -42,7 +42,7 @@ test('single character option should use with single dash', t => {
       boolean: { 'x': { description: 'some description', default: true } }
     }
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -50,7 +50,7 @@ Options:
 `)
 })
 
-test('multi-character option alias should be use with double dash', t => {
+test('multi-character option alias should be use with double dash', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -59,7 +59,7 @@ test('multi-character option alias should be use with double dash', t => {
       boolean: { 'some-option': { alias: ['sopt'], description: 'some description', default: true } }
     }
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -67,7 +67,7 @@ Options:
 `)
 })
 
-test('option and its alias should be sorted by length', t => {
+test('option and its alias should be sorted by length', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -76,7 +76,7 @@ test('option and its alias should be sorted by length', t => {
       boolean: { 'some-option': { alias: ['sopt', 'o'], description: 'some description', default: true } }
     }
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -85,7 +85,7 @@ Options:
 })
 
 
-test('help message indicates default string option', t => {
+test('help message indicates default string option', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -94,7 +94,7 @@ test('help message indicates default string option', t => {
       string: { 'some-option': { description: 'some description', default: 'yes' } }
     }
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -102,7 +102,7 @@ Options:
 `)
 })
 
-test('nested command shows only top level', t => {
+test('nested command shows only top level', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -121,7 +121,7 @@ test('nested command shows only top level', t => {
       alias: ['c2']
     }]
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: cli <command>
 
 Commands:
@@ -134,7 +134,7 @@ Options:
 `)
 })
 
-test('help message shows alias', t => {
+test('help message shows alias', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
   p.display = display
@@ -142,7 +142,7 @@ test('help message shows alias', t => {
     name: 'long-name',
     alias: ['b']
   })
-  t.is(display.infoLogs[0][0], `
+  t.equal(display.infoLogs[0][0], `
 Usage: long-name
 
 Alias:

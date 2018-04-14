@@ -14,15 +14,15 @@
     "build-es2015": "tsc -p tsconfig.es2015.json",
     "build-es5": "tsc -p tsconfig.es5.json",
     "clean": "rimraf dist-es5 dist-es2015",
+    "codecov": "codecov",
+    "coverage": "jest --coverage",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "prepublishOnly": "npm run build",
-    "verify": "npm run lint && npm run coverage && npm run dependency-check",
-    "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
-    "coverage": "nyc npm test",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test": "npm run clean && tsc && ava",
+    "verify": "npm run build && npm run lint && npm run coverage && npm run dependency-check",
+    "test": "jest",
     "watch": "npm run clean && node scripts/watch.js",
     "debug": "node scripts/debug.js",
     "semantic-release": "semantic-release"
@@ -48,37 +48,18 @@
   },
   "homepage": "https://github.com/unional/clibuilder#readme",
   "jest": {
-    "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js"
-    ]
-  },
-  "ava": {
-    "failWithoutAssertions": false,
-    "files": [
-      "dist-es5/**/*.spec.js"
     ],
-    "require": [
-      "./scripts/setup-test-env.js"
+    "roots": [
+      "<rootDir>/src"
     ],
-    "source": [
-      "scripts/*.js",
-      "dist-es5/**/*.js",
-      "*.json"
-    ]
-  },
-  "nyc": {
-    "exclude": [
-      "scripts",
-      "**/*.spec.*",
-      "**/fixtures/**/*",
-      "**/test/**/*"
-    ]
+    "testRegex": ".*.spec.ts$",
+    "transform": {
+      ".(ts|tsx)": "ts-jest"
+    }
   },
   "dependencies": {
     "@types/inquirer": "0.0.36",
@@ -94,19 +75,21 @@
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
+    "@types/jest": "^22.2.3",
     "@types/lodash": "^4.14.106",
     "@types/node": "^9.6.5",
     "@types/wordwrap": "github:types/wordwrap",
     "assertron": "^4.3.0",
-    "ava": "^0.25.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^3.1.0",
-    "nyc": "^11.6.0",
+    "jest": "^22.4.3",
     "pascal-case": "^2.0.1",
+    "power-assert": "^1.5.0",
     "rimraf": "^2.6.2",
     "semantic-release": "^15.1.7",
+    "ts-jest": "^22.4.3",
     "tslint": "^5.9.1",
-    "tslint-config-unional": "^0.9.2",
+    "tslint-config-unional": "^0.9.3",
     "typescript": "^2.8.1"
   }
 }

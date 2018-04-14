@@ -1,9 +1,9 @@
-import test from 'ava'
+import t from 'assert'
 
-import { createParsable } from './createParsable';
+import { createParsable } from './createParsable'
 import { parseArgv, NotNumberOption } from './parseArgv'
 
-test('throw with unknown options', t => {
+test('throw with unknown options', () => {
   const cmd = createParsable({
     name: 'a',
     options: {
@@ -31,7 +31,7 @@ const verboseWithAlias = {
   }
 }
 
-test('specifed boolean option will be set without alias', t => {
+test('specifed boolean option will be set without alias', () => {
   const cmd = createParsable(verboseWithAlias, {})
 
   let argv = ['cmd', '--verbose']
@@ -44,7 +44,7 @@ test('specifed boolean option will be set without alias', t => {
   t.deepEqual(actual, { _: [], _defaults: [], 'verbose': true })
 })
 
-test('fill default for boolean option', t => {
+test('fill default for boolean option', () => {
   const cmd = createParsable({
     name: 'a',
     options: {
@@ -61,7 +61,7 @@ test('fill default for boolean option', t => {
   t.deepEqual(actual, { _: [], _defaults: ['x'], x: true })
 })
 
-test('fill default for string option', t => {
+test('fill default for string option', () => {
   const cmd = createParsable({
     name: 'a',
     options: {
@@ -78,7 +78,7 @@ test('fill default for string option', t => {
   t.deepEqual(actual, { _: [], _defaults: ['x'], x: 'abc' })
 })
 
-test('fill default for number option', t => {
+test('fill default for number option', () => {
   const cmd = createParsable({
     name: 'a',
     options: {
@@ -95,7 +95,7 @@ test('fill default for number option', t => {
   t.deepEqual(actual, { _: [], _defaults: ['x'], x: 1 })
 })
 
-test('options with wrong type will throws', t => {
+test('options with wrong type will throws', () => {
   const cmd = createParsable({
     name: 'a',
     options: {

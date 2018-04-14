@@ -1,41 +1,41 @@
-import test from 'ava'
+import t from 'assert'
 import { satisfy } from 'assertron'
 
-import { createParsable } from './createParsable';
+import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
 
-test('no arguments and options', t => {
+test('no arguments and options', () => {
   const cmd = createParsable({ name: 'a' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], _defaults: [] })
 })
 
-test('throws with additional argument', t => {
+test('throws with additional argument', () => {
   const cmd = createParsable({ name: 'a', arguments: [{ name: 'b' }] })
   const argv = ['a', 'b', 'c']
   t.throws(() => parseArgv(cmd, argv))
 })
 
-test('throws with missing argument', t => {
+test('throws with missing argument', () => {
   const cmd = createParsable({ name: 'a', arguments: [{ name: 'b', required: true }] })
   const argv = ['a']
   t.throws(() => parseArgv(cmd, argv))
 })
 
-test('not throw when there are sub-commands', t => {
+test('not throw when there are sub-commands', () => {
   const cmd = createParsable({
     name: 'a',
     commands: [createParsable({ name: 'b' })]
   })
 
   let argv = ['a', 'b']
-  t.notThrows(() => parseArgv(cmd, argv))
+  parseArgv(cmd, argv)
   argv = ['a', '--verbose']
-  t.notThrows(() => parseArgv(cmd, argv))
+  parseArgv(cmd, argv)
 })
 
-test('with arguments', t => {
+test('with arguments', () => {
   const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'x', required: true }]
@@ -45,7 +45,7 @@ test('with arguments', t => {
   t.deepEqual(actual, { _: [], _defaults: [], x: 'c' })
 })
 
-test('zero or more args should accept 0 args', t => {
+test('zero or more args should accept 0 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -61,7 +61,7 @@ test('zero or more args should accept 0 args', t => {
 })
 
 
-test('zero or more args should accept 1 args', t => {
+test('zero or more args should accept 1 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -74,10 +74,9 @@ test('zero or more args should accept 1 args', t => {
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
   satisfy(actual, { 'zero-or-more': ['b'], zeroOrMore: ['b'] })
-  t.pass()
 })
 
-test('zero or more args should accept 2 args', t => {
+test('zero or more args should accept 2 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -90,10 +89,9 @@ test('zero or more args should accept 2 args', t => {
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
   satisfy(actual, { 'zero-or-more': ['b', 'c'], zeroOrMore: ['b', 'c'] })
-  t.pass()
 })
 
-test('one or more args should not accept 0 args', t => {
+test('one or more args should not accept 0 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -108,7 +106,7 @@ test('one or more args should not accept 0 args', t => {
   t.throws(() => parseArgv(cmd, argv))
 })
 
-test('one or more args should not accept 1 args', t => {
+test('one or more args should not accept 1 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -122,10 +120,9 @@ test('one or more args should not accept 1 args', t => {
   const argv = ['args', 'a']
   const actual = parseArgv(cmd, argv)
   satisfy(actual, { 'one-or-more': ['a'] })
-  t.pass()
 })
 
-test('one or more args should not accept 2 args', t => {
+test('one or more args should not accept 2 args', () => {
   const cmd = createParsable({
     name: 'args',
     arguments: [
@@ -140,5 +137,4 @@ test('one or more args should not accept 2 args', t => {
   const actual = parseArgv(cmd, argv)
 
   satisfy(actual, { 'one-or-more': ['a', 'b'], oneOrMore: ['a', 'b'] })
-  t.pass()
 })

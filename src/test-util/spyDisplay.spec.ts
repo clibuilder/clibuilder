@@ -1,7 +1,8 @@
-import test from 'ava'
-import { Cli, createCliArgv, echoAllCommand, spyDisplay, InMemoryPresenterFactory } from '../index'
+import t from 'assert'
 
-test('can spy on cli', async t => {
+import { Cli, createCliArgv, echoAllCommand, spyDisplay, InMemoryPresenterFactory } from '..'
+
+test('can spy on cli', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({ name: 'a', version: '0.0.0', commands: [] }, { presenterFactory })
   const display = spyDisplay(cli)
@@ -9,10 +10,10 @@ test('can spy on cli', async t => {
   await cli.parse(createCliArgv('a'))
 
   // console will still display the help messages
-  t.true(display.infoLogs.length > 0)
+  t(display.infoLogs.length > 0)
 })
 
-test('can spy on cmd', async t => {
+test('can spy on cmd', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({ name: 'a', version: '0.0.0', commands: [echoAllCommand] }, { presenterFactory })
   const display = spyDisplay(cli, 'echo-all')
@@ -20,8 +21,8 @@ test('can spy on cmd', async t => {
   await cli.parse(createCliArgv('a', '--verbose', 'echo-all'))
 
   // console will still display the help messages
-  t.is(display.debugLogs[0][0], 'echo-all')
-  t.is(display.errorLogs[0][0], 'echo-all')
-  t.is(display.infoLogs[0][0], 'echo-all')
-  t.is(display.warnLogs[0][0], 'echo-all')
+  t.equal(display.debugLogs[0][0], 'echo-all')
+  t.equal(display.errorLogs[0][0], 'echo-all')
+  t.equal(display.infoLogs[0][0], 'echo-all')
+  t.equal(display.warnLogs[0][0], 'echo-all')
 })

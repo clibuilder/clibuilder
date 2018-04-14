@@ -1,10 +1,10 @@
-import { test } from 'ava';
+import t from 'assert'
 
-import { parseArgv } from './parseArgv';
-import { createParsable } from './createParsable';
+import { parseArgv } from './parseArgv'
+import { createParsable } from './createParsable'
 
 
-test(`group option should not set default if passed in`, t => {
+test(`group option should not set default if passed in`, () => {
   const cmd = createParsable({
     name: 'opts',
     options: {
@@ -41,7 +41,7 @@ test(`group option should not set default if passed in`, t => {
   t.deepEqual(actual, { _: [], _defaults: [], b: true })
 })
 
-test(`group option should not set default if alias of one of the options is passed in`, t => {
+test(`group option should not set default if alias of one of the options is passed in`, () => {
   const cmd = createParsable({
     name: 'opts',
     options: {

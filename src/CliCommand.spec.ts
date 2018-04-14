@@ -1,24 +1,25 @@
-import test from 'ava'
+import t from 'assert'
 
 import { CliCommand } from './index'
 
-test('using custom context', t => {
+// todo: custom context test is not complete
+test('using custom context', () => {
   const spec = {
     name: 'a',
     run() {
-      t.falsy(this.x)
+      t.equal(this.x, undefined)
     }
   } as CliCommand<undefined, { x: string }>
 
-  t.truthy(spec)
+  t(spec)
 
   const spec2 = {
     name: 'b',
     run() {
       // `this` should be `Command` by default
-      t.truthy(this.ui)
+      t(this.ui)
     }
   } as CliCommand
 
-  t.truthy(spec2)
+  t(spec2)
 })
