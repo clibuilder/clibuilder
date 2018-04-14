@@ -25,11 +25,19 @@ test(`group option should not set default if passed in`, t => {
           description: 'c',
           group: 'x'
         }
+      },
+      number: {
+        d: {
+          default: 1,
+          description: 'd',
+          group: 'x'
+        }
       }
     }
   }, { cwd: '' })
-  const argv = ['cli', '-b']
-  const actual = parseArgv(cmd, argv)
+
+  let argv = ['cli', '-b']
+  let actual = parseArgv(cmd, argv)
   t.deepEqual(actual, { _: [], _defaults: [], b: true })
 })
 
