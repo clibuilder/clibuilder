@@ -1,3 +1,4 @@
+// tslint:disable no-console
 import { Cli, PresenterFactory, PlainPresenter, Display, PresenterOption, LogPresenter, HelpPresenter, VersionPresenter } from '../index'
 
 class ColorDisplay implements Display {

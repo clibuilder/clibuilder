@@ -48,3 +48,13 @@ test('use custom keyword to look for plugins', async t => {
   await cli.ready
   t.is(cli.commands.length, 2)
 })
+
+test('PluginCli can add commands at its own project', async t => {
+  const cli = new TestPluginCli({
+    name: 'defaultCommands',
+    version: '1.0.0',
+    commands: [{ name: 'x', run() { return } }]
+  })
+  await cli.ready
+  t.is(cli.commands.length, 1)
+})
