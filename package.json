@@ -68,7 +68,7 @@
     "camel-case": "^3.0.0",
     "find-up": "^2.1.0",
     "inquirer": "^5.2.0",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.10",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^9.0.2"
@@ -76,20 +76,20 @@
   "devDependencies": {
     "@types/find-up": "^2.1.1",
     "@types/jest": "^22.2.3",
-    "@types/lodash": "^4.14.106",
-    "@types/node": "^9.6.5",
+    "@types/lodash": "^4.14.108",
+    "@types/node": "^9.6.7",
     "@types/wordwrap": "github:types/wordwrap",
-    "assertron": "^4.3.0",
+    "assertron": "^4.3.1",
     "clibuilder-plugin-dummy": "^1.0.1",
     "dependency-check": "^3.1.0",
     "jest": "^22.4.3",
     "pascal-case": "^2.0.1",
     "power-assert": "^1.5.0",
     "rimraf": "^2.6.2",
-    "semantic-release": "^15.1.7",
-    "ts-jest": "^22.4.3",
+    "semantic-release": "^15.1.8",
+    "ts-jest": "^22.4.4",
     "tslint": "^5.9.1",
     "tslint-config-unional": "^0.9.3",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.3"
   }
 }

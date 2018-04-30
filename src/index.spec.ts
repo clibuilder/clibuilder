@@ -1,12 +1,10 @@
 import t from 'assert'
-import _ = require('lodash')
 
 import { Cli } from './index'
 import {
   createCliArgv,
   createInMemoryCli,
   InMemoryDisplay,
-  InMemoryPresenter,
   spyDisplay,
   generateDisplayedMessage,
   noopCommand,
@@ -184,37 +182,11 @@ when called with 'echo -h'
 then the help message for each is shwon`,
   async () => {
     const cli = createInMemoryCli('cli', echoCommand)
-    const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+    const display: InMemoryDisplay = (cli['ui'] as any).display
 
     await cli.parse(createCliArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
     t.equal(infos, `
-Usage: cli echo
-
-  Echoing input arguments
-
-Arguments:
-  [args]                 any argument(s)
-`)
-  })
-
-test(`given cli with echo command
-and echo command has its own display
-when called with 'echo -h'
-then the help message for each is shown on the echo command display
-and not on the main display`,
-  async () => {
-    const eSpec = _.merge({ PresenterClass: InMemoryPresenter }, echoCommand)
-    const cli = createInMemoryCli('cli', eSpec)
-    const display: InMemoryDisplay = (cli as any).ui.display
-    const echoDisplay: InMemoryDisplay = cli.commands[0].ui['display']
-
-    await cli.parse(createCliArgv('cli', 'echo', '-h'))
-    const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, '')
-
-    const eInfos = generateDisplayedMessage(echoDisplay.infoLogs)
-    t.equal(eInfos, `
 Usage: cli echo
 
   Echoing input arguments
@@ -279,7 +251,7 @@ when called with 'arg'
 then show report missing argument`,
   async () => {
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
-    const display = spyDisplay(cli, 'arg')
+    const display = spyDisplay(cli)
 
     await cli.parse(createCliArgv('cli', 'arg'))
 

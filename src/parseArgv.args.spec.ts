@@ -12,6 +12,12 @@ test('no arguments and options', () => {
 })
 
 test('throws with additional argument', () => {
+  const cmd = createParsable({ name: 'a' })
+  const argv = ['a', 'extra']
+  t.throws(() => parseArgv(cmd, argv))
+})
+
+test('throws with more argument than expected', () => {
   const cmd = createParsable({ name: 'a', arguments: [{ name: 'b' }] })
   const argv = ['a', 'b', 'c']
   t.throws(() => parseArgv(cmd, argv))
