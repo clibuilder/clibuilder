@@ -83,7 +83,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
 
     context['parent'] = this
     this.context = context
-    this.ui = this.presenterFactory.createCliPresenter(this)
+    this.ui = this.presenterFactory.createCliPresenter({ name: this.name })
     option.commands.forEach(command => {
       this.addCliCommand(command)
     })
@@ -111,7 +111,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     }
 
     if (args.help) {
-      command.ui.showHelp(command)
+      this.ui.showHelp(command)
       return Promise.resolve()
     }
 
@@ -122,8 +122,8 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       cmdArgs = parseArgv(command, cmdArgv)
     }
     catch (e) {
-      command.ui.error(e.message)
-      command.ui.showHelp(command)
+      this.ui.error(e.message)
+      this.ui.showHelp(command)
       return Promise.resolve()
     }
 
