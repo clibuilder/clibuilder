@@ -7,7 +7,7 @@ export interface Display {
 
 export enum DisplayLevel {
   Silent = 0,
-  Normal = 20,
+  Normal = 30,
   Verbose = 40
 }
 
