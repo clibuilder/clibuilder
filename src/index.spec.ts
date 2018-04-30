@@ -14,8 +14,10 @@ import {
   errorCommand,
   echoNameOptionCommand,
   booleanOptionsCommand,
-  groupOptionsCommand
+  groupOptionsCommand,
+  InMemoryPresenter
 } from './test-util'
+import { createEchoDebugCommand } from './test-util/createEchoDebugCommand';
 
 const noopHelpMessage = `
 Usage: cli <command>
@@ -329,3 +331,22 @@ Then options 'a' is undefined and 'b' is true`,
     const actual = generateDisplayedMessage(display.infoLogs)
     t.equal(actual, 'a: undefined, b: true')
   })
+
+test(`
+Given cli with custom command presenter
+When called with '--verbose'
+Then command debug message is printed
+`,
+  async () => {
+    const echoDebugCommand = createEchoDebugCommand()
+    echoDebugCommand.ui = new InMemoryPresenter({ name: 'echo-debug' })
+    const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [echoDebugCommand] })
+
+    const display = spyDisplay(cli, 'echo-debug')
+
+    await cli.parse(createCliArgv('cli', 'echo-debug', 'abc', '--verbose'))
+
+    const actual = generateDisplayedMessage(display.debugLogs)
+    t.equal(actual, 'echo-debug abc')
+  }
+)

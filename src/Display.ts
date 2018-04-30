@@ -7,8 +7,8 @@ export interface Display {
 
 export enum DisplayLevel {
   Silent = 0,
-  Normal = 10,
-  Verbose = 20
+  Normal = 20,
+  Verbose = 40
 }
 
 // istanbul ignore next
