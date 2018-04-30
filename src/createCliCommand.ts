@@ -6,8 +6,7 @@ export function createCliCommand<Config, Context = {}>(spec: CliCommand<Config, 
   config?: Config,
   [index: string]: any
 }): CliCommandInstance<Config, Context> {
-  if (spec)
-    log.debug('creatingCommand', spec.name)
+  if (spec) log.debug('creatingCommand', spec.name)
   const result = {
     ...context,
     ...spec
