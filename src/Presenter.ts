@@ -11,6 +11,11 @@ export interface CommandModel extends CliCommand.Base {
 }
 
 export interface LogPresenter {
+  displayLevel: DisplayLevel
+  /**
+   * Set display level.
+   * @deprecated use displayLevel directly
+   */
   setDisplayLevel(displayLevel: DisplayLevel): void
   info(...args: any[]): void
   warn(...args: any[]): void
