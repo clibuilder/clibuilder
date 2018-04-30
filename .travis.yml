@@ -23,7 +23,7 @@ script:
   - npm run verify
 
 after_success:
-  - npm install -g travis-deploy-once@4
+  - npm install -g travis-deploy-once
   - travis-deploy-once "npm run semantic-release"
   - ./scripts/run-on-node-version.sh 9 "npm install --no-save coveralls && npm run coveralls"
   - ./scripts/run-on-node-version.sh 9 "npm install --no-save codecov && npm run codecov"
