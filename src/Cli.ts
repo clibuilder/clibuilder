@@ -115,7 +115,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       return Promise.resolve()
     }
 
-    const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent'].indexOf(x) === -1)
+    const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent', '--debug-cli'].indexOf(x) === -1)
 
     let cmdArgs
     try {

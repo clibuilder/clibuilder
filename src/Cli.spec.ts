@@ -207,3 +207,20 @@ test('custom command level ui', async () => {
   await cli.parse(createCliArgv('test-cli', 'a'))
   o.end()
 })
+
+test('--debug-cli not pass to command', async () => {
+  let actual
+  const cli = new Cli({
+    name: 'test-cli',
+    version: '1.0',
+    commands: [{
+      name: 'a',
+      run(_, argv) {
+        actual = argv
+      }
+    }]
+  })
+  await cli.parse(createCliArgv('test-cli', 'a', '--debug-cli'))
+
+  t.equal(actual, 'a')
+})
