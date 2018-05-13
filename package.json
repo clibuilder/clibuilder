@@ -62,7 +62,7 @@
     }
   },
   "dependencies": {
-    "@types/inquirer": "0.0.36",
+    "@types/inquirer": "0.0.41",
     "@unional/logging": "^0.5.3",
     "aurelia-logging-color": "^0.5.15",
     "camel-case": "^3.0.0",
@@ -71,7 +71,7 @@
     "lodash": "^4.17.10",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^9.0.2"
+    "yargs-parser": "^10.0.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
