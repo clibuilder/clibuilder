@@ -1,8 +1,9 @@
 import {
   getLogger,
-  Logger
+  Logger,
+  logLevel
 } from '@unional/logging'
 
-const log: Logger = getLogger('clibuilder')
+const log: Logger = getLogger('clibuilder', logLevel.none)
 
 export { log }
