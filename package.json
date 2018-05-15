@@ -77,7 +77,7 @@
     "@types/find-up": "^2.1.1",
     "@types/jest": "^22.2.3",
     "@types/lodash": "^4.14.108",
-    "@types/node": "^9.6.15",
+    "@types/node": "^10.0.9",
     "@types/wordwrap": "github:types/wordwrap",
     "assertron": "^5.1.0",
     "clibuilder-plugin-dummy": "^1.0.1",
