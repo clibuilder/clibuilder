@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
-    "@types/jest": "^22.2.3",
+    "@types/jest": "^23.0.0",
     "@types/lodash": "^4.14.108",
     "@types/node": "^9.6.15",
     "@types/wordwrap": "github:types/wordwrap",
