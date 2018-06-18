@@ -66,7 +66,7 @@
     "@unional/logging": "^0.5.3",
     "aurelia-logging-color": "^0.5.15",
     "camel-case": "^3.0.0",
-    "find-up": "^2.1.0",
+    "find-up": "^3.0.0",
     "inquirer": "^5.2.0",
     "lodash": "^4.17.10",
     "pad-right": "^0.2.2",
