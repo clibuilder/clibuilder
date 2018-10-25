@@ -21,8 +21,8 @@ test('can spy on cmd', async () => {
   await cli.parse(createCliArgv('a', '--verbose', 'echo-all'))
 
   // console will still display the help messages
-  t.equal(display.debugLogs[0][0], 'echo-all')
-  t.equal(display.errorLogs[0][0], 'echo-all')
-  t.equal(display.infoLogs[0][0], 'echo-all')
-  t.equal(display.warnLogs[0][0], 'echo-all')
+  t.strictEqual(display.debugLogs[0][0], 'echo-all')
+  t.strictEqual(display.errorLogs[0][0], 'echo-all')
+  t.strictEqual(display.infoLogs[0][0], 'echo-all')
+  t.strictEqual(display.warnLogs[0][0], 'echo-all')
 })

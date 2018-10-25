@@ -45,3 +45,4 @@ typings
 # output folder
 dist-es5
 dist-es2015
+.progress

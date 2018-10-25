@@ -9,10 +9,10 @@ test('should default to verbose', () => {
   p.warn('w')
   p.info('i')
 
-  t.equal(p.displayLevel, DisplayLevel.Verbose)
+  t.strictEqual(p.displayLevel, DisplayLevel.Verbose)
   const display = p.display
-  t.equal(display.debugLogs[0][0], 'd')
-  t.equal(display.warnLogs[0][0], 'w')
-  t.equal(display.errorLogs[0][0], 'e')
-  t.equal(display.infoLogs[0][0], 'i')
+  t.strictEqual(display.debugLogs[0][0], 'd')
+  t.strictEqual(display.warnLogs[0][0], 'w')
+  t.strictEqual(display.errorLogs[0][0], 'e')
+  t.strictEqual(display.infoLogs[0][0], 'i')
 })

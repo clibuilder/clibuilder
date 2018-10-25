@@ -1,9 +1,9 @@
-import { logLevel, getLevel } from '@unional/logging'
-import { AssertOrder } from 'assertron'
-import t from 'assert'
+import { getLevel, logLevel } from '@unional/logging';
+import t from 'assert';
+import a, { AssertOrder } from 'assertron';
+import { Cli, CliCommand, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from './index';
+import { log } from './log';
 
-import { Cli, CliCommand, createCliArgv, InMemoryPresenter, echoAllCommand, PlainPresenter } from './index'
-import { log } from './log'
 
 test('Cli context shape should follow input literal', () => {
   const cli = new Cli({
@@ -60,8 +60,8 @@ test('run nested command with argument', async () => {
           description: 'arg1 argument'
         }],
         run(args) {
-          t.deepEqual(args._, [])
-          t.equal(args.arg1, 'abc')
+          t.deepStrictEqual(args._, [])
+          t.strictEqual(args.arg1, 'abc')
           o.once(1)
         }
       }]
@@ -80,7 +80,7 @@ test('support extending context', () => {
     commands: [{
       name: 'cmd',
       run() {
-        t.equal(this.custom, true)
+        t.strictEqual(this.custom, true)
       }
     } as CliCommand<undefined, { custom: boolean }>]
   }, { cwd: '', custom: true })
@@ -101,7 +101,7 @@ test('prompt for input', async () => {
       name: 'ask',
       async run() {
         const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
-        t.equal(answers.username, 'me')
+        t.strictEqual(answers.username, 'me')
         o.once(1)
       }
     }]
@@ -120,8 +120,8 @@ test.skip('turn on debug-cli sets the log level to debug locally', async () => {
   })
 
   await cli.parse(createCliArgv('cli', 'echo', '--debug-cli'))
-  t.equal(log.level, logLevel.debug)
-  t.equal(getLevel(), logLevel.none)
+  t.strictEqual(log.level, logLevel.debug)
+  t.strictEqual(getLevel(), logLevel.none)
 })
 
 test('read local json file', async () => {
@@ -132,7 +132,7 @@ test('read local json file', async () => {
     commands: [{
       name: 'cfg',
       run() {
-        t.deepEqual(this.config, { a: 1 })
+        t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
       }
     } as CliCommand<{ a: number }, {}>]
@@ -149,7 +149,7 @@ test(`read local json file in parent directory`, async () => {
     commands: [{
       name: 'cfg',
       run() {
-        t.deepEqual(this.config, { a: 1 })
+        t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
       }
     } as CliCommand<{ a: number }, {}>]
@@ -222,5 +222,5 @@ test('--debug-cli not pass to command', async () => {
   })
   await cli.parse(createCliArgv('test-cli', 'a', '--debug-cli'))
 
-  t.equal(actual, 'a')
+  a.deepEqual(actual, ['a'])
 })

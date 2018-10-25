@@ -6,7 +6,7 @@ import { satisfy } from 'assertron';
 test('empty argv', () => {
   const args = createCommandArgs(noopCommand)
 
-  t.deepEqual(args, { _: [], _defaults: [] })
+  t.deepStrictEqual(args, { _: [], _defaults: [] })
 })
 
 test(`one argv`, () => {
@@ -18,5 +18,5 @@ test(`one argv`, () => {
 test(`boolean option using with '--'`, () => {
   const args = createCommandArgs(booleanOptionsCommand, ['--a'])
 
-  t.deepEqual(args, { _: [], _defaults: [], a: true })
+  t.deepStrictEqual(args, { _: [], _defaults: [], a: true })
 })
