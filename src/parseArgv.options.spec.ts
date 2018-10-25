@@ -37,11 +37,11 @@ test('specifed boolean option will be set without alias', () => {
   let argv = ['cmd', '--verbose']
   let actual = parseArgv(cmd, argv)
 
-  t.deepEqual(actual, { _: [], _defaults: [], 'verbose': true })
+  t.deepStrictEqual(actual, { _: [], _defaults: [], 'verbose': true })
 
   argv = ['a', '-V']
   actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [], 'verbose': true })
+  t.deepStrictEqual(actual, { _: [], _defaults: [], 'verbose': true })
 })
 
 test('fill default for boolean option', () => {
@@ -58,7 +58,7 @@ test('fill default for boolean option', () => {
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: ['x'], x: true })
+  t.deepStrictEqual(actual, { _: [], _defaults: ['x'], x: true })
 })
 
 test('fill default for string option', () => {
@@ -75,7 +75,7 @@ test('fill default for string option', () => {
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: ['x'], x: 'abc' })
+  t.deepStrictEqual(actual, { _: [], _defaults: ['x'], x: 'abc' })
 })
 
 test('fill default for number option', () => {
@@ -92,7 +92,7 @@ test('fill default for number option', () => {
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: ['x'], x: 1 })
+  t.deepStrictEqual(actual, { _: [], _defaults: ['x'], x: 1 })
 })
 
 test('options with wrong type will throws', () => {

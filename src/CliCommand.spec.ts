@@ -7,7 +7,7 @@ test('using custom context', () => {
   const spec = {
     name: 'a',
     run() {
-      t.equal(this.x, undefined)
+      t.strictEqual(this.x, undefined)
     }
   } as CliCommand<undefined, { x: string }>
 

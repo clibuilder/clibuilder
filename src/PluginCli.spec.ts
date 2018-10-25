@@ -14,7 +14,7 @@ test('use "{name}-plugin" as keyword to look for plugins', async () => {
   await cli.ready
   // there is an "global" `clibuilder-plugin-dummy` inside this project.
   // That's why there are two commands instead of one.
-  t.equal(cli.commands.length, 2)
+  t.strictEqual(cli.commands.length, 2)
 })
 
 test('use custom keyword to look for plugins', async () => {
@@ -24,7 +24,7 @@ test('use custom keyword to look for plugins', async () => {
     keyword: 'x-file'
   }, { cwd: 'fixtures/alt-keyword-plugin' })
   await cli.ready
-  t.equal(cli.commands.length, 1)
+  t.strictEqual(cli.commands.length, 1)
 })
 
 test('command is loaded when parse', async () => {
@@ -36,7 +36,7 @@ test('command is loaded when parse', async () => {
 
   await cli.parse(createCliArgv('clibuilder', 'one', 'echo'))
   const presenter = presenterFactory.commandPresenter
-  t.equal(presenter.display.infoLogs[0][0], 'echo')
+  t.strictEqual(presenter.display.infoLogs[0][0], 'echo')
 })
 
 test('use custom keyword to look for plugins', async () => {
@@ -46,7 +46,7 @@ test('use custom keyword to look for plugins', async () => {
     keyword: '2-cmd'
   }, { cwd: 'fixtures/plugin-with-2-top-commands' })
   await cli.ready
-  t.equal(cli.commands.length, 2)
+  t.strictEqual(cli.commands.length, 2)
 })
 
 test('PluginCli can add commands at its own project', async () => {
@@ -56,5 +56,5 @@ test('PluginCli can add commands at its own project', async () => {
     commands: [{ name: 'x', run() { return } }]
   })
   await cli.ready
-  t.equal(cli.commands.length, 1)
+  t.strictEqual(cli.commands.length, 1)
 })

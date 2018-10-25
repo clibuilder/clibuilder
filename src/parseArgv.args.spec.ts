@@ -8,7 +8,7 @@ test('no arguments and options', () => {
   const cmd = createParsable({ name: 'a' })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [] })
+  t.deepStrictEqual(actual, { _: [], _defaults: [] })
 })
 
 test('throws with additional argument', () => {
@@ -48,7 +48,7 @@ test('with arguments', () => {
   })
   const argv = ['a', 'c']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [], x: 'c' })
+  t.deepStrictEqual(actual, { _: [], _defaults: [], x: 'c' })
 })
 
 test('zero or more args should accept 0 args', () => {
@@ -63,7 +63,7 @@ test('zero or more args should accept 0 args', () => {
   })
   const argv = []
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [] })
+  t.deepStrictEqual(actual, { _: [], _defaults: [] })
 })
 
 

@@ -5,7 +5,7 @@ import { createCommandArgs, createCliCommand, InMemoryPresenterFactory, numberOp
 
 test('number option', () => {
   const args = createCommandArgs(numberOptionCommand, ['-a 3'])
-  t.deepEqual(args, { a: 3, _: [], _defaults: [] })
+  t.deepStrictEqual(args, { a: 3, _: [], _defaults: [] })
 })
 
 test('log option', () => {
@@ -14,7 +14,7 @@ test('log option', () => {
   const cmd = createCliCommand(numberOptionCommand, new InMemoryPresenterFactory(), {})
   cmd.ui.info = msg => {
     o.once(1)
-    t.equal(msg, `a: ${args.a}`)
+    t.strictEqual(msg, `a: ${args.a}`)
   }
   cmd.run(args, ['-a 3'])
   o.end()

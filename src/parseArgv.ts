@@ -20,6 +20,22 @@ export class UnknownOptionError extends Error {
   }
 }
 
+export class MissingArguments extends Error {
+  // istanbul ignore next
+  constructor(public expected: number, public actual: number) {
+    super((expected <= 1 ? `Missing Argument.` : `Missing Arguments.`) + ` Expecting ${expected} but received ${actual}.`)
+    Object.setPrototypeOf(this, MissingArguments.prototype)
+  }
+}
+
+export class TooManyArguments extends Error {
+  // istanbul ignore next
+  constructor(public expected: number, public actual: number) {
+    super(`Too Many Arguments. Expecting ${expected} but received ${actual}.`)
+    Object.setPrototypeOf(this, TooManyArguments.prototype)
+  }
+}
+
 export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   const options = toYargsOption(parsable.options)
 
@@ -112,15 +128,15 @@ function validateArguments(command: Parsable, args) {
     })
 
     if (args._.length > total && !multiple) {
-      throw new Error('Too many arguments')
+      throw new TooManyArguments(total, args._.length)
     }
     if (args._.length < required) {
-      throw new Error('Missing argument(s)')
+      throw new MissingArguments(required, args._.length)
     }
   }
   else {
     if (args._.length > 0) {
-      throw new Error('Too many arguments')
+      throw new TooManyArguments(0, args._.length)
     }
   }
 }

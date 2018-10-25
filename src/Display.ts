@@ -14,6 +14,7 @@ export enum DisplayLevel {
 // istanbul ignore next
 export class ConsoleDisplay implements Display {
   debug(...args: any[]): void {
+    // tslint:disable-next-line: no-console
     console.log.apply(console, args)
   }
   info(...args: any[]): void {

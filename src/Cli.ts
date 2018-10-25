@@ -130,7 +130,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     const displayLevel = args.verbose ?
       DisplayLevel.Verbose : args.silent ?
         DisplayLevel.Silent : DisplayLevel.Normal
-    command.ui.setDisplayLevel(displayLevel)
+    command.ui.displayLevel = displayLevel
     return Promise.resolve(command.run(cmdArgs, cmdArgv))
   }
 }

@@ -38,7 +38,7 @@ test(`group option should not set default if passed in`, () => {
 
   let argv = ['cli', '-b']
   let actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [], b: true })
+  t.deepStrictEqual(actual, { _: [], _defaults: [], b: true })
 })
 
 test(`group option should not set default if alias of one of the options is passed in`, () => {
@@ -68,5 +68,5 @@ test(`group option should not set default if alias of one of the options is pass
   }, { cwd: '' })
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)
-  t.deepEqual(actual, { _: [], _defaults: [], b111: true })
+  t.deepStrictEqual(actual, { _: [], _defaults: [], b111: true })
 })

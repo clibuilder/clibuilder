@@ -45,7 +45,7 @@ then help will be shown`,
     await cli.parse(createCliArgv('cli'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, noopHelpMessage)
+    t.strictEqual(infos, noopHelpMessage)
   })
 
 test(`given cli with noop command
@@ -58,7 +58,7 @@ then the help message will be shown`,
     await cli.parse(createCliArgv('cli', '--help'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, noopHelpMessage)
+    t.strictEqual(infos, noopHelpMessage)
   })
 
 test(`given cli with noop command
@@ -71,7 +71,7 @@ then the help message will be shown`,
     await cli.parse(createCliArgv('cli', '-h'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, noopHelpMessage)
+    t.strictEqual(infos, noopHelpMessage)
   })
 
 test(`
@@ -85,7 +85,7 @@ then the help message is shwon
 
     await cli.parse(createCliArgv('cli', '--silent'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, noopHelpMessage)
+    t.strictEqual(infos, noopHelpMessage)
   })
 
 test(`given cli with noop command
@@ -98,7 +98,7 @@ then the help message will be shown`,
     await cli.parse(createCliArgv('cli', 'oh'))
 
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, noopHelpMessage)
+    t.strictEqual(infos, noopHelpMessage)
   })
 
 test(`given cli with noop command
@@ -110,7 +110,7 @@ then version will be shown`,
 
     await cli.parse(createCliArgv('cli', '-v'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, '1.0.0')
+    t.strictEqual(infos, '1.0.0')
   })
 
 test(`given cli with verbose command
@@ -121,7 +121,7 @@ then no message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'verbose'))
-    t.equal(display.debugLogs.length, 0)
+    t.strictEqual(display.debugLogs.length, 0)
   })
 
 test(`given cli with verbose command
@@ -132,7 +132,7 @@ then the verbosed message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'verbose', '--verbose'))
-    t.equal(display.debugLogs.length, 1)
+    t.strictEqual(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
@@ -143,7 +143,7 @@ then the verbosed message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'vb', '--verbose'))
-    t.equal(display.debugLogs.length, 1)
+    t.strictEqual(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
@@ -154,7 +154,7 @@ then the verbosed message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'detail', '--verbose'))
-    t.equal(display.debugLogs.length, 1)
+    t.strictEqual(display.debugLogs.length, 1)
   })
 
 test(`given cli with verbose command
@@ -165,7 +165,7 @@ then the verbosed message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'verbose', '-V'))
-    t.equal(display.debugLogs.length, 1)
+    t.strictEqual(display.debugLogs.length, 1)
   })
 
 test(`given cli with error command
@@ -176,7 +176,7 @@ then no message is shown`,
     const display: InMemoryDisplay = (cli.commands[0].ui as any).display
 
     await cli.parse(createCliArgv('cli', 'error', '--silent'))
-    t.equal(display.errorLogs.length, 0)
+    t.strictEqual(display.errorLogs.length, 0)
   })
 
 test(`given cli with echo command
@@ -188,7 +188,7 @@ then the help message for each is shwon`,
 
     await cli.parse(createCliArgv('cli', 'echo', '-h'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, `
+    t.strictEqual(infos, `
 Usage: cli echo
 
   Echoing input arguments
@@ -209,7 +209,7 @@ then will echo 'abc'
 
     await cli.parse(createCliArgv('cli', 'echo', 'abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, 'echo abc')
+    t.strictEqual(infos, 'echo abc')
   })
 
 test(`
@@ -222,7 +222,7 @@ then will echo 'abc'`,
 
     await cli.parse(createCliArgv('cli', 'eno', '--name=abc'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, 'abc')
+    t.strictEqual(infos, 'abc')
   })
 
 test(`
@@ -235,7 +235,7 @@ then will each 'abc'`,
 
     await cli.parse(createCliArgv('cli', 'eno'))
     const infos = generateDisplayedMessage(display.infoLogs)
-    t.equal(infos, 'abc')
+    t.strictEqual(infos, 'abc')
   })
 
 test(`
@@ -258,7 +258,7 @@ then show report missing argument`,
     await cli.parse(createCliArgv('cli', 'arg'))
 
     const actual = generateDisplayedMessage(display.errorLogs)
-    t.equal(actual, 'Missing argument(s)')
+    t.strictEqual(actual, 'Missing Argument. Expecting 1 but received 0.')
   })
 
 test(`
@@ -272,7 +272,7 @@ then echo x`,
     await cli.parse(createCliArgv('cli', 'arg', 'x'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.equal(actual, 'some-arg: x opt-arg: undefined')
+    t.strictEqual(actual, 'some-arg: x opt-arg: undefined')
   })
 
 test(`
@@ -286,7 +286,7 @@ Then options 'a' is true and 'b' is false`,
     await cli.parse(createCliArgv('cli', 'opt'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.equal(actual, 'a: true, b: undefined')
+    t.strictEqual(actual, 'a: true, b: undefined')
   })
 
 test(`
@@ -300,7 +300,7 @@ Then options 'a' is true`,
     await cli.parse(createCliArgv('cli', 'opt', '-a'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.equal(actual, 'a: true, b: undefined')
+    t.strictEqual(actual, 'a: true, b: undefined')
   })
 
 test(`
@@ -314,7 +314,7 @@ Then options 'a' is true and 'b' is true`,
     await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.equal(actual, 'a: true, b: true')
+    t.strictEqual(actual, 'a: true, b: true')
   })
 
 
@@ -329,7 +329,7 @@ Then options 'a' is undefined and 'b' is true`,
     await cli.parse(createCliArgv('cli', 'opt', '-b'))
 
     const actual = generateDisplayedMessage(display.infoLogs)
-    t.equal(actual, 'a: undefined, b: true')
+    t.strictEqual(actual, 'a: undefined, b: true')
   })
 
 test(`
@@ -347,6 +347,6 @@ Then command debug message is printed
     await cli.parse(createCliArgv('cli', 'echo-debug', 'abc', '--verbose'))
 
     const actual = generateDisplayedMessage(display.debugLogs)
-    t.equal(actual, 'echo-debug abc')
+    t.strictEqual(actual, 'echo-debug abc')
   }
 )

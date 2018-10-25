@@ -10,10 +10,10 @@ test('should default to print info, warn, error messages', () => {
   p.error('e')
   p.warn('w')
   p.info('i')
-  t.equal(display.debugLogs.length, 0)
-  t.equal(display.warnLogs[0][0], 'w')
-  t.equal(display.errorLogs[0][0], 'e')
-  t.equal(display.infoLogs[0][0], 'i')
+  t.strictEqual(display.debugLogs.length, 0)
+  t.strictEqual(display.warnLogs[0][0], 'w')
+  t.strictEqual(display.errorLogs[0][0], 'e')
+  t.strictEqual(display.infoLogs[0][0], 'i')
 })
 
 test('help message indicates default boolean option', () => {
@@ -25,7 +25,7 @@ test('help message indicates default boolean option', () => {
       boolean: { 'some-option': { description: 'some description', default: true } }
     }
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -42,7 +42,7 @@ test('single character option should use with single dash', () => {
       boolean: { 'x': { description: 'some description', default: true } }
     }
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -59,7 +59,7 @@ test('multi-character option alias should be use with double dash', () => {
       boolean: { 'some-option': { alias: ['sopt'], description: 'some description', default: true } }
     }
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -76,7 +76,7 @@ test('option and its alias should be sorted by length', () => {
       boolean: { 'some-option': { alias: ['sopt', 'o'], description: 'some description', default: true } }
     }
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -94,7 +94,7 @@ test('help message indicates default string option', () => {
       string: { 'some-option': { description: 'some description', default: 'yes' } }
     }
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: a
 
 Options:
@@ -121,7 +121,7 @@ test('nested command shows only top level', () => {
       alias: ['c2']
     }]
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: cli <command>
 
 Commands:
@@ -142,7 +142,7 @@ test('help message shows alias', () => {
     name: 'long-name',
     alias: ['b']
   })
-  t.equal(display.infoLogs[0][0], `
+  t.strictEqual(display.infoLogs[0][0], `
 Usage: long-name
 
 Alias:

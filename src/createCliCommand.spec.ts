@@ -15,7 +15,7 @@ function getCommandAndAliasNames(commands: { name: string, alias?: string[] }[])
 }
 
 function assertGettingNamesAndAlias(actual: { name: string, alias?: string[] }[], names: string[]) {
-  t.deepEqual(getCommandAndAliasNames(actual), names)
+  t.deepStrictEqual(getCommandAndAliasNames(actual), names)
 }
 
 test('should return empty array with no commands defined', () => {
@@ -55,8 +55,8 @@ test('run 1st level command', () => {
   }
   const cmd = createCliCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
   const actual = getCliCommand(['clibuilder', 'cmd'], [cmd])
-  t.notEqual(actual, undefined)
-  t.equal(actual!.name, 'cmd')
+  t.notStrictEqual(actual, undefined)
+  t.strictEqual(actual!.name, 'cmd')
 })
 
 test('two sub commands should have the same parent', () => {
@@ -70,7 +70,7 @@ test('two sub commands should have the same parent', () => {
   }
   const cmd = createCliCommand(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined })
   cmd.commands!.forEach(c => {
-    t.equal(c.parent, cmd)
+    t.strictEqual(c.parent, cmd)
   })
 })
 
@@ -83,6 +83,6 @@ test('specifying Config will get completion support on context', () => {
   }
   const cmd = createCliCommand<{ foo: string }>(cli, new InMemoryPresenterFactory(), { cwd: '.', parent: undefined, config: { foo: 'a' } })
   cmd.commands!.forEach(c => {
-    t.equal(c.parent, cmd)
+    t.strictEqual(c.parent, cmd)
   })
 })
