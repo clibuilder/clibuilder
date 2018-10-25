@@ -31,7 +31,7 @@ const verboseWithAlias = {
   }
 }
 
-test.only('specifed boolean option will be set without alias', () => {
+test('specifed boolean option will be set without alias', () => {
   const cmd = createParsable(verboseWithAlias, {})
 
   let argv = ['cmd', '--verbose']

@@ -5,7 +5,7 @@ test('find no plugin in empty folder', async () => {
   a.deepEqual(await findPlugins('clibuilder-plugin', 'fixtures/no-plugin'), [])
 })
 
-test.only('find one plugin on one-plugin folder', async () => {
+test('find one plugin on one-plugin folder', async () => {
   a.deepEqual(await findPlugins('clibuilder-plugin', 'fixtures/one-plugin'), ['cli-plugin-one'])
 })
 
