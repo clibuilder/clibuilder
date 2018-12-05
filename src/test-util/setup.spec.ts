@@ -22,3 +22,16 @@ test('command with overriden ui still get memory presenter for testing', () => {
 
   expect(ui).toBeInstanceOf(InMemoryPresenter)
 })
+
+test('sub-command with overriden ui still get memory presenter for testing', () => {
+  const cmd: CliCommand<{ foo: string }, { boo: string }> = {
+    name: 'override-ui-in-sub',
+    commands: [{
+      name: 'override-ui-sub',
+      ui: new PlainPresenter()
+    }]
+  }
+  const { ui } = setupCliCommandTest<{ foo: string }, { boo: string }>(cmd, [])
+
+  expect(ui).toBeInstanceOf(InMemoryPresenter)
+})
