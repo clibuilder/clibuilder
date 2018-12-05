@@ -14,7 +14,7 @@ export interface PluginCliContext extends CliContext {
 
 export class PluginCli<Context extends { [i: string]: any } = {}> extends Cli {
   protected loadingPlugins: Promise<void>
-
+  public keyword: string
   constructor(options: PluginCliOption, context: Partial<PluginCliContext> & Context = {} as any) {
     let { name, version, commands = [], keyword = `${options.name}-plugin` } = options
 
@@ -22,6 +22,8 @@ export class PluginCli<Context extends { [i: string]: any } = {}> extends Cli {
     const cwd = context.cwd || process.cwd()
 
     super({ name, version, commands }, context)
+
+    this.keyword = keyword
     this.loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
       commands.forEach(command => this.addCliCommand(command))
     })
