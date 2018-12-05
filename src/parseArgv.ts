@@ -41,7 +41,6 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
 
   const args = yargs(rawArgv, options)
   args._.shift()
-
   fixStringOptions(args)
   fixBooleanOptions(args, rawArgv)
   clearAlias(parsable, args)

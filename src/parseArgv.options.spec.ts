@@ -113,3 +113,19 @@ test('options with wrong type will throws', () => {
   }, {})
   t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
 })
+
+test('camelCase option is not expanded to hyphenated option', () => {
+  const cmd = createParsable({
+    name: 'a',
+    options: {
+      string: {
+        specOutDir: {
+          description: 'string',
+          default: 'abc'
+        }
+      }
+    }
+  }, {})
+
+  t.doesNotThrow(() => parseArgv(cmd, ['a']))
+})
