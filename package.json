@@ -41,7 +41,7 @@
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "verify": "npm run lint && npm run build && npm run coverage && npm run dependency-check",
-    "verify-ci": "npm run lint && npm run build && jest --coverage --config jest.config.ci.json && npm run dependency-check",
+    "verify-ci": "npm run lint && npm run build && jest --runInBand --coverage --config jest.config.ci.json && npm run dependency-check",
     "watch": "jest --watch"
   },
   "dependencies": {
