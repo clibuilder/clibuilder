@@ -1,14 +1,13 @@
 import { Cli } from '../Cli';
 import {
-  CliCommand,
+CliCommand,
   // @ts-ignore
   CliCommandInstance
 } from '../CliCommand';
-import { createCliCommand } from '../createCliCommand'
-
-import { InMemoryPresenter } from './InMemoryPresenter'
-import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
+import { PresenterFactory } from '../interfaces';
 import { createCommandArgs } from './createCommandArgs';
+import { InMemoryPresenter } from './InMemoryPresenter';
+import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
 
 export function createInMemoryCli(name: string, ...commands): Cli {
   return new Cli(
@@ -27,4 +26,20 @@ export function setupCliCommandTest<Config, Context = {}>(command: CliCommand<Co
   const cmd = createCliCommand(command, presenterFactory, context)
 
   return { cmd, args, argv, ui: cmd.ui as InMemoryPresenter }
+}
+
+function createCliCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: {
+  config?: Config,
+  [index: string]: any
+}): CliCommandInstance<Config, Context> {
+  const result = {
+    ...context,
+    ...spec
+  } as CliCommandInstance<Config, Context>
+  result.ui = presenterFactory.createCommandPresenter(result)
+  if (result.commands) {
+    result.commands = result.commands.map(c => createCliCommand(c, presenterFactory, { ...context, parent: result }))
+  }
+
+  return result
 }
