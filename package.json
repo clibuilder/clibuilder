@@ -54,7 +54,7 @@
     "lodash": "^4.17.11",
     "pad-right": "^0.2.2",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^11.1.1"
+    "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
