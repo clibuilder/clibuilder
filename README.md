@@ -2,7 +2,9 @@
 
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][downloads-image]][downloads-url]
-[![Build status][travis-image]][travis-url]
+
+[![CircleCI status][circleci-image]][circleci-url]
+[![Travis status][travis-image]][travis-url]
 [![Coverage Status][coveralls-image]][coveralls-url]
 
 [![Greenkeeper][greenkeeper-image]][greenkeeper-url]
@@ -180,6 +182,8 @@ npm run watch
 [npm-url]: https://npmjs.org/package/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
 [downloads-url]: https://npmjs.org/package/clibuilder
+[circleci-image]: https://circleci.com/gh/unional/clibuilder/tree/master.svg?style=shield
+[circleci-url]: https://circleci.com/gh/unional/clibuilder/tree/master
 [travis-image]: https://img.shields.io/travis/unional/clibuilder/master.svg?style=flat
 [travis-url]: https://travis-ci.org/unional/clibuilder?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/unional/clibuilder/badge.svg

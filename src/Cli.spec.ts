@@ -80,6 +80,7 @@ test('support extending context', () => {
     commands: [{
       name: 'cmd',
       run() {
+        // `this.custom` does not report type error
         t.strictEqual(this.custom, true)
       }
     } as CliCommand<undefined, { custom: boolean }>]

@@ -2,7 +2,6 @@ import { CliArgs } from './interfaces'
 import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
 
 export namespace CliCommand {
-
   export interface Base {
     name: string
     parent?: Base
@@ -77,7 +76,6 @@ export namespace CliCommand {
     alias?: string[]
     ui?: LogPresenter & HelpPresenter & Inquirer
   }
-
 }
 
 export interface CliCommandInstance<Config = {}, Context = {}> extends CliCommand.Base, CliCommand.Shared {
