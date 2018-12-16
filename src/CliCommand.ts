@@ -77,18 +77,17 @@ export namespace CliCommand {
     alias?: string[]
     ui?: LogPresenter & HelpPresenter & Inquirer
   }
-
 }
 
-export interface CliCommandInstance<Config = {}, Context = {}> extends CliCommand.Base, CliCommand.Shared {
+export type CliCommandInstance<Config = {}, Context = {}> = {
   cwd: string
   commands?: CliCommandInstance[]
   config?: Config
   ui: LogPresenter & HelpPresenter & Inquirer
   run(this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]): void | Promise<any>
-}
+} & CliCommand.Base & CliCommand.Shared & Context
 
-export interface CliCommand<Config = {}, Context = {}> extends CliCommand.Shared {
+export type CliCommand<Config = {}, Context = {}> = {
   commands?: CliCommand[],
   run?: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
-}
+} & CliCommand.Shared & Context
