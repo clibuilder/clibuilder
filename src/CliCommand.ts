@@ -2,7 +2,6 @@ import { CliArgs } from './interfaces'
 import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
 
 export namespace CliCommand {
-
   export interface Base {
     name: string
     parent?: Base
@@ -79,15 +78,15 @@ export namespace CliCommand {
   }
 }
 
-export type CliCommandInstance<Config = {}, Context = {}> = {
+export interface CliCommandInstance<Config = {}, Context = {}> extends CliCommand.Base, CliCommand.Shared {
   cwd: string
   commands?: CliCommandInstance[]
   config?: Config
   ui: LogPresenter & HelpPresenter & Inquirer
   run(this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]): void | Promise<any>
-} & CliCommand.Base & CliCommand.Shared & Context
+}
 
-export type CliCommand<Config = {}, Context = {}> = {
+export interface CliCommand<Config = {}, Context = {}> extends CliCommand.Shared {
   commands?: CliCommand[],
   run?: (this: CliCommandInstance & Context & { config?: Config }, args: CliArgs, argv: string[]) => void | Promise<any>
-} & CliCommand.Shared & Context
+}

@@ -1,6 +1,6 @@
 import { Cli } from '../Cli';
 import {
-CliCommand,
+  CliCommand,
   // @ts-ignore
   CliCommandInstance
 } from '../CliCommand';
@@ -31,11 +31,11 @@ export function setupCliCommandTest<Config, Context = {}>(command: CliCommand<Co
 function createCliCommand<Config, Context = {}>(spec: CliCommand<Config, Context>, presenterFactory: PresenterFactory, context: {
   config?: Config,
   [index: string]: any
-}): CliCommandInstance<Config, Context> {
+}): CliCommandInstance<Config, Context> & Context {
   const result = {
     ...context,
     ...spec
-  } as CliCommandInstance<Config, Context>
+  } as CliCommandInstance<Config, Context> & Context
   result.ui = presenterFactory.createCommandPresenter(result)
   if (result.commands) {
     result.commands = result.commands.map(c => createCliCommand(c, presenterFactory, { ...context, parent: result }))
