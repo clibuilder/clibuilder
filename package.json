@@ -63,7 +63,7 @@
     "@types/node": "^10.12.12",
     "@types/wordwrap": "github:types/wordwrap",
     "@unional/jest-progress-reporter": "^2.0.0",
-    "assertron": "^5.2.2",
+    "assertron": "^6.0.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "codecov": "^3.1.0",
     "dependency-check": "^3.2.1",
