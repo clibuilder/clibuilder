@@ -1,9 +1,8 @@
-import inquirer = require('inquirer')
-import padRight = require('pad-right')
-import wordwrap = require('wordwrap')
-
-import { Display, ConsoleDisplay, DisplayLevel } from './Display'
-import { LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel, Inquirer } from './Presenter'
+import inquirer from 'inquirer';
+import padRight from 'pad-right';
+import wordwrap from 'wordwrap';
+import { ConsoleDisplay, Display, DisplayLevel } from './Display';
+import { CommandModel, HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './Presenter';
 
 const INDENT = 2
 const RIGHT_PADDING = 2

@@ -1,6 +1,6 @@
-import inquirer = require('inquirer')
-import { CliCommand } from './CliCommand'
-import { DisplayLevel } from './Display'
+import inquirer from 'inquirer';
+import { CliCommand } from './CliCommand';
+import { DisplayLevel } from './Display';
 
 export interface CommandModel extends CliCommand.Base {
   description?: string

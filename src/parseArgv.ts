@@ -1,8 +1,7 @@
-import camelCase = require('camel-case')
-import yargs = require('yargs-parser')
-
-import { Parsable } from './interfaces'
-import { toYargsOption } from './toYargsOption'
+import camelCase from 'camel-case';
+import yargs from 'yargs-parser';
+import { Parsable } from './interfaces';
+import { toYargsOption } from './toYargsOption';
 
 export class NotNumberOption extends Error {
   // istanbul ignore next
