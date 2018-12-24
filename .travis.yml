@@ -2,7 +2,6 @@ language: node_js
 cache:
   directories:
     - ~/.npm
-    - node_modules
 notifications:
   email: false
 node_js:
@@ -10,14 +9,13 @@ node_js:
   - '10'
   - '9'
   - '8'
+  - '6'
 branches:
   only:
     - master
     - /^greenkeeper.*$/
-
 script:
+  - npm i --no-save jest-junit
   - npm run verify
-
-after_success:
-  - ./scripts/run-on-node-version.sh 9 "npm install --no-save coveralls && npm run coveralls"
-  - ./scripts/run-on-node-version.sh 9 "npm install --no-save codecov && npm run codecov"
+  - ./scripts/run-on-node-version.sh 11 "npm install -g codacy-coverage && cat ./coverage/lcov.info | codacy-coverage"
+  - ./scripts/run-on-node-version.sh 11 "npm install -g coveralls && cat ./coverage/lcov.info | coveralls"
