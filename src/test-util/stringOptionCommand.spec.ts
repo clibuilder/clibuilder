@@ -1,5 +1,5 @@
 import t from 'assert'
-import { satisfy } from 'assertron'
+import a from 'assertron'
 
 import { setupCliCommandTest, argCommand, stringOptionCommand } from '../index'
 
@@ -39,7 +39,7 @@ test('log option', () => {
 test('argument command', () => {
   const { cmd, args, argv, ui } = setupCliCommandTest(argCommand, ['abc'])
 
-  satisfy(args, { 'some-arg': 'abc', someArg: 'abc' })
+  a.satisfies(args, { 'some-arg': 'abc', someArg: 'abc' })
 
   cmd.run(args, argv)
   t.strictEqual(ui.display.infoLogs[0][0], 'some-arg: abc')

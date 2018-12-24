@@ -1,6 +1,6 @@
 import { getLevel, logLevel } from '@unional/logging';
 import t from 'assert';
-import a, { AssertOrder } from 'assertron';
+import { AssertOrder } from 'assertron';
 import { Cli, CliCommand, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from './index';
 import { log } from './log';
 
@@ -222,6 +222,6 @@ test('--debug-cli not pass to command', async () => {
     }]
   })
   await cli.parse(createCliArgv('test-cli', 'a', '--debug-cli'))
-
-  a.deepEqual(actual, ['a'])
+  t.strictEqual(actual.length, 1)
+  t.strictEqual(actual[0], 'a')
 })

@@ -4,6 +4,9 @@ workflows:
   all:
     jobs:
       - node-latest
+      - node10:
+          requires:
+            - node-latest
       - node9:
           requires:
             - node-latest
@@ -21,13 +24,13 @@ workflows:
 jobs:
   local-test:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:11
     steps:
       - checkout
       - run: npm run verify
   node-latest:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:11
     steps:
       - checkout
       - restore_cache:
@@ -44,8 +47,19 @@ jobs:
           key: node_modules-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
-      - run: npm run verify-ci
+      - run: npm run verify
       - run: npx codecov
+      - store_test_results:
+          path: .reports/junit
+  node10:
+    docker:
+      - image: 'circleci/node:10'
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore node_modules cache
+          key: node_modules-{{ checksum "package-lock.json" }}
+      - run: npm run verify
       - store_test_results:
           path: .reports/junit
   node9:
@@ -56,7 +70,7 @@ jobs:
       - restore_cache:
           name: Restore node_modules cache
           key: node_modules-{{ checksum "package-lock.json" }}
-      - run: npm run verify-ci
+      - run: npm run verify
       - store_test_results:
           path: .reports/junit
   node8:
@@ -67,22 +81,16 @@ jobs:
       - restore_cache:
           name: Restore node_modules cache
           key: node_modules-{{ checksum "package-lock.json" }}
-      - run: npm run verify-ci
+      - run: npm run verify
       - store_test_results:
           path: .reports/junit
   release:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:11
     steps:
       - checkout
       - restore_cache:
           name: Restore node_modules cache
           key: node_modules-{{ checksum "package-lock.json" }}
-      - run:
-          name: update greenkeeper lockfile
-          command: ./node_modules/.bin/greenkeeper-lockfile-update
       - run: npm run build
-      - run:
-          name: upload greenkeeper lockfile
-          command: ./node_modules/.bin/greenkeeper-lockfile-upload
       - run: npx semantic-release

@@ -1,5 +1,5 @@
 import t from 'assert'
-import { satisfy } from 'assertron'
+import assertron, { } from 'assertron'
 
 import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
@@ -79,7 +79,7 @@ test('zero or more args should accept 1 args', () => {
   })
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'zero-or-more': ['b'], zeroOrMore: ['b'] })
+  assertron.satisfies(actual, { 'zero-or-more': ['b'], zeroOrMore: ['b'] })
 })
 
 test('zero or more args should accept 2 args', () => {
@@ -94,7 +94,7 @@ test('zero or more args should accept 2 args', () => {
   })
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'zero-or-more': ['b', 'c'], zeroOrMore: ['b', 'c'] })
+  assertron.satisfies(actual, { 'zero-or-more': ['b', 'c'], zeroOrMore: ['b', 'c'] })
 })
 
 test('one or more args should not accept 0 args', () => {
@@ -125,7 +125,7 @@ test('one or more args should not accept 1 args', () => {
   })
   const argv = ['args', 'a']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'one-or-more': ['a'] })
+  assertron.satisfies(actual, { 'one-or-more': ['a'] })
 })
 
 test('one or more args should not accept 2 args', () => {
@@ -142,5 +142,5 @@ test('one or more args should not accept 2 args', () => {
   const argv = ['cli', 'a', 'b']
   const actual = parseArgv(cmd, argv)
 
-  satisfy(actual, { 'one-or-more': ['a', 'b'], oneOrMore: ['a', 'b'] })
+  assertron.satisfies(actual, { 'one-or-more': ['a', 'b'], oneOrMore: ['a', 'b'] })
 })
