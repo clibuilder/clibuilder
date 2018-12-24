@@ -16,7 +16,7 @@ test('using custom context', () => {
   const spec2 = {
     name: 'b',
     run() {
-      // `this` should be `Command` by default
+      // `this` should be `Command` by default. Need visual inspection
       t(this.ui)
     }
   } as CliCommand
