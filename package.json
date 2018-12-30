@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@types/inquirer": "0.0.43",
-    "@unional/logging": "^0.5.3",
+    "@unional/logging": "^1.0.1",
     "aurelia-logging-color": "^0.5.16",
     "camel-case": "^3.0.0",
     "find-up": "^3.0.0",
