@@ -3,6 +3,8 @@ import t from 'assert';
 import a, { AssertOrder } from 'assertron';
 import { Cli, CliCommand, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from './index';
 import { log } from './log';
+import { PresenterOption } from './Presenter';
+import inquirer = require('inquirer');
 
 
 test('Cli context shape should follow input literal', () => {
@@ -74,7 +76,7 @@ test('run nested command with argument', async () => {
 
 
 test('support extending context', () => {
-  const cli = new Cli({
+  const cli = new Cli<{ custom: boolean }>({
     name: 'cli',
     version: '1.2.1',
     commands: [{
@@ -83,13 +85,14 @@ test('support extending context', () => {
         // `this.custom` does not report type error
         t.strictEqual(this.custom, true)
       }
-    } as CliCommand<undefined, { custom: boolean }>]
+    }]
   }, { cwd: '', custom: true })
+
   return cli.parse(createCliArgv('cli', 'cmd'))
 })
 
-function createInquirePresenterFactory(answers) {
-  return { createCommandPresenter: options => new InMemoryPresenter(options, answers) }
+function createInquirePresenterFactory(answers: inquirer.Answers) {
+  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
 }
 
 test('prompt for input', async () => {
@@ -223,5 +226,5 @@ test('--debug-cli not pass to command', async () => {
   })
   await cli.parse(createCliArgv('test-cli', 'a', '--debug-cli'))
 
-  a.deepEqual(actual, ['a'])
+  a.satisfies(actual, ['a'])
 })

@@ -17,7 +17,7 @@ class CliRegistrarImpl {
   }
 }
 
-export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
+export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   log.debug('loading plugins')
 
   const findingLocal = findPlugins(keyword, cwd).then(pluginNames => {
@@ -46,7 +46,7 @@ export async function loadPlugins(keyword, { cwd } = { cwd: '.' }) {
   })
 }
 
-function getGlobalPackageFolder(folder): string {
+function getGlobalPackageFolder(folder: string): string {
   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
   // in NodeJS@6 the following fails tsc due to null is not assignable to string.
@@ -78,16 +78,16 @@ function activatePlugins(pluginNames: string[], cwd: string) {
   return commands
 }
 
-function loadModule(name, cwd) {
+function loadModule(name: string, cwd: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   return require(pluginPath)
 }
 
-function isValidPlugin(m) {
+function isValidPlugin(m: any) {
   return typeof m.activate === 'function'
 }
 
-function activatePlugin(m) {
+function activatePlugin(m: { activate: any }) {
   const registrar = new CliRegistrarImpl()
   m.activate(registrar)
   return registrar.commands

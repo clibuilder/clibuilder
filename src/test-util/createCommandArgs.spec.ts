@@ -1,7 +1,7 @@
 import t from 'assert'
 
 import { createCommandArgs, argCommand, noopCommand, booleanOptionsCommand } from '../index'
-import { satisfy } from 'assertron';
+import a from 'assertron';
 
 test('empty argv', () => {
   const args = createCommandArgs(noopCommand)
@@ -12,7 +12,7 @@ test('empty argv', () => {
 test(`one argv`, () => {
   const args = createCommandArgs(argCommand, ['arg1'])
 
-  satisfy(args, { 'some-arg': 'arg1', someArg: 'arg1' })
+  a.satisfies(args, { 'some-arg': 'arg1', someArg: 'arg1' })
 })
 
 test(`boolean option using with '--'`, () => {

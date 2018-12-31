@@ -9,7 +9,7 @@ import { createCommandArgs } from './createCommandArgs';
 import { InMemoryPresenter } from './InMemoryPresenter';
 import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
 
-export function createInMemoryCli(name: string, ...commands): Cli {
+export function createInMemoryCli(name: string, ...commands: CliCommand[]): Cli {
   return new Cli(
     { name, version: '1.0.0', commands },
     {

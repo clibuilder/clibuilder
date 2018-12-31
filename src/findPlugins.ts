@@ -1,7 +1,7 @@
 import fs = require('fs')
 import path = require('path')
 
-export async function findPlugins(keyword, cwd) {
+export async function findPlugins(keyword: string, cwd: string) {
   const folders = await findPackageFolders(cwd)
   return folders.filter(f => {
     const content = readFileSafe(path.resolve(cwd, 'node_modules', f, 'package.json'))
@@ -12,7 +12,7 @@ export async function findPlugins(keyword, cwd) {
   })
 }
 
-async function findPackageFolders(cwd) {
+async function findPackageFolders(cwd: string) {
   let dirs = await readDirSafe(path.resolve(cwd, 'node_modules'))
   // I can safely skip `@types` as it is not possible to have plugins
   const scopedDirs = dirs.filter(d => d.startsWith('@') && d !== '@types')
@@ -42,7 +42,7 @@ function readDirSafe(path: string) {
  * That will result in ENOENT.
  * @param path file path.
  */
-function readFileSafe(path) {
+function readFileSafe(path: string) {
   try {
     return fs.readFileSync(path, 'utf8')
   }

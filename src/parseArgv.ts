@@ -1,12 +1,13 @@
-import camelCase = require('camel-case')
-import yargs = require('yargs-parser')
+import camelCase from 'camel-case'
+import yargs from 'yargs-parser'
 
-import { Parsable } from './interfaces'
+import { Parsable, CliArgsWithoutDefaults, CliArgs } from './interfaces'
 import { toYargsOption } from './toYargsOption'
+import { CliCommand } from './CliCommand';
 
 export class NotNumberOption extends Error {
   // istanbul ignore next
-  constructor(public name) {
+  constructor(public name: string) {
     super(`Option '${name}' only accepts number`)
     Object.setPrototypeOf(this, NotNumberOption.prototype)
   }
@@ -14,7 +15,7 @@ export class NotNumberOption extends Error {
 
 export class UnknownOptionError extends Error {
   // istanbul ignore next
-  constructor(public name) {
+  constructor(public name: string) {
     super(`Unknown option '${name}'`)
     Object.setPrototypeOf(this, UnknownOptionError.prototype)
   }
@@ -36,7 +37,7 @@ export class TooManyArguments extends Error {
   }
 }
 
-export function parseArgv(parsable: Parsable, rawArgv: string[]) {
+export function parseArgv(parsable: Parsable, rawArgv: string[]): CliArgs {
   const options = toYargsOption(parsable.options)
 
   const args = yargs(rawArgv, options)
@@ -47,7 +48,7 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
 
   if (parsable.commands) {
     fillArguments(parsable, args)
-    return args
+    return args as any  // TODO: fix type:  _defaults is undefiend
   }
 
   validateArguments(parsable, args)
@@ -56,10 +57,10 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]) {
   fillDefaults(parsable, args, rawArgv)
   fillArguments(parsable, args)
 
-  return args
+  return args as any
 }
 
-function fillArguments(parsable: Parsable, args) {
+function fillArguments(parsable: Parsable, args: CliArgsWithoutDefaults) {
   if (!parsable.arguments)
     return
   parsable.arguments.forEach(a => {
@@ -75,7 +76,7 @@ function fillArguments(parsable: Parsable, args) {
   })
 }
 
-function fixStringOptions(args) {
+function fixStringOptions(args: CliArgsWithoutDefaults) {
   Object.keys(args).forEach(k => {
     if (typeof args[k] === 'string') {
       args[k] = args[k].trim()
@@ -87,7 +88,7 @@ function fixStringOptions(args) {
  * `yargs-parser` will fill in `false` on boolean even if the option does not have default set.
  * This will fix that issue by deleting the values and alias.
  */
-function fixBooleanOptions(args, argv) {
+function fixBooleanOptions(args: CliArgsWithoutDefaults, argv: string[]) {
   const inputArgs = yargs(argv)
   Object.keys(args).forEach(k => {
     if (args[k] === false && inputArgs[k] === undefined)
@@ -95,7 +96,7 @@ function fixBooleanOptions(args, argv) {
   })
 }
 
-function clearAlias(parsable: Parsable, args) {
+function clearAlias(parsable: Parsable, args: CliArgsWithoutDefaults) {
   if (!parsable.options)
     return
   const alias: string[] = []
@@ -107,14 +108,14 @@ function clearAlias(parsable: Parsable, args) {
       delete args[k]
   })
 }
+import { filterKey } from 'type-plus'
+function getAlias(options: { [k: string]: { alias?: string[] } } | undefined) {
+  if (!options) return []
 
-function getAlias(options) {
-  if (!options)
-    return []
-  return Object.keys(options).filter(k => options[k].alias).reduce((p, k) => p.concat(options[k].alias), [])
+  return filterKey(options, k => !!options[k].alias).reduce<string[]>((p, k) => p.concat(options[k].alias!), [])
 }
 
-function validateArguments(command: Parsable, args) {
+function validateArguments(command: Parsable, args: CliArgsWithoutDefaults) {
   if (command.arguments) {
     const total = command.arguments.length
     let required = 0
@@ -140,8 +141,8 @@ function validateArguments(command: Parsable, args) {
   }
 }
 
-function validateOptions(command, args) {
-  let map = {}
+function validateOptions(command: CliCommand, args: CliArgsWithoutDefaults) {
+  let map: any = {}
 
   if (command.options) {
     map = { ...map, ...extractTypes(command.options.boolean, 'boolean') }
@@ -164,8 +165,8 @@ function validateOptions(command, args) {
   })
 }
 
-function extractTypes(sourceMap, valueType) {
-  const map = {}
+function extractTypes(sourceMap: Record<string, { alias?: string[] }> | undefined, valueType: string) {
+  const map: Record<string, string> = {}
   if (sourceMap) {
     Object.keys(sourceMap).forEach(k => {
       map[k] = valueType
@@ -180,7 +181,7 @@ function extractTypes(sourceMap, valueType) {
   return map
 }
 
-function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArgv: string[]) {
+function handleGroupedOptions(parsable: Parsable, args: CliArgsWithoutDefaults, rawArgv: string[]) {
   if (!parsable.options)
     return
 
@@ -207,12 +208,12 @@ function handleGroupedOptions(parsable: Parsable, args: yargs.ParsedArgs, rawArg
   })
 }
 
-function getAllGroups(opts) {
-  const groups = {}
+function getAllGroups(opts: CliCommand.Options) {
+  const groups: Record<string, string[]> = {}
   if (opts.boolean) {
     for (let key in opts.boolean) {
       if (opts.boolean[key].group) {
-        const id = opts.boolean[key].group
+        const id = opts.boolean[key].group!
         if (groups[id])
           groups[id].push(key)
         else
@@ -223,7 +224,7 @@ function getAllGroups(opts) {
   if (opts.string) {
     for (let key in opts.string) {
       if (opts.string[key].group) {
-        const id = opts.string[key].group
+        const id = opts.string[key].group!
         if (groups[id])
           groups[id].push(key)
         else
@@ -234,7 +235,7 @@ function getAllGroups(opts) {
   if (opts.number) {
     for (let key in opts.number) {
       if (opts.number[key].group) {
-        const id = opts.number[key].group
+        const id = opts.number[key].group!
         if (groups[id])
           groups[id].push(key)
         else
@@ -257,18 +258,18 @@ function findOptionNameAndAlias({ options }: Pick<Parsable, 'options'>, name: st
   return result
 }
 
-function fillDefaults(parsable: Parsable, args, argv) {
+function fillDefaults(parsable: Parsable, args: CliArgsWithoutDefaults, argv: string[]) {
   if (!parsable.options) {
     args._defaults = []
     return
   }
 
   const optionsWithDefault: string[] = []
-  const optionGroups = {}
+  const optionGroups: Record<string, string[]> = {}
   fillOptionsWithDefaults(parsable.options.boolean, optionsWithDefault, optionGroups)
   fillOptionsWithDefaults(parsable.options.string, optionsWithDefault, optionGroups)
   fillOptionsWithDefaults(parsable.options.number, optionsWithDefault, optionGroups)
-  function fillOptionsWithDefaults(options, optionsWithDefault, optionGroups) {
+  function fillOptionsWithDefaults(options: Record<string, { default?: string | number | boolean, alias?: string[], group?: string }> | undefined, optionsWithDefault: string[], optionGroups: Record<string, string[]>) {
     if (options) {
       Object.keys(options).forEach(o => {
         const option = options[o]
@@ -292,7 +293,7 @@ function fillDefaults(parsable: Parsable, args, argv) {
   groupKeys.forEach(k => {
     const g: string[] = optionGroups[k]
     if (g.some(k => inputKeys.indexOf(k) !== -1)) {
-      args._defaults = args._defaults.filter(d => g.indexOf(d) === -1)
+      args._defaults = args._defaults.filter((d: string) => g.indexOf(d) === -1)
     }
   })
 }

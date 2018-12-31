@@ -35,7 +35,7 @@ test('command is loaded when parse', async () => {
   }, { cwd: 'fixtures/one-plugin', presenterFactory })
 
   await cli.parse(createCliArgv('clibuilder', 'one', 'echo'))
-  const presenter = presenterFactory.commandPresenter
+  const presenter = presenterFactory.commandPresenter!
   t.strictEqual(presenter.display.infoLogs[0][0], 'echo')
 })
 

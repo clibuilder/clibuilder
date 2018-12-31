@@ -1,9 +1,8 @@
-import inquirer = require('inquirer')
-import padRight = require('pad-right')
-import wordwrap = require('wordwrap')
-
-import { Display, ConsoleDisplay, DisplayLevel } from './Display'
-import { LogPresenter, HelpPresenter, VersionPresenter, PresenterOption, CommandModel, Inquirer } from './Presenter'
+import inquirer from 'inquirer';
+import padRight from 'pad-right';
+import wordwrap from 'wordwrap';
+import { ConsoleDisplay, Display, DisplayLevel } from './Display';
+import { CommandModel, HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './Presenter';
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -20,7 +19,7 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
     this.name = options.name
   }
 
-  showVersion(version) {
+  showVersion(version: string) {
     this.display.info(version)
   }
 
@@ -164,7 +163,7 @@ function generateOptionsSection(command: CommandModel) {
   return message
 }
 
-function formatKeyValue(key, value) {
+function formatKeyValue(key: string, value: any) {
   const values = value.alias ? [...value.alias, key].sort((a, b) => a.length - b.length) : [key]
   return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]`
 }
