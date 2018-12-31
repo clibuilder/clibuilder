@@ -1,22 +1,21 @@
-import { addAppender, logLevel } from '@unional/logging'
-import { ColorAppender } from 'aurelia-logging-color'
+import { addAppender, logLevel } from '@unional/logging';
+import { ColorAppender } from 'aurelia-logging-color';
+import { CliCommand, CliCommandInstance } from './CliCommand';
+import { createCliCommand } from './createCliCommand';
+import { DisplayLevel } from './Display';
+import { getCliCommand } from './getCliCommand';
+import { CliArgs, PresenterFactory } from './interfaces';
+import { loadConfig } from './loadConfig';
+import { log } from './log';
+import { parseArgv } from './parseArgv';
+import { plainPresenterFactory } from './plainPresenterFactory';
+import { HelpPresenter, LogPresenter, VersionPresenter } from './Presenter';
 import yargs = require('yargs-parser')
 
-import { CliCommand, CliCommandInstance } from './CliCommand'
-import { createCliCommand } from './createCliCommand'
-import { DisplayLevel } from './Display'
-import { getCliCommand } from './getCliCommand'
-import { PresenterFactory } from './interfaces'
-import { log } from './log'
-import { loadConfig } from './loadConfig'
-import { parseArgv } from './parseArgv'
-import { plainPresenterFactory } from './plainPresenterFactory'
-import { LogPresenter, HelpPresenter, VersionPresenter } from './Presenter'
-
-export interface CliOption {
+export interface CliOption<Config = any, Context = Record<string, any>> {
   name: string
   version: string
-  commands: CliCommand[]
+  commands: CliCommand<Config, Context>[]
 }
 
 export interface CliContext {
@@ -28,20 +27,21 @@ const args = yargs(process.argv)
 // istanbul ignore next
 if (args['debug-cli']) {
   addAppender(new ColorAppender())
-  log.setLevel(logLevel.debug)
+  log.level = logLevel.debug
 }
 
-function overridePresenterFactory(context): PresenterFactory {
+function overridePresenterFactory(context: Partial<CliContext> & Record<string, any>): PresenterFactory {
+
   const presenterFactory = context.presenterFactory || plainPresenterFactory
 
   presenterFactory.createCliPresenter = presenterFactory.createCliPresenter || plainPresenterFactory.createCliPresenter
   presenterFactory.createCommandPresenter = presenterFactory.createCommandPresenter || plainPresenterFactory.createCommandPresenter
   delete context.presenterFactory
-  return presenterFactory
+  return presenterFactory as any
 }
 
 export class Cli<Context extends { [i: string]: any } = {}> {
-  cwd: string
+  // cwd: string
   options = {
     boolean: {
       'help': {
@@ -64,13 +64,13 @@ export class Cli<Context extends { [i: string]: any } = {}> {
       }
     }
   }
-  commands: CliCommandInstance[] = []
+  commands: CliCommandInstance<any, Context>[] = []
   name: string
   version: string
   private ui: LogPresenter & HelpPresenter & VersionPresenter
   private presenterFactory: PresenterFactory
   private context: Partial<CliContext> & Context
-  constructor(option: CliOption, context: Partial<CliContext> & Context = {} as any) {
+  constructor(option: CliOption<any, Context>, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name
     this.version = option.version
 
@@ -94,11 +94,11 @@ export class Cli<Context extends { [i: string]: any } = {}> {
     return this.process(args, rawArgv.slice(1))
   }
 
-  protected addCliCommand(command: CliCommand) {
+  protected addCliCommand(command: CliCommand<any, Context>) {
     this.commands.push(createCliCommand(command, this.presenterFactory, this.context))
   }
 
-  private process(args, rawArgv) {
+  private process(args: CliArgs, rawArgv: string[]) {
     if (args.version) {
       this.ui.showVersion(this.version)
       return Promise.resolve()
@@ -135,7 +135,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   }
 }
 
-function getCmdChainCount(command) {
+function getCmdChainCount(command: CliCommand.Base | undefined) {
   let count = 0
   let p = command
   while (p) {

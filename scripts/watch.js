@@ -14,9 +14,5 @@ cp.spawn('tsc', ['-w'], { shell: true })
           shell: true
         })
       }
-      cp.spawnSync('npm', ['run', 'lint'], {
-        stdio: 'inherit',
-        shell: true
-      })
     }
   })

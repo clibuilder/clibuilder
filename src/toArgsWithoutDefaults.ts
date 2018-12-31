@@ -1,9 +1,8 @@
-import _ = require('lodash')
-
+import _ from 'lodash';
 import { CliArgs, CliArgsWithoutDefaults } from './interfaces';
 
-export function toArgsWithoutDefaults(args: CliArgs): CliArgsWithoutDefaults {
-  const result = { _: [...args._] }
+export function toArgsWithoutDefaults(args: CliArgs) {
+  const result: CliArgsWithoutDefaults = { _: [...args._] }
   Object.keys(args).forEach(k => {
     if (k === '_' || k === '_defaults')
       return

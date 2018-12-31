@@ -15,15 +15,15 @@ export enum DisplayLevel {
 export class ConsoleDisplay implements Display {
   debug(...args: any[]): void {
     // tslint:disable-next-line: no-console
-    console.log.apply(console, args)
+    console.log.apply(console, args as any)
   }
   info(...args: any[]): void {
-    console.info.apply(console, args)
+    console.info.apply(console, args as any)
   }
   warn(...args: any[]): void {
-    console.warn.apply(console, args)
+    console.warn.apply(console, args as any)
   }
   error(...args: any[]): void {
-    console.error.apply(console, args)
+    console.error.apply(console, args as any)
   }
 }

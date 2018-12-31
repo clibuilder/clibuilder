@@ -1,5 +1,5 @@
 import t from 'assert'
-import { satisfy } from 'assertron'
+import a from 'assertron'
 
 import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
@@ -61,7 +61,7 @@ test('zero or more args should accept 0 args', () => {
       }
     ]
   })
-  const argv = []
+  const argv: string[] = []
   const actual = parseArgv(cmd, argv)
   t.deepStrictEqual(actual, { _: [], _defaults: [] })
 })
@@ -79,7 +79,7 @@ test('zero or more args should accept 1 args', () => {
   })
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'zero-or-more': ['b'], zeroOrMore: ['b'] })
+  a.satisfies(actual, { 'zero-or-more': ['b'], zeroOrMore: ['b'] })
 })
 
 test('zero or more args should accept 2 args', () => {
@@ -94,7 +94,7 @@ test('zero or more args should accept 2 args', () => {
   })
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'zero-or-more': ['b', 'c'], zeroOrMore: ['b', 'c'] })
+  a.satisfies(actual, { 'zero-or-more': ['b', 'c'], zeroOrMore: ['b', 'c'] })
 })
 
 test('one or more args should not accept 0 args', () => {
@@ -125,7 +125,7 @@ test('one or more args should not accept 1 args', () => {
   })
   const argv = ['args', 'a']
   const actual = parseArgv(cmd, argv)
-  satisfy(actual, { 'one-or-more': ['a'] })
+  a.satisfies(actual, { 'one-or-more': ['a'] })
 })
 
 test('one or more args should not accept 2 args', () => {
@@ -142,5 +142,5 @@ test('one or more args should not accept 2 args', () => {
   const argv = ['cli', 'a', 'b']
   const actual = parseArgv(cmd, argv)
 
-  satisfy(actual, { 'one-or-more': ['a', 'b'], oneOrMore: ['a', 'b'] })
+  a.satisfies(actual, { 'one-or-more': ['a', 'b'], oneOrMore: ['a', 'b'] })
 })
