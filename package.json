@@ -47,7 +47,6 @@
     "lodash": "^4.17.11",
     "pad-right": "^0.2.2",
     "type-plus": "^1.2.0",
-    "unpartial": "^0.4.1",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
