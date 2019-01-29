@@ -49,7 +49,7 @@
     "pad-right": "^0.2.2",
     "type-plus": "^1.4.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^10.1.0"
+    "yargs-parser": "^12.0.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
