@@ -1,3 +1,4 @@
+// istanbul ignore file
 // tslint:disable no-console
 import { Cli, PresenterFactory, PlainPresenter, Display, PresenterOption, LogPresenter, HelpPresenter, VersionPresenter } from '../index'
 
