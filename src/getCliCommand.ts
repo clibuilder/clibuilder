@@ -1,6 +1,6 @@
 import { CliCommandInstance } from './CliCommand'
 
-export function getCliCommand<Config, Context>(args: string[], commands: CliCommandInstance[]): CliCommandInstance<Config, Context> | undefined {
+export function getCliCommand<Config, Context>(args: string[], commands: CliCommandInstance<Config, Context>[]): CliCommandInstance<Config, Context> | undefined {
   if (args.length === 0)
     return undefined
   const nameOrAlias = args.shift()!

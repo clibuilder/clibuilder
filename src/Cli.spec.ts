@@ -76,7 +76,7 @@ test('run nested command with argument', async () => {
 
 
 test('support extending context', () => {
-  const cli = new Cli<{ custom: boolean }>({
+  const cli = new Cli<undefined, { custom: boolean }>({
     name: 'cli',
     version: '1.2.1',
     commands: [{
@@ -130,7 +130,7 @@ test.skip('turn on debug-cli sets the log level to debug locally', async () => {
 
 test('read local json file', async () => {
   const o = new AssertOrder(1)
-  const cli = new Cli({
+  const cli = new Cli<{ a: number }>({
     name: 'test-cli',
     version: '0.0.1',
     commands: [{
@@ -139,7 +139,7 @@ test('read local json file', async () => {
         t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
       }
-    } as CliCommand<{ a: number }, {}>]
+    }]
   }, { cwd: 'fixtures/has-config' })
   await cli.parse(createCliArgv('cli', 'cfg'))
   o.end()
