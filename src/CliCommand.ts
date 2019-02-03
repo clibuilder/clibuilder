@@ -74,13 +74,13 @@ export namespace CliCommand {
   }
 }
 
-export interface CliCommandInstance<Config, Context> extends CliCommand.Shared {
+export type CliCommandInstance<Config, Context> = CliCommand.Shared & Context & {
   cwd: string
   commands?: CliCommandInstance<any, any>[]
   config: Config
   parent: CliCommandInstance<Config, Context> | Cli<Config, Context>
   ui: LogPresenter & HelpPresenter & Inquirer
-  run(this: CliCommandInstance<Config, Context> & Context, args: CliArgs, argv: string[]): void | Promise<any>
+  run(this: CliCommandInstance<Config, Context>, args: CliArgs, argv: string[]): void | Promise<any>
 }
 
 export interface CliCommand<
