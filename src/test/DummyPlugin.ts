@@ -1,5 +1,6 @@
 import { Registrar, CliCommand } from '../index'
 
+// istanbul ignore file
 const DummyCommand = {
   name: 'dummy',
   run() {

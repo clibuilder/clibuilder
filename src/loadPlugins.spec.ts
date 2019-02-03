@@ -2,7 +2,7 @@ import t from 'assert'
 
 import { loadPlugins } from './loadPlugins'
 
-test.only('empty folder will still load global plugins', async () => {
+test('empty folder will still load global plugins', async () => {
   const plugins = await loadPlugins('clibuilder-plugin', { cwd: 'fixtures/no-plugin' })
   t.strictEqual(plugins.length, 1)
 })
