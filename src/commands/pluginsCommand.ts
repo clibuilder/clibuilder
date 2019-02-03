@@ -35,7 +35,7 @@ export const pluginsCommand = {
   commands: [list]
 } as CliCommand
 
-function getPluginCli(subject: CliCommandInstance | undefined): PluginCli | undefined {
+function getPluginCli<Config, Context>(subject: CliCommandInstance<Config, Context> | undefined): PluginCli | undefined {
   if (!subject) return undefined
   if (subject.parent && subject.parent instanceof PluginCli) return subject.parent
   return getPluginCli(subject.parent as any)

@@ -12,7 +12,7 @@ import { plainPresenterFactory } from './plainPresenterFactory';
 import { HelpPresenter, LogPresenter, VersionPresenter } from './Presenter';
 import yargs = require('yargs-parser')
 
-export interface CliOption<Config = any, Context = Record<string, any>> {
+export interface CliOption<Config, Context> {
   name: string
   version: string
   commands: CliCommand<Config, Context>[]
@@ -40,7 +40,7 @@ function overridePresenterFactory(context: Partial<CliContext> & Record<string, 
   return presenterFactory as any
 }
 
-export class Cli<Context extends { [i: string]: any } = {}> {
+export class Cli<Config extends Record<string, any> | undefined = undefined, Context extends Record<string, any> = {}> {
   // cwd: string
   options = {
     boolean: {
@@ -70,7 +70,7 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   private ui: LogPresenter & HelpPresenter & VersionPresenter
   private presenterFactory: PresenterFactory
   private context: Partial<CliContext> & Context
-  constructor(option: CliOption<any, Context>, context: Partial<CliContext> & Context = {} as any) {
+  constructor(option: CliOption<Config, Context>, context: Partial<CliContext> & Context = {} as any) {
     this.name = option.name
     this.version = option.version
 
@@ -135,9 +135,9 @@ export class Cli<Context extends { [i: string]: any } = {}> {
   }
 }
 
-function getCmdChainCount(command: CliCommand.Base | undefined) {
+function getCmdChainCount(command: CliCommandInstance<any, any> | undefined) {
   let count = 0
-  let p = command
+  let p: any = command
   while (p) {
     p = p.parent
     count++
