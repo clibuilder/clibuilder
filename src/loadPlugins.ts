@@ -1,7 +1,8 @@
-import path = require('path')
-import findup = require('find-up')
+import path from 'path'
+import findup from 'find-up'
 
-import { findPlugins } from './findPlugins'
+import { findByKeyword } from 'find-installed-packages'
+
 import { CliCommand } from './CliCommand'
 import { log } from './log';
 
@@ -20,13 +21,13 @@ class CliRegistrarImpl {
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   log.debug('loading plugins')
 
-  const findingLocal = findPlugins(keyword, cwd).then(pluginNames => {
+  const findingLocal = findByKeyword(keyword, { cwd }).then(pluginNames => {
     log.debug('found local plugins', pluginNames)
     return pluginNames
   })
 
   const globalFolder = getGlobalPackageFolder(__dirname)
-  const findingGlobal = findPlugins(keyword, globalFolder).then(globalPluginNames => {
+  const findingGlobal = findByKeyword(keyword, { cwd: globalFolder }).then(globalPluginNames => {
     log.debug('found global plugins', globalPluginNames)
     return globalPluginNames
   })

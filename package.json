@@ -43,21 +43,22 @@
     "@unional/logging": "^1.0.1",
     "aurelia-logging-color": "^1.0.0",
     "camel-case": "^3.0.0",
+    "find-installed-packages": "^1.0.2",
     "find-up": "^3.0.0",
-    "inquirer": "^6.2.1",
+    "inquirer": "^6.2.2",
     "lodash": "^4.17.11",
     "pad-right": "^0.2.2",
-    "type-plus": "^1.4.0",
+    "type-plus": "^1.10.1",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
-    "@types/lodash": "^4.14.119",
+    "@types/lodash": "^4.14.120",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.2",
-    "@unional/devpkg-node": "^1.1.6",
-    "assertron": "^6.0.0",
+    "@unional/devpkg-node": "^1.2.3",
+    "assertron": "^6.1.0",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
