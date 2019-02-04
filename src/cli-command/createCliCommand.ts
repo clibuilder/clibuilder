@@ -1,5 +1,5 @@
 import { RecursivePartial } from 'type-plus';
-import { buildContext, CliContext } from '../cli';
+import { buildContext, CliContext } from '../basic-cli';
 import { log } from '../log';
 import { CliCommand, CliCommandInstance } from './CliCommand';
 import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from './errors';

@@ -1,4 +1,4 @@
-import { Cli, CliContext } from '../cli';
+import { Cli, CliContext } from '../basic-cli';
 import { CliCommand, createCliCommand } from '../cli-command';
 import { createCommandArgs } from '../cli-command/createCommandArgs';
 import { PresenterOption } from '../presenter';

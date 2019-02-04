@@ -1,4 +1,4 @@
-import { CliContext } from '../cli';
+import { CliContext } from '../basic-cli';
 import { CliCommand, CliCommandInstance } from './CliCommand';
 
 export function getCliCommand<
