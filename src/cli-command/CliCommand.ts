@@ -1,5 +1,5 @@
 import { CliArgs } from '../argv-parser';
-import { Cli, CliContext } from '../basic-cli';
+import { Cli, CliContext } from '../cli';
 import { HelpPresenter, Inquirer, LogPresenter } from '../presenter';
 
 export namespace CliCommand {
