@@ -1,4 +1,4 @@
-import { CliCommand } from '../CliCommand/CliCommand'
+import { CliCommand } from '../cli-command'
 
 // istanbul ignore next
 export const noopCommand: CliCommand = {

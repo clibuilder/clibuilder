@@ -1,11 +1,11 @@
 import { getLevel, logLevel } from '@unional/logging';
 import t from 'assert';
 import a, { AssertOrder } from 'assertron';
-import { Cli, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from '../index';
+import { Cli } from '.';
 import { log } from '../log';
-import { PresenterOption } from '../Presenter';
+import { PlainPresenter, PresenterOption } from '../presenter';
+import { createCliArgv, echoAllCommand, InMemoryPresenter } from '../test-util';
 import inquirer = require('inquirer');
-
 
 test('Cli context shape should follow input literal', () => {
   const cli = new Cli({

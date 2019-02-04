@@ -1,7 +1,7 @@
-import { CliCommand, CliCommandInstance } from '../CliCommand/CliCommand';
-import { PluginCli } from '../PluginCli/PluginCli';
-import { PlainPresenter } from '../PlainPresenter';
-import { findByKeyword } from 'find-installed-packages'
+import { findByKeyword } from 'find-installed-packages';
+import { CliCommand, CliCommandInstance } from '../cli-command';
+import { PluginCli } from '../plugin-cli';
+import { PlainPresenter } from '../presenter';
 const list = {
   name: 'list',
   alias: ['ls'],

@@ -1,6 +1,4 @@
-import { setupCliCommandTest, CliCommand } from '../'
-import { PlainPresenter } from '../PlainPresenter';
-import { InMemoryPresenter } from './InMemoryPresenter';
+import { CliCommand, InMemoryPresenter, PlainPresenter, setupCliCommandTest } from '..';
 
 test('specifying Config gets completion support', () => {
   const cmd: CliCommand<{ foo: string }, { boo: string }> = {

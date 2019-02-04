@@ -1,8 +1,7 @@
-import { Cli, CliContext } from '../Cli';
-import { CliCommand } from '../CliCommand';
-import { createCliCommand } from '../CliCommand/createCliCommand';
-import { createCommandArgs } from '../CliCommand/createCommandArgs';
-import { PresenterOption } from '../Presenter';
+import { Cli, CliContext } from '../cli';
+import { CliCommand, createCliCommand } from '../cli-command';
+import { createCommandArgs } from '../cli-command/createCommandArgs';
+import { PresenterOption } from '../presenter';
 import { InMemoryPresenter } from './InMemoryPresenter';
 import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
 

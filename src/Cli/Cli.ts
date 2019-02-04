@@ -1,18 +1,15 @@
 import { addAppender, logLevel } from '@unional/logging';
 import { ColorAppender } from 'aurelia-logging-color';
-import { createCliCommand } from '../CliCommand/createCliCommand';
-import { CliCommand, CliCommandInstance } from '../CliCommand';
-import { getCliCommand } from '../CliCommand/getCliCommand';
-import { DisplayLevel } from '../Display';
-import { CliArgs } from '../interfaces';
-import { loadConfig } from '../loadConfig';
+import { RecursivePartial } from 'type-plus';
+import yargs from 'yargs-parser';
+import { CliArgs, parseArgv } from '../argv-parser';
+import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
 import { log } from '../log';
-import { parseArgv } from '../parseArgv';
-import { HelpPresenter, LogPresenter, VersionPresenter } from '../Presenter';
+import { HelpPresenter, LogPresenter, VersionPresenter } from '../presenter';
+import { DisplayLevel } from '../presenter/Display';
 import { buildContext } from './CliContext';
 import { CliContext } from './interfaces';
-import yargs = require('yargs-parser')
-import { RecursivePartial } from 'type-plus';
+import { loadConfig } from './loadConfig';
 
 export interface CliOption<Config = undefined, Context = undefined> {
   name: string

@@ -1,7 +1,5 @@
 import a from 'assertron';
-import { CliContext } from '.';
-import { plainPresenterFactory } from '../plainPresenterFactory';
-import { HelpPresenter, LogPresenter, PresenterOption, VersionPresenter } from '../Presenter';
+import { CliContext, HelpPresenter, LogPresenter, plainPresenterFactory, PresenterOption, VersionPresenter } from '..';
 import { buildContext } from './CliContext';
 
 describe('buildContext()', () => {
@@ -12,7 +10,7 @@ describe('buildContext()', () => {
   })
 
   test('empty object gets default context', () => {
-    const context = buildContext({ })
+    const context = buildContext({})
 
     isDefaultContext(context)
   })

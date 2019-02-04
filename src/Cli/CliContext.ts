@@ -1,6 +1,6 @@
 import { RecursivePartial } from 'type-plus';
 import { unpartialRecursively } from 'unpartial';
-import { plainPresenterFactory } from '../plainPresenterFactory';
+import { plainPresenterFactory } from '../presenter';
 import { CliContext } from './interfaces';
 
 

@@ -1,4 +1,4 @@
-import { PresenterFactory } from '../interfaces';
+import { PresenterFactory } from '../presenter';
 
 export interface CliContext {
   cwd: string

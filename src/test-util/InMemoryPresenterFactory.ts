@@ -1,6 +1,5 @@
-import { InMemoryPresenter } from './InMemoryPresenter'
-import { PresenterFactory } from '../interfaces'
-import { PresenterOption } from '../Presenter';
+import { PresenterFactory, PresenterOption } from '../presenter';
+import { InMemoryPresenter } from './InMemoryPresenter';
 
 export class InMemoryPresenterFactory implements PresenterFactory {
   cliPresenter: InMemoryPresenter | undefined
