@@ -1,8 +1,7 @@
 import inquirer from 'inquirer';
 import padRight from 'pad-right';
 import wordwrap from 'wordwrap';
-import { ConsoleDisplay, Display, DisplayLevel } from './Display';
-import { CommandModel, HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './presenter';
+import { CommandModel, ConsoleDisplay, Display, DisplayLevel, HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './interfaces';
 
 const INDENT = 2
 const RIGHT_PADDING = 2

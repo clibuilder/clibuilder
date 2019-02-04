@@ -1,6 +1,7 @@
-import t from 'assert'
+import t from 'assert';
+import { PlainPresenter } from '.';
+import { InMemoryDisplay } from '../test-util';
 
-import { PlainPresenter, InMemoryDisplay } from '..'
 
 test('should default to print info, warn, error messages', () => {
   const p = new PlainPresenter({ name: 'a' })
