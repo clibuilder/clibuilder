@@ -1,5 +1,5 @@
 import { RecursivePartial } from 'type-plus';
-import { Cli, CliContext } from '../Cli';
+import { Cli, CliContext } from '../basic-cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
