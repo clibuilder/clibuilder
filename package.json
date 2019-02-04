@@ -1,7 +1,7 @@
 {
   "name": "clibuilder",
   "description": "A CLI building library",
-  "version": "0.0.0-development",
+  "version": "0.0.0",
   "homepage": "https://github.com/unional/clibuilder",
   "keywords": [
     "builder",
