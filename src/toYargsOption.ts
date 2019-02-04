@@ -1,4 +1,4 @@
-import { CliCommand } from './CliCommand';
+import { CliCommand } from './CliCommand/CliCommand';
 
 export function toYargsOption(options: CliCommand.Options | undefined) {
   if (!options) {

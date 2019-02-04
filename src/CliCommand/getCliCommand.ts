@@ -1,6 +1,11 @@
-import { CliCommandInstance } from './CliCommand'
+import { CliContext } from '../Cli';
+import { CliCommand, CliCommandInstance } from './CliCommand';
 
-export function getCliCommand<Config, Context>(args: string[], commands: CliCommandInstance<Config, Context>[]): CliCommandInstance<Config, Context> | undefined {
+export function getCliCommand<
+  Config extends Record<string, any> = Record<string, any>,
+  Context extends Record<string, any> = Record<string, any>>(
+    args: string[],
+    commands: CliCommand[]): CliCommandInstance<Config, CliContext & Context> | undefined {
   if (args.length === 0)
     return undefined
   const nameOrAlias = args.shift()!

@@ -1,5 +1,5 @@
 import inquirer = require('inquirer')
-import { CliCommand } from './CliCommand'
+import { CliCommand } from './CliCommand/CliCommand'
 import { DisplayLevel } from './Display'
 
 export interface CommandModel {

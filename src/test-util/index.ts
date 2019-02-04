@@ -1,6 +1,6 @@
 export * from './CompositeDisplay'
 export * from './createCliArgv'
-export * from './createCommandArgs'
+export * from '../CliCommand/createCommandArgs'
 export * from './setup'
 export * from './argCommand'
 export * from './echoCommand'

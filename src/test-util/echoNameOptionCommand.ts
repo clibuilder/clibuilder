@@ -1,4 +1,4 @@
-import { CliCommand } from '../CliCommand'
+import { CliCommand } from '../CliCommand/CliCommand'
 
 export const echoNameOptionCommand = {
   name: 'echoNameOption',

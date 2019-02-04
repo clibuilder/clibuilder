@@ -11,7 +11,7 @@ test('number option', () => {
 test('log option', () => {
   const args = createCommandArgs(numberOptionCommand, ['-a 3'])
   const o = new AssertOrder(1)
-  const cmd = createCliCommand(numberOptionCommand, new InMemoryPresenterFactory(), {})
+  const cmd = createCliCommand(numberOptionCommand, { context: { presenterFactory: new InMemoryPresenterFactory() } })
   cmd.ui.info = msg => {
     o.once(1)
     t.strictEqual(msg, `a: ${args.a}`)

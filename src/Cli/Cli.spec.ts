@@ -1,9 +1,9 @@
 import { getLevel, logLevel } from '@unional/logging';
 import t from 'assert';
 import a, { AssertOrder } from 'assertron';
-import { Cli, CliCommand, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from './index';
-import { log } from './log';
-import { PresenterOption } from './Presenter';
+import { Cli, createCliArgv, echoAllCommand, InMemoryPresenter, PlainPresenter } from '../index';
+import { log } from '../log';
+import { PresenterOption } from '../Presenter';
 import inquirer = require('inquirer');
 
 
@@ -74,26 +74,21 @@ test('run nested command with argument', async () => {
   o.end()
 })
 
-
 test('support extending context', () => {
-  const cli = new Cli<undefined, { custom: boolean }>({
+  const cli = new Cli<never, { custom: boolean }>({
     name: 'cli',
     version: '1.2.1',
     commands: [{
       name: 'cmd',
       run() {
         // `this.custom` does not report type error
-        t.strictEqual(this.custom, true)
+        t.strictEqual(this.context.custom, true)
       }
     }]
   }, { cwd: '', custom: true })
 
   return cli.parse(createCliArgv('cli', 'cmd'))
 })
-
-function createInquirePresenterFactory(answers: inquirer.Answers) {
-  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
-}
 
 test('prompt for input', async () => {
   const o = new AssertOrder(1)
@@ -147,7 +142,7 @@ test('read local json file', async () => {
 
 test(`read local json file in parent directory`, async () => {
   const o = new AssertOrder(1)
-  const cli = new Cli({
+  const cli = new Cli<{ a: number }>({
     name: 'test-cli',
     version: '0.0.1',
     commands: [{
@@ -156,7 +151,7 @@ test(`read local json file in parent directory`, async () => {
         t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
       }
-    } as CliCommand<{ a: number }, {}>]
+    }]
   }, { cwd: 'fixtures/has-config/sub-folder' })
 
   await cli.parse(createCliArgv('test-cli', 'cfg'))
@@ -179,7 +174,7 @@ test('can partially override the presenter factory implementation', async () => 
     },
     {
       presenterFactory: {
-        createCommandPresenter(options) {
+        createCommandPresenter(options: PresenterOption) {
           o.once(1)
           return new PlainPresenter(options)
         }
@@ -188,7 +183,6 @@ test('can partially override the presenter factory implementation', async () => 
   await cli.parse(createCliArgv('test-cli', 'cmd'))
   o.end()
 })
-
 
 test('custom command level ui', async () => {
   const o = new AssertOrder(1)
@@ -228,3 +222,7 @@ test('--debug-cli not pass to command', async () => {
 
   a.satisfies(actual, ['a'])
 })
+
+function createInquirePresenterFactory(answers: inquirer.Answers) {
+  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
+}

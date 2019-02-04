@@ -1,4 +1,4 @@
-import { CliCommand } from './CliCommand'
+import { CliCommand } from './CliCommand/CliCommand'
 import { PresenterOption, LogPresenter, HelpPresenter, VersionPresenter, Inquirer } from './Presenter'
 
 export interface Parsable {

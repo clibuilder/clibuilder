@@ -1,5 +1,5 @@
-import { CliCommandInstance } from '../CliCommand'
-import { Cli } from '../Cli'
+import { CliCommandInstance } from '../CliCommand/CliCommand'
+import { Cli } from '../Cli/Cli'
 
 import { InMemoryDisplay } from './InMemoryDisplay'
 

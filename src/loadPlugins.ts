@@ -3,7 +3,7 @@ import findup from 'find-up'
 
 import { findByKeyword } from 'find-installed-packages'
 
-import { CliCommand } from './CliCommand'
+import { CliCommand } from './CliCommand/CliCommand'
 import { log } from './log';
 
 export interface Registrar {

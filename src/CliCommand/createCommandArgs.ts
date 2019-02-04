@@ -1,7 +1,7 @@
 // @ts-ignore noUnusedLocal
 import minimist = require('minimist')
-import { parseArgv } from '../parseArgv'
-import { Parsable } from '../interfaces'
+import { Parsable } from '../interfaces';
+import { parseArgv } from '../parseArgv';
 
 export function createCommandArgs(parsable: Parsable, argv: string[] = []) {
   argv.unshift(parsable.name)

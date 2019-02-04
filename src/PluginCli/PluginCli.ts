@@ -1,28 +1,29 @@
-import { Cli, CliContext } from './Cli'
-import { CliCommand } from './CliCommand'
-import { loadPlugins } from './loadPlugins'
+import { RecursivePartial } from 'type-plus';
+import { Cli, CliContext } from '../Cli';
+import { CliCommand } from '../CliCommand';
+import { loadPlugins } from '../loadPlugins';
 
-export interface PluginCliOption {
+export interface PluginCliOption<Config> {
   name: string
   version: string
-  commands?: CliCommand[]
+  commands?: CliCommand<Config, any>[]
   keyword?: string
 }
 
 export interface PluginCliContext extends CliContext {
 }
 
-export class PluginCli<Context extends { [i: string]: any } = {}> extends Cli {
+export class PluginCli<
+  Config extends Record<string, any> = any,
+  Context extends Record<string, any> = CliContext> extends Cli<Config, Context> {
   protected loadingPlugins: Promise<void>
   public keyword: string
-  constructor(options: PluginCliOption, context: Partial<PluginCliContext> & Context = {} as any) {
+  constructor(options: PluginCliOption<Config>, context?: RecursivePartial<PluginCliContext & Context>) {
     let { name, version, commands = [], keyword = `${options.name}-plugin` } = options
-
-    // istanbul ignore next
-    const cwd = context.cwd || process.cwd()
 
     super({ name, version, commands }, context)
 
+    const cwd = this.context.cwd
     this.keyword = keyword
     this.loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
       commands.forEach(command => this.addCliCommand(command))

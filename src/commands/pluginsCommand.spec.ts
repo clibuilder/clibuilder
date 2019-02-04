@@ -27,7 +27,9 @@ describe('list', () => {
 
   test('one plugin', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
-    const cli = new PluginCli({ name: 'clibuilder', version: '1.0.0', commands: [pluginsCommand] }, { cwd: 'fixtures/one-plugin', presenterFactory })
+    const cli = new PluginCli(
+      { name: 'clibuilder', version: '1.0.0', commands: [pluginsCommand] },
+      { cwd: 'fixtures/one-plugin', presenterFactory })
     const ui = cli.commands[0].commands![0].ui = new InMemoryPresenter({ name: 'clibuilder' })
 
     await cli.parse(createCliArgv('clibuilder', 'plugins', 'list'))

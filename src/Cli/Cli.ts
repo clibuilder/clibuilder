@@ -1,26 +1,23 @@
 import { addAppender, logLevel } from '@unional/logging';
 import { ColorAppender } from 'aurelia-logging-color';
-import { CliCommand, CliCommandInstance } from './CliCommand';
-import { createCliCommand } from './createCliCommand';
-import { DisplayLevel } from './Display';
-import { getCliCommand } from './getCliCommand';
-import { CliArgs, PresenterFactory } from './interfaces';
-import { loadConfig } from './loadConfig';
-import { log } from './log';
-import { parseArgv } from './parseArgv';
-import { plainPresenterFactory } from './plainPresenterFactory';
-import { HelpPresenter, LogPresenter, VersionPresenter } from './Presenter';
+import { createCliCommand } from '../CliCommand/createCliCommand';
+import { CliCommand, CliCommandInstance } from '../CliCommand';
+import { getCliCommand } from '../CliCommand/getCliCommand';
+import { DisplayLevel } from '../Display';
+import { CliArgs } from '../interfaces';
+import { loadConfig } from '../loadConfig';
+import { log } from '../log';
+import { parseArgv } from '../parseArgv';
+import { HelpPresenter, LogPresenter, VersionPresenter } from '../Presenter';
+import { buildContext } from './CliContext';
+import { CliContext } from './interfaces';
 import yargs = require('yargs-parser')
+import { RecursivePartial } from 'type-plus';
 
-export interface CliOption<Config, Context> {
+export interface CliOption<Config = undefined, Context = undefined> {
   name: string
   version: string
   commands: CliCommand<Config, Context>[]
-}
-
-export interface CliContext {
-  cwd: string
-  presenterFactory: Partial<PresenterFactory>
 }
 
 const args = yargs(process.argv)
@@ -30,18 +27,14 @@ if (args['debug-cli']) {
   log.level = logLevel.debug
 }
 
-function overridePresenterFactory(context: Partial<CliContext> & Record<string, any>): PresenterFactory {
-
-  const presenterFactory = context.presenterFactory || plainPresenterFactory
-
-  presenterFactory.createCliPresenter = presenterFactory.createCliPresenter || plainPresenterFactory.createCliPresenter
-  presenterFactory.createCommandPresenter = presenterFactory.createCommandPresenter || plainPresenterFactory.createCommandPresenter
-  delete context.presenterFactory
-  return presenterFactory as any
-}
-
-export class Cli<Config extends Record<string, any> | undefined = undefined, Context extends Record<string, any> = {}> {
-  // cwd: string
+/**
+ * Create a new Cli.
+ * @type Config is the shape of the config inside the `<cli-name>.json` file.
+ * @type Context is
+ */
+export class Cli<
+  Config extends Record<string, any> = any,
+  Context extends Record<string, any> = CliContext> {
   options = {
     boolean: {
       'help': {
@@ -64,26 +57,24 @@ export class Cli<Config extends Record<string, any> | undefined = undefined, Con
       }
     }
   }
-  commands: CliCommandInstance<any, Context>[] = []
+  commands: CliCommandInstance<Config, Context>[] = []
   name: string
   version: string
+  config: Config
+  context: Context & CliContext
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  private presenterFactory: PresenterFactory
-  private context: Partial<CliContext> & Context
-  constructor(option: CliOption<Config, Context>, context: Partial<CliContext> & Context = {} as any) {
+  constructor(option: CliOption<Config, Context>, context?: RecursivePartial<CliContext & Context>) {
     this.name = option.name
     this.version = option.version
 
-    const cwd = context.cwd = context.cwd || process.cwd()
-    log.debug('cwd', context.cwd)
-    context.config = loadConfig(`${this.name}.json`, { cwd })
-    log.debug('Loaded config', context.config)
+    this.context = buildContext(context)
+    const cwd = this.context.cwd
+    log.debug('cwd', cwd)
 
-    this.presenterFactory = overridePresenterFactory(context)
+    this.config = loadConfig(`${this.name}.json`, { cwd })
+    log.debug('Loaded config', this.config)
 
-    context['parent'] = this
-    this.context = context
-    this.ui = this.presenterFactory.createCliPresenter({ name: this.name })
+    this.ui = this.context.presenterFactory.createCliPresenter({ name: this.name })
     option.commands.forEach(command => {
       this.addCliCommand(command)
     })
@@ -94,8 +85,8 @@ export class Cli<Config extends Record<string, any> | undefined = undefined, Con
     return this.process(args, rawArgv.slice(1))
   }
 
-  protected addCliCommand(command: CliCommand<any, Context>) {
-    this.commands.push(createCliCommand(command, this.presenterFactory, this.context))
+  protected addCliCommand(command: CliCommand<Config, Context>) {
+    this.commands.push(createCliCommand(command, this))
   }
 
   private process(args: CliArgs, rawArgv: string[]) {

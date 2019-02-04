@@ -3,7 +3,7 @@ import yargs from 'yargs-parser'
 
 import { Parsable, CliArgsWithoutDefaults, CliArgs } from './interfaces'
 import { toYargsOption } from './toYargsOption'
-import { CliCommand } from './CliCommand';
+import { CliCommand } from './CliCommand/CliCommand';
 
 export class NotNumberOption extends Error {
   // istanbul ignore next
@@ -141,7 +141,7 @@ function validateArguments(command: Parsable, args: CliArgsWithoutDefaults) {
   }
 }
 
-function validateOptions(command: CliCommand, args: CliArgsWithoutDefaults) {
+function validateOptions(command: Parsable, args: CliArgsWithoutDefaults) {
   let map: any = {}
 
   if (command.options) {

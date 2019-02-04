@@ -1,4 +1,4 @@
-import { Cli } from '../Cli'
+import { Cli } from '../Cli/Cli'
 
 import { CompositeDisplay } from './CompositeDisplay'
 import { InMemoryDisplay } from './InMemoryDisplay'

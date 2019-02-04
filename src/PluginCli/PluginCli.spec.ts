@@ -1,6 +1,6 @@
 import t from 'assert'
 
-import { PluginCli, InMemoryPresenterFactory, createCliArgv } from './index'
+import { PluginCli, InMemoryPresenterFactory, createCliArgv } from '../index'
 
 class TestPluginCli extends PluginCli {
   ready = this.loadingPlugins

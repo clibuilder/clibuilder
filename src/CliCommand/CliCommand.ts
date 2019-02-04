@@ -1,6 +1,7 @@
-import { CliArgs } from './interfaces'
-import { LogPresenter, HelpPresenter, Inquirer } from './Presenter'
-import { Cli } from './Cli';
+import { CliContext } from '../Cli';
+import { Cli } from '../Cli/Cli';
+import { CliArgs } from '../interfaces';
+import { HelpPresenter, Inquirer, LogPresenter } from '../Presenter';
 
 export namespace CliCommand {
   export interface Argument {
@@ -74,19 +75,28 @@ export namespace CliCommand {
   }
 }
 
-export type CliCommandInstance<Config, Context> = CliCommand.Shared & Context & {
-  cwd: string
-  commands?: CliCommandInstance<any, any>[]
+export type CliCommandInstance<Config, Context> = CliCommand.Shared & {
+  commands?: CliCommandInstance<Config, Context>[]
   config: Config
+  context: Context
   parent: CliCommandInstance<Config, Context> | Cli<Config, Context>
   ui: LogPresenter & HelpPresenter & Inquirer
-  run(this: CliCommandInstance<Config, Context>, args: CliArgs, argv: string[]): void | Promise<any>
+  run(args: CliArgs, argv: string[]): void | Promise<any>
 }
 
-export interface CliCommand<
-  Config extends Record<string, any> | undefined = undefined,
+export type CliCommand<
+  Config extends Record<string, any> = Record<string, any>,
   Context extends Record<string, any> = Record<string, any>
-  > extends CliCommand.Shared {
-  commands?: CliCommand[],
-  run?: (this: CliCommandInstance<Config, Context> & Context, args: CliArgs, argv: string[]) => void | Promise<any>
-}
+  > = CliCommand.Shared & {
+    commands?: CliCommand<Config>[],
+    run(this: CliCommandInstance<Config, Context & Pick<CliContext, 'cwd'>>, args: CliArgs, argv: string[]): void | Promise<any>
+  } | CliCommand.Shared & {
+    commands: CliCommand<Config>[]
+  }
+
+// export interface CliCommand<
+//   Config extends Record<string, any> | undefined = undefined,
+//   Context extends CliContext = CliContext
+//   > extends CliCommand.Shared {
+//   run?: (this: CliCommandInstance<Config, Context>, args: CliArgs, argv: string[]) => void | Promise<any>
+// }
