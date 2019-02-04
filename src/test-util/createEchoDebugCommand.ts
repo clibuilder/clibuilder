@@ -1,4 +1,4 @@
-import { CliCommand } from '../CliCommand'
+import { CliCommand } from '../cli-command'
 
 export function createEchoDebugCommand(): CliCommand {
   return {
