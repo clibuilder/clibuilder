@@ -2,7 +2,6 @@ import t from 'assert';
 import { PlainPresenter } from '.';
 import { InMemoryDisplay } from '../test-util';
 
-
 test('should default to print info, warn, error messages', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
