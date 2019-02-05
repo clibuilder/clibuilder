@@ -33,11 +33,9 @@
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json",
-    "release": "npm run clean && npm run build && standard-version",
     "test": "jest",
     "verify": "npm run lint && npm run build && npm run dependency-check && jest --coverage",
     "verify:ci": "npm run lint && npm run build && npm run dependency-check && jest --runInBand --coverage",
-    "version": "echo please use npm run release",
     "watch": "jest --watch"
   },
   "dependencies": {
@@ -64,7 +62,6 @@
     "@types/yargs-parser": "^11.0.2",
     "@unional/devpkg-node": "^1.2.3",
     "assertron": "^6.1.0",
-    "clibuilder-plugin-dummy": "^1.0.1",
-    "standard-version": "^4.4.0"
+    "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
