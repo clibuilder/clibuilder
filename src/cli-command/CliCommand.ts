@@ -76,7 +76,11 @@ export namespace CliCommand {
 
 export type CliCommandInstance<Config, Context> = CliCommand.Shared & {
   commands?: CliCommandInstance<Config, Context>[]
-  config: Config
+  /**
+   * Config object from <cli-name>.json.
+   * Can be undefined if there is no config file available.
+   */
+  config: Config | undefined
   context: Context
   parent: CliCommandInstance<Config, Context> | Cli<Config, Context>
   ui: LogPresenter & HelpPresenter & Inquirer
