@@ -3,7 +3,7 @@ import { searchByKeywords } from 'search-packages';
 import { unpartial } from 'unpartial';
 
 
-export const searchPackageCommand: CliCommand<never, { _dep: { npmSearch: typeof searchByKeywords } }> = {
+export const searchPackageCommand: CliCommand<never, { _dep: { searchByKeywords: typeof searchByKeywords } }> = {
   name: 'search',
   description: 'search for npm packages by keywords',
   arguments: [{
@@ -13,8 +13,9 @@ export const searchPackageCommand: CliCommand<never, { _dep: { npmSearch: typeof
   }],
   async run(args) {
     const { keywords } = args
-    const dep = unpartial({ npmSearch: searchByKeywords }, this.context._dep)
-    const packages = await dep.npmSearch(keywords)
+    const dep = unpartial({ searchByKeywords }, this.context._dep)
+
+    const packages = await dep.searchByKeywords(keywords)
     if (packages.length === 0) {
       this.ui.info(`no packages with keywords: ${keywords.join()}`)
     }
