@@ -29,7 +29,7 @@ test('this in run can access config', async () => {
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     run() {
-      return Promise.resolve(this.config!.a + this.context.b)
+      return Promise.resolve(this.config.a + this.context.b)
     }
   }, [], { a: 'a' }, { b: 'b' })
 
@@ -188,7 +188,7 @@ test('config and context type is available within the run() context', async () =
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     alias: ['c'],
-    run() { return Promise.resolve(`${this.config!.a}.${this.context.b}`) }
+    run() { return Promise.resolve(`${this.config.a}.${this.context.b}`) }
   }, [], { a: 'a' }, { b: 'b' })
   const actual = await cmd.run(args, argv)
   t.strictEqual(actual, 'a.b')
