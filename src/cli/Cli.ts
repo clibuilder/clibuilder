@@ -10,7 +10,7 @@ import { buildContext } from './CliContext';
 import { CliContext } from './interfaces';
 import { loadConfig } from './loadConfig';
 
-export interface CliOption<Config = undefined, Context = undefined> {
+export type CliOption<Config, Context> = {
   name: string
   version: string
   commands: CliCommand<Config, Context>[]
@@ -26,11 +26,13 @@ if (args['debug-cli']) {
 /**
  * Create a new Cli.
  * @type Config is the shape of the config inside the `<cli-name>.json` file.
- * @type Context is
+ * If you don't have config and need to specify the generics, you can set it to `any`.
+ * @type Context is additional context to be added to the cli.
  */
 export class Cli<
-  Config extends Record<string, any> = any,
-  Context extends Record<string, any> = CliContext> {
+  Config extends Record<string, any> = Record<string, any>,
+  Context extends Record<string, any> = Record<string, any>
+  > {
   options = {
     boolean: {
       'help': {
@@ -57,9 +59,17 @@ export class Cli<
   name: string
   version: string
   config: Config
-  context: Context & CliContext
+  context: CliContext & Context
   private ui: LogPresenter & HelpPresenter & VersionPresenter
-  constructor(option: CliOption<Config, Context>, context?: RecursivePartial<CliContext & Context>) {
+
+  /**
+   * Create a new Cli instance.
+   * @param context additional context available to the cli and its commands.
+   */
+  constructor(
+    option: CliOption<Config, Pick<CliContext, 'cwd'> & Context>,
+    context?: RecursivePartial<CliContext> & Context
+  ) {
     this.name = option.name
     this.version = option.version
 
