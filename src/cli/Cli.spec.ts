@@ -6,12 +6,21 @@ import { log } from '../log';
 import { PlainPresenter, PresenterOption } from '../presenter';
 import { createCliArgv, echoAllCommand, InMemoryPresenter } from '../test-util';
 import inquirer = require('inquirer');
+import { CliCommand } from '../cli-command';
+import { typeAssert } from 'type-plus';
 
 test('Cli context shape should follow input literal', () => {
   const cli = new Cli({
     name: '',
     version: '',
-    commands: []
+    commands: [{
+      name: 'cmd',
+      run() {
+        return Promise.resolve(
+          this.context.abc === this.context.cwd
+        )
+      }
+    }]
   }, { cwd: '', abc: '123' })
   t(cli)
 
@@ -226,3 +235,27 @@ test('--debug-cli not pass to command', async () => {
 function createInquirePresenterFactory(answers: inquirer.Answers) {
   return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
 }
+
+test('Can use commands with additional context (for dependency injection)', () => {
+  const cmd1: CliCommand<any, { a: string, b: string }> = {
+    name: 'cmd1',
+    run() {
+      typeAssert.noUndefined(this.context.a)
+      typeAssert.noUndefined(this.context.b)
+      return
+    }
+  }
+
+  t(new Cli<any, { b: string }>({
+    name: 'cli',
+    version: '1.0',
+    commands: [cmd1, {
+      name: 'cmd2',
+      run() {
+        // inline command still get completion on `this.context`
+        typeAssert.noUndefined(this.context.b)
+        return Promise.resolve(this.context.b === this.context.cwd)
+      }
+    }]
+  }))
+})

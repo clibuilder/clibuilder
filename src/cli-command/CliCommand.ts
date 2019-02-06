@@ -92,7 +92,7 @@ export type CliCommand<
   Context extends Record<string, any> = Record<string, any>
   > = CliCommand.Shared & {
     commands?: CliCommand<Config>[],
-    run(this: CliCommandInstance<Config, Context & Pick<CliContext, 'cwd'>>, args: CliArgs, argv: string[]): void | Promise<any>
+    run(this: CliCommandInstance<Config, Pick<CliContext, 'cwd'> & Context>, args: CliArgs, argv: string[]): void | Promise<any>
   } | CliCommand.Shared & {
     commands: CliCommand<Config>[]
   }

@@ -1,24 +1,23 @@
-import { RecursivePartial } from 'type-plus';
-import { Cli, CliContext } from '../cli';
+import { Except, RecursivePartial } from 'type-plus';
+import { Cli, CliContext, CliOption } from '../cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
-export interface PluginCliOption<Config> {
-  name: string
-  version: string
+export type PluginCliOption<Config, Context> = Except<CliOption<Config, Context>, 'commands'> & {
   commands?: CliCommand<Config, any>[]
   keyword?: string
 }
 
-export interface PluginCliContext extends CliContext {
-}
-
 export class PluginCli<
-  Config extends Record<string, any> = any,
-  Context extends Record<string, any> = CliContext> extends Cli<Config, Context> {
+  Config extends Record<string, any> = Record<string, any>,
+  Context extends Record<string, any> = Record<string, any>
+  > extends Cli<Config, Context> {
   protected loadingPlugins: Promise<void>
   public keyword: string
-  constructor(options: PluginCliOption<Config>, context?: RecursivePartial<PluginCliContext & Context>) {
+  constructor(
+    options: PluginCliOption<Config, Pick<CliContext, 'cwd'> & Context>,
+    context?: RecursivePartial<CliContext> & Context
+  ) {
     let { name, version, commands = [], keyword = `${options.name}-plugin` } = options
 
     super({ name, version, commands }, context)
