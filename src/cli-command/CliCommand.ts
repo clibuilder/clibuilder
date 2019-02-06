@@ -1,3 +1,4 @@
+import { Except } from 'type-plus';
 import { CliArgs } from '../argv-parser';
 import { Cli, CliContext } from '../cli';
 import { HelpPresenter, Inquirer, LogPresenter } from '../presenter';
@@ -92,14 +93,7 @@ export type CliCommand<
   Context extends Record<string, any> = Record<string, any>
   > = CliCommand.Shared & {
     commands?: CliCommand<Config>[],
-    run(this: CliCommandInstance<Config, Pick<CliContext, 'cwd'> & Context>, args: CliArgs, argv: string[]): void | Promise<any>
+    run(this: CliCommandInstance<Config, Except<CliContext, 'presenterFactory'> & Context>, args: CliArgs, argv: string[]): void | Promise<any>
   } | CliCommand.Shared & {
     commands: CliCommand<Config>[]
   }
-
-// export interface CliCommand<
-//   Config extends Record<string, any> | undefined = undefined,
-//   Context extends CliContext = CliContext
-//   > extends CliCommand.Shared {
-//   run?: (this: CliCommandInstance<Config, Context>, args: CliArgs, argv: string[]) => void | Promise<any>
-// }

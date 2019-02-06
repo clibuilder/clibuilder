@@ -14,7 +14,8 @@ export function createInMemoryCli(name: string, ...commands: CliCommand[]) {
         createCliPresenter(options: PresenterOption) { return new InMemoryPresenter(options) },
         createCommandPresenter(options: PresenterOption) { return new InMemoryPresenter(options) }
       }
-    })
+    }
+  )
 }
 
 export function setupCliCommandTest<

@@ -4,36 +4,34 @@ import a, { AssertOrder } from 'assertron';
 import { Cli } from '.';
 import { log } from '../log';
 import { PlainPresenter, PresenterOption } from '../presenter';
-import { createCliArgv, echoAllCommand, InMemoryPresenter } from '../test-util';
+import { createCliArgv, echoAllCommand, InMemoryPresenter, echoCommand } from '../test-util';
 import inquirer = require('inquirer');
 import { CliCommand } from '../cli-command';
 import { typeAssert } from 'type-plus';
 
-test('Cli context shape should follow input literal', () => {
+test('create cli needs to specify at least: name, version, and commands', async () => {
   const cli = new Cli({
-    name: '',
-    version: '',
-    commands: [{
-      name: 'cmd',
-      run() {
-        return Promise.resolve(
-          this.context.abc === this.context.cwd
-        )
-      }
-    }]
-  }, { cwd: '', abc: '123' })
-  t(cli)
+    name: 'cli',
+    version: '1.0.0',
+    commands: [echoCommand]
+  })
 
-  const cli2 = new Cli({
-    name: '',
-    version: '',
-    commands: []
-  }, { abc: '123' })
-  t(cli2)
+  t(cli)
 })
 
-test('run nested command', async () => {
-  const o = new AssertOrder(1)
+test('arguments are passed to the command', async () => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [echoCommand]
+  })
+
+  const actual = await cli.parse(createCliArgv('cli', 'echo', 'xyz'))
+
+  expect(actual).toEqual(['echo', 'xyz'])
+})
+
+test('cli commands can be nested', async () => {
   const cli = new Cli({
     name: 'clibuilder',
     version: '1.1.11',
@@ -44,17 +42,20 @@ test('run nested command', async () => {
       },
       commands: [{
         name: 'nested-cmd',
-        run() {
-          o.once(1)
+        async run() {
+          return 'nested'
         }
       }]
     }]
-  }, { cwd: '', abc: '123' })
-  await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
-  o.end()
+  })
+
+  const actual = await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
+
+  t(actual, 'nested')
 })
 
-test('run nested command with argument', async () => {
+
+test('run nested command with arguments', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli({
     name: 'clibuilder',
@@ -71,32 +72,18 @@ test('run nested command with argument', async () => {
           description: 'arg1 argument'
         }],
         run(args) {
+          // arg1 is parsed out of the argument list
           t.deepStrictEqual(args._, [])
+
           t.strictEqual(args.arg1, 'abc')
           o.once(1)
         }
       }]
     }]
-  }, { cwd: '', abc: '123' })
+  })
 
   await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd', 'abc'))
   o.end()
-})
-
-test('support extending context', () => {
-  const cli = new Cli<never, { custom: boolean }>({
-    name: 'cli',
-    version: '1.2.1',
-    commands: [{
-      name: 'cmd',
-      run() {
-        // `this.custom` does not report type error
-        t.strictEqual(this.context.custom, true)
-      }
-    }]
-  }, { cwd: '', custom: true })
-
-  return cli.parse(createCliArgv('cli', 'cmd'))
 })
 
 test('prompt for input', async () => {
@@ -119,7 +106,53 @@ test('prompt for input', async () => {
   o.end()
 })
 
-// This is not testable because the flag has to be check and turn on logging before `Cli` is created. i.e. has to do it in initialization time.
+test('cli context passes down to command', async () => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '',
+    commands: [{
+      name: 'cmd',
+      async run() {
+        typeAssert.isString(this.context.abc)
+        return this.context.abc
+      }
+    }]
+  }, { abc: '123' })
+  t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), '123')
+})
+
+test('context in command always contain `cwd`', async () => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '',
+    commands: [{
+      name: 'cmd',
+      async run() {
+        // cwd is available even not specified
+        typeAssert.isString(this.context.cwd)
+        return this.context.cwd
+      }
+    }]
+  })
+  t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), process.cwd())
+})
+
+test('context in command does not have presenterFactory', async () => {
+  t(new Cli({
+    name: 'cli',
+    version: '',
+    commands: [{
+      name: 'cmd',
+      async run() {
+        const context = this.context
+        let y: Extract<typeof context, { presenterFactory: any }> = context as never
+        typeAssert.isNever(y)
+      }
+    }]
+  }))
+})
+
+// This is not testable because the flag has to be check and turn on logging before `Cli` is created. i.e. has to do it in initialization phase.
 test.skip('turn on debug-cli sets the log level to debug locally', async () => {
   const cli = new Cli({
     name: 'cli',
@@ -132,7 +165,7 @@ test.skip('turn on debug-cli sets the log level to debug locally', async () => {
   t.strictEqual(getLevel(), logLevel.none)
 })
 
-test('read local json file', async () => {
+test('read config file', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli<{ a: number }>({
     name: 'test-cli',
@@ -149,7 +182,7 @@ test('read local json file', async () => {
   o.end()
 })
 
-test(`read local json file in parent directory`, async () => {
+test(`read config file in parent directory`, async () => {
   const o = new AssertOrder(1)
   const cli = new Cli<{ a: number }>({
     name: 'test-cli',
@@ -168,6 +201,27 @@ test(`read local json file in parent directory`, async () => {
   o.end()
 })
 
+
+test(`default config is overriden by value in config file`, async () => {
+  const o = new AssertOrder(1)
+  const cli = new Cli({
+    name: 'test-cli',
+    version: '0.0.1',
+    defaultConfig: { a: 2, b: 3 },
+    commands: [{
+      name: 'cfg',
+      run() {
+        t.deepStrictEqual(this.config, { a: 1, b: 3 })
+        o.once(1)
+      }
+    }]
+  }, { cwd: 'fixtures/has-config' })
+
+  await cli.parse(createCliArgv('test-cli', 'cfg'))
+
+  o.end()
+})
+
 test('can partially override the presenter factory implementation', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli(
@@ -180,8 +234,7 @@ test('can partially override the presenter factory implementation', async () => 
           return
         }
       }]
-    },
-    {
+    }, {
       presenterFactory: {
         createCommandPresenter(options: PresenterOption) {
           o.once(1)
@@ -193,7 +246,7 @@ test('can partially override the presenter factory implementation', async () => 
   o.end()
 })
 
-test('custom command level ui', async () => {
+test('command can specify its own ui', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli(
     {
@@ -232,10 +285,6 @@ test('--debug-cli not pass to command', async () => {
   a.satisfies(actual, ['a'])
 })
 
-function createInquirePresenterFactory(answers: inquirer.Answers) {
-  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
-}
-
 test('Can use commands with additional context (for dependency injection)', () => {
   const cmd1: CliCommand<any, { a: string, b: string }> = {
     name: 'cmd1',
@@ -259,3 +308,7 @@ test('Can use commands with additional context (for dependency injection)', () =
     }]
   }))
 })
+
+function createInquirePresenterFactory(answers: inquirer.Answers) {
+  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
+}

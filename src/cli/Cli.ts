@@ -1,6 +1,6 @@
 import { addAppender, logLevel } from '@unional/logging';
 import { ColorAppender } from 'aurelia-logging-color';
-import { RecursivePartial } from 'type-plus';
+import { RecursivePartial, Except } from 'type-plus';
 import yargs from 'yargs-parser';
 import { CliArgs, parseArgv } from '../argv-parser';
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
@@ -9,11 +9,21 @@ import { DisplayLevel, HelpPresenter, LogPresenter, VersionPresenter } from '../
 import { buildContext } from './CliContext';
 import { CliContext } from './interfaces';
 import { loadConfig } from './loadConfig';
+import { unpartial } from 'unpartial';
 
 export type CliOption<Config, Context> = {
   name: string
   version: string
-  commands: CliCommand<Config, Context>[]
+  commands: CliCommand<Config, Except<CliContext & Context, 'presenterFactory'>>[]
+  /**
+   * Specify the cli's default config.
+   * This will be merged with the values in config file.
+   */
+  defaultConfig?: Config
+  /**
+   * Context that will pass down to the commands,
+   *
+   */
 }
 
 const args = yargs(process.argv)
@@ -30,7 +40,7 @@ if (args['debug-cli']) {
  * @type Context is additional context to be added to the cli.
  */
 export class Cli<
-  Config extends Record<string, any> = Record<string, any>,
+  Config extends Record<string, any> = never,
   Context extends Record<string, any> = Record<string, any>
   > {
   options = {
@@ -67,7 +77,7 @@ export class Cli<
    * @param context additional context available to the cli and its commands.
    */
   constructor(
-    option: CliOption<Config, Pick<CliContext, 'cwd'> & Context>,
+    option: CliOption<Config, Context>,
     context?: RecursivePartial<CliContext> & Context
   ) {
     this.name = option.name
@@ -77,7 +87,7 @@ export class Cli<
     const cwd = this.context.cwd
     log.debug('cwd', cwd)
 
-    this.config = loadConfig(`${this.name}.json`, { cwd })
+    this.config = unpartial({}, option.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
     log.debug('Loaded config', this.config)
 
     this.ui = this.context.presenterFactory.createCliPresenter({ name: this.name })
