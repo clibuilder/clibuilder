@@ -14,9 +14,12 @@ describe('list', () => {
 
   test('no plugin', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
-    const cli = new PluginCli(
-      { name: 'no-plugin', version: '1.0.0', commands: [pluginsCommand] },
-      { cwd: 'fixtures/no-plugin', presenterFactory })
+    const cli = new PluginCli({
+      name: 'no-plugin',
+      version: '1.0.0',
+      commands: [pluginsCommand]
+    }, { cwd: 'fixtures/no-plugin', presenterFactory })
+
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
 
@@ -28,9 +31,11 @@ describe('list', () => {
 
   test('one plugin', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
-    const cli = new PluginCli(
-      { name: 'clibuilder', version: '1.0.0', commands: [pluginsCommand] },
-      { cwd: 'fixtures/one-plugin', presenterFactory })
+    const cli = new PluginCli({
+      name: 'clibuilder',
+      version: '1.0.0',
+      commands: [pluginsCommand]
+    }, { cwd: 'fixtures/one-plugin', presenterFactory })
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
 
@@ -41,9 +46,11 @@ describe('list', () => {
 
   test('two plugins', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
-    const cli = new PluginCli(
-      { name: 'clibuilder', version: '1.0.0', commands: [pluginsCommand] },
-      { cwd: 'fixtures/two-plugins', presenterFactory })
+    const cli = new PluginCli({
+      name: 'clibuilder',
+      version: '1.0.0',
+      commands: [pluginsCommand]
+    }, { cwd: 'fixtures/two-plugins', presenterFactory })
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
 

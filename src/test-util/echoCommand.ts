@@ -8,7 +8,8 @@ export const echoCommand: CliCommand = {
     multiple: true
   }],
   description: 'Echoing input arguments',
-  run(_args, argv) {
+  async run(_args, argv) {
     this.ui.info(...argv)
+    return argv
   }
 }

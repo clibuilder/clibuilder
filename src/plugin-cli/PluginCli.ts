@@ -15,16 +15,14 @@ export class PluginCli<
   protected loadingPlugins: Promise<void>
   public keyword: string
   constructor(
-    options: PluginCliOption<Config, Pick<CliContext, 'cwd'> & Context>,
+    options: PluginCliOption<Config, Context>,
     context?: RecursivePartial<CliContext> & Context
   ) {
-    let { name, version, commands = [], keyword = `${options.name}-plugin` } = options
-
-    super({ name, version, commands }, context)
+    super({ commands: [], ...options }, context)
 
     const cwd = this.context.cwd
-    this.keyword = keyword
-    this.loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
+    this.keyword = options.keyword || `${options.name}-plugin`
+    this.loadingPlugins = loadPlugins(this.keyword, { cwd }).then(commands => {
       commands.forEach(command => this.addCliCommand(command))
     })
   }
