@@ -1,5 +1,3 @@
-// import t from 'assert'
-
 import t from 'assert';
 import a from 'assertron';
 import { CliCommand, createCliCommand, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '.';
@@ -29,11 +27,21 @@ test('this in run can access config', async () => {
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     run() {
-      return Promise.resolve(this.config.a + this.context.b)
+      return Promise.resolve(this.config!.a + this.context.b)
     }
   }, [], { a: 'a' }, { b: 'b' })
 
   t.strictEqual(await cmd.run(args, argv), 'ab')
+})
+
+test('config can be undefined', async () => {
+  setupCliCommandTest({
+    name: 'cmd',
+    run() {
+      // can assign undefined mean it has undefined type
+      this.config = undefined
+    }
+  }, [], undefined)
 })
 
 test('can define arguments', () => {
@@ -188,7 +196,7 @@ test('config and context type is available within the run() context', async () =
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     alias: ['c'],
-    run() { return Promise.resolve(`${this.config.a}.${this.context.b}`) }
+    run() { return Promise.resolve(`${this.config!.a}.${this.context.b}`) }
   }, [], { a: 'a' }, { b: 'b' })
   const actual = await cmd.run(args, argv)
   t.strictEqual(actual, 'a.b')
@@ -201,25 +209,3 @@ const dummyParent = {
 }
 
 function isCliCommand<Config, Context>(cmd: CliCommand<Config, Context>) { return cmd }
-
-// // todo: custom context test is not complete
-// test('using custom context', () => {
-//   const spec = {
-//     name: 'a',
-//     run() {
-//       t.strictEqual(this.x, undefined)
-//     }
-//   } as CliCommand<undefined, { x: string }>
-
-//   t(spec)
-
-//   const spec2 = {
-//     name: 'b',
-//     run() {
-//       // `this` should be `Command` by default. Need visual inspection
-//       t(this.ui)
-//     }
-//   } as CliCommand
-
-//   t(spec2)
-// })
