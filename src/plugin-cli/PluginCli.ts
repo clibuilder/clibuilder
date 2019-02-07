@@ -1,9 +1,9 @@
 import { Except, RecursivePartial } from 'type-plus';
-import { Cli, CliContext, CliOption } from '../cli';
+import { Cli, CliContext, CliOption, CliOptionWithConfig } from '../cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
-export type PluginCliOption<Config, Context> = Except<CliOption<Config, Context>, 'commands'> & {
+export type PluginCliOption<Config, Context> = Except<CliOption<Context> | CliOptionWithConfig<Config, Context>, 'commands'> & {
   commands?: CliCommand<Config, any>[]
   keyword?: string
 }
