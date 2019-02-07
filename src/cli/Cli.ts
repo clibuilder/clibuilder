@@ -7,11 +7,18 @@ import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from 
 import { log } from '../log';
 import { DisplayLevel, HelpPresenter, LogPresenter, VersionPresenter } from '../presenter';
 import { buildContext } from './CliContext';
-import { CliContext } from './interfaces';
+import { CliContext, NoConfig } from './interfaces';
 import { loadConfig } from './loadConfig';
 import { unpartial } from 'unpartial';
 
-export type CliOption<Config, Context> = {
+export type CliOption<Context> = {
+  name: string
+  version: string
+  commands: CliCommand<never, Except<CliContext & Context, 'presenterFactory'>>[]
+}
+
+
+export type CliOptionWithConfig<Config, Context> = {
   name: string
   version: string
   commands: CliCommand<Config, Except<CliContext & Context, 'presenterFactory'>>[]
@@ -19,11 +26,7 @@ export type CliOption<Config, Context> = {
    * Specify the cli's default config.
    * This will be merged with the values in config file.
    */
-  defaultConfig?: Config
-  /**
-   * Context that will pass down to the commands,
-   *
-   */
+  defaultConfig: Config
 }
 
 const args = yargs(process.argv)
@@ -40,7 +43,7 @@ if (args['debug-cli']) {
  * @type Context is additional context to be added to the cli.
  */
 export class Cli<
-  Config extends Record<string, any> = never,
+  Config extends Record<string, any> = NoConfig,
   Context extends Record<string, any> = Record<string, any>
   > {
   options = {
@@ -68,7 +71,7 @@ export class Cli<
   commands: CliCommandInstance<Config, Context>[] = []
   name: string
   version: string
-  config: Config
+  config: Config | undefined
   context: CliContext & Context
   private ui: LogPresenter & HelpPresenter & VersionPresenter
 
@@ -77,21 +80,26 @@ export class Cli<
    * @param context additional context available to the cli and its commands.
    */
   constructor(
-    option: CliOption<Config, Context>,
+    options: CliOptionWithConfig<Config, Context> | CliOption<Context>,
     context?: RecursivePartial<CliContext> & Context
   ) {
-    this.name = option.name
-    this.version = option.version
+    this.name = options.name
+    this.version = options.version
 
     this.context = buildContext(context)
     const cwd = this.context.cwd
     log.debug('cwd', cwd)
 
-    this.config = unpartial({}, option.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
+    if (isConfigOption(options)) {
+      this.config = unpartial({}, options.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
+    }
+    else {
+      this.config = undefined
+    }
     log.debug('Loaded config', this.config)
 
     this.ui = this.context.presenterFactory.createCliPresenter({ name: this.name })
-    option.commands.forEach(command => {
+    options.commands.forEach(command => {
       this.addCliCommand(command)
     })
   }
@@ -150,4 +158,8 @@ function getCmdChainCount(command: CliCommandInstance<any, any> | undefined) {
     count++
   }
   return count - 1
+}
+
+function isConfigOption<Config, Context>(options: any): options is CliOptionWithConfig<Config, Context> {
+  return options.defaultConfig !== undefined
 }

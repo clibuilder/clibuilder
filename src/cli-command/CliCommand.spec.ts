@@ -34,16 +34,6 @@ test('this in run can access config', async () => {
   t.strictEqual(await cmd.run(args, argv), 'ab')
 })
 
-test('config can be undefined', async () => {
-  setupCliCommandTest({
-    name: 'cmd',
-    run() {
-      // can assign undefined mean it has undefined type
-      this.config = undefined
-    }
-  }, [], undefined)
-})
-
 test('can define arguments', () => {
   isCliCommand({
     name: 'cmd',

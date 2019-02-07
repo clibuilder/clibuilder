@@ -14,15 +14,18 @@
 [![Visual Studio Code][vscode-image]][vscode-url]
 [![Wallaby.js][wallaby-image]][wallaby-url]
 
-`clibuilder` is a CLI building library.
+A highly customizable command line library.
 
-This library supplies two CLI builders: `Cli` and `PluginCli`.
+## Features
 
-## Cli
+- Distributed commands. `CliCommand` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
+- Nested commands.
+- Load config file.
+- Provide additional context from `Cli` to `CliCommand`
+- Replace UI at `Cli` and `CliCommand` level.
+- Plugin architecture using `PluginCli`
 
-`Cli` is a simple, Command Pattern based cli builder.
-
-The benefit of using Command Pattern is that you can develop your CLI command separately from the application itself.
+## Usage
 
 ```ts
 // bin.ts
@@ -40,27 +43,27 @@ cli.parse(process.argv)
 // commands.ts
 import { CliCommand } from 'clibuilder'
 
-export const commandA = {
+export const commandA: CliCommand = {
   name: 'echo',
   // `args` is the parsed arguments.
   // `argv` is the raw argv.
   run(args, argv) {
     this.ui.info(argv)
   }
-} as CliCommand
+}
 ```
 
 It comes with a plain presenter.
 You can override it to display your cli in any way you want:
 
 ```ts
-import { Cli, PlainPresenter } from 'clibuilder'
+import { Cli, PlainPresenter, PresenterOptions } from 'clibuilder'
 
 class YourPresenter extends PlainPresenter { ... }
 
 const presenterFactory = {
-  createCliPresenter(options) { return new YourPresenter(options) },
-  createCommandPresenter(options) { return new YourPresenter(options) }
+  createCliPresenter(options: PresenterOptions) { return new YourPresenter(options) },
+  createCommandPresenter(options: PresenterOptions) { return new YourPresenter(options) }
 }
 
 const cli = new Cli({
@@ -77,24 +80,23 @@ You can specify the shape of the config, which will be loaded automatically usin
 ```ts
 import { Cli, CliCommand } from 'clibuilder'
 
-const config = { ... }
-
-const cmd = {
+const cmd: CliCommand<{ ... }> = {
   name: 'cmd',
   run() {
     // this.config is typed and accessible
     this.ui.info(this.config)
   }
-} CliCommand<typeof config>
+}
 
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
+  defualtConfig: { ... }
   commands: [cmd]
 })
 ```
 
-When working with config, you may want to use the `overrideArgs(args, config)` helper function to get the args overridden by config in proper order:
+When working with config, you can use the `overrideArgs(args, config)` helper function to get the args overridden by config in proper order:
 
 ```ts
 import { CliCommand, overrideArgs } from 'clibuilder'
@@ -117,21 +119,20 @@ import { Cli, CliCommand } from 'clibuilder'
 
 const config = { ... }
 
-const cmd = {
+const cmd: CliCommand<typeof config, { something: number }> = {
   name: 'cmd',
   run() {
     this.ui.info(this.something) // something is a number.
   }
-} CliCommand<typeof config, { something: number }>
+}
 
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
+  defaultConfig: config
   commands: [cmd]
 }, { something: 10 })
 ```
-
-## PluginCli
 
 `PluginCli` allows you to build plugins to add commands to your application.
 i.e. You can build your application in a distributed fashion.
