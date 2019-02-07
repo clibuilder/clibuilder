@@ -44,7 +44,7 @@
     "@unional/logging": "^1.0.1",
     "aurelia-logging-color": "^1.0.0",
     "camel-case": "^3.0.0",
-    "find-installed-packages": "^1.0.2",
+    "find-installed-packages": "^2.0.0",
     "find-up": "^3.0.0",
     "inquirer": "^6.2.2",
     "lodash": "^4.17.11",
