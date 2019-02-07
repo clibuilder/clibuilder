@@ -1,7 +1,8 @@
 import t from 'assert';
 import { createCliArgv, InMemoryPresenterFactory, PluginCli } from '..';
+import { typeAssert } from 'type-plus';
 
-class TestPluginCli extends PluginCli {
+class TestPluginCli<Config, Context> extends PluginCli<Config, Context> {
   ready = this.loadingPlugins
 }
 
@@ -56,4 +57,19 @@ test('PluginCli can add commands at its own project', async () => {
   })
   await cli.ready
   t.strictEqual(cli.commands.length, 1)
+})
+
+test('can define default config', async () => {
+  const cli = new TestPluginCli({
+    name: 'cli',
+    version: '1',
+    defaultConfig: { a: 1 },
+    commands: [{
+      name: 'cmd',
+      run() {
+        typeAssert.isNumber(this.config.a)
+      }
+    }]
+  })
+  await cli.ready
 })

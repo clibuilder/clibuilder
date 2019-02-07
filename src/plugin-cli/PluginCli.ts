@@ -3,10 +3,13 @@ import { Cli, CliContext, CliOption, CliOptionWithConfig } from '../cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
-export type PluginCliOption<Config, Context> = Except<CliOption<Context> | CliOptionWithConfig<Config, Context>, 'commands'> & {
-  commands?: CliCommand<Config, any>[]
+export type PluginCliOptionShared<Config, Context> = {
+  commands?: CliCommand<Config, Except<CliContext & Context, 'presenterFactory'>>[]
   keyword?: string
 }
+export type PluginCliOption<Config, Context> = Except<CliOption<Context>, 'commands'> & PluginCliOptionShared<Config, Context>
+export type PluginCliOptionWithConfig<Config, Context> = Except<CliOptionWithConfig<Config, Context>, 'commands'> & PluginCliOptionShared<Config, Context>
+
 
 export class PluginCli<
   Config extends Record<string, any> = Record<string, any>,
@@ -15,7 +18,7 @@ export class PluginCli<
   protected loadingPlugins: Promise<void>
   public keyword: string
   constructor(
-    options: PluginCliOption<Config, Context>,
+    options: PluginCliOption<Config, Context> | PluginCliOptionWithConfig<Config, Context>,
     context?: RecursivePartial<CliContext> & Context
   ) {
     super({ commands: [], ...options }, context)
