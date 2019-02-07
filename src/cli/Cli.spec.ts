@@ -8,6 +8,7 @@ import { createCliArgv, echoAllCommand, InMemoryPresenter, echoCommand } from '.
 import inquirer = require('inquirer');
 import { CliCommand } from '../cli-command';
 import { typeAssert } from 'type-plus';
+import { NoConfig } from './interfaces';
 
 test('create cli needs to specify at least: name, version, and commands', async () => {
   const cli = new Cli({
@@ -167,9 +168,10 @@ test.skip('turn on debug-cli sets the log level to debug locally', async () => {
 
 test('read config file', async () => {
   const o = new AssertOrder(1)
-  const cli = new Cli<{ a: number }>({
+  const cli = new Cli({
     name: 'test-cli',
     version: '0.0.1',
+    defaultConfig: { a: 2 },
     commands: [{
       name: 'cfg',
       run() {
@@ -184,9 +186,10 @@ test('read config file', async () => {
 
 test(`read config file in parent directory`, async () => {
   const o = new AssertOrder(1)
-  const cli = new Cli<{ a: number }>({
+  const cli = new Cli({
     name: 'test-cli',
     version: '0.0.1',
+    defaultConfig: { a: 2 },
     commands: [{
       name: 'cfg',
       run() {
@@ -286,7 +289,7 @@ test('--debug-cli not pass to command', async () => {
 })
 
 test('Can use commands with additional context (for dependency injection)', () => {
-  const cmd1: CliCommand<any, { a: string, b: string }> = {
+  const cmd1: CliCommand<NoConfig, { a: string, b: string }> = {
     name: 'cmd1',
     run() {
       typeAssert.noUndefined(this.context.a)
@@ -295,7 +298,7 @@ test('Can use commands with additional context (for dependency injection)', () =
     }
   }
 
-  t(new Cli<any, { b: string }>({
+  t(new Cli({
     name: 'cli',
     version: '1.0',
     commands: [cmd1, {
@@ -306,7 +309,7 @@ test('Can use commands with additional context (for dependency injection)', () =
         return Promise.resolve(this.context.b === this.context.cwd)
       }
     }]
-  }))
+  }, { b: 'b' }))
 })
 
 function createInquirePresenterFactory(answers: inquirer.Answers) {

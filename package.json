@@ -36,7 +36,8 @@
     "test": "jest",
     "verify": "npm run lint && npm run build && npm run dependency-check && jest --coverage",
     "verify:ci": "npm run lint && npm run build && npm run dependency-check && jest --runInBand --coverage",
-    "watch": "jest --watch"
+    "watch": "jest --watch",
+    "watch:type": "tsc --watch"
   },
   "dependencies": {
     "@types/inquirer": "0.0.43",
