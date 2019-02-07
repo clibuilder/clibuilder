@@ -1,4 +1,4 @@
-import { findByKeyword } from 'find-installed-packages';
+import { findByKeywords } from 'find-installed-packages';
 import { CliCommand, CliCommandInstance } from '../cli-command';
 import { PluginCli } from '../plugin-cli';
 import { PlainPresenter } from '../presenter';
@@ -14,7 +14,7 @@ export const listCommand: CliCommand = {
       return
     }
 
-    const plugins = await findByKeyword(cli.keyword, this.context)
+    const plugins = await findByKeywords([cli.keyword], this.context)
     if (plugins.length === 0) {
       this.ui.info(`no plugin with keyword: ${cli.keyword}`)
     }
