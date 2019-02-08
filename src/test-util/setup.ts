@@ -46,11 +46,3 @@ function overrideUI(cmd: CliCommand, presenterFactory: PresenterFactory) {
     cmd.commands.forEach(c => overrideUI(c, presenterFactory))
   }
 }
-
-// export function setupCliCommandTest<Config, Context = {}>(command: CliCommand<Config, Context>, argv: string[], context: { config?: Config } & Context = {} as any) {
-//   const presenterFactory = new InMemoryPresenterFactory()
-//   const args = createCommandArgs(command, argv)
-//   const cmd = createCliCommand(command, { context: { presenterFactory, ...context } })
-
-//   return { cmd, args, argv, ui: cmd.ui as InMemoryPresenter }
-// }

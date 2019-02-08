@@ -177,6 +177,13 @@ You can override this by supplying your own keyword:
 new PluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
 ```
 
+There are also test utilites available for you to develop your command line tool.
+
+- `setupCliTest()`: override the cli or command ui for testing.
+- `setupCliCommandTest()`: instantiates a cli command with in-memory presenter for testing.
+- `createCliArgv()`: creates `argv` that the cli understands.
+- `findCliCommand()`: find a command within the cli.
+
 ## Contribute
 
 ```sh
