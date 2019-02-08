@@ -22,7 +22,7 @@ A highly customizable command line library.
 - Nested commands.
 - Load config file.
 - Provide additional context from `Cli` to `CliCommand`
-- Replace UI at `Cli` and `CliCommand` level.
+- Can use different UI at `Cli` and `CliCommand` level.
 - Plugin architecture using `PluginCli`
 
 ## Usage
@@ -62,8 +62,12 @@ import { Cli, PlainPresenter, PresenterOptions } from 'clibuilder'
 class YourPresenter extends PlainPresenter { ... }
 
 const presenterFactory = {
-  createCliPresenter(options: PresenterOptions) { return new YourPresenter(options) },
-  createCommandPresenter(options: PresenterOptions) { return new YourPresenter(options) }
+  createCliPresenter(options: PresenterOptions) {
+    return new YourPresenter(options)
+  },
+  createCommandPresenter(options: PresenterOptions) {
+    return new YourPresenter(options)
+  }
 }
 
 const cli = new Cli({
@@ -122,7 +126,7 @@ const config = { ... }
 const cmd: CliCommand<typeof config, { something: number }> = {
   name: 'cmd',
   run() {
-    this.ui.info(this.something) // something is a number.
+    this.ui.info(this.something) // 10
   }
 }
 
@@ -146,12 +150,15 @@ const cli = new PluginCli({
 })
 
 // in another package
-import { Command, CliRegistrar } from 'clibuilder'
+import { CliCommand, CliRegistrar } from 'clibuilder'
+
+const cmd1: CliCommand = { ... }
+const cmd2: CliCommand = { ... }
 
 export function activate(cli: CliRegistrar) {
   cli.register({
-    name: 'plug-x'
-    commands: [...]
+    name: 'miku'
+    commands: [cmd1, cmd2]
   })
 }
 
