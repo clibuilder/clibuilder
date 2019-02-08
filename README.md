@@ -57,16 +57,24 @@ It comes with a plain presenter.
 You can override it to display your cli in any way you want:
 
 ```ts
-import { Cli, PlainPresenter, PresenterOptions } from 'clibuilder'
+import {
+  Cli,
+  LogPresenter,
+  HelpPresenter,
+  Inquirer,
+  PresenterOptions,
+  VersionPresenter
+} from 'clibuilder'
 
-class YourPresenter extends PlainPresenter { ... }
+class YourCliPresenter implements LogPresenter, HelpPresenter, VersionPresenter { ... }
+class YourCmdPresenter implements LogPresenter & HelpPresenter & Inquirer { ... }
 
 const presenterFactory = {
   createCliPresenter(options: PresenterOptions) {
-    return new YourPresenter(options)
+    return new YourCliPresenter(options)
   },
   createCommandPresenter(options: PresenterOptions) {
-    return new YourPresenter(options)
+    return new YourCmdPresenter(options)
   }
 }
 
@@ -183,6 +191,7 @@ There are also test utilites available for you to develop your command line tool
 - `setupCliCommandTest()`: instantiates a cli command with in-memory presenter for testing.
 - `createCliArgv()`: creates `argv` that the cli understands.
 - `findCliCommand()`: find a command within the cli.
+- `generateDisplayedMessage()`: generate easy to check messages from logs in `InMemoryDisplay` (through `ui.display.xxxLogs`).
 
 ## Contribute
 

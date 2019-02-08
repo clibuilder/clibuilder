@@ -5,4 +5,3 @@ export * from './commands';
 export * from './plugin-cli';
 export * from './presenter';
 export * from './test-util';
-
