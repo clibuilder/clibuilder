@@ -52,7 +52,7 @@
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
     "type-plus": "^1.12.1",
-    "unpartial": "^0.4.1",
+    "unpartial": "^0.5.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
