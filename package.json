@@ -40,7 +40,7 @@
     "watch:type": "tsc --watch"
   },
   "dependencies": {
-    "@types/inquirer": "0.0.43",
+    "@types/inquirer": "0.0.44",
     "@unional/logging": "^1.0.1",
     "aurelia-logging-color": "^1.0.0",
     "camel-case": "^3.0.0",
