@@ -62,7 +62,7 @@
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.2",
     "@unional/devpkg-node": "^1.2.3",
-    "assertron": "^6.1.0",
+    "assertron": "^7.0.0",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
