@@ -33,14 +33,14 @@
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "tslint -p tsconfig.json",
-    "test": "jest",
+    "test": "jest --reporters=default",
     "verify": "npm run lint && npm run build && npm run dependency-check && jest --coverage",
-    "verify:ci": "npm run lint && npm run build && npm run dependency-check && jest --runInBand --coverage",
+    "verify:ci": "npm run lint && npm run build && npm run dependency-check && jest --runInBand --coverage --reporters=default",
     "watch": "jest --watch",
     "watch:type": "tsc --watch"
   },
   "dependencies": {
-    "@types/inquirer": "0.0.43",
+    "@types/inquirer": "6.0.0",
     "@unional/logging": "^1.0.1",
     "aurelia-logging-color": "^1.0.0",
     "camel-case": "^3.0.0",
@@ -51,18 +51,18 @@
     "make-error": "^1.3.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
-    "type-plus": "^1.12.1",
-    "unpartial": "^0.4.1",
+    "type-plus": "^1.17.0",
+    "unpartial": "^0.5.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
-    "@types/lodash": "^4.14.120",
+    "@types/lodash": "^4.14.123",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.2",
-    "@unional/devpkg-node": "^1.2.3",
-    "assertron": "^6.1.0",
+    "@unional/devpkg-node": "^1.2.5",
+    "assertron": "^7.0.0",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
