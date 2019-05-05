@@ -54,7 +54,7 @@
     "type-plus": "^1.17.0",
     "unpartial": "^0.5.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^10.1.0"
+    "yargs-parser": "^13.1.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
