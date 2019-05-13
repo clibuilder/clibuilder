@@ -1,14 +1,14 @@
 {
   "name": "clibuilder",
-  "description": "A CLI building library",
   "version": "4.1.1",
-  "homepage": "https://github.com/unional/clibuilder",
+  "description": "A CLI building library",
   "keywords": [
     "builder",
     "cli",
     "command",
     "parser"
   ],
+  "homepage": "https://github.com/unional/clibuilder",
   "bugs": {
     "url": "https://github.com/unional/clibuilder/issues"
   },
@@ -41,28 +41,27 @@
   },
   "dependencies": {
     "@types/inquirer": "6.0.0",
-    "@unional/logging": "^1.0.1",
-    "aurelia-logging-color": "^1.0.0",
+    "@unional/logging": "^1.0.3",
+    "aurelia-logging-color": "^1.0.3",
     "camel-case": "^3.0.0",
     "find-installed-packages": "^2.0.0",
     "find-up": "^3.0.0",
-    "inquirer": "^6.2.2",
+    "inquirer": "^6.3.1",
     "lodash": "^4.17.11",
     "make-error": "^1.3.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
-    "type-plus": "^1.17.0",
-    "unpartial": "^0.5.0",
+    "type-plus": "^1.18.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
-    "@types/lodash": "^4.14.123",
+    "@types/lodash": "^4.14.126",
     "@types/wordwrap": "github:types/wordwrap",
-    "@types/yargs-parser": "^11.0.2",
-    "@unional/devpkg-node": "^1.2.5",
-    "assertron": "^7.0.0",
+    "@types/yargs-parser": "^11.0.3",
+    "@unional/devpkg-node": "^1.3.0",
+    "assertron": "^7.0.1",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }

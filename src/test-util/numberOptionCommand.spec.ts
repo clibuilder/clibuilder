@@ -1,7 +1,7 @@
-import t from 'assert'
-import { AssertOrder } from 'assertron'
-import { createCommandArgs, createCliCommand, InMemoryPresenterFactory, numberOptionCommand } from '../index'
-
+import t from 'assert';
+import { AssertOrder } from 'assertron';
+import { createCommandArgs, InMemoryPresenterFactory, numberOptionCommand } from '..';
+import { createCliCommand } from '../cli-command';
 
 test('number option', () => {
   const args = createCommandArgs(numberOptionCommand, ['-a 3'])

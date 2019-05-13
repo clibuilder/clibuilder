@@ -1,6 +1,6 @@
 import { addAppender, logLevel } from '@unional/logging';
 import { ColorAppender } from 'aurelia-logging-color';
-import { RecursivePartial, Except } from 'type-plus';
+import { Except, RecursivePartial, required } from 'type-plus';
 import yargs from 'yargs-parser';
 import { CliArgs, parseArgv } from '../argv-parser';
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
@@ -9,7 +9,6 @@ import { DisplayLevel, HelpPresenter, LogPresenter, VersionPresenter } from '../
 import { buildContext } from './CliContext';
 import { CliContext, NoConfig } from './interfaces';
 import { loadConfig } from './loadConfig';
-import { unpartial } from 'unpartial';
 
 export type CliOption<Context> = {
   name: string
@@ -91,7 +90,7 @@ export class Cli<
     log.debug('cwd', cwd)
 
     if (isConfigOption(options)) {
-      this.config = unpartial({}, options.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
+      this.config = required<Config>(options.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
     }
     else {
       this.config = undefined

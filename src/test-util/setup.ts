@@ -1,5 +1,5 @@
 import { RecursivePartial } from 'type-plus';
-import { Cli, CliContext } from '../cli';
+import { Cli, CliContext, buildContext } from '../cli';
 import { CliCommand, createCliCommand } from '../cli-command';
 import { createCommandArgs } from '../cli-command/createCommandArgs';
 import { PresenterFactory, PresenterOption } from '../presenter';
@@ -31,7 +31,7 @@ export function setupCliCommandTest<
     command,
     {
       config,
-      context
+      context: buildContext(context)
     }
   )
 
