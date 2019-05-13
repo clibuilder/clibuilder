@@ -1,22 +1,5 @@
-import t from 'assert'
-
-import { Cli } from './index'
-import {
-  createCliArgv,
-  createInMemoryCli,
-  InMemoryDisplay,
-  spyDisplay,
-  generateDisplayedMessage,
-  noopCommand,
-  verboseCommand,
-  argCommand,
-  echoCommand,
-  errorCommand,
-  echoNameOptionCommand,
-  booleanOptionsCommand,
-  groupOptionsCommand,
-  InMemoryPresenter
-} from './test-util'
+import t from 'assert';
+import { argCommand, booleanOptionsCommand, Cli, createCliArgv, createInMemoryCli, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, InMemoryDisplay, InMemoryPresenter, noopCommand, spyDisplay, verboseCommand } from '.';
 import { createEchoDebugCommand } from './test-util/createEchoDebugCommand';
 
 const noopHelpMessage = `

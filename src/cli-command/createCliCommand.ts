@@ -1,5 +1,5 @@
 import { RecursivePartial } from 'type-plus';
-import { buildContext, CliContext } from '../cli';
+import { CliContext } from '../cli';
 import { log } from '../log';
 import { CliCommand, CliCommandInstance } from './CliCommand';
 import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from './errors';
@@ -23,8 +23,7 @@ export function createCliCommand<
     ...cmdSpec
   }
   if (!result.ui) {
-    const c = buildContext(parent.context)
-    result.ui = c.presenterFactory.createCommandPresenter(result)
+    result.ui = parent.context.presenterFactory!.createCommandPresenter(result)
   }
 
   if (result.commands) {
