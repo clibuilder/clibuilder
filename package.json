@@ -53,7 +53,7 @@
     "search-packages": "^2.0.0",
     "type-plus": "^1.18.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^10.1.0"
+    "yargs-parser": "^13.1.1"
   },
   "devDependencies": {
     "@types/find-up": "^2.1.1",
