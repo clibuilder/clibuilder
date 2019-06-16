@@ -1,6 +1,6 @@
 import { addAppender, logLevel } from '@unional/logging';
 import { ColorAppender } from 'aurelia-logging-color';
-import { Except, RecursivePartial, required } from 'type-plus';
+import { Omit, RecursivePartial, required } from 'type-plus';
 import yargs from 'yargs-parser';
 import { CliArgs, parseArgv } from '../argv-parser';
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
@@ -13,14 +13,14 @@ import { loadConfig } from './loadConfig';
 export type CliOption<Context> = {
   name: string
   version: string
-  commands: CliCommand<never, Except<CliContext & Context, 'presenterFactory'>>[]
+  commands: CliCommand<never, Omit<CliContext & Context, 'presenterFactory'>>[]
 }
 
 
 export type CliOptionWithConfig<Config, Context> = {
   name: string
   version: string
-  commands: CliCommand<Config, Except<CliContext & Context, 'presenterFactory'>>[]
+  commands: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[]
   /**
    * Specify the cli's default config.
    * This will be merged with the values in config file.
