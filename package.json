@@ -56,7 +56,7 @@
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
-    "@types/find-up": "^2.1.1",
+    "@types/find-up": "^4.0.0",
     "@types/lodash": "^4.14.126",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.3",
