@@ -10,7 +10,7 @@ export function createCliCommand<
     cmdSpec: CliCommand<Config, Context>,
     parent: {
       config?: Config,
-      context: RecursivePartial<CliContext & Context>
+      context: RecursivePartial<CliContext & Context>,
     }): CliCommandInstance<Config, CliContext & Context> {
   log.debug('creatingCommand', cmdSpec.name)
 
@@ -20,7 +20,7 @@ export function createCliCommand<
     config: parent.config,
     context: parent.context,
     parent,
-    ...cmdSpec
+    ...cmdSpec,
   }
   if (!result.ui) {
     result.ui = parent.context.presenterFactory!.createCommandPresenter(result)

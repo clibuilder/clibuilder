@@ -5,5 +5,5 @@ export const noopCommand: CliCommand = {
   name: 'noop',
   run() {
     return
-  }
+  },
 }

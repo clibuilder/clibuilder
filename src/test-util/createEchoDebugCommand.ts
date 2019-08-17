@@ -6,11 +6,11 @@ export function createEchoDebugCommand(): CliCommand {
     arguments: [{
       name: 'args',
       description: 'any argument(s)',
-      multiple: true
+      multiple: true,
     }],
     description: 'Echoing input arguments',
     run(_args, argv) {
       this.ui.debug(...argv)
-    }
+    },
   }
 }

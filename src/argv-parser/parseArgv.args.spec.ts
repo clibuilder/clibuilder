@@ -7,7 +7,7 @@ import { parseArgv } from './parseArgv';
 test('no arguments and options', () => {
   const cmd = createParsable({
     name: 'a',
-    run() { return }
+    run() { return },
   })
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
@@ -17,7 +17,7 @@ test('no arguments and options', () => {
 test('throws with additional argument', () => {
   const cmd = createParsable({
     name: 'a',
-    run() { return }
+    run() { return },
   })
   const argv = ['a', 'extra']
   t.throws(() => parseArgv(cmd, argv))
@@ -27,7 +27,7 @@ test('throws with more argument than expected', () => {
   const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'b' }],
-    run() { return }
+    run() { return },
   })
   const argv = ['a', 'b', 'c']
   t.throws(() => parseArgv(cmd, argv))
@@ -37,7 +37,7 @@ test('throws with missing argument', () => {
   const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'b', required: true }],
-    run() { return }
+    run() { return },
   })
   const argv = ['a']
   t.throws(() => parseArgv(cmd, argv))
@@ -48,8 +48,8 @@ test('not throw when there are sub-commands', () => {
     name: 'a',
     commands: [createParsable({
       name: 'b',
-      run() { return }
-    })]
+      run() { return },
+    })],
   })
 
   let argv = ['a', 'b']
@@ -62,7 +62,7 @@ test('with arguments', () => {
   const cmd = createParsable({
     name: 'a',
     arguments: [{ name: 'x', required: true }],
-    run() { return }
+    run() { return },
   })
   const argv = ['a', 'c']
   const actual = parseArgv(cmd, argv)
@@ -75,10 +75,10 @@ test('zero or more args should accept 0 args', () => {
     arguments: [
       {
         name: 'zero-or-more',
-        multiple: true
-      }
+        multiple: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv: string[] = []
   const actual = parseArgv(cmd, argv)
@@ -92,10 +92,10 @@ test('zero or more args should accept 1 args', () => {
     arguments: [
       {
         name: 'zero-or-more',
-        multiple: true
-      }
+        multiple: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv = ['a', 'b']
   const actual = parseArgv(cmd, argv)
@@ -108,10 +108,10 @@ test('zero or more args should accept 2 args', () => {
     arguments: [
       {
         name: 'zero-or-more',
-        multiple: true
-      }
+        multiple: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv = ['a', 'b', 'c']
   const actual = parseArgv(cmd, argv)
@@ -125,10 +125,10 @@ test('one or more args should not accept 0 args', () => {
       {
         name: 'one-or-more',
         multiple: true,
-        required: true
-      }
+        required: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv = ['cli']
   t.throws(() => parseArgv(cmd, argv))
@@ -141,10 +141,10 @@ test('one or more args should not accept 1 args', () => {
       {
         name: 'one-or-more',
         multiple: true,
-        required: true
-      }
+        required: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv = ['args', 'a']
   const actual = parseArgv(cmd, argv)
@@ -158,10 +158,10 @@ test('one or more args should not accept 2 args', () => {
       {
         name: 'one-or-more',
         multiple: true,
-        required: true
-      }
+        required: true,
+      },
     ],
-    run() { return }
+    run() { return },
   })
   const argv = ['cli', 'a', 'b']
   const actual = parseArgv(cmd, argv)

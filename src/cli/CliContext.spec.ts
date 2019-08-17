@@ -28,8 +28,8 @@ describe('buildContext()', () => {
     a.satisfies(context, {
       presenterFactory: {
         createCliPresenter: (v: any) => v === fn,
-        createCommandPresenter: (v: any) => v === plainPresenterFactory.createCommandPresenter
-      }
+        createCommandPresenter: (v: any) => v === plainPresenterFactory.createCommandPresenter,
+      },
     })
   })
 
@@ -37,7 +37,7 @@ describe('buildContext()', () => {
     const context = buildContext({ a: 'a' })
     a.satisfies(context, {
       a: 'a',
-      ...defaultContext
+      ...defaultContext,
     })
   })
 })
@@ -48,5 +48,5 @@ function isDefaultContext(context: CliContext) {
 
 const defaultContext = {
   cwd: process.cwd(),
-  presenterFactory: plainPresenterFactory
+  presenterFactory: plainPresenterFactory,
 }

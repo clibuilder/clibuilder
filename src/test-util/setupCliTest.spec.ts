@@ -11,10 +11,10 @@ const cli = new Cli({
     {
       name: 'nest',
       commands: [
-        echoCommand
-      ]
-    }
-  ]
+        echoCommand,
+      ],
+    },
+  ],
 })
 
 test('override cli ui if no command is specified', async () => {

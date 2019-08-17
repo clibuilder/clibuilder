@@ -8,11 +8,11 @@ export const echoNameOptionCommand = {
     string: {
       name: {
         default: 'abc',
-        description: 'Name option to be echoed'
-      }
-    }
+        description: 'Name option to be echoed',
+      },
+    },
   },
   run(args) {
     this.ui.info(args.name)
-  }
+  },
 } as CliCommand

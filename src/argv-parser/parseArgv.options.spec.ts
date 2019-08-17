@@ -10,11 +10,11 @@ test('throw with unknown options', () => {
       boolean: {
         silent: {
           description: 'silent',
-          alias: ['S']
-        }
-      }
+          alias: ['S'],
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
   const argv = ['a', '--something']
   t.throws(() => parseArgv(cmd, argv))
@@ -26,11 +26,11 @@ const verboseWithAlias = {
     boolean: {
       verbose: {
         description: 'Turn on verbose',
-        alias: ['V']
-      }
-    }
+        alias: ['V'],
+      },
+    },
   },
-  run() { return }
+  run() { return },
 }
 
 test('specifed boolean option will be set without alias', () => {
@@ -53,11 +53,11 @@ test('fill default for boolean option', () => {
       boolean: {
         x: {
           description: 'xx',
-          default: true
-        }
-      }
+          default: true,
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
@@ -71,11 +71,11 @@ test('fill default for string option', () => {
       string: {
         x: {
           description: 'xx',
-          default: 'abc'
-        }
-      }
+          default: 'abc',
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
@@ -89,11 +89,11 @@ test('fill default for number option', () => {
       number: {
         x: {
           description: 'xx',
-          default: 1
-        }
-      }
+          default: 1,
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
   const argv = ['a']
   const actual = parseArgv(cmd, argv)
@@ -106,16 +106,16 @@ test('options with wrong type will throws', () => {
     options: {
       string: {
         stringOption: {
-          description: 'string'
-        }
+          description: 'string',
+        },
       },
       number: {
         numberOption: {
-          description: 'number'
-        }
-      }
+          description: 'number',
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
   t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
 })
@@ -127,11 +127,11 @@ test('camelCase option is not expanded to hyphenated option', () => {
       string: {
         specOutDir: {
           description: 'string',
-          default: 'abc'
-        }
-      }
+          default: 'abc',
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, {})
 
   t.doesNotThrow(() => parseArgv(cmd, ['a']))

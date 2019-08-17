@@ -8,5 +8,5 @@ export const plainPresenterFactory = {
   },
   createCommandPresenter(options: PresenterOption): LogPresenter & HelpPresenter & Inquirer {
     return new PlainPresenter(options)
-  }
+  },
 }

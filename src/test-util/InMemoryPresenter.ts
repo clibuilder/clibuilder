@@ -10,7 +10,7 @@ export class InMemoryPresenter extends PlainPresenter {
     this.inquire = Object.assign(
       () => Promise.resolve(this.answers),
       {
-        ...this.inquire
+        ...this.inquire,
       }) as any
   }
 }

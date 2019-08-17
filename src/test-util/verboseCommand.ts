@@ -6,11 +6,11 @@ export const verboseCommand: CliCommand = {
   options: {
     boolean: {
       verbose: {
-        description: 'print verbose messages'
-      }
-    }
+        description: 'print verbose messages',
+      },
+    },
   },
   run() {
     this.ui.debug('print verbosely')
-  }
+  },
 }

@@ -14,7 +14,7 @@ test('create cli needs to specify at least: name, version, and commands', async 
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
-    commands: [echoCommand]
+    commands: [echoCommand],
   })
 
   t(cli)
@@ -24,7 +24,7 @@ test('arguments are passed to the command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
-    commands: [echoCommand]
+    commands: [echoCommand],
   })
 
   const actual = await cli.parse(createCliArgv('cli', 'echo', 'xyz'))
@@ -45,9 +45,9 @@ test('cli commands can be nested', async () => {
         name: 'nested-cmd',
         async run() {
           return 'nested'
-        }
-      }]
-    }]
+        },
+      }],
+    }],
   })
 
   const actual = await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
@@ -70,7 +70,7 @@ test('run nested command with arguments', async () => {
         name: 'nested-cmd',
         arguments: [{
           name: 'arg1',
-          description: 'arg1 argument'
+          description: 'arg1 argument',
         }],
         run(args) {
           // arg1 is parsed out of the argument list
@@ -78,9 +78,9 @@ test('run nested command with arguments', async () => {
 
           t.strictEqual(args.arg1, 'abc')
           o.once(1)
-        }
-      }]
-    }]
+        },
+      }],
+    }],
   })
 
   await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd', 'abc'))
@@ -99,8 +99,8 @@ test('prompt for input', async () => {
         const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
         t.strictEqual(answers.username, 'me')
         o.once(1)
-      }
-    }]
+      },
+    }],
   }, { presenterFactory })
 
   await cli.parse(createCliArgv('cli', 'ask'))
@@ -116,8 +116,8 @@ test('cli context passes down to command', async () => {
       async run() {
         typeAssert.isString(this.context.abc)
         return this.context.abc
-      }
-    }]
+      },
+    }],
   }, { abc: '123' })
   t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), '123')
 })
@@ -132,8 +132,8 @@ test('context in command always contain `cwd`', async () => {
         // cwd is available even not specified
         typeAssert.isString(this.context.cwd)
         return this.context.cwd
-      }
-    }]
+      },
+    }],
   })
   t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), process.cwd())
 })
@@ -146,10 +146,10 @@ test('context in command does not have presenterFactory', async () => {
       name: 'cmd',
       async run() {
         const context = this.context
-        let y: Extract<typeof context, { presenterFactory: any }> = context as never
+        const y: Extract<typeof context, { presenterFactory: any }> = context as never
         typeAssert.isNever(y)
-      }
-    }]
+      },
+    }],
   }))
 })
 
@@ -158,7 +158,7 @@ test.skip('turn on debug-cli sets the log level to debug locally', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '0.0.1',
-    commands: [echoAllCommand]
+    commands: [echoAllCommand],
   })
 
   await cli.parse(createCliArgv('cli', 'echo', '--debug-cli'))
@@ -177,8 +177,8 @@ test('read config file', async () => {
       run() {
         t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
-      }
-    }]
+      },
+    }],
   }, { cwd: 'fixtures/has-config' })
   await cli.parse(createCliArgv('cli', 'cfg'))
   o.end()
@@ -195,8 +195,8 @@ test(`read config file in parent directory`, async () => {
       run() {
         t.deepStrictEqual(this.config, { a: 1 })
         o.once(1)
-      }
-    }]
+      },
+    }],
   }, { cwd: 'fixtures/has-config/sub-folder' })
 
   await cli.parse(createCliArgv('test-cli', 'cfg'))
@@ -216,8 +216,8 @@ test(`default config is overriden by value in config file`, async () => {
       run() {
         t.deepStrictEqual(this.config, { a: 1, b: 3 })
         o.once(1)
-      }
-    }]
+      },
+    }],
   }, { cwd: 'fixtures/has-config' })
 
   await cli.parse(createCliArgv('test-cli', 'cfg'))
@@ -235,15 +235,15 @@ test('can partially override the presenter factory implementation', async () => 
         name: 'cmd',
         run() {
           return
-        }
-      }]
+        },
+      }],
     }, {
       presenterFactory: {
         createCommandPresenter(options: PresenterOption) {
           o.once(1)
           return new PlainPresenter(options)
-        }
-      }
+        },
+      },
     })
   await cli.parse(createCliArgv('test-cli', 'cmd'))
   o.end()
@@ -264,8 +264,8 @@ test('command can specify its own ui', async () => {
           const p = new PlainPresenter({ name: 'a' })
           p.info = () => o.once(1)
           return p
-        })()
-      }]
+        })(),
+      }],
     })
   await cli.parse(createCliArgv('test-cli', 'a'))
   o.end()
@@ -280,8 +280,8 @@ test('--debug-cli not pass to command', async () => {
       name: 'a',
       run(_, argv) {
         actual = argv
-      }
-    }]
+      },
+    }],
   })
   await cli.parse(createCliArgv('test-cli', 'a', '--debug-cli'))
 
@@ -295,7 +295,7 @@ test('Can use commands with additional context (for dependency injection)', () =
       typeAssert.noUndefined(this.context.a)
       typeAssert.noUndefined(this.context.b)
       return
-    }
+    },
   }
 
   t(new Cli({
@@ -307,8 +307,8 @@ test('Can use commands with additional context (for dependency injection)', () =
         // inline command still get completion on `this.context`
         typeAssert.noUndefined(this.context.b)
         return Promise.resolve(this.context.b === this.context.cwd)
-      }
-    }]
+      },
+    }],
   }, { b: 'b' }))
 })
 

@@ -5,7 +5,7 @@ export const echoAllCommand: CliCommand = {
   arguments: [{
     name: 'args',
     description: 'any argument(s)',
-    multiple: true
+    multiple: true,
   }],
   description: 'Echoing input arguments at all levels',
   run(_args, argv) {
@@ -13,5 +13,5 @@ export const echoAllCommand: CliCommand = {
     this.ui.error(...argv)
     this.ui.info(...argv)
     this.ui.warn(...argv)
-  }
+  },
 }

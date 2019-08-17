@@ -1,7 +1,7 @@
 import {
   getLogger,
   Logger,
-  logLevel
+  logLevel,
 } from '@unional/logging'
 
 const log: Logger = getLogger('clibuilder', logLevel.none)

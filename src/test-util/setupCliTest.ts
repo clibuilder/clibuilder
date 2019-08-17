@@ -9,6 +9,6 @@ export function setupCliTest(cli: Cli<any, any>, argv: string[]) {
   const ui = (subject as any).ui = new InMemoryPresenter({ name: subject.name })
   return {
     argv: createCliArgv(cli.name, ...argv),
-    ui
+    ui,
   }
 }

@@ -10,33 +10,33 @@ test(`group option should not set default if passed in`, () => {
         a: {
           description: 'a',
           default: true,
-          group: 'x'
+          group: 'x',
         },
         b: {
           description: 'b',
-          group: 'x'
-        }
+          group: 'x',
+        },
       },
       string: {
         c: {
           default: 'c',
           description: 'c',
-          group: 'x'
-        }
+          group: 'x',
+        },
       },
       number: {
         d: {
           default: 1,
           description: 'd',
-          group: 'x'
-        }
-      }
+          group: 'x',
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, { cwd: '' })
 
-  let argv = ['cli', '-b']
-  let actual = parseArgv(cmd, argv)
+  const argv = ['cli', '-b']
+  const actual = parseArgv(cmd, argv)
   t.deepStrictEqual(actual, { _: [], _defaults: [], b: true })
 })
 
@@ -48,23 +48,23 @@ test(`group option should not set default if alias of one of the options is pass
         a111: {
           description: 'a',
           default: true,
-          group: 'x'
+          group: 'x',
         },
         b111: {
           alias: ['b'],
           description: 'b',
-          group: 'x'
-        }
+          group: 'x',
+        },
       },
       string: {
         c111: {
           default: 'c',
           description: 'c',
-          group: 'x'
-        }
-      }
+          group: 'x',
+        },
+      },
     },
-    run() { return }
+    run() { return },
   }, { cwd: '' })
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)

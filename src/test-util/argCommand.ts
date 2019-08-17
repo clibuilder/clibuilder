@@ -6,14 +6,14 @@ export const argCommand = {
     {
       name: 'some-arg',
       description: 'Some Required Arguments',
-      required: true
+      required: true,
     },
     {
       name: 'opt-arg',
-      description: 'Some Optional Arguments'
-    }
+      description: 'Some Optional Arguments',
+    },
   ],
   run(args) {
     this.ui.info(`some-arg: ${args['some-arg']}`, `opt-arg: ${args['opt-arg']}`)
-  }
+  },
 } as CliCommand

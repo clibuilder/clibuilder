@@ -29,7 +29,7 @@ export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   })
 
   return Promise.all([findingLocal, findingGlobal]).then(([pluginNames, globalPluginNames]) => {
-    let commands = activatePlugins(pluginNames, cwd);
+    const commands = activatePlugins(pluginNames, cwd);
 
     globalPluginNames.forEach(p => {
       if (pluginNames.indexOf(p) !== -1)
@@ -57,7 +57,7 @@ function activatePlugins(pluginNames: string[], cwd: string) {
     .map(p => {
       return {
         name: p,
-        pluginModule: loadModule(p, cwd)
+        pluginModule: loadModule(p, cwd),
       }
     })
     .filter(({ name, pluginModule }) => {

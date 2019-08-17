@@ -27,7 +27,7 @@ export const listCommand: CliCommand = {
       plugins.forEach(p => this.ui.info(`  ${p}`))
     }
   },
-  ui: new PlainPresenter()
+  ui: new PlainPresenter(),
 }
 
 function getPluginCli<Config, Context>(subject: CliCommandInstance<Config, Context> | undefined): PluginCli | undefined {

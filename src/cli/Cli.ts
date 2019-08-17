@@ -11,21 +11,21 @@ import { CliContext, NoConfig } from './interfaces';
 import { loadConfig } from './loadConfig';
 
 export type CliOption<Context> = {
-  name: string
-  version: string
-  commands: CliCommand<never, Omit<CliContext & Context, 'presenterFactory'>>[]
+  name: string,
+  version: string,
+  commands: CliCommand<never, Omit<CliContext & Context, 'presenterFactory'>>[],
 }
 
 
 export type CliOptionWithConfig<Config, Context> = {
-  name: string
-  version: string
-  commands: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[]
+  name: string,
+  version: string,
+  commands: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[],
   /**
    * Specify the cli's default config.
    * This will be merged with the values in config file.
    */
-  defaultConfig: Config
+  defaultConfig: Config,
 }
 
 const args = yargs(process.argv)
@@ -49,23 +49,23 @@ export class Cli<
     boolean: {
       'help': {
         description: 'Print help message',
-        alias: ['h']
+        alias: ['h'],
       },
       'version': {
         description: 'Print the CLI version',
-        alias: ['v']
+        alias: ['v'],
       },
       'verbose': {
         description: 'Turn on verbose logging',
-        alias: ['V']
+        alias: ['V'],
       },
       'silent': {
-        description: 'Turn off logging'
+        description: 'Turn off logging',
       },
       'debug-cli': {
-        description: 'Display clibuilder debug messages'
-      }
-    }
+        description: 'Display clibuilder debug messages',
+      },
+    },
   }
   commands: CliCommandInstance<Config, Context>[] = []
   name: string
@@ -89,7 +89,7 @@ export class Cli<
     const cwd = this.context.cwd
     log.debug('cwd', cwd)
 
-    if (isConfigOption(options)) {
+    if (isConfigOption<Config, Context>(options)) {
       this.config = required<Config>(options.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
     }
     else {
@@ -99,7 +99,7 @@ export class Cli<
 
     this.ui = this.context.presenterFactory.createCliPresenter({ name: this.name })
     options.commands.forEach(command => {
-      this.addCliCommand(command)
+      this.addCliCommand(command as any)
     })
   }
 
