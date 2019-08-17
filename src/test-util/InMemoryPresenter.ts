@@ -1,14 +1,14 @@
-import { Answers, Question } from 'inquirer';
+import { Answers, DistinctQuestion } from 'inquirer';
 import { DisplayLevel, PlainPresenter, PresenterOption } from '../presenter';
 import { InMemoryDisplay } from './InMemoryDisplay';
 
 export class InMemoryPresenter extends PlainPresenter {
   display = new InMemoryDisplay()
   displayLevel = DisplayLevel.Verbose
-  constructor(options: PresenterOption, public answers: Record<string, ((question: Question) => any) | string | number | boolean> = {}) {
+  constructor(options: PresenterOption, public answers: Record<string, ((question: DistinctQuestion) => any) | string | number | boolean> = {}) {
     super(options)
     this.inquire = Object.assign(
-      (questions: Question[]) => {
+      (questions: DistinctQuestion[]) => {
         return Promise.resolve(questions.reduce((p, q) => {
           if (q.name) {
             const answer = answers[q.name]

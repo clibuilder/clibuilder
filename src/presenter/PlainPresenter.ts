@@ -1,4 +1,4 @@
-import inquirer from 'inquirer';
+import inquirer, { Answers, QuestionCollection } from 'inquirer';
 import padRight from 'pad-right';
 import wordwrap from 'wordwrap';
 import { CommandModel, ConsoleDisplay, Display, DisplayLevel, HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './interfaces';
@@ -45,7 +45,7 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
     if (this.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
   }
-  prompt(questions: inquirer.Question[]): Promise<inquirer.Answers> {
+  prompt(questions: QuestionCollection): Promise<Answers> {
     return this.inquire(questions)
   }
 }
