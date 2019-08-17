@@ -5,7 +5,7 @@ import { InMemoryDisplay } from './InMemoryDisplay';
 export class InMemoryPresenter extends PlainPresenter {
   display = new InMemoryDisplay()
   displayLevel = DisplayLevel.Verbose
-  constructor(options: PresenterOption, public answers: Record<string, ((question: DistinctQuestion) => any) | string | number | boolean> = {}) {
+  constructor(options: PresenterOption, public answers: Record<string, (QuestionHandler) | string | number | boolean> = {}) {
     super(options)
     this.inquire = Object.assign(
       (questions: DistinctQuestion[]) => {
@@ -22,3 +22,5 @@ export class InMemoryPresenter extends PlainPresenter {
       }) as any
   }
 }
+
+export type QuestionHandler<Q extends DistinctQuestion = any> = (question: Q) => any

@@ -1,6 +1,7 @@
 import t from 'assert'
 
 import { DisplayLevel, InMemoryPresenter } from '../index'
+import { ListQuestion } from 'inquirer';
 
 test('should default to verbose', () => {
   const p = new InMemoryPresenter({ name: 'a' })
@@ -39,6 +40,25 @@ test('function in answers will be used to process the question', async () => {
 test('function in answers receives the question', async () => {
   let actual: any
   const p = new InMemoryPresenter({ name: 'a' }, { lang: q => actual = q })
+
+  await p.prompt([{
+    name: 'lang',
+    type: 'list',
+    choices: ['a', 'b', 'c'],
+  }])
+
+  expect(actual).toEqual({
+    name: 'lang',
+    type: 'list',
+    choices: ['a', 'b', 'c'],
+  })
+})
+
+test('function in answers can specify question type', async () => {
+  let actual: any
+  const p = new InMemoryPresenter({ name: 'a' }, {
+    lang: (q: ListQuestion) => actual = q,
+  })
 
   await p.prompt([{
     name: 'lang',
