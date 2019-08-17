@@ -30,6 +30,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf lib",
+    "coverage": "jest --coverage",
     "dc": "npm run dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer && dependency-check . --missing --no-dev",
     "lint": "eslint \"src/**/*.ts\"",
