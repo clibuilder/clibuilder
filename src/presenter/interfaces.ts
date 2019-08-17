@@ -1,3 +1,4 @@
+import { Answers, QuestionCollection } from 'inquirer';
 import { CliCommand } from '../cli-command';
 
 export interface Display {
@@ -33,7 +34,6 @@ export interface PresenterFactory {
   createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter,
   createCommandPresenter(options: PresenterOption): LogPresenter & HelpPresenter & Inquirer,
 }
-import inquirer = require('inquirer')
 
 export interface CommandModel {
   name: string,
@@ -70,5 +70,5 @@ export interface PresenterOption {
 }
 
 export interface Inquirer {
-  prompt(questions: inquirer.Question[]): Promise<inquirer.Answers>,
+  prompt(questions: QuestionCollection): Promise<Answers>,
 }
