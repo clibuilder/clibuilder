@@ -3,7 +3,7 @@ import { CliCommand, InMemoryPresenter, PlainPresenter, setupCliCommandTest } fr
 test('specifying Config gets completion support', () => {
   const cmd: CliCommand<{ foo: string }, { boo: string }> = {
     name: 'cmd',
-    run() { return }
+    run() { return },
   }
   // as of tsc@2.6.1, the inferring completion is not complete,
   // it gets `config` but not `boo`,
@@ -16,7 +16,7 @@ test('command with overriden ui still get memory presenter for testing', () => {
   const cmd: CliCommand<{ foo: string }, { boo: string }> = {
     name: 'override-ui',
     run() { return },
-    ui: new PlainPresenter()
+    ui: new PlainPresenter(),
   }
   const { ui } = setupCliCommandTest<{ foo: string }, { boo: string }>(cmd, [])
 
@@ -29,8 +29,8 @@ test('sub-command with overriden ui still get memory presenter for testing', () 
     commands: [{
       name: 'override-ui-sub',
       run() { return },
-      ui: new PlainPresenter()
-    }]
+      ui: new PlainPresenter(),
+    }],
   }
   const { ui } = setupCliCommandTest<{ foo: string }, { boo: string }>(cmd, [])
 

@@ -12,8 +12,8 @@ export function createInMemoryCli(name: string, ...commands: CliCommand[]) {
     {
       presenterFactory: {
         createCliPresenter(options: PresenterOption) { return new InMemoryPresenter(options) },
-        createCommandPresenter(options: PresenterOption) { return new InMemoryPresenter(options) }
-      }
+        createCommandPresenter(options: PresenterOption) { return new InMemoryPresenter(options) },
+      },
     }
   )
 }
@@ -31,7 +31,7 @@ export function setupCliCommandTest<
     command,
     {
       config,
-      context: buildContext(context)
+      context: buildContext(context),
     }
   )
 

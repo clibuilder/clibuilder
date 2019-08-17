@@ -7,19 +7,19 @@ import { setupCliCommandTest } from '../test-util';
 test('definding cmd must to specify name and run can be () => void', () => {
   isCliCommand({
     name: 'cmd',
-    run() { return }
+    run() { return },
   })
 })
 
 test(`run() can return a Promise<any>`, () => {
   isCliCommand({
     name: 'cmd',
-    run(args) { return Promise.resolve() }
+    run() { return Promise.resolve() },
   })
 
   isCliCommand({
     name: 'cmd',
-    run(args, argv) { return Promise.resolve(true) }
+    run() { return Promise.resolve(true) },
   })
 })
 
@@ -28,7 +28,7 @@ test('this in run can access config', async () => {
     name: 'cmd',
     run() {
       return Promise.resolve(this.config!.a + this.context.b)
-    }
+    },
   }, [], { a: 'a' }, { b: 'b' })
 
   t.strictEqual(await cmd.run(args, argv), 'ab')
@@ -38,30 +38,30 @@ test('can define arguments', () => {
   isCliCommand({
     name: 'cmd',
     arguments: [
-      { name: 'arg' }
+      { name: 'arg' },
     ],
-    run() { return }
+    run() { return },
   })
   isCliCommand({
     name: 'cmd',
     arguments: [
-      { name: 'arg2', description: 'desc' }
+      { name: 'arg2', description: 'desc' },
     ],
-    run() { return }
+    run() { return },
   })
   isCliCommand({
     name: 'cmd',
     arguments: [
-      { name: 'arg3', required: true }
+      { name: 'arg3', required: true },
     ],
-    run() { return }
+    run() { return },
   })
   isCliCommand({
     name: 'cmd',
     arguments: [
-      { name: 'arg4', multiple: true }
+      { name: 'arg4', multiple: true },
     ],
-    run() { return }
+    run() { return },
   })
 })
 
@@ -70,9 +70,9 @@ test('only the last argument can be multiple', () => {
     name: 'cmd',
     arguments: [
       { name: 'arg1', multiple: true },
-      { name: 'arg2' }
+      { name: 'arg2' },
     ],
-    run() { return }
+    run() { return },
   }, dummyParent), MultipleArgumentNotLastEntry)
 })
 
@@ -80,9 +80,9 @@ test('can define boolean options', async () => {
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     options: {
-      boolean: { a: { description: 'a' } }
+      boolean: { a: { description: 'a' } },
     },
-    run(args) { return Promise.resolve(args) }
+    run(args) { return Promise.resolve(args) },
   }, ['-a', 'true'])
 
   const actual = await cmd.run(args, argv)
@@ -93,9 +93,9 @@ test('can define string options', async () => {
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     options: {
-      string: { a: { description: 'a' } }
+      string: { a: { description: 'a' } },
     },
-    run(args) { return Promise.resolve(args) }
+    run(args) { return Promise.resolve(args) },
   }, ['-a', 'true'])
 
   const actual = await cmd.run(args, argv)
@@ -106,9 +106,9 @@ test('can define number options', async () => {
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     options: {
-      number: { a: { description: 'a' } }
+      number: { a: { description: 'a' } },
     },
-    run(args) { return Promise.resolve(args) }
+    run(args) { return Promise.resolve(args) },
   }, ['-a', '3'])
 
   const actual = await cmd.run(args, argv)
@@ -121,9 +121,9 @@ test('can define different options together', async () => {
     options: {
       boolean: { a: { description: 'a' } },
       string: { b: { description: 'b' } },
-      number: { c: { description: 'c' } }
+      number: { c: { description: 'c' } },
     },
-    run(args) { return Promise.resolve(args) }
+    run(args) { return Promise.resolve(args) },
   }, ['-a', 'true', '-b', 'b', '-c', '3'])
 
   const actual = await cmd.run(args, argv)
@@ -135,27 +135,27 @@ test('options name are unique across types', () => {
     name: 'cmd',
     options: {
       boolean: { a: { description: 'a' } },
-      string: { a: { description: 'a' } }
+      string: { a: { description: 'a' } },
     },
-    run() { return }
+    run() { return },
   }, dummyParent), OptionNameNotUnique)
 
   a.throws(() => createCliCommand({
     name: 'cmd',
     options: {
       boolean: { a: { description: 'a' } },
-      number: { a: { description: 'a' } }
+      number: { a: { description: 'a' } },
     },
-    run() { return }
+    run() { return },
   }, dummyParent), OptionNameNotUnique)
 
   a.throws(() => createCliCommand({
     name: 'cmd',
     options: {
       string: { a: { description: 'a' } },
-      number: { a: { description: 'a' } }
+      number: { a: { description: 'a' } },
     },
-    run() { return }
+    run() { return },
   }, dummyParent), OptionNameNotUnique)
 })
 
@@ -163,7 +163,7 @@ test('can define alias', () => {
   const { cmd } = setupCliCommandTest({
     name: 'cmd',
     alias: ['c'],
-    run(args) { return Promise.resolve(args) }
+    run(args) { return Promise.resolve(args) },
   }, [])
 
   t.deepStrictEqual(cmd.alias, ['c'])
@@ -175,8 +175,8 @@ test('create command with sub-commands and no run method', async () => {
     alias: ['c'],
     commands: [{
       name: 'sub',
-      run() { return Promise.resolve(`${this.parent.name}.${this.name}`) }
-    }]
+      run() { return Promise.resolve(`${this.parent.name}.${this.name}`) },
+    }],
   }, [])
   const actual = await cmd.commands![0].run(args, argv)
   t.strictEqual(actual, 'cmd.sub')
@@ -186,7 +186,7 @@ test('config and context type is available within the run() context', async () =
   const { cmd, args, argv } = setupCliCommandTest({
     name: 'cmd',
     alias: ['c'],
-    run() { return Promise.resolve(`${this.config!.a}.${this.context.b}`) }
+    run() { return Promise.resolve(`${this.config!.a}.${this.context.b}`) },
   }, [], { a: 'a' }, { b: 'b' })
   const actual = await cmd.run(args, argv)
   t.strictEqual(actual, 'a.b')
@@ -195,7 +195,7 @@ test('config and context type is available within the run() context', async () =
 const dummyParent = {
   name: 'cli',
   config: {},
-  context: { cwd: '.', presenterFactory: plainPresenterFactory }
+  context: { cwd: '.', presenterFactory: plainPresenterFactory },
 }
 
 function isCliCommand<Config, Context>(cmd: CliCommand<Config, Context>) { return cmd }

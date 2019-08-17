@@ -22,8 +22,8 @@ test('help message indicates default boolean option', () => {
   p.display = display
   p.showHelp({
     name: 'a', options: {
-      boolean: { 'some-option': { description: 'some description', default: true } }
-    }
+      boolean: { 'some-option': { description: 'some description', default: true } },
+    },
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: a
@@ -39,8 +39,8 @@ test('single character option should use with single dash', () => {
   p.display = display
   p.showHelp({
     name: 'a', options: {
-      boolean: { 'x': { description: 'some description', default: true } }
-    }
+      boolean: { 'x': { description: 'some description', default: true } },
+    },
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: a
@@ -56,8 +56,8 @@ test('multi-character option alias should be use with double dash', () => {
   p.display = display
   p.showHelp({
     name: 'a', options: {
-      boolean: { 'some-option': { alias: ['sopt'], description: 'some description', default: true } }
-    }
+      boolean: { 'some-option': { alias: ['sopt'], description: 'some description', default: true } },
+    },
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: a
@@ -73,8 +73,8 @@ test('option and its alias should be sorted by length', () => {
   p.display = display
   p.showHelp({
     name: 'a', options: {
-      boolean: { 'some-option': { alias: ['sopt', 'o'], description: 'some description', default: true } }
-    }
+      boolean: { 'some-option': { alias: ['sopt', 'o'], description: 'some description', default: true } },
+    },
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: a
@@ -91,8 +91,8 @@ test('help message indicates default string option', () => {
   p.display = display
   p.showHelp({
     name: 'a', options: {
-      string: { 'some-option': { description: 'some description', default: 'yes' } }
-    }
+      string: { 'some-option': { description: 'some description', default: 'yes' } },
+    },
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: a
@@ -109,17 +109,17 @@ test('nested command shows only top level', () => {
   p.showHelp({
     name: 'cli',
     options: {
-      string: { 'some-option': { description: 'some description', default: 'yes' } }
+      string: { 'some-option': { description: 'some description', default: 'yes' } },
     },
     commands: [{
       name: 'command-1',
       commands: [{
-        name: 'nested-command'
-      }]
+        name: 'nested-command',
+      }],
     }, {
       name: 'command-2',
-      alias: ['c2']
-    }]
+      alias: ['c2'],
+    }],
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: cli <command>
@@ -140,7 +140,7 @@ test('help message shows alias', () => {
   p.display = display
   p.showHelp({
     name: 'long-name',
-    alias: ['b']
+    alias: ['b'],
   })
   t.strictEqual(display.infoLogs[0][0], `
 Usage: long-name

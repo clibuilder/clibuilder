@@ -32,7 +32,7 @@ class ColorFactory implements PresenterFactory {
 const cli = new Cli({
   name: 'dummy',
   version: '1.0.0',
-  commands: []
+  commands: [],
 }, { presenterFactory: new ColorFactory() })
 
 cli.parse([]).then(process.exit, process.exit)

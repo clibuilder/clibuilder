@@ -9,7 +9,7 @@ class TestPluginCli<Config, Context> extends PluginCli<Config, Context> {
 test('use "{name}-plugin" as keyword to look for plugins', async () => {
   const cli = new TestPluginCli({
     name: 'clibuilder',
-    version: '1.0.0'
+    version: '1.0.0',
   }, { cwd: 'fixtures/one-plugin' })
   await cli.ready
   // there is an "global" `clibuilder-plugin-dummy` inside this project.
@@ -21,7 +21,7 @@ test('use custom keyword to look for plugins', async () => {
   const cli = new TestPluginCli({
     name: 'clibuilder',
     version: '1.0.0',
-    keyword: 'x-file'
+    keyword: 'x-file',
   }, { cwd: 'fixtures/alt-keyword-plugin' })
   await cli.ready
   t.strictEqual(cli.commands.length, 1)
@@ -31,7 +31,7 @@ test('command is loaded when parse', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new PluginCli({
     name: 'clibuilder',
-    version: '1.0.0'
+    version: '1.0.0',
   }, { cwd: 'fixtures/one-plugin', presenterFactory })
 
   await cli.parse(createCliArgv('clibuilder', 'one', 'echo'))
@@ -43,7 +43,7 @@ test('use custom keyword to look for plugins', async () => {
   const cli = new TestPluginCli({
     name: 'clibuilder',
     version: '1.0.0',
-    keyword: '2-cmd'
+    keyword: '2-cmd',
   }, { cwd: 'fixtures/plugin-with-2-top-commands' })
   await cli.ready
   t.strictEqual(cli.commands.length, 2)
@@ -53,7 +53,7 @@ test('PluginCli can add commands at its own project', async () => {
   const cli = new TestPluginCli({
     name: 'defaultCommands',
     version: '1.0.0',
-    commands: [{ name: 'x', run() { return } }]
+    commands: [{ name: 'x', run() { return } }],
   })
   await cli.ready
   t.strictEqual(cli.commands.length, 1)
@@ -68,8 +68,8 @@ test('can define default config', async () => {
       name: 'cmd',
       run() {
         typeAssert.isNumber(this.config.a)
-      }
-    }]
+      },
+    }],
   })
   await cli.ready
 })

@@ -8,7 +8,7 @@ export const searchPackageCommand: CliCommand<never, { _dep: { searchByKeywords:
   arguments: [{
     name: 'keywords',
     required: true,
-    multiple: true
+    multiple: true,
   }],
   async run(args) {
     const { keywords } = args
@@ -26,5 +26,5 @@ export const searchPackageCommand: CliCommand<never, { _dep: { searchByKeywords:
       this.ui.info('')
       packages.forEach(p => this.ui.info(`  ${p}`))
     }
-  }
+  },
 }

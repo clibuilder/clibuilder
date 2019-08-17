@@ -179,7 +179,7 @@ function handleGroupedOptions(parsable: Parsable, args: CliArgsWithoutDefaults, 
 function getAllGroups(opts: CliCommand.Options) {
   const groups: Record<string, string[]> = {}
   if (opts.boolean) {
-    for (let key in opts.boolean) {
+    for (const key in opts.boolean) {
       if (opts.boolean[key].group) {
         const id = opts.boolean[key].group!
         if (groups[id])
@@ -190,7 +190,7 @@ function getAllGroups(opts: CliCommand.Options) {
     }
   }
   if (opts.string) {
-    for (let key in opts.string) {
+    for (const key in opts.string) {
       if (opts.string[key].group) {
         const id = opts.string[key].group!
         if (groups[id])
@@ -201,7 +201,7 @@ function getAllGroups(opts: CliCommand.Options) {
     }
   }
   if (opts.number) {
-    for (let key in opts.number) {
+    for (const key in opts.number) {
       if (opts.number[key].group) {
         const id = opts.number[key].group!
         if (groups[id])

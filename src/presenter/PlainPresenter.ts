@@ -57,7 +57,7 @@ function generateHelpMessage(command: CommandModel) {
     generateCommandsSection(command),
     generateArgumentsSection(command),
     generateOptionsSection(command),
-    generateAliasSection(command)
+    generateAliasSection(command),
   ].filter(m => !!m)
   return `
 ${helpSections.join('\n\n')}
@@ -112,7 +112,7 @@ function generateArgumentsSection(command: CommandModel) {
   }
 
   let message = 'Arguments:\n'
-  let entries: string[][] = []
+  const entries: string[][] = []
   let maxWidth = 0
   command.arguments.forEach(a => {
     const argStr = a.required ? `<${a.name}>` : `[${a.name}]`
@@ -133,7 +133,7 @@ function generateOptionsSection(command: CommandModel) {
     return ''
   }
   let message = 'Options:\n'
-  let entries: string[][] = []
+  const entries: string[][] = []
   let maxOptionStrWidth = 0
   if (command.options.string) {
     for (const key in command.options.string) {

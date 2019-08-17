@@ -6,14 +6,14 @@ export const booleanOptionsCommand = {
     boolean: {
       'a': {
         description: 'a',
-        default: true
+        default: true,
       },
       'b': {
-        description: 'b'
-      }
-    }
+        description: 'b',
+      },
+    },
   },
   run(args) {
     this.ui.info(`a: ${args.a}, b: ${args.b}`)
-  }
+  },
 } as CliCommand

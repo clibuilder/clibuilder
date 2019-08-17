@@ -7,15 +7,15 @@ export const groupOptionsCommand = {
       'a': {
         description: 'a',
         default: true,
-        group: 'x'
+        group: 'x',
       },
       'b': {
         description: 'b',
-        group: 'x'
-      }
-    }
+        group: 'x',
+      },
+    },
   },
   run(args) {
     this.ui.info(`a: ${args.a}, b: ${args.b}`)
-  }
+  },
 } as CliCommand

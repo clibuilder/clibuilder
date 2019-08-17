@@ -9,7 +9,7 @@ test('requires at least one keyword', async () => {
 })
 
 test('displays no package found if keyword search does not yield any result', async () => {
-  const npmSearch = (_keywords: string[]) => { return [] }
+  const npmSearch = () => { return [] }
 
   const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
 
@@ -19,8 +19,8 @@ test('displays no package found if keyword search does not yield any result', as
   t.strictEqual(message, `no packages with keywords: x,y`)
 })
 
-test('found one package', async() => {
-  const npmSearch = (_keywords: string[]) => { return ['pkg-x'] }
+test('found one package', async () => {
+  const npmSearch = () => { return ['pkg-x'] }
 
   const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
 
@@ -31,8 +31,8 @@ test('found one package', async() => {
 })
 
 
-test('found multiple packages', async() => {
-  const npmSearch = (_keywords: string[]) => { return ['pkg-x', 'pkg-y'] }
+test('found multiple packages', async () => {
+  const npmSearch = () => { return ['pkg-x', 'pkg-y'] }
 
   const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
 

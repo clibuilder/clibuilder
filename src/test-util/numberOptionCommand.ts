@@ -5,11 +5,11 @@ export const numberOptionCommand = {
   options: {
     number: {
       'a': {
-        description: 'number option a'
-      }
-    }
+        description: 'number option a',
+      },
+    },
   },
   run(args) {
     this.ui.info(`a: ${args.a}`)
-  }
+  },
 } as CliCommand

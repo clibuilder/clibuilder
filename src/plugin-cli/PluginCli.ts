@@ -1,14 +1,14 @@
-import { Except, RecursivePartial } from 'type-plus';
+import { Omit, RecursivePartial } from 'type-plus';
 import { Cli, CliContext, CliOption, CliOptionWithConfig } from '../cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
 export type PluginCliOptionShared<Config, Context> = {
-  commands?: CliCommand<Config, Except<CliContext & Context, 'presenterFactory'>>[]
-  keyword?: string
+  commands?: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[],
+  keyword?: string,
 }
-export type PluginCliOption<Config, Context> = Except<CliOption<Context>, 'commands'> & PluginCliOptionShared<Config, Context>
-export type PluginCliOptionWithConfig<Config, Context> = Except<CliOptionWithConfig<Config, Context>, 'commands'> & PluginCliOptionShared<Config, Context>
+export type PluginCliOption<Config, Context> = Omit<CliOption<Context>, 'commands'> & PluginCliOptionShared<Config, Context>
+export type PluginCliOptionWithConfig<Config, Context> = Omit<CliOptionWithConfig<Config, Context>, 'commands'> & PluginCliOptionShared<Config, Context>
 
 
 export class PluginCli<
