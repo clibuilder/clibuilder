@@ -1,6 +1,7 @@
 import t from 'assert';
 import { PlainPresenter } from '.';
 import { InMemoryDisplay } from '../test-util';
+import { DisplayLevel } from './interfaces';
 
 test('should default to print info, warn, error messages', () => {
   const p = new PlainPresenter({ name: 'a' })
@@ -84,7 +85,6 @@ Options:
 `)
 })
 
-
 test('help message indicates default string option', () => {
   const p = new PlainPresenter({ name: 'a' })
   const display = new InMemoryDisplay()
@@ -148,4 +148,19 @@ Usage: long-name
 Alias:
   b
 `)
+})
+
+test('setDisplayLevel', () => {
+  const p = new PlainPresenter({ name: 'a' })
+  const display = new InMemoryDisplay()
+  p.display = display
+  p.setDisplayLevel(DisplayLevel.Silent)
+  p.debug('d')
+  p.info('i')
+  p.error('e')
+  p.warn('w')
+  t.strictEqual(display.debugLogs.length, 0)
+  t.strictEqual(display.infoLogs.length, 0)
+  t.strictEqual(display.warnLogs.length, 0)
+  t.strictEqual(display.errorLogs.length, 0)
 })

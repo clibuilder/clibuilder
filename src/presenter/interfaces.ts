@@ -1,4 +1,5 @@
 import { Answers, QuestionCollection } from 'inquirer';
+import { logLevel } from 'standard-log';
 import { CliCommand } from '../cli-command';
 
 export interface Display {
@@ -9,9 +10,9 @@ export interface Display {
 }
 
 export enum DisplayLevel {
-  Silent = 0,
-  Normal = 30,
-  Verbose = 40
+  Silent = logLevel.none,
+  Normal = logLevel.info,
+  Verbose = logLevel.debug
 }
 
 // istanbul ignore next

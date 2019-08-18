@@ -23,7 +23,7 @@ export type CliOptions<Config, Context> = ({
   options?: CliCommand.Options,
   alias?: string[],
   commands?: CliCommand<any, Context>[],
-  run(args: CliArgs, argv: string[]): void | Promise<any>,
+  run(this: Cli<Config, Context>, args: CliArgs, argv: string[]): void | Promise<any>,
 })
 
 export class Cli<Config, Context> {
@@ -35,7 +35,7 @@ export class Cli<Config, Context> {
   commands: CliCommandInstance<any, any>[] = []
   config: Config | undefined
   context: CliContext & Context
-  private ui: LogPresenter & HelpPresenter & VersionPresenter
+  ui: LogPresenter & HelpPresenter & VersionPresenter
   private run?: (args: CliArgs, argv: string[]) => void | Promise<any>
   constructor(options: CliOptions<Config, Context & RecursivePartial<CliContext>>) {
     this.name = options.name

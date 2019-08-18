@@ -108,7 +108,6 @@ test('--silent disables ui', async () => {
   expect(message).toBe('')
 })
 
-
 test('invoke command by name', async () => {
   const cli = new Cli({
     name: 'cli',
@@ -425,6 +424,31 @@ describe('Runable Cli', () => {
     a.satisfies(actual, { singer: 'miku' })
   })
 
+  test('--silent disables ui', async () => {
+    const presenterFactory = new InMemoryPresenterFactory()
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      run() { this.ui.info('hello') },
+      context: { presenterFactory },
+    })
+    await cli.parse(createCliArgv('cli', '--silent'))
+    const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+    expect(message).toBe('')
+  })
+
+  test('--verbose enables debug log', async () => {
+    const presenterFactory = new InMemoryPresenterFactory()
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      run() { this.ui.debug('debug message') },
+      context: { presenterFactory },
+    })
+    await cli.parse(createCliArgv('cli', '--verbose'))
+    const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.debugLogs)
+    expect(message).toBe('debug message')
+  })
   test('options are processed', async () => {
     const cli = new Cli({
       name: 'cli',
