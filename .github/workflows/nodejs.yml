@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8, 10, 12]
+        node-version: [12]
 
     steps:
     - uses: actions/checkout@v1
@@ -30,20 +30,5 @@ jobs:
         yarn build
         yarn depcheck
         yarn coverage --maxWorkers=2
-  release:
-    if: github.event == 'push'
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js 12
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: build
-      run: |
-        yarn
-        yarn build
-    - name: release
-      run: |
-        echo releasing
+    - run: echo release
+      if: github.event == 'push'
