@@ -31,7 +31,7 @@ export class ConsoleDisplay implements Display {
 }
 
 export interface PresenterFactory {
-  createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter,
+  createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
   createCommandPresenter(options: PresenterOption): LogPresenter & HelpPresenter & Inquirer,
 }
 
