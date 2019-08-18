@@ -1,7 +1,7 @@
 import { Cli } from '../cli';
 import { CliCommandInstance } from '../cli-command';
 
-export function findCliCommand(cli: Cli, commandName: string, ...nestedCommandNames: string[]) {
+export function findCliCommand(cli: Cli<any, any>, commandName: string, ...nestedCommandNames: string[]) {
   return findCmd(cli, commandName, nestedCommandNames)
 }
 

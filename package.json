@@ -29,6 +29,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "build:watch": "tsc --watch",
     "clean": "rimraf lib",
     "coverage": "jest --coverage",
     "dc": "npm run dependency-check",
@@ -37,8 +38,7 @@
     "test": "jest --reporters=default",
     "verify": "npm run lint && npm run build && npm run dependency-check && jest --coverage",
     "verify:ci": "npm run lint && npm run build && npm run dependency-check && jest --runInBand --coverage --reporters=default",
-    "watch": "jest --watch",
-    "watch:type": "tsc --watch"
+    "watch": "jest --watch"
   },
   "dependencies": {
     "@types/inquirer": "^6.5.0",
@@ -52,7 +52,7 @@
     "make-error": "^1.3.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
-    "type-plus": "^1.27.0",
+    "type-plus": "^1.28.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
@@ -63,6 +63,7 @@
     "@types/yargs-parser": "^11.0.3",
     "@unional/devpkg-node": "^1.4.0",
     "assertron": "^7.1.2",
-    "clibuilder-plugin-dummy": "^1.0.1"
+    "clibuilder-plugin-dummy": "^1.0.1",
+    "eslint-plugin-harmony": "^2.0.3"
   }
 }

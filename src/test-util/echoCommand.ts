@@ -10,6 +10,5 @@ export const echoCommand: CliCommand = {
   description: 'Echoing input arguments',
   async run(_args, argv) {
     this.ui.info(...argv)
-    return argv
   },
 }

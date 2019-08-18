@@ -4,7 +4,7 @@ import { Cli, createCliArgv, echoAllCommand, spyDisplay, InMemoryPresenterFactor
 
 test('can spy on cli', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
-  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [] }, { presenterFactory })
+  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [], context: { presenterFactory } })
   const display = spyDisplay(cli)
 
   await cli.parse(createCliArgv('a'))
@@ -15,7 +15,7 @@ test('can spy on cli', async () => {
 
 test('can spy on cmd', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
-  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [echoAllCommand] }, { presenterFactory })
+  const cli = new Cli({ name: 'a', version: '0.0.0', commands: [echoAllCommand], context: { presenterFactory } })
   const display = spyDisplay(cli, 'echo-all')
 
   await cli.parse(createCliArgv('a', '--verbose', 'echo-all'))

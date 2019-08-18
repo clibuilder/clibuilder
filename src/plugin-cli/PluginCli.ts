@@ -1,14 +1,28 @@
-import { Omit, RecursivePartial } from 'type-plus';
-import { Cli, CliContext, CliOption, CliOptionWithConfig } from '../cli';
+import { CliArgs } from '../argv-parser';
+import { Cli } from '../cli';
 import { CliCommand } from '../cli-command';
 import { loadPlugins } from './loadPlugins';
 
-export type PluginCliOptionShared<Config, Context> = {
-  commands?: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[],
+export type PluginCliOptions<Config, Context> = ({
+  name: string,
+  version: string,
   keyword?: string,
-}
-export type PluginCliOption<Config, Context> = Omit<CliOption<Context>, 'commands'> & PluginCliOptionShared<Config, Context>
-export type PluginCliOptionWithConfig<Config, Context> = Omit<CliOptionWithConfig<Config, Context>, 'commands'> & PluginCliOptionShared<Config, Context>
+  defaultConfig?: Config,
+} | {
+  name: string,
+  version: string,
+  keyword?: string,
+  defaultConfig?: Config,
+  context: Context,
+}) & ({
+  commands?: CliCommand<any, Context>[],
+} | {
+  arguments?: CliCommand.Argument[],
+  options?: CliCommand.Options,
+  alias?: string[],
+  commands?: CliCommand<any, Context>[],
+  run(args: CliArgs, argv: string[]): void | Promise<any>,
+})
 
 
 export class PluginCli<
@@ -18,10 +32,9 @@ export class PluginCli<
   protected loadingPlugins: Promise<void>
   public keyword: string
   constructor(
-    options: PluginCliOption<Config, Context> | PluginCliOptionWithConfig<Config, Context>,
-    context?: RecursivePartial<CliContext> & Context
+    options: PluginCliOptions<Config, Context>,
   ) {
-    super({ commands: [], ...options }, context)
+    super({ commands: [], ...options })
 
     const cwd = this.context.cwd
     this.keyword = options.keyword || `${options.name}-plugin`

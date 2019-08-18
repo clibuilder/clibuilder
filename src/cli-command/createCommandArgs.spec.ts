@@ -11,7 +11,7 @@ test('empty argv', () => {
 test(`one argv`, () => {
   const args = createCommandArgs(argCommand, ['arg1'])
 
-  a.satisfies(args, { 'some-arg': 'arg1', someArg: 'arg1' })
+  a.satisfies(args, { 'required-arg': 'arg1', requiredArg: 'arg1' })
 })
 
 test(`boolean option using with '--'`, () => {

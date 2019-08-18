@@ -12,6 +12,7 @@ export * from './findCliCommand';
 export * from './generateDisplayedMessage';
 export * from './getDisplay';
 export * from './groupOptionsCommand';
+export * from './helloCommand';
 export * from './InMemoryDisplay';
 export * from './InMemoryPresenter';
 export * from './InMemoryPresenterFactory';

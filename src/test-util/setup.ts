@@ -7,15 +7,15 @@ import { InMemoryPresenter } from './InMemoryPresenter';
 import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
 
 export function createInMemoryCli(name: string, ...commands: CliCommand[]) {
-  return new Cli(
-    { name, version: '1.0.0', commands },
-    {
+  return new Cli({
+    name, version: '1.0.0', commands,
+    context: {
       presenterFactory: {
         createCliPresenter(options: PresenterOption) { return new InMemoryPresenter(options) },
         createCommandPresenter(options: PresenterOption) { return new InMemoryPresenter(options) },
       },
-    }
-  )
+    },
+  })
 }
 
 export function setupCliCommandTest<
