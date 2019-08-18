@@ -1,4 +1,5 @@
 import t from 'assert';
+import a from 'assertron';
 import { argCommand, booleanOptionsCommand, Cli, createCliArgv, createInMemoryCli, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, InMemoryDisplay, InMemoryPresenter, noopCommand, spyDisplay, verboseCommand } from '.';
 import { createEchoDebugCommand } from './test-util/createEchoDebugCommand';
 
@@ -250,12 +251,10 @@ when called with 'arg x'
 then echo x`,
   async () => {
     const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
-    const display = spyDisplay(cli, 'arg')
 
-    await cli.parse(createCliArgv('cli', 'arg', 'x'))
+    const actual = await cli.parse(createCliArgv('cli', 'arg', 'x'))
 
-    const actual = generateDisplayedMessage(display.infoLogs)
-    t.strictEqual(actual, 'some-arg: x opt-arg: undefined')
+    a.satisfies(actual, { 'required-arg': 'x' })
   })
 
 test(`

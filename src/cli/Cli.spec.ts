@@ -1,90 +1,176 @@
-import { getLevel, logLevel } from '@unional/logging';
-import t from 'assert';
 import a, { AssertOrder } from 'assertron';
-import { Cli } from '.';
-import { log } from '../log';
-import { PlainPresenter, PresenterOption } from '../presenter';
-import { createCliArgv, echoAllCommand, InMemoryPresenter, echoCommand } from '../test-util';
-import inquirer = require('inquirer');
-import { CliCommand } from '../cli-command';
-import { typeAssert } from 'type-plus';
-import { NoConfig } from './interfaces';
+import { assertType, assignability } from 'type-plus';
+import { argCommand, createCliArgv, helloCommand, numberOptionCommand, InMemoryPresenter, InMemoryPresenterFactory, generateDisplayedMessage, echoCommand } from '../test-util';
+import { Cli, CliOptions } from './Cli';
+import { PresenterOption, PlainPresenter } from '../presenter';
+import { NoConfig } from '.';
+import { CliCommand } from '..';
+import { Answers } from 'inquirer';
 
-test('create cli needs to specify at least: name, version, and commands', async () => {
+test('CliOptions requires either run() or commands', () => {
+  assertType.isFalse(assignability<CliOptions<any, any>>()({
+    name: 'direct-cli',
+    version: '1.0.0',
+  }))
+})
+
+test('show -v shows version', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [helloCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', '-v'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe('1.0.0')
+})
+
+test('--version shows version', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [helloCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', '--version'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe('1.0.0')
+})
+
+const helloHelpMessage = `
+Usage: cli <command>
+
+Commands:
+  hello
+
+cli <command> -h         Get help for <command>
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+
+test('-h shows help', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [helloCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', '-h'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe(helloHelpMessage)
+})
+
+test('--help shows help', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [helloCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', '--help'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe(helloHelpMessage)
+})
+
+test('no matching command shows help', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [helloCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', 'not-exist'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe(helloHelpMessage)
+})
+
+test('--silent disables ui', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
     commands: [echoCommand],
+    context: { presenterFactory },
   })
-
-  t(cli)
+  await cli.parse(createCliArgv('cli', '--silent', 'echo', 'abc'))
+  const message = generateDisplayedMessage(presenterFactory.commandPresenter!.display.infoLogs)
+  expect(message).toBe('')
 })
 
-test('arguments are passed to the command', async () => {
+test('invoke command by name', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
-    commands: [echoCommand],
+    commands: [helloCommand],
   })
 
-  const actual = await cli.parse(createCliArgv('cli', 'echo', 'xyz'))
+  const actual = await cli.parse(createCliArgv('cli', 'hello'))
 
-  expect(actual).toEqual(['echo', 'xyz'])
+  expect(actual).toEqual('hello')
 })
 
-test('cli commands can be nested', async () => {
+test('pass argument to command', async () => {
   const cli = new Cli({
-    name: 'clibuilder',
-    version: '1.1.11',
+    name: 'cli',
+    version: '1.0.0',
+    commands: [argCommand],
+  })
+
+  const actual = await cli.parse(createCliArgv('cli', 'arg', 'abc'))
+
+  a.satisfies(actual, { 'required-arg': 'abc' })
+})
+
+test('pass options to command', async () => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [numberOptionCommand],
+  })
+
+  const actual = await cli.parse(createCliArgv('cli', 'number-option', '--value=123'))
+  expect(actual).toBe(123)
+})
+
+test('invoke nested command', async () => {
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
     commands: [{
-      name: 'cmd',
-      run() {
-        throw new Error('should not run')
-      },
-      commands: [{
-        name: 'nested-cmd',
-        async run() {
-          return 'nested'
-        },
-      }],
+      name: 'base',
+      run() { throw new Error('should not reach') },
+      commands: [helloCommand],
     }],
   })
 
-  const actual = await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd'))
-
-  t(actual, 'nested')
+  const actual = await cli.parse(createCliArgv('cli', 'base', 'hello'))
+  expect(actual).toEqual('hello')
 })
 
-
-test('run nested command with arguments', async () => {
-  const o = new AssertOrder(1)
+test('pass arguments to nested command', async () => {
   const cli = new Cli({
-    name: 'clibuilder',
-    version: '1.1.11',
+    name: 'cli',
+    version: '1.0.0',
     commands: [{
-      name: 'cmd',
-      run() {
-        throw new Error('should not run')
-      },
-      commands: [{
-        name: 'nested-cmd',
-        arguments: [{
-          name: 'arg1',
-          description: 'arg1 argument',
-        }],
-        run(args) {
-          // arg1 is parsed out of the argument list
-          t.deepStrictEqual(args._, [])
-
-          t.strictEqual(args.arg1, 'abc')
-          o.once(1)
-        },
-      }],
+      name: 'base',
+      run() { throw new Error('should not reach') },
+      commands: [argCommand],
     }],
   })
 
-  await cli.parse(createCliArgv('clibuilder', 'cmd', 'nested-cmd', 'abc'))
-  o.end()
+  const actual = await cli.parse(createCliArgv('cli', 'base', 'arg', 'abc'))
+  a.satisfies(actual, { 'required-arg': 'abc' })
 })
 
 test('prompt for input', async () => {
@@ -97,15 +183,19 @@ test('prompt for input', async () => {
       name: 'ask',
       async run() {
         const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
-        t.strictEqual(answers.username, 'me')
+        expect(answers.username).toBe('me')
         o.once(1)
       },
     }],
-  }, { presenterFactory })
+    context: { presenterFactory },
+  })
 
   await cli.parse(createCliArgv('cli', 'ask'))
   o.end()
 })
+function createInquirePresenterFactory(answers: Answers) {
+  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
+}
 
 test('cli context passes down to command', async () => {
   const cli = new Cli({
@@ -114,15 +204,16 @@ test('cli context passes down to command', async () => {
     commands: [{
       name: 'cmd',
       async run() {
-        typeAssert.isString(this.context.abc)
+        assertType.isString(this.context.abc)
         return this.context.abc
       },
     }],
-  }, { abc: '123' })
-  t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), '123')
+    context: { abc: '123' },
+  })
+  expect(await cli.parse(createCliArgv('cli', 'cmd'))).toEqual('123')
 })
 
-test('context in command always contain `cwd`', async () => {
+test('context in command always contains `cwd`', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '',
@@ -130,99 +221,92 @@ test('context in command always contain `cwd`', async () => {
       name: 'cmd',
       async run() {
         // cwd is available even not specified
-        typeAssert.isString(this.context.cwd)
+        assertType.isString(this.context.cwd)
         return this.context.cwd
       },
     }],
   })
-  t.strictEqual(await cli.parse(createCliArgv('cli', 'cmd')), process.cwd())
+  expect(await cli.parse(createCliArgv('cli', 'cmd'))).toEqual(process.cwd())
 })
 
+
 test('context in command does not have presenterFactory', async () => {
-  t(new Cli({
+  new Cli({
     name: 'cli',
     version: '',
     commands: [{
       name: 'cmd',
       async run() {
         const context = this.context
-        const y: Extract<typeof context, { presenterFactory: any }> = context as never
-        typeAssert.isNever(y)
+        let y: Extract<typeof context, { presenterFactory: any }>
+        assertType.isNever(y!)
       },
     }],
-  }))
+  })
 })
 
-// This is not testable because the flag has to be check and turn on logging before `Cli` is created. i.e. has to do it in initialization phase.
-test.skip('turn on debug-cli sets the log level to debug locally', async () => {
-  const cli = new Cli({
-    name: 'cli',
-    version: '0.0.1',
-    commands: [echoAllCommand],
+describe('config', () => {
+  test('read config file', async () => {
+    const o = new AssertOrder(1)
+    const cli = new Cli({
+      name: 'test-cli',
+      version: '0.0.1',
+      defaultConfig: { a: 2 },
+      commands: [{
+        name: 'cfg',
+        run() {
+          expect(this.config).toEqual({ a: 1 })
+          o.once(1)
+        },
+      }],
+      context: {
+        cwd: 'fixtures/has-config',
+      },
+    })
+    await cli.parse(createCliArgv('test-cli', 'cfg'))
+    o.end()
+  })
+  test(`read config file in parent directory`, async () => {
+    const o = new AssertOrder(1)
+    const cli = new Cli({
+      name: 'test-cli',
+      version: '0.0.1',
+      defaultConfig: { a: 2 },
+      commands: [{
+        name: 'cfg',
+        run() {
+          expect(this.config).toEqual({ a: 1 })
+          o.once(1)
+        },
+      }],
+      context: { cwd: 'fixtures/has-config/sub-folder' },
+    })
+
+    await cli.parse(createCliArgv('test-cli', 'cfg'))
+
+    o.end()
   })
 
-  await cli.parse(createCliArgv('cli', 'echo', '--debug-cli'))
-  t.strictEqual(log.level, logLevel.debug)
-  t.strictEqual(getLevel(), logLevel.none)
-})
+  test(`default config is overriden by value in config file`, async () => {
+    const o = new AssertOrder(1)
+    const cli = new Cli({
+      name: 'test-cli',
+      version: '0.0.1',
+      defaultConfig: { a: 2, b: 3 },
+      commands: [{
+        name: 'cfg',
+        run() {
+          expect(this.config).toEqual({ a: 1, b: 3 })
+          o.once(1)
+        },
+      }],
+      context: { cwd: 'fixtures/has-config' },
+    })
 
-test('read config file', async () => {
-  const o = new AssertOrder(1)
-  const cli = new Cli({
-    name: 'test-cli',
-    version: '0.0.1',
-    defaultConfig: { a: 2 },
-    commands: [{
-      name: 'cfg',
-      run() {
-        t.deepStrictEqual(this.config, { a: 1 })
-        o.once(1)
-      },
-    }],
-  }, { cwd: 'fixtures/has-config' })
-  await cli.parse(createCliArgv('cli', 'cfg'))
-  o.end()
-})
+    await cli.parse(createCliArgv('test-cli', 'cfg'))
 
-test(`read config file in parent directory`, async () => {
-  const o = new AssertOrder(1)
-  const cli = new Cli({
-    name: 'test-cli',
-    version: '0.0.1',
-    defaultConfig: { a: 2 },
-    commands: [{
-      name: 'cfg',
-      run() {
-        t.deepStrictEqual(this.config, { a: 1 })
-        o.once(1)
-      },
-    }],
-  }, { cwd: 'fixtures/has-config/sub-folder' })
-
-  await cli.parse(createCliArgv('test-cli', 'cfg'))
-
-  o.end()
-})
-
-
-test(`default config is overriden by value in config file`, async () => {
-  const o = new AssertOrder(1)
-  const cli = new Cli({
-    name: 'test-cli',
-    version: '0.0.1',
-    defaultConfig: { a: 2, b: 3 },
-    commands: [{
-      name: 'cfg',
-      run() {
-        t.deepStrictEqual(this.config, { a: 1, b: 3 })
-        o.once(1)
-      },
-    }],
-  }, { cwd: 'fixtures/has-config' })
-
-  await cli.parse(createCliArgv('test-cli', 'cfg'))
-
-  o.end()
+    o.end()
+  })
 })
 
 test('can partially override the presenter factory implementation', async () => {
@@ -237,11 +321,12 @@ test('can partially override the presenter factory implementation', async () => 
           return
         },
       }],
-    }, {
-      presenterFactory: {
-        createCommandPresenter(options: PresenterOption) {
-          o.once(1)
-          return new PlainPresenter(options)
+      context: {
+        presenterFactory: {
+          createCommandPresenter(options: PresenterOption) {
+            o.once(1)
+            return new PlainPresenter(options)
+          },
         },
       },
     })
@@ -292,26 +377,106 @@ test('Can use commands with additional context (for dependency injection)', () =
   const cmd1: CliCommand<NoConfig, { a: string, b: string }> = {
     name: 'cmd1',
     run() {
-      typeAssert.noUndefined(this.context.a)
-      typeAssert.noUndefined(this.context.b)
+      assertType.noUndefined(this.context.a)
+      assertType.noUndefined(this.context.b)
       return
     },
   }
 
-  t(new Cli({
+  new Cli({
     name: 'cli',
     version: '1.0',
+    context: { b: 'b' },
     commands: [cmd1, {
       name: 'cmd2',
       run() {
         // inline command still get completion on `this.context`
-        typeAssert.noUndefined(this.context.b)
+        assertType.noUndefined(this.context.b)
         return Promise.resolve(this.context.b === this.context.cwd)
       },
     }],
-  }, { b: 'b' }))
+  })
 })
 
-function createInquirePresenterFactory(answers: inquirer.Answers) {
-  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
-}
+describe('Runable Cli', () => {
+  test('invoke the run method', async () => {
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      async run(_, argv) { return argv },
+    })
+
+    const actual = await cli.parse(createCliArgv('cli', 'miku'))
+    expect(actual).toEqual(['cli', 'miku'])
+  })
+
+  test('arguments are processed', async () => {
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      arguments: [{
+        name: 'singer',
+      }],
+      async run(args) { return args },
+    })
+
+    const actual = await cli.parse(createCliArgv('cli', 'miku'))
+    a.satisfies(actual, { singer: 'miku' })
+  })
+
+  test('--silent disables ui', async () => {
+    const presenterFactory = new InMemoryPresenterFactory()
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      run() { this.ui.info('hello') },
+      context: { presenterFactory },
+    })
+    await cli.parse(createCliArgv('cli', '--silent'))
+    const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+    expect(message).toBe('')
+  })
+
+  test('--verbose enables debug log', async () => {
+    const presenterFactory = new InMemoryPresenterFactory()
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      run() { this.ui.debug('debug message') },
+      context: { presenterFactory },
+    })
+    await cli.parse(createCliArgv('cli', '--verbose'))
+    const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.debugLogs)
+    expect(message).toBe('debug message')
+  })
+  test('options are processed', async () => {
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      options: {
+        string: {
+          song: {
+            description: 'name of the song',
+          },
+        },
+      },
+      async run(args) { return args },
+    })
+
+    const actual = await cli.parse(createCliArgv('cli', '--song=huh'))
+
+    a.satisfies(actual, { song: 'huh' })
+  })
+
+  test('invoke run if no matching command', async () => {
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      commands: [helloCommand],
+      async run(_, argv) { return argv },
+    })
+
+    const actual = await cli.parse(createCliArgv('cli', 'miku', 'dance'))
+    expect(actual).toEqual(['cli', 'miku', 'dance'])
+  })
+})

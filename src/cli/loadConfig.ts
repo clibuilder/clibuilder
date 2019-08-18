@@ -1,6 +1,6 @@
-import findUp = require('find-up')
-import fs = require('fs')
-import path = require('path')
+import findUp from 'find-up';
+import fs from 'fs';
+import path from 'path';
 
 const win = process.platform === 'win32'
 

@@ -1,6 +1,6 @@
 import t from 'assert';
+import { assertType } from 'type-plus';
 import { createCliArgv, InMemoryPresenterFactory, PluginCli } from '..';
-import { typeAssert } from 'type-plus';
 
 class TestPluginCli<Config, Context> extends PluginCli<Config, Context> {
   ready = this.loadingPlugins
@@ -10,7 +10,8 @@ test('use "{name}-plugin" as keyword to look for plugins', async () => {
   const cli = new TestPluginCli({
     name: 'clibuilder',
     version: '1.0.0',
-  }, { cwd: 'fixtures/one-plugin' })
+    context: { cwd: 'fixtures/one-plugin' },
+  })
   await cli.ready
   // there is an "global" `clibuilder-plugin-dummy` inside this project.
   // That's why there are two commands instead of one.
@@ -22,7 +23,8 @@ test('use custom keyword to look for plugins', async () => {
     name: 'clibuilder',
     version: '1.0.0',
     keyword: 'x-file',
-  }, { cwd: 'fixtures/alt-keyword-plugin' })
+    context: { cwd: 'fixtures/alt-keyword-plugin' },
+  })
   await cli.ready
   t.strictEqual(cli.commands.length, 1)
 })
@@ -32,11 +34,11 @@ test('command is loaded when parse', async () => {
   const cli = new PluginCli({
     name: 'clibuilder',
     version: '1.0.0',
-  }, { cwd: 'fixtures/one-plugin', presenterFactory })
+    context: { cwd: 'fixtures/one-plugin', presenterFactory },
+  })
 
   await cli.parse(createCliArgv('clibuilder', 'one', 'echo'))
-  const presenter = cli.context.presenterFactory.commandPresenter!
-  t.strictEqual(presenter.display.infoLogs[0][0], 'echo')
+  t.strictEqual(presenterFactory.commandPresenter!.display.infoLogs[0][0], 'echo')
 })
 
 test('use custom keyword to look for plugins', async () => {
@@ -44,7 +46,8 @@ test('use custom keyword to look for plugins', async () => {
     name: 'clibuilder',
     version: '1.0.0',
     keyword: '2-cmd',
-  }, { cwd: 'fixtures/plugin-with-2-top-commands' })
+    context: { cwd: 'fixtures/plugin-with-2-top-commands' },
+  })
   await cli.ready
   t.strictEqual(cli.commands.length, 2)
 })
@@ -67,7 +70,7 @@ test('can define default config', async () => {
     commands: [{
       name: 'cmd',
       run() {
-        typeAssert.isNumber(this.config.a)
+        assertType.isNumber(this.config.a)
       },
     }],
   })

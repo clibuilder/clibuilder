@@ -1,15 +1,15 @@
 import { CliCommand } from '../cli-command'
 
 export const numberOptionCommand = {
-  name: 'num-opt',
+  name: 'number-option',
   options: {
     number: {
-      'a': {
-        description: 'number option a',
+      value: {
+        description: 'number option',
       },
     },
   },
   run(args) {
-    this.ui.info(`a: ${args.a}`)
+    return args.value
   },
 } as CliCommand
