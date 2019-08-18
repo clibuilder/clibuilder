@@ -42,6 +42,5 @@ node_modules
 .idea
 
 # project folders
-dist*
-lib
-out*
+.ts
+lib*

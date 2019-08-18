@@ -1,12 +1,7 @@
 {
-  "extends": "./tsconfig.build.json",
+  "extends": "./tsconfig.esnext.json",
   "compilerOptions": {
-    "noEmit": true,
-    "plugins": [
-      {
-        "name": "typescript-tslint-plugin"
-      }
-    ]
+    "noEmit": true
   },
   "include": [
     "src",

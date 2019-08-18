@@ -30,25 +30,28 @@ jobs:
       - checkout
       - restore_cache:
           name: Restore node_modules cache
-          key: node_modules-{{ checksum "package-lock.json" }}
+          key: node_modules-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
           command: |
             if [ ! -d node_modules ]; then
-              npm ci
-              npm i --no-save jest-junit
+              yarn
             fi
       - save_cache:
           name: Save node modules cache
-          key: node_modules-{{ checksum "package-lock.json" }}
+          key: node_modules-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
+      - run: yarn lint
+      - run: yarn build
+      - run: yarn depcheck
+      - run: yarn coverage --maxWorkers=2
       - persist_to_workspace:
           root: '.'
           paths:
+            - lib
+            - libm
             - node_modules
-      - run: npm run verify:ci
-      - run: npx codecov
       - store_test_results:
           path: .reports/junit
   node11:
@@ -58,7 +61,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
-      - run: npm run verify:ci
+      - run: yarn coverage --maxWorkers=2
       - store_test_results:
           path: .reports/junit
   node10:
@@ -68,7 +71,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
-      - run: npm run verify:ci
+      - run: yarn coverage --maxWorkers=2
+      - run: npx codecov
       - store_test_results:
           path: .reports/junit
   node8:
@@ -78,15 +82,14 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
-      - run: npm run verify:ci
+      - run: yarn coverage --maxWorkers=2
       - store_test_results:
           path: .reports/junit
   release:
     docker:
-      - image: circleci/node:11
+      - image: circleci/node:12
     steps:
       - checkout
       - attach_workspace:
           at: '.'
-      - run: npm run clean && npm run build
       - run: npx semantic-release
