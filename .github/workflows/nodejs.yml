@@ -1,6 +1,12 @@
 name: Node CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -25,6 +31,7 @@ jobs:
         yarn depcheck
         yarn coverage --maxWorkers=2
   release:
+    if: github.event == 'push'
     needs: [build]
     runs-on: ubuntu-latest
     steps:
