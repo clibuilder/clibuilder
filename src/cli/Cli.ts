@@ -1,136 +1,121 @@
-import { addAppender, logLevel } from '@unional/logging';
-import { ColorAppender } from 'aurelia-logging-color';
-import { Omit, RecursivePartial, required } from 'type-plus';
-import yargs from 'yargs-parser';
+import { pick, RecursivePartial, required, requiredDeep } from 'type-plus';
 import { CliArgs, parseArgv } from '../argv-parser';
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
 import { log } from '../log';
 import { DisplayLevel, HelpPresenter, LogPresenter, VersionPresenter } from '../presenter';
 import { buildContext } from './CliContext';
-import { CliContext, NoConfig } from './interfaces';
+import { CliContext } from './interfaces';
 import { loadConfig } from './loadConfig';
 
-export type CliOption<Context> = {
+export type CliOptions<Config, Context> = ({
   name: string,
   version: string,
-  commands: CliCommand<never, Omit<CliContext & Context, 'presenterFactory'>>[],
-}
-
-
-export type CliOptionWithConfig<Config, Context> = {
+  defaultConfig?: Config,
+} | {
   name: string,
   version: string,
-  commands: CliCommand<Config, Omit<CliContext & Context, 'presenterFactory'>>[],
-  /**
-   * Specify the cli's default config.
-   * This will be merged with the values in config file.
-   */
-  defaultConfig: Config,
-}
+  defaultConfig?: Config,
+  context: Context,
+}) & ({
+  commands: CliCommand<any, Context>[],
+} | {
+  arguments?: CliCommand.Argument[],
+  options?: CliCommand.Options,
+  alias?: string[],
+  commands?: CliCommand<any, Context>[],
+  run(this: Cli<Config, Context>, args: CliArgs, argv: string[]): void | Promise<any>,
+})
 
-const args = yargs(process.argv)
-// istanbul ignore next
-if (args['debug-cli']) {
-  addAppender(new ColorAppender())
-  log.level = logLevel.debug
-}
-
-/**
- * Create a new Cli.
- * @type Config is the shape of the config inside the `<cli-name>.json` file.
- * If you don't have config and need to specify the generics, you can set it to `any`.
- * @type Context is additional context to be added to the cli.
- */
-export class Cli<
-  Config extends Record<string, any> = NoConfig,
-  Context extends Record<string, any> = Record<string, any>
-  > {
-  options = {
-    boolean: {
-      'help': {
-        description: 'Print help message',
-        alias: ['h'],
-      },
-      'version': {
-        description: 'Print the CLI version',
-        alias: ['v'],
-      },
-      'verbose': {
-        description: 'Turn on verbose logging',
-        alias: ['V'],
-      },
-      'silent': {
-        description: 'Turn off logging',
-      },
-      'debug-cli': {
-        description: 'Display clibuilder debug messages',
-      },
-    },
-  }
-  commands: CliCommandInstance<Config, Context>[] = []
+export class Cli<Config, Context> {
   name: string
   version: string
+  arguments: CliCommand.Argument[] | undefined
+  options?: CliCommand.Options
+  alias?: string[]
+  commands: CliCommandInstance<any, any>[] = []
   config: Config | undefined
   context: CliContext & Context
-  private ui: LogPresenter & HelpPresenter & VersionPresenter
-
-  /**
-   * Create a new Cli instance.
-   * @param context additional context available to the cli and its commands.
-   */
-  constructor(
-    options: CliOptionWithConfig<Config, Context> | CliOption<Context>,
-    context?: RecursivePartial<CliContext> & Context
-  ) {
+  ui: LogPresenter & HelpPresenter & VersionPresenter
+  private run?: (args: CliArgs, argv: string[]) => void | Promise<any>
+  constructor(options: CliOptions<Config, Context & RecursivePartial<CliContext>>) {
     this.name = options.name
     this.version = options.version
+    Object.assign(this, requiredDeep({
+      options: {
+        boolean: {
+          'help': {
+            description: 'Print help message',
+            alias: ['h'],
+          },
+          'version': {
+            description: 'Print the CLI version',
+            alias: ['v'],
+          },
+          'verbose': {
+            description: 'Turn on verbose logging',
+            alias: ['V'],
+          },
+          'silent': {
+            description: 'Turn off logging',
+          },
+          'debug-cli': {
+            description: 'Display clibuilder debug messages',
+          },
+        },
+      },
+    }, pick(options, 'options', 'arguments', 'alias', 'run')))
+    this.context = buildContext((options as any).context)
+    log.debug('cwd', this.context.cwd)
 
-    this.context = buildContext(context)
-    const cwd = this.context.cwd
-    log.debug('cwd', cwd)
-
-    if (isConfigOption<Config, Context>(options)) {
-      this.config = required<Config>(options.defaultConfig, loadConfig(`${this.name}.json`, { cwd }))
+    if (options.defaultConfig) {
+      this.config = required<Config>(options.defaultConfig, loadConfig(`${this.name}.json`, { cwd: this.context.cwd }))
+      log.debug('Loaded config', this.config)
     }
-    else {
-      this.config = undefined
-    }
-    log.debug('Loaded config', this.config)
 
     this.ui = this.context.presenterFactory.createCliPresenter({ name: this.name })
-    options.commands.forEach(command => {
-      this.addCliCommand(command as any)
-    })
+    if (options.commands) {
+      options.commands.forEach(command => this.addCliCommand(command))
+    }
   }
 
-  parse(rawArgv: string[]) {
-    const args = parseArgv(this, rawArgv.slice(1))
-    return this.process(args, rawArgv.slice(1))
+  parse(argv: string[]) {
+    const strippedArgv = argv.slice(1)
+    const args = parseArgv(this, strippedArgv)
+    return this.process(args, strippedArgv)
   }
 
   protected addCliCommand(command: CliCommand<Config, Context>) {
     this.commands.push(createCliCommand(command, this))
   }
 
-  private process(args: CliArgs, rawArgv: string[]) {
-    if (args.version) {
-      this.ui.showVersion(this.version)
-      return Promise.resolve()
-    }
+  private async process(args: CliArgs, argv: string[]): Promise<any> {
     const command = getCliCommand(args._, this.commands)
-    const cmdChainCount = getCmdChainCount(command)
-    if (!command) {
-      this.ui.showHelp(this)
-      return Promise.resolve()
+    if (command) {
+      return this.processCommand(command, args, argv)
     }
 
+    if (args.version) {
+      this.ui.showVersion(this.version)
+    }
+    else if (args.help || !this.run) {
+      this.ui.showHelp(this)
+    }
+    else {
+      const displayLevel = args.verbose ?
+        DisplayLevel.Verbose : args.silent ?
+          DisplayLevel.Silent : DisplayLevel.Normal
+      this.ui.displayLevel = displayLevel
+      return this.run(args, argv)
+    }
+  }
+  private processCommand(command: CliCommandInstance<any, any>, args: CliArgs, argv: string[]) {
     if (args.help) {
       this.ui.showHelp(command)
       return Promise.resolve()
     }
 
-    const cmdArgv = rawArgv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent', '--debug-cli'].indexOf(x) === -1)
-
+    const cmdChainCount = getCmdChainCount(command)
+    const cmdArgv = argv.slice(cmdChainCount).filter(x => ['--verbose', '-V', '--silent', '--debug-cli'].indexOf(x) === -1)
     let cmdArgs
     try {
       cmdArgs = parseArgv(command, cmdArgv)
@@ -157,8 +142,4 @@ function getCmdChainCount(command: CliCommandInstance<any, any> | undefined) {
     count++
   }
   return count - 1
-}
-
-function isConfigOption<Config, Context>(options: any): options is CliOptionWithConfig<Config, Context> {
-  return options.defaultConfig !== undefined
 }

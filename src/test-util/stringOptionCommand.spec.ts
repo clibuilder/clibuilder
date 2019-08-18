@@ -1,7 +1,7 @@
-import t from 'assert'
-import a from 'assertron'
+import t from 'assert';
+import a from 'assertron';
+import { argCommand, setupCliCommandTest, stringOptionCommand } from '../index';
 
-import { setupCliCommandTest, argCommand, stringOptionCommand } from '../index'
 
 
 test('string option with space', () => {
@@ -37,10 +37,9 @@ test('log option', () => {
 })
 
 test('argument command', () => {
-  const { cmd, args, argv, ui } = setupCliCommandTest(argCommand, ['abc'])
+  const { cmd, args, argv } = setupCliCommandTest(argCommand, ['abc'])
 
-  a.satisfies(args, { 'some-arg': 'abc', someArg: 'abc' })
+  a.satisfies(args, { 'required-arg': 'abc', requiredArg: 'abc' })
 
   cmd.run(args, argv)
-  t.strictEqual(ui.display.infoLogs[0][0], 'some-arg: abc')
 })

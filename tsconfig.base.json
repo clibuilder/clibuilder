@@ -1,24 +1,24 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "inlineSources": true,
     "lib": [
       "es2015"
     ],
-    "module": "commonjs",
     "moduleResolution": "node",
     "newLine": "LF",
-    "noImplicitAny": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "removeComments": false,
     "sourceMap": true,
-    "strictNullChecks": true
+    "strict": true
   },
+  "include": [
+    "typings"
+  ],
   "files": [
-    "src/index.ts",
-    "src/test-util/index.ts"
+    "src/index.ts"
   ]
 }

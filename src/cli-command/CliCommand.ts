@@ -67,12 +67,14 @@ export namespace CliCommand {
      * Name of the command.
      */
     name: string,
-    arguments?: Argument[],
     description?: string,
+    arguments?: Argument[],
     options?: Options,
     alias?: string[],
     ui?: LogPresenter & HelpPresenter & Inquirer,
   }
+
+  export type RunMethod<Config, Context> = (this: CliCommandInstance<Config, Omit<CliContext, 'presenterFactory'> & Context>, args: CliArgs, argv: string[]) => void | Promise<any>
 }
 
 export type CliCommandInstance<Config, Context> = CliCommand.Shared & {

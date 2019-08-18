@@ -20,7 +20,7 @@ A highly customizable command line library.
 
 - Distributed commands. `CliCommand` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
 - Nested commands.
-- Load config file.
+- Support config file.
 - Provide additional context from `Cli` to `CliCommand`
 - Can use different UI at `Cli` and `CliCommand` level.
 - Plugin architecture using `PluginCli`
@@ -36,7 +36,8 @@ import { commandA, commandB } from './commands'
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
-  commands: [commandA, commandB]
+  commands: [commandA, commandB],
+  run() { /* when not matching any command */ }
 })
 cli.parse(process.argv)
 
@@ -66,8 +67,8 @@ import {
   VersionPresenter
 } from 'clibuilder'
 
-class YourCliPresenter implements LogPresenter, HelpPresenter, VersionPresenter { ... }
-class YourCmdPresenter implements LogPresenter & HelpPresenter & Inquirer { ... }
+class YourCliPresenter implements LogPresenter, HelpPresenter, VersionPresenter, Inquirer { ... }
+class YourCmdPresenter implements LogPresenter, HelpPresenter, Inquirer { ... }
 
 const presenterFactory = {
   createCliPresenter(options: PresenterOptions) {
@@ -81,8 +82,9 @@ const presenterFactory = {
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
-  commands: [...]
-}, { presenterFactory })
+  commands: [...],
+  context: { presenterFactory }
+})
 
 cli.parse(process.argv)
 ```
@@ -142,8 +144,9 @@ const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
   defaultConfig: config
-  commands: [cmd]
-}, { something: 10 })
+  commands: [cmd],
+  context: { something: 10 }
+})
 ```
 
 `PluginCli` allows you to build plugins to add commands to your application.
@@ -192,23 +195,6 @@ There are also test utilites available for you to develop your command line tool
 - `createCliArgv()`: creates `argv` that the cli understands.
 - `findCliCommand()`: find a command within the cli.
 - `generateDisplayedMessage()`: generate easy to check messages from logs in `InMemoryDisplay` (through `ui.display.xxxLogs`).
-
-## Contribute
-
-```sh
-# after fork and clone
-npm install
-
-# begin making changes
-git checkout -b <branch>
-npm run watch
-
-# after making change(s)
-git commit -m "<commit message>"
-git push
-
-# create PR
-```
 
 [circleci-image]: https://circleci.com/gh/unional/clibuilder/tree/master.svg?style=shield
 [circleci-url]: https://circleci.com/gh/unional/clibuilder/tree/master

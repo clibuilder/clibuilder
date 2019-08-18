@@ -18,7 +18,8 @@ describe('list', () => {
       name: 'no-plugin',
       version: '1.0.0',
       commands: [pluginsCommand],
-    }, { cwd: 'fixtures/no-plugin', presenterFactory })
+      context: { cwd: 'fixtures/no-plugin', presenterFactory },
+    })
 
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
@@ -35,7 +36,8 @@ describe('list', () => {
       name: 'clibuilder',
       version: '1.0.0',
       commands: [pluginsCommand],
-    }, { cwd: 'fixtures/one-plugin', presenterFactory })
+      context: { cwd: 'fixtures/one-plugin', presenterFactory },
+    })
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
 
@@ -50,7 +52,8 @@ describe('list', () => {
       name: 'clibuilder',
       version: '1.0.0',
       commands: [pluginsCommand],
-    }, { cwd: 'fixtures/two-plugins', presenterFactory })
+      context: { cwd: 'fixtures/two-plugins', presenterFactory },
+    })
     const cmd = getCliCommand(['plugins', 'list'], cli.commands)!
     const ui = cmd.ui = new InMemoryPresenter({ name: 'clibuilder' })
 

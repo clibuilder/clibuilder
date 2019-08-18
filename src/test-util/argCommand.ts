@@ -4,16 +4,16 @@ export const argCommand = {
   name: 'arg',
   arguments: [
     {
-      name: 'some-arg',
+      name: 'required-arg',
       description: 'Some Required Arguments',
       required: true,
     },
     {
-      name: 'opt-arg',
+      name: 'optional-arg',
       description: 'Some Optional Arguments',
     },
   ],
-  run(args) {
-    this.ui.info(`some-arg: ${args['some-arg']}`, `opt-arg: ${args['opt-arg']}`)
+  async run(args) {
+    return args
   },
 } as CliCommand
