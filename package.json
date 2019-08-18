@@ -30,7 +30,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "build": "yarn build:es5 && yarn build:esnext",
+    "build": "yarn build:esnext && yarn build:es5",
     "build:es5": "tsc -p tsconfig.es5.json",
     "build:esnext": "tsc -p tsconfig.esnext.json",
     "build:watch": "tsc --watch",

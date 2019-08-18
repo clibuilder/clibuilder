@@ -480,3 +480,12 @@ describe('Runable Cli', () => {
     expect(actual).toEqual(['cli', 'miku', 'dance'])
   })
 })
+
+test('can specify Config type and omit Context', () => {
+
+  new Cli<{ a: 1 }>({
+    name: 'cli',
+    version: '1.0',
+    commands: [],
+  })
+})

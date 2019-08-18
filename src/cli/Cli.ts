@@ -26,7 +26,7 @@ export type CliOptions<Config, Context> = ({
   run(this: Cli<Config, Context>, args: CliArgs, argv: string[]): void | Promise<any>,
 })
 
-export class Cli<Config, Context> {
+export class Cli<Config, Context = unknown> {
   name: string
   version: string
   arguments: CliCommand.Argument[] | undefined
