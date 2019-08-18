@@ -39,6 +39,7 @@
     "depcheck": "yarn dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer -i standard-log-color && dependency-check . --missing --no-dev",
     "lint": "eslint \"src/**/*.ts\"",
+    "nuke": "yarn clean && rimraf node_modules",
     "test": "jest",
     "test:watch": "jest --watch",
     "verify": "yarn lint && yarn build && yarn dependency-check && yarn coverage",
@@ -67,7 +68,6 @@
     "@types/yargs-parser": "^11.0.3",
     "@unional/devpkg-node": "^1.4.0",
     "assertron": "^7.1.2",
-    "clibuilder-plugin-dummy": "^1.0.1",
-    "eslint-plugin-harmony": "^2.0.3"
+    "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
