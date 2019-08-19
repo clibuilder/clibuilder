@@ -57,7 +57,7 @@
     "search-packages": "^2.0.0",
     "standard-log": "^3.1.2",
     "standard-log-color": "^1.5.5",
-    "type-plus": "^1.28.0",
+    "type-plus": "^1.29.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
@@ -67,6 +67,7 @@
     "@types/yargs-parser": "^11.0.3",
     "@unional/devpkg-node": "^1.4.0",
     "assertron": "^7.1.2",
+    "chalk": "^2.4.2",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }

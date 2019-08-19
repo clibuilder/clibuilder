@@ -4548,10 +4548,17 @@ type-name@^2.0.1:
   resolved "https://registry.yarnpkg.com/type-name/-/type-name-2.0.2.tgz#efe7d4123d8ac52afff7f40c7e4dec5266008fb4"
   integrity sha1-7+fUEj2KxSr/9/QMfk3sUmYAj7Q=
 
-type-plus@^1.26.2, type-plus@^1.28.0:
+type-plus@^1.26.2:
   version "1.28.0"
   resolved "https://registry.yarnpkg.com/type-plus/-/type-plus-1.28.0.tgz#fd174c66cc943e5ac9b18be0c9204c5b8417c764"
   integrity sha512-BVhMS+vlICcvpL2D/7nwZq5mCBgMUkb3kOgdksQACdM6iBN2742S9TnZLDw6eWDvS9m8z6cJwAAQSlUd7TE73g==
+  dependencies:
+    unpartial "^0.6.3"
+
+type-plus@^1.29.0:
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/type-plus/-/type-plus-1.29.0.tgz#b4cd7b1a25151378f051ead678beb31bbf15ed9d"
+  integrity sha512-YwkR5pwuKHS6WuQMmng/6LvE4Y92ObV9OkCZYrUJ5ypHJuaKMS2EEy8octHHnVeNStpFebX+aYgyUcpTB2lGmg==
   dependencies:
     unpartial "^0.6.3"
 
