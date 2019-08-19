@@ -193,9 +193,6 @@ test('prompt for input', async () => {
   await cli.parse(createCliArgv('cli', 'ask'))
   o.end()
 })
-function createInquirePresenterFactory(answers: Answers) {
-  return { createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers) }
-}
 
 test('cli context passes down to command', async () => {
   const cli = new Cli({
@@ -449,6 +446,7 @@ describe('Runable Cli', () => {
     const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.debugLogs)
     expect(message).toBe('debug message')
   })
+
   test('options are processed', async () => {
     const cli = new Cli({
       name: 'cli',
@@ -479,6 +477,24 @@ describe('Runable Cli', () => {
     const actual = await cli.parse(createCliArgv('cli', 'miku', 'dance'))
     expect(actual).toEqual(['cli', 'miku', 'dance'])
   })
+
+  test('prompt for input', async () => {
+    const o = new AssertOrder(1)
+    const presenterFactory = createInquirePresenterFactory({ username: 'me' })
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.2.1',
+      async run() {
+        const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+        expect(answers.username).toBe('me')
+        o.once(1)
+      },
+      context: { presenterFactory },
+    })
+
+    await cli.parse(createCliArgv('cli'))
+    o.end()
+  })
 })
 
 test('can specify Config type and omit Context', () => {
@@ -489,3 +505,10 @@ test('can specify Config type and omit Context', () => {
     commands: [],
   })
 })
+
+function createInquirePresenterFactory(answers: Answers) {
+  return {
+    createCliPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers),
+    createCommandPresenter: (options: PresenterOption) => new InMemoryPresenter(options, answers),
+  }
+}
