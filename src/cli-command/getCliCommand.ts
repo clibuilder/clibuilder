@@ -6,8 +6,8 @@ export function getCliCommand<
   Context extends Record<string, any> = Record<string, any>>(
     args: string[],
     commands: CliCommand[]): CliCommandInstance<Config, CliContext & Context> | undefined {
-  if (args.length === 0)
-    return undefined
+  if (args.length === 0) return undefined
+
   const nameOrAlias = args.shift()!
   let matchedCommand
   commands.forEach(cmd => {

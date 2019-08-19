@@ -1,4 +1,4 @@
-import { pick, RecursivePartial, required, requiredDeep } from 'type-plus';
+import { pick, RecursivePartial, required, requiredDeep, omit } from 'type-plus';
 import { CliArgs, parseArgv } from '../argv-parser';
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command';
 import { log } from '../log';
@@ -79,21 +79,22 @@ export class Cli<Config, Context = unknown> {
   }
 
   parse(argv: string[]) {
-    const strippedArgv = argv.slice(1)
-    const args = parseArgv(this, strippedArgv)
-    return this.process(args, strippedArgv)
+    const argvWithoutNode = argv.slice(1)
+    return this.process(argvWithoutNode)
   }
 
   protected addCliCommand(command: CliCommand<Config, Context>) {
     this.commands.push(createCliCommand(command, this))
   }
 
-  private async process(args: CliArgs, argv: string[]): Promise<any> {
-    const command = getCliCommand(args._, this.commands)
+  private async process(argv: string[]): Promise<any> {
+    const commandArgs = parseArgv(omit(this, 'arguments'), argv)
+    const command = getCliCommand(commandArgs._, this.commands)
     if (command) {
-      return this.processCommand(command, args, argv)
+      return this.processCommand(command, commandArgs, argv)
     }
 
+    const args = parseArgv(this, argv)
     if (args.version) {
       this.ui.showVersion(this.version)
     }

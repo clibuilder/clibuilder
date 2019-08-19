@@ -1,11 +1,11 @@
 import a, { AssertOrder } from 'assertron';
+import { Answers } from 'inquirer';
 import { assertType, assignability } from 'type-plus';
-import { argCommand, createCliArgv, helloCommand, numberOptionCommand, InMemoryPresenter, InMemoryPresenterFactory, generateDisplayedMessage, echoCommand } from '../test-util';
-import { Cli, CliOptions } from './Cli';
-import { PresenterOption, PlainPresenter } from '../presenter';
 import { NoConfig } from '.';
 import { CliCommand } from '..';
-import { Answers } from 'inquirer';
+import { PlainPresenter, PresenterOption } from '../presenter';
+import { argCommand, createCliArgv, echoCommand, generateDisplayedMessage, helloCommand, InMemoryPresenter, InMemoryPresenterFactory, numberOptionCommand } from '../test-util';
+import { Cli, CliOptions } from './Cli';
 
 test('CliOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<CliOptions<any, any>>()({
@@ -495,10 +495,25 @@ describe('Runable Cli', () => {
     await cli.parse(createCliArgv('cli'))
     o.end()
   })
+
+  test('invoke command if match', async () => {
+    const cli = new Cli({
+      name: 'cli',
+      version: '1.0.0',
+      commands: [helloCommand],
+      arguments: [{
+        name: 'first-arg',
+        required: true,
+      }],
+      async run() { throw new Error('should not reach') },
+    })
+
+    const actual = await cli.parse(createCliArgv('cli', 'hello'))
+    expect(actual).toEqual('hello')
+  })
 })
 
 test('can specify Config type and omit Context', () => {
-
   new Cli<{ a: 1 }>({
     name: 'cli',
     version: '1.0',
