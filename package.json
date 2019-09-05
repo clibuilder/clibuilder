@@ -64,7 +64,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.137",
     "@types/wordwrap": "github:types/wordwrap",
-    "@types/yargs-parser": "^11.0.3",
+    "@types/yargs-parser": "^13.1.0",
     "@unional/devpkg-node": "^1.4.0",
     "assertron": "^7.1.2",
     "chalk": "^2.4.2",
