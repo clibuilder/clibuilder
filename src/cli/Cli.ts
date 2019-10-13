@@ -63,7 +63,7 @@ export class Cli<Config, Context = unknown> {
           },
         },
       },
-    }, pick(options, 'options', 'arguments', 'alias', 'run')))
+    }, pick(options, 'options', 'arguments', 'alias', 'run') as any))
     this.context = buildContext((options as any).context)
     log.debug('cwd', this.context.cwd)
 

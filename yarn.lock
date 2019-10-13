@@ -4190,19 +4190,19 @@ stack-utils@^1.0.1:
   resolved "https://registry.yarnpkg.com/stack-utils/-/stack-utils-1.0.2.tgz#33eba3897788558bebfc2db059dc158ec36cebb8"
   integrity sha512-MTX+MeG5U994cazkjd/9KNAapsHnibjMLnfXodlkXw76JEea0UiNzrqidzo1emMwk7w5Qhc9jd4Bn9TBb1MFwA==
 
-standard-log-color@^1.5.5:
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/standard-log-color/-/standard-log-color-1.5.5.tgz#22693e6448206bfbcab5637319ca0553fd6787d0"
-  integrity sha512-LNzCx79c2VKS7QzAvnpsg5EI7OahFjQa2jdb0T5eFSyC66hoGGfxL8FlSDMiXADWIXpsyi9cvGrHflAT4W+vGw==
+standard-log-color@^1.5.6:
+  version "1.5.6"
+  resolved "https://registry.yarnpkg.com/standard-log-color/-/standard-log-color-1.5.6.tgz#5ff5bd5a580d00c52612a45e1c942327aed4c804"
+  integrity sha512-Z/X+kX4bCC57ZOn5JlODegU72vWejX7y+JyTKIGqiEIqnfueu5jyi0W+LYomqD9eI7J/Q6ziFwZciK5ieV5cEQ==
   dependencies:
     color-map "^1.1.0"
-    standard-log "^3.1.2"
+    standard-log "^3.1.3"
     unpartial "^0.6.3"
 
-standard-log@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-3.1.2.tgz#2a4d3339ff625c66a6734af52274224cbbda294e"
-  integrity sha512-JyJQi/V3lIovmJPO7lHgHKLVV4m9YpwfEV2E5P1yITgmtQ3R6kavXQHOnbSG228YfLo8Tqqzwns083V5dX4wHg==
+standard-log@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-3.1.3.tgz#1bdbf7a819a3e6e93ea079156e53fc91246e14ef"
+  integrity sha512-eE05NIH44ZE7+6xVQHRoZP+88OYAZT7mon+lurL2K3CV3LkOA/ZCBtuIBeI9mx9E2nSVFIMJOw3B83c1OskzbQ==
   dependencies:
     global-store "^1.0.0-beta.14"
     is-node "^1.0.2"

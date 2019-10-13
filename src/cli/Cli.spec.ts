@@ -383,7 +383,7 @@ test('Can use commands with additional context (for dependency injection)', () =
   new Cli({
     name: 'cli',
     version: '1.0',
-    context: { b: 'b' },
+    context: { a: 'a', b: 'b' },
     commands: [cmd1, {
       name: 'cmd2',
       run() {
