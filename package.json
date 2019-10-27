@@ -59,7 +59,7 @@
     "standard-log-color": "^1.5.6",
     "type-plus": "^1.29.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^10.1.0"
+    "yargs-parser": "^16.0.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.137",
