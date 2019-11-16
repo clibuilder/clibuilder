@@ -4211,6 +4211,18 @@ standard-log@^3.1.3:
     type-plus "^1.26.2"
     upper-case "^1.1.3"
 
+standard-log@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-4.0.0.tgz#acc511c9e1f7a240207d30cd7b8f9366e1c73199"
+  integrity sha512-MDDdFyHxQxbrS27ymY8aeE1nP/FUp/KU/lU+vUe3b17rqf3yy8w9P8i3rn2oK2O8X0TydPA60qozxzqdWCmbrQ==
+  dependencies:
+    global-store "^1.0.0-beta.14"
+    is-node "^1.0.2"
+    iso-error "^2.2.0"
+    ms "^2.1.2"
+    type-plus "^1.26.2"
+    upper-case "^1.1.3"
+
 static-extend@^0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/static-extend/-/static-extend-0.1.2.tgz#60809c39cbff55337226fd5e0b520f341f1fb5c6"
