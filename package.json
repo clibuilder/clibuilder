@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@types/inquirer": "^6.5.0",
-    "camel-case": "^3.0.0",
+    "camel-case": "^4.0.0",
     "find-installed-packages": "^2.0.1",
     "find-up": "^4.1.0",
     "inquirer": "^6.5.1",
