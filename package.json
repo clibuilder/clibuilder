@@ -1,6 +1,6 @@
 {
   "name": "clibuilder",
-  "version": "4.1.1",
+  "version": "0.0.0-development",
   "description": "A CLI building library",
   "keywords": [
     "builder",
@@ -38,12 +38,13 @@
     "coverage": "jest --coverage",
     "depcheck": "yarn dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer -i standard-log-color && dependency-check . --missing --no-dev",
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "eslint --ext=js,ts .",
     "nuke": "yarn clean && rimraf node_modules",
     "test": "jest",
     "test:watch": "jest --watch",
     "verify": "yarn lint && yarn build && yarn dependency-check && yarn coverage",
-    "watch": "yarn test:watch"
+    "watch": "yarn test:watch",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@types/inquirer": "^6.5.0",
@@ -62,12 +63,18 @@
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
     "@types/lodash": "^4.14.149",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.3",
     "@unional/devpkg-node": "^1.4.2",
     "assertron": "^7.1.2",
     "chalk": "^3.0.0",
-    "clibuilder-plugin-dummy": "^1.0.1"
+    "clibuilder-plugin-dummy": "^1.0.1",
+    "codacy-coverage": "^3.4.0",
+    "commitlint-circle": "^1.0.0",
+    "husky": "^3.1.0",
+    "semantic-release": "^15.14.0"
   }
 }

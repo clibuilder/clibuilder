@@ -1,4 +1,4 @@
-import camelCase from 'camel-case';
+import { camelCase } from 'camel-case';
 import { filterKey } from 'type-plus';
 import yargs from 'yargs-parser';
 import { CliCommand } from '../cli-command';

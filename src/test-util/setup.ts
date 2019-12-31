@@ -20,11 +20,13 @@ export function createInMemoryCli(name: string, ...commands: CliCommand[]) {
 
 export function setupCliCommandTest<
   Config extends Record<string, any> = Record<string, any>,
-  Context extends Record<string, any> = CliContext>(
-    command: CliCommand<Config, Context>,
-    argv: string[],
-    config?: Config,
-    context: RecursivePartial<CliContext & Context> = {}) {
+  Context extends Record<string, any> = CliContext
+>(
+  command: CliCommand<Config, Context>,
+  argv: string[],
+  config?: Config,
+  context: RecursivePartial<CliContext & Context> = {}
+) {
   const args = createCommandArgs(command, argv)
 
   const cmd = createCliCommand(

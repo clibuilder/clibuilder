@@ -6,12 +6,13 @@ import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from './errors';
 
 export function createCliCommand<
   Config extends Record<string, any>,
-  Context extends Record<string, any>>(
-    cmdSpec: CliCommand<Config, Context>,
-    parent: {
-      config?: Config,
-      context: RecursivePartial<CliContext & Context>,
-    }): CliCommandInstance<Config, CliContext & Context> {
+  Context extends Record<string, any>
+>(
+  cmdSpec: CliCommand<Config, Context>,
+  parent: {
+    config?: Config,
+    context: RecursivePartial<CliContext & Context>,
+  }): CliCommandInstance<Config, CliContext & Context> {
   log.debug('creatingCommand', cmdSpec.name)
 
   validateCliCommand(cmdSpec)

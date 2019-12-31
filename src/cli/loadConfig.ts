@@ -7,8 +7,8 @@ const win = process.platform === 'win32'
 export function loadConfig(configFileName: string, { cwd, home }: { cwd: string, home?: string } = {} as any) {
   cwd = cwd || process.cwd()
   home = home || (win ?
-  process.env.USERPROFILE :
-  process.env.HOME)
+    process.env.USERPROFILE :
+    process.env.HOME)
 
   let filePath = findUp.sync(configFileName, { cwd })
   if (!filePath && home)
