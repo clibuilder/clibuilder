@@ -5,6 +5,7 @@ import { NoConfig } from '.'
 import { CliCommand, PlainPresenter, PresenterOption } from '..'
 import { argCommand, createCliArgv, echoCommand, generateDisplayedMessage, helloCommand, InMemoryPresenter, InMemoryPresenterFactory, numberOptionCommand } from '../test-util'
 import { Cli, CliOptions } from './Cli'
+import { pluginsCommand } from '../commands'
 
 test('CliOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<CliOptions<any, any>>()({
@@ -55,6 +56,17 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `
 
+const pluginsHelpMessage = `
+Usage: cli plugins <command>
+
+  Commands related to the plugins of the cli
+
+Commands:
+  list, ls, search
+
+plugins <command> -h     Get help for <command>
+`
+
 test('-h shows help', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
@@ -92,6 +104,19 @@ test('no matching command shows help', async () => {
   await cli.parse(createCliArgv('cli', 'not-exist'))
   const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
   expect(message).toBe(helloHelpMessage)
+})
+
+test('command without run shows help', async () => {
+  const presenterFactory = new InMemoryPresenterFactory()
+  const cli = new Cli({
+    name: 'cli',
+    version: '1.0.0',
+    commands: [pluginsCommand],
+    context: { presenterFactory },
+  })
+  await cli.parse(createCliArgv('cli', 'plugins'))
+  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(message).toBe(pluginsHelpMessage)
 })
 
 test('--silent disables ui', async () => {
@@ -224,7 +249,6 @@ test('context in command always contains `cwd`', async () => {
   })
   expect(await cli.parse(createCliArgv('cli', 'cmd'))).toEqual(process.cwd())
 })
-
 
 test('context in command does not have presenterFactory', async () => {
   new Cli({

@@ -111,7 +111,7 @@ export class Cli<Config, Context = unknown> {
     }
   }
   private processCommand(command: CliCommandInstance<any, any>, args: CliArgs, argv: string[]) {
-    if (args.help) {
+    if (args.help || !command.run) {
       this.ui.showHelp(command)
       return Promise.resolve()
     }
