@@ -1,7 +1,7 @@
 import { getLogger, Logger, logLevel } from 'standard-log';
 import yargs from 'yargs-parser';
 
-const log: Logger = getLogger('clibuilder', logLevel.none)
+const log: Logger = getLogger('clibuilder', { level: logLevel.none })
 
 export { log };
 
