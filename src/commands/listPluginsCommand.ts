@@ -1,12 +1,12 @@
 import { findByKeywords } from 'find-installed-packages'
-import { CliCommand, CliCommandInstance } from '../cli-command'
-import { PluginCli } from '../plugin-cli'
+import { CliCommand } from '../cli-command'
 import { PlainPresenter } from '../presenter'
+import { getPluginCli } from './getPluginCli'
 
-export const listCommand: CliCommand = {
+export const listPluginsCommand: CliCommand = {
   name: 'list',
   alias: ['ls'],
-  description: 'List plugins available to the cli',
+  description: 'List installed plugins',
   async run() {
     const cli = getPluginCli(this)
     if (!cli || !cli.keyword) {
@@ -28,10 +28,4 @@ export const listCommand: CliCommand = {
     }
   },
   ui: new PlainPresenter(),
-}
-
-function getPluginCli<Config, Context>(subject: CliCommandInstance<Config, Context> | undefined): PluginCli | undefined {
-  let p: any = subject
-  while (p.parent) p = p.parent
-  return p
 }

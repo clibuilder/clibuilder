@@ -1,9 +1,9 @@
 import { CliCommand } from '../cli-command'
-import { listCommand } from './listCommand'
-import { searchPackageCommand } from './searchPackageCommand'
+import { listPluginsCommand } from './listPluginsCommand'
+import { searchPluginsCommand } from './searchPluginsCommand'
 
 export const pluginsCommand: CliCommand = {
   name: 'plugins',
   description: 'Commands related to the plugins of the cli',
-  commands: [listCommand, searchPackageCommand],
+  commands: [listPluginsCommand, searchPluginsCommand],
 }
