@@ -8,9 +8,9 @@ const outDir = 'dist-es5'
 function getOutFilepath() {
   let filepath = path.relative(process.cwd() + '/src', process.argv[2]);
   let extension = path.extname(filepath)
-  console.log(extension, extension === '.ts')
+  console.info(extension, extension === '.ts')
   filepath = filepath.slice(0, -extension.length) + (extension === '.ts' ? '.js' : '.jsx')
-  console.log(filepath)
+  console.info(filepath)
   return filepath = `${outDir}/${filepath}`
 }
 
