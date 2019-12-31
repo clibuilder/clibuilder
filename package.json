@@ -47,27 +47,27 @@
   },
   "dependencies": {
     "@types/inquirer": "^6.5.0",
-    "camel-case": "^3.0.0",
+    "camel-case": "^4.1.1",
     "find-installed-packages": "^2.0.1",
     "find-up": "^4.1.0",
-    "inquirer": "^6.5.1",
+    "inquirer": "^7.0.1",
     "lodash": "^4.17.15",
     "make-error": "^1.3.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
-    "standard-log": "^3.1.3",
-    "standard-log-color": "^1.5.6",
+    "standard-log": "^4.0.2",
+    "standard-log-color": "^1.5.15",
     "type-plus": "^1.29.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^10.1.0"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.137",
+    "@types/lodash": "^4.14.149",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^11.0.3",
-    "@unional/devpkg-node": "^1.4.0",
+    "@unional/devpkg-node": "^1.4.2",
     "assertron": "^7.1.2",
-    "chalk": "^2.4.2",
+    "chalk": "^3.0.0",
     "clibuilder-plugin-dummy": "^1.0.1"
   }
 }
