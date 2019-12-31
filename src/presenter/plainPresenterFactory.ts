@@ -1,6 +1,6 @@
 
-import { HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './interfaces';
-import { PlainPresenter } from './PlainPresenter';
+import { HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './interfaces'
+import { PlainPresenter } from './PlainPresenter'
 
 export const plainPresenterFactory = {
   createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter {

@@ -1,6 +1,6 @@
-import { searchByKeywords } from 'search-packages';
-import { required } from 'type-plus';
-import { CliCommand } from '../cli-command';
+import { searchByKeywords } from 'search-packages'
+import { required } from 'type-plus'
+import { CliCommand } from '../cli-command'
 
 export const searchPackageCommand: CliCommand<never, { _dep: { searchByKeywords: typeof searchByKeywords } }> = {
   name: 'search',

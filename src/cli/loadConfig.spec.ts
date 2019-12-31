@@ -1,5 +1,4 @@
 import t from 'assert'
-
 import { loadConfig } from './loadConfig'
 
 test('no config gets undefined', () => {

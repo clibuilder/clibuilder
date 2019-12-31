@@ -1,6 +1,6 @@
-import { Answers, QuestionCollection } from 'inquirer';
-import { logLevel } from 'standard-log';
-import { CliCommand } from '../cli-command';
+import { Answers, QuestionCollection } from 'inquirer'
+import { logLevel } from 'standard-log'
+import { CliCommand } from '../cli-command'
 
 export interface Display {
   debug(...args: any[]): void,

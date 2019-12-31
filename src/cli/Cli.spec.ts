@@ -1,11 +1,11 @@
-import a, { AssertOrder } from 'assertron';
-import { Answers } from 'inquirer';
-import { assertType, assignability } from 'type-plus';
-import { NoConfig } from '.';
-import { CliCommand } from '..';
-import { PlainPresenter, PresenterOption } from '../presenter';
-import { argCommand, createCliArgv, echoCommand, generateDisplayedMessage, helloCommand, InMemoryPresenter, InMemoryPresenterFactory, numberOptionCommand } from '../test-util';
-import { Cli, CliOptions } from './Cli';
+import a, { AssertOrder } from 'assertron'
+import { Answers } from 'inquirer'
+import { assertType, assignability } from 'type-plus'
+import { NoConfig } from '.'
+import { CliCommand } from '..'
+import { PlainPresenter, PresenterOption } from '../presenter'
+import { argCommand, createCliArgv, echoCommand, generateDisplayedMessage, helloCommand, InMemoryPresenter, InMemoryPresenterFactory, numberOptionCommand } from '../test-util'
+import { Cli, CliOptions } from './Cli'
 
 test('CliOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<CliOptions<any, any>>()({

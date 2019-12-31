@@ -1,6 +1,6 @@
-import t from 'assert';
-import a from 'assertron';
-import { argCommand, booleanOptionsCommand, createCommandArgs, noopCommand } from '../test-util';
+import t from 'assert'
+import a from 'assertron'
+import { argCommand, booleanOptionsCommand, createCommandArgs, noopCommand } from '../test-util'
 
 test('empty argv', () => {
   const args = createCommandArgs(noopCommand)

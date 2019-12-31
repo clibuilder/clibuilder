@@ -1,7 +1,7 @@
-import { CliArgs } from '../argv-parser';
-import { Cli } from '../cli';
-import { CliCommand } from '../cli-command';
-import { loadPlugins } from './loadPlugins';
+import { CliArgs } from '../argv-parser'
+import { Cli } from '../cli'
+import { CliCommand } from '../cli-command'
+import { loadPlugins } from './loadPlugins'
 
 export type PluginCliOptions<Config, Context> = ({
   name: string,

@@ -1,7 +1,7 @@
-import t from 'assert';
-import { PluginCli, pluginsCommand } from '..';
-import { getCliCommand } from '../cli-command';
-import { createCliArgv, generateDisplayedMessage, InMemoryPresenter, InMemoryPresenterFactory, setupCliCommandTest } from '../test-util';
+import t from 'assert'
+import { PluginCli, pluginsCommand } from '..'
+import { getCliCommand } from '../cli-command'
+import { createCliArgv, generateDisplayedMessage, InMemoryPresenter, InMemoryPresenterFactory, setupCliCommandTest } from '../test-util'
 
 describe('list', () => {
   test('can only be used by PluginCli', async () => {

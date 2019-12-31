@@ -1,8 +1,8 @@
-import t from 'assert';
-import { generateDisplayedMessage, setupCliCommandTest } from '../test-util';
-import { searchPackageCommand } from './searchPackageCommand';
+import t from 'assert'
 import a from 'assertron'
-import { MissingArguments } from '../argv-parser';
+import { MissingArguments } from '../argv-parser'
+import { generateDisplayedMessage, setupCliCommandTest } from '../test-util'
+import { searchPackageCommand } from './searchPackageCommand'
 
 test('requires at least one keyword', async () => {
   a.throws(() => setupCliCommandTest(searchPackageCommand, []), MissingArguments)

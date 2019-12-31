@@ -1,8 +1,8 @@
-import t from 'assert';
-import a from 'assertron';
-import { CliCommand, createCliCommand, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '.';
-import { plainPresenterFactory } from '../presenter';
-import { setupCliCommandTest } from '../test-util';
+import t from 'assert'
+import a from 'assertron'
+import { CliCommand, createCliCommand, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '.'
+import { plainPresenterFactory } from '../presenter'
+import { setupCliCommandTest } from '../test-util'
 
 test('definding cmd must to specify name and run can be () => void', () => {
   isCliCommand({

@@ -1,7 +1,7 @@
-import { Omit } from 'type-plus';
-import { CliArgs } from '../argv-parser';
-import { Cli, CliContext } from '../cli';
-import { HelpPresenter, Inquirer, LogPresenter } from '../presenter';
+import { Omit } from 'type-plus'
+import { CliArgs } from '../argv-parser'
+import { Cli, CliContext } from '../cli'
+import { HelpPresenter, Inquirer, LogPresenter } from '../presenter'
 
 export namespace CliCommand {
   export interface Argument {

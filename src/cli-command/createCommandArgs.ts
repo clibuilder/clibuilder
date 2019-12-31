@@ -1,4 +1,4 @@
-import { Parsable, parseArgv } from '../argv-parser';
+import { Parsable, parseArgv } from '../argv-parser'
 
 export function createCommandArgs(parsable: Parsable, argv: string[] = []) {
   argv.unshift(parsable.name)

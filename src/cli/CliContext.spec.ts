@@ -1,6 +1,6 @@
-import a from 'assertron';
-import { CliContext, HelpPresenter, LogPresenter, plainPresenterFactory, PresenterOption, VersionPresenter } from '..';
-import { buildContext } from './CliContext';
+import a from 'assertron'
+import { CliContext, HelpPresenter, LogPresenter, plainPresenterFactory, PresenterOption, VersionPresenter } from '..'
+import { buildContext } from './CliContext'
 
 describe('buildContext()', () => {
   test('undefined context gets default context', () => {

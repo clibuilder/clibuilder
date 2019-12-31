@@ -1,5 +1,5 @@
-import { CliContext } from '../cli';
-import { CliCommand, CliCommandInstance } from './CliCommand';
+import { CliContext } from '../cli'
+import { CliCommand, CliCommandInstance } from './CliCommand'
 
 export function getCliCommand<
   Config extends Record<string, any> = Record<string, any>,

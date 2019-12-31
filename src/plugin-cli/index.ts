@@ -1,2 +1,2 @@
-export * from './interfaces';
-export * from './PluginCli';
+export * from './interfaces'
+export * from './PluginCli'

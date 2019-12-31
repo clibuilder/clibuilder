@@ -1,10 +1,8 @@
-import path from 'path'
-import findup from 'find-up'
-
 import { findByKeywords } from 'find-installed-packages'
-
+import findup from 'find-up'
+import path from 'path'
 import { CliCommand } from '../cli-command'
-import { log } from '../log';
+import { log } from '../log'
 
 class CliRegistrarImpl {
   commands: CliCommand[] = []

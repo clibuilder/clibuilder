@@ -1,6 +1,6 @@
-import t from 'assert';
-import { assertType } from 'type-plus';
-import { createCliArgv, InMemoryPresenterFactory, PluginCli } from '..';
+import t from 'assert'
+import { assertType } from 'type-plus'
+import { createCliArgv, InMemoryPresenterFactory, PluginCli } from '..'
 
 class TestPluginCli<Config, Context> extends PluginCli<Config, Context> {
   ready = this.loadingPlugins

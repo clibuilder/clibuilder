@@ -1,7 +1,7 @@
-import { findByKeywords } from 'find-installed-packages';
-import { CliCommand, CliCommandInstance } from '../cli-command';
-import { PluginCli } from '../plugin-cli';
-import { PlainPresenter } from '../presenter';
+import { findByKeywords } from 'find-installed-packages'
+import { CliCommand, CliCommandInstance } from '../cli-command'
+import { PluginCli } from '../plugin-cli'
+import { PlainPresenter } from '../presenter'
 
 export const listCommand: CliCommand = {
   name: 'list',

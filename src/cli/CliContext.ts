@@ -1,6 +1,6 @@
-import { requiredDeep } from 'type-plus';
-import { plainPresenterFactory } from '../presenter';
-import { CliContext } from './interfaces';
+import { requiredDeep } from 'type-plus'
+import { plainPresenterFactory } from '../presenter'
+import { CliContext } from './interfaces'
 
 export function buildContext<Context>(
   input: Context,

@@ -1,5 +1,4 @@
 import t from 'assert'
-
 import { loadPlugins } from './loadPlugins'
 
 test('empty folder will still load global plugins', async () => {

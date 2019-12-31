@@ -1,8 +1,8 @@
-import { RecursivePartial } from 'type-plus';
-import { CliContext } from '../cli';
-import { log } from '../log';
-import { CliCommand, CliCommandInstance } from './CliCommand';
-import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from './errors';
+import { RecursivePartial } from 'type-plus'
+import { CliContext } from '../cli'
+import { log } from '../log'
+import { CliCommand, CliCommandInstance } from './CliCommand'
+import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from './errors'
 
 export function createCliCommand<
   Config extends Record<string, any>,
