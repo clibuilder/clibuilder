@@ -15,7 +15,7 @@ class CliRegistrarImpl {
 }
 
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
-  log.debug('loading plugins')
+  log.debug(`look up plugins with keyword: ${keyword}`)
 
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
     log.debug('found local plugins', pluginNames)
