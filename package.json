@@ -35,6 +35,7 @@
     "build:esnext": "tsc -p tsconfig.esnext.json",
     "build:watch": "tsc --watch",
     "clean": "rimraf .nyc_output .ts coverage lib libm",
+    "codacy": "cat coverage/lcov.info | codacy-coverage",
     "coverage": "jest --coverage",
     "depcheck": "yarn dependency-check",
     "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer -i standard-log-color && dependency-check . --missing --no-dev",
