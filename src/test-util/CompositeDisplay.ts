@@ -1,4 +1,4 @@
-import { Display } from '../presenter';
+import { Display } from '../presenter'
 
 export class CompositeDisplay implements Display {
   displays: Display[]

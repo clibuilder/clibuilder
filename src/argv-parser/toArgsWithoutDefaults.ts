@@ -1,5 +1,5 @@
-import _ from 'lodash';
-import { CliArgs, CliArgsWithoutDefaults } from './interfaces';
+import _ from 'lodash'
+import { CliArgs, CliArgsWithoutDefaults } from './types'
 
 export function toArgsWithoutDefaults(args: CliArgs) {
   const result: CliArgsWithoutDefaults = { _: [...args._] }

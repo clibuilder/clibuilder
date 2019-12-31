@@ -18,7 +18,7 @@ export function loadConfig(configFileName: string, { cwd, home }: { cwd: string,
 
 function readConfig(filePath: string) {
   try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'))
   }
   catch (err) {
     if (err.code === 'ENOENT')

@@ -1,6 +1,6 @@
 import t from 'assert'
 import a from 'assertron'
-import { MissingArguments } from '../argv-parser'
+import { MissingArguments } from '../errors'
 import { generateDisplayedMessage, setupCliCommandTest } from '../test-util'
 import { searchPackageCommand } from './searchPackageCommand'
 

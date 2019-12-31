@@ -1,6 +1,7 @@
-import { CliArgs } from '../argv-parser'
+import { CliArgs } from '../argv-parser/types'
 import { Cli } from '../cli'
 import { CliCommand } from '../cli-command'
+import { pluginsCommand } from '../commands'
 import { loadPlugins } from './loadPlugins'
 
 export type PluginCliOptions<Config, Context> = ({
@@ -34,7 +35,7 @@ export class PluginCli<
   constructor(
     options: PluginCliOptions<Config, Context>,
   ) {
-    super({ commands: [], ...options })
+    super({ commands: [pluginsCommand], ...options })
 
     const cwd = this.context.cwd
     this.keyword = options.keyword || `${options.name}-plugin`

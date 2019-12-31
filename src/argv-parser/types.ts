@@ -1,4 +1,4 @@
-import { CliCommand } from '../cli-command';
+import { CliCommand } from '../cli-command'
 
 export interface Parsable {
   name: string,

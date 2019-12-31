@@ -14,8 +14,9 @@ test('use "{name}-plugin" as keyword to look for plugins', async () => {
   })
   await cli.ready
   // there is an "global" `clibuilder-plugin-dummy` inside this project.
-  // That's why there are two commands instead of one.
-  t.strictEqual(cli.commands.length, 2)
+  // and the default `pluginsCommand`
+  // That's why there are 3 commands instead of 1.
+  t.strictEqual(cli.commands.length, 3)
 })
 
 test('use custom keyword to look for plugins', async () => {
@@ -26,7 +27,7 @@ test('use custom keyword to look for plugins', async () => {
     context: { cwd: 'fixtures/alt-keyword-plugin' },
   })
   await cli.ready
-  t.strictEqual(cli.commands.length, 1)
+  t.strictEqual(cli.commands.length, 2)
 })
 
 test('command is loaded when parse', async () => {
@@ -49,7 +50,7 @@ test('use custom keyword to look for plugins', async () => {
     context: { cwd: 'fixtures/plugin-with-2-top-commands' },
   })
   await cli.ready
-  t.strictEqual(cli.commands.length, 2)
+  t.strictEqual(cli.commands.length, 3)
 })
 
 test('PluginCli can add commands at its own project', async () => {

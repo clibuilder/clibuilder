@@ -1,7 +1,7 @@
-import t from 'assert';
-import a from 'assertron';
-import { createParsable } from './createParsable';
-import { parseArgv } from './parseArgv';
+import t from 'assert'
+import a from 'assertron'
+import { createParsable } from './createParsable'
+import { parseArgv } from './parseArgv'
 
 
 test('no arguments and options', () => {

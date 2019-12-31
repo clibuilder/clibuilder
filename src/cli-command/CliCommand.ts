@@ -1,5 +1,5 @@
 import { Omit } from 'type-plus'
-import { CliArgs } from '../argv-parser'
+import { CliArgs } from '../argv-parser/types'
 import { Cli, CliContext } from '../cli'
 import { HelpPresenter, Inquirer, LogPresenter } from '../presenter'
 

@@ -1,5 +1,5 @@
-import t from 'assert';
-import { toArgsWithoutDefaults } from './toArgsWithoutDefaults';
+import t from 'assert'
+import { toArgsWithoutDefaults } from './toArgsWithoutDefaults'
 
 test('no default arg gets argument only', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: [] }

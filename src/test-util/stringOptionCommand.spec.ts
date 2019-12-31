@@ -1,6 +1,6 @@
-import t from 'assert';
-import a from 'assertron';
-import { argCommand, setupCliCommandTest, stringOptionCommand } from '../index';
+import t from 'assert'
+import a from 'assertron'
+import { argCommand, setupCliCommandTest, stringOptionCommand } from '../index'
 
 
 

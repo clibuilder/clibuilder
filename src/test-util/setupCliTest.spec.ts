@@ -1,7 +1,7 @@
-import { setupCliTest } from '.';
-import { Cli } from '..';
-import { echoCommand } from './echoCommand';
-import { generateDisplayedMessage } from './generateDisplayedMessage';
+import { setupCliTest } from '.'
+import { Cli } from '..'
+import { echoCommand } from './echoCommand'
+import { generateDisplayedMessage } from './generateDisplayedMessage'
 
 const cli = new Cli({
   name: 'cli',

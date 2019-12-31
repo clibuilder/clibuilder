@@ -1,6 +1,6 @@
-import { Answers, DistinctQuestion } from 'inquirer';
-import { DisplayLevel, PlainPresenter, PresenterOption } from '../presenter';
-import { InMemoryDisplay } from './InMemoryDisplay';
+import { Answers, DistinctQuestion } from 'inquirer'
+import { DisplayLevel, PlainPresenter, PresenterOption } from '../presenter'
+import { InMemoryDisplay } from './InMemoryDisplay'
 
 export class InMemoryPresenter extends PlainPresenter {
   display = new InMemoryDisplay()

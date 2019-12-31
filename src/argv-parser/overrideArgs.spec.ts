@@ -1,5 +1,5 @@
-import t from 'assert';
-import { overrideArgs } from '.';
+import t from 'assert'
+import { overrideArgs } from '.'
 
 test('no default arg gets argument only', () => {
   const args = { _: ['a', 'b', 'c'], _defaults: [] }

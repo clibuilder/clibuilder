@@ -50,11 +50,11 @@
   "dependencies": {
     "@types/inquirer": "^6.5.0",
     "camel-case": "^4.1.1",
-    "find-installed-packages": "^2.0.1",
+    "find-installed-packages": "^2.1.4",
     "find-up": "^4.1.0",
     "inquirer": "^7.0.1",
+    "iso-error": "^3.2.1",
     "lodash": "^4.17.15",
-    "make-error": "^1.3.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
     "standard-log": "^4.0.2",

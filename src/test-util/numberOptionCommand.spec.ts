@@ -1,6 +1,6 @@
-import t from 'assert';
-import { createCommandArgs, InMemoryPresenterFactory, numberOptionCommand } from '..';
-import { createCliCommand } from '../cli-command';
+import t from 'assert'
+import { createCommandArgs, InMemoryPresenterFactory, numberOptionCommand } from '..'
+import { createCliCommand } from '../cli-command'
 
 test('number option', () => {
   const args = createCommandArgs(numberOptionCommand, ['--value=3'])
