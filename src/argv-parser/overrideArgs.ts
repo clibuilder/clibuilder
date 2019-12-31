@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import { CliArgs } from './interfaces';
-import { toArgsWithoutDefaults } from './toArgsWithoutDefaults';
+import _ from 'lodash'
+import { CliArgs } from './types'
+import { toArgsWithoutDefaults } from './toArgsWithoutDefaults'
 
 export function overrideArgs(args: CliArgs, config?: any): { [k: string]: any } {
   const bare = toArgsWithoutDefaults(args)

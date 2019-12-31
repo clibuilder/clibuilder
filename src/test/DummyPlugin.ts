@@ -1,4 +1,4 @@
-import { Registrar, CliCommand } from '../index'
+import { ActivationContext, CliCommand } from '../index'
 
 // istanbul ignore file
 const DummyCommand = {
@@ -8,6 +8,6 @@ const DummyCommand = {
   },
 } as CliCommand
 
-export function activate(cli: Registrar) {
+export function activate(cli: ActivationContext) {
   cli.addCommand(DummyCommand)
 }

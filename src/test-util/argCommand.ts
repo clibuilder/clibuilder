@@ -1,4 +1,4 @@
-import { CliCommand } from '../cli-command';
+import { CliCommand } from '../cli-command'
 
 export const argCommand = {
   name: 'arg',

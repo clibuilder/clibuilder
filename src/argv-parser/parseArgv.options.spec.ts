@@ -1,7 +1,7 @@
-import t from 'assert';
-import { createParsable } from './createParsable';
-import { parseArgv } from './parseArgv';
-import { NotNumberOption } from '.';
+import t from 'assert'
+import { NotNumberOption } from '..'
+import { createParsable } from './createParsable'
+import { parseArgv } from './parseArgv'
 
 test('throw with unknown options', () => {
   const cmd = createParsable({

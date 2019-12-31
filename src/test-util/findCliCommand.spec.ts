@@ -1,5 +1,5 @@
-import { findCliCommand } from '.';
-import { Cli } from '../cli';
+import { findCliCommand } from '.'
+import { Cli } from '../cli'
 
 const cmd1 = {
   name: 'cmd1',

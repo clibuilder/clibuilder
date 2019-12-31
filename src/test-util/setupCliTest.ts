@@ -1,7 +1,7 @@
-import { Cli } from '../cli';
-import { getCliCommand } from '../cli-command';
-import { InMemoryPresenter } from './InMemoryPresenter';
-import { createCliArgv } from './createCliArgv';
+import { Cli } from '../cli'
+import { getCliCommand } from '../cli-command'
+import { InMemoryPresenter } from './InMemoryPresenter'
+import { createCliArgv } from './createCliArgv'
 
 export function setupCliTest(cli: Cli<any, any>, argv: string[]) {
   const cmd = getCliCommand([...argv], cli.commands)

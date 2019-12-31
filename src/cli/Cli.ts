@@ -1,10 +1,11 @@
 import { omit, pick, RecursivePartial, required, requiredDeep } from 'type-plus'
-import { CliArgs, parseArgv } from '../argv-parser'
+import { parseArgv } from '../argv-parser'
+import { CliArgs } from '../argv-parser/types'
 import { CliCommand, CliCommandInstance, createCliCommand, getCliCommand } from '../cli-command'
 import { log } from '../log'
 import { DisplayLevel, HelpPresenter, Inquirer, LogPresenter, VersionPresenter } from '../presenter'
 import { buildContext } from './CliContext'
-import { CliContext } from './interfaces'
+import { CliContext } from './types'
 import { loadConfig } from './loadConfig'
 
 export type CliOptions<Config, Context> = ({

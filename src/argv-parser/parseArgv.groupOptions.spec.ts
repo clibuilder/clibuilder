@@ -1,6 +1,6 @@
-import t from 'assert';
-import { createParsable } from './createParsable';
-import { parseArgv } from './parseArgv';
+import t from 'assert'
+import { createParsable } from './createParsable'
+import { parseArgv } from './parseArgv'
 
 test(`group option should not set default if passed in`, () => {
   const cmd = createParsable({

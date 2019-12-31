@@ -1,7 +1,7 @@
-import t from 'assert';
-import a from 'assertron';
-import { argCommand, booleanOptionsCommand, Cli, createCliArgv, createInMemoryCli, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, InMemoryDisplay, InMemoryPresenter, noopCommand, spyDisplay, verboseCommand } from '.';
-import { createEchoDebugCommand } from './test-util/createEchoDebugCommand';
+import t from 'assert'
+import a from 'assertron'
+import { argCommand, booleanOptionsCommand, Cli, createCliArgv, createInMemoryCli, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, InMemoryDisplay, InMemoryPresenter, noopCommand, spyDisplay, verboseCommand } from '.'
+import { createEchoDebugCommand } from './test-util/createEchoDebugCommand'
 
 const noopHelpMessage = `
 Usage: cli <command>

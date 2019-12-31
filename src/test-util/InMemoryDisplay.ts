@@ -1,4 +1,4 @@
-import { Display } from '../presenter';
+import { Display } from '../presenter'
 
 export class InMemoryDisplay implements Display {
   errorLogs: any[][] = []

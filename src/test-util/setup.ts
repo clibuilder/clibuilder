@@ -1,10 +1,10 @@
-import { RecursivePartial } from 'type-plus';
-import { Cli, CliContext, buildContext } from '../cli';
-import { CliCommand, createCliCommand } from '../cli-command';
-import { createCommandArgs } from '../cli-command/createCommandArgs';
-import { PresenterFactory, PresenterOption } from '../presenter';
-import { InMemoryPresenter } from './InMemoryPresenter';
-import { InMemoryPresenterFactory } from './InMemoryPresenterFactory';
+import { RecursivePartial } from 'type-plus'
+import { Cli, CliContext, buildContext } from '../cli'
+import { CliCommand, createCliCommand } from '../cli-command'
+import { createCommandArgs } from '../cli-command/createCommandArgs'
+import { PresenterFactory, PresenterOption } from '../presenter'
+import { InMemoryPresenter } from './InMemoryPresenter'
+import { InMemoryPresenterFactory } from './InMemoryPresenterFactory'
 
 export function createInMemoryCli(name: string, ...commands: CliCommand[]) {
   return new Cli({

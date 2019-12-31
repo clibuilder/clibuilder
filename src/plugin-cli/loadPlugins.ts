@@ -27,7 +27,7 @@ export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   })
 
   return Promise.all([findingLocal, findingGlobal]).then(([pluginNames, globalPluginNames]) => {
-    const commands = activatePlugins(pluginNames, cwd);
+    const commands = activatePlugins(pluginNames, cwd)
 
     globalPluginNames.forEach(p => {
       if (pluginNames.indexOf(p) !== -1)

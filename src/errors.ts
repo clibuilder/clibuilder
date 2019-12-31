@@ -1,6 +1,6 @@
-import { BaseError } from 'make-error'
+import { IsoError } from 'iso-error'
 
-export class NotNumberOption extends BaseError {
+export class NotNumberOption extends IsoError {
   // istanbul ignore next
   constructor(public name: string) {
     super(`Option '${name}' only accepts number`)
@@ -8,7 +8,7 @@ export class NotNumberOption extends BaseError {
   }
 }
 
-export class UnknownOptionError extends BaseError {
+export class UnknownOptionError extends IsoError {
   // istanbul ignore next
   constructor(public name: string) {
     super(`Unknown option '${name}'`)
@@ -16,7 +16,7 @@ export class UnknownOptionError extends BaseError {
   }
 }
 
-export class MissingArguments extends BaseError {
+export class MissingArguments extends IsoError {
   // istanbul ignore next
   constructor(public expected: number, public actual: number) {
     super((expected <= 1 ? `Missing Argument.` : `Missing Arguments.`) + ` Expecting ${expected} but received ${actual}.`)
@@ -24,7 +24,7 @@ export class MissingArguments extends BaseError {
   }
 }
 
-export class TooManyArguments extends BaseError {
+export class TooManyArguments extends IsoError {
   // istanbul ignore next
   constructor(public expected: number, public actual: number) {
     super(`Too Many Arguments. Expecting ${expected} but received ${actual}.`)
