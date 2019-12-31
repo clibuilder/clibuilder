@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "inlineSourceMap": true,
     "lib": [
       "es2015"
     ],
@@ -12,7 +12,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "removeComments": false,
-    "sourceMap": true,
     "strict": true
   },
   "include": [
