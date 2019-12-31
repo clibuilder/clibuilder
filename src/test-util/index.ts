@@ -1,4 +1,3 @@
-// TODO: Should this one be removed?
 export * from '../cli-command/createCommandArgs'
 export * from './argCommand'
 export * from './booleanOptionsCommand'
