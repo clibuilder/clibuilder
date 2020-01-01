@@ -1,25 +1,7 @@
 import t from 'assert'
-import a from 'assertron'
-import { NotNumberOption, InvalidOption } from '..'
+import { NotNumberOption } from '..'
 import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
-
-test('throw with unknown options', () => {
-  const cmd = createParsable({
-    name: 'a',
-    options: {
-      boolean: {
-        silent: {
-          description: 'silent',
-          alias: ['S'],
-        },
-      },
-    },
-    run() { return },
-  }, {})
-  const argv = ['a', '--something']
-  t.throws(() => parseArgv(cmd, argv))
-})
 
 const verboseWithAlias = {
   name: 'cmd',
@@ -119,40 +101,4 @@ test('options with wrong type will throws', () => {
     run() { return },
   }, {})
   t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
-})
-
-test('do not support options with dash', () => {
-  const cmd = createParsable({
-    name: 'a',
-    options: {
-      string: {
-        'spec-out': {
-          description: 'string',
-          default: 'abc',
-        },
-      },
-    },
-    run() { return },
-  }, {})
-
-  const err = a.throws(() => parseArgv(cmd, ['a']), InvalidOption)
-  expect(err.message).toBe(`Invalid option 'spec-out'. Recommend camel case.`)
-})
-
-test('do not support options with underscore', () => {
-  const cmd = createParsable({
-    name: 'a',
-    options: {
-      string: {
-        'spec_out': {
-          description: 'string',
-          default: 'abc',
-        },
-      },
-    },
-    run() { return },
-  }, {})
-
-  const err = a.throws(() => parseArgv(cmd, ['a']), InvalidOption)
-  expect(err.message).toBe(`Invalid option 'spec_out'. Recommend camel case.`)
 })
