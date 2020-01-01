@@ -8,6 +8,12 @@ export class NotNumberOption extends IsoError {
   }
 }
 
+export class InvalidOption extends IsoError {
+  constructor(public name: string) {
+    super(`Invalid option '${name}'. Recommend camel case.`)
+  }
+}
+
 export class UnknownOptionError extends IsoError {
   // istanbul ignore next
   constructor(public name: string) {

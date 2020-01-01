@@ -2,7 +2,7 @@ import { camelCase } from 'camel-case'
 import { filterKey } from 'type-plus'
 import yargs from 'yargs-parser'
 import { CliCommand } from '../cli-command'
-import { MissingArguments, NotNumberOption, TooManyArguments, UnknownOptionError } from '../errors'
+import { MissingArguments, NotNumberOption, TooManyArguments, UnknownOptionError, InvalidOption } from '../errors'
 import { CliArgs, CliArgsWithoutDefaults, Parsable } from './types'
 import { toYargsOption } from './toYargsOption'
 
@@ -119,8 +119,8 @@ function validateOptions(command: Parsable, args: CliArgsWithoutDefaults) {
   }
 
   Object.keys(args).forEach(name => {
-    if (name === '_')
-      return
+    if (name === '_') return
+    if (name.indexOf('-') >= 0 || name.indexOf('_') >= 0) throw new InvalidOption(name)
     const optionType = map[name]
     if (optionType) {
       const arg = args[name]

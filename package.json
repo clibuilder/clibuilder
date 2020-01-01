@@ -63,7 +63,7 @@
     "standard-log-color": "^1.5.15",
     "type-plus": "^1.29.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^10.1.0"
+    "yargs-parser": "^16.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.2.0",

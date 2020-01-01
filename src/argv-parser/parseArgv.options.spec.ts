@@ -1,5 +1,6 @@
 import t from 'assert'
-import { NotNumberOption } from '..'
+import a from 'assertron'
+import { NotNumberOption, InvalidOption } from '..'
 import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
 
@@ -120,12 +121,12 @@ test('options with wrong type will throws', () => {
   t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
 })
 
-test('camelCase option is not expanded to hyphenated option', () => {
+test('do not support options with dash', () => {
   const cmd = createParsable({
     name: 'a',
     options: {
       string: {
-        specOutDir: {
+        'spec-out': {
           description: 'string',
           default: 'abc',
         },
@@ -134,5 +135,24 @@ test('camelCase option is not expanded to hyphenated option', () => {
     run() { return },
   }, {})
 
-  t.doesNotThrow(() => parseArgv(cmd, ['a']))
+  const err = a.throws(() => parseArgv(cmd, ['a']), InvalidOption)
+  expect(err.message).toBe(`Invalid option 'spec-out'. Recommend camel case.`)
+})
+
+test('do not support options with underscore', () => {
+  const cmd = createParsable({
+    name: 'a',
+    options: {
+      string: {
+        'spec_out': {
+          description: 'string',
+          default: 'abc',
+        },
+      },
+    },
+    run() { return },
+  }, {})
+
+  const err = a.throws(() => parseArgv(cmd, ['a']), InvalidOption)
+  expect(err.message).toBe(`Invalid option 'spec_out'. Recommend camel case.`)
 })
