@@ -125,7 +125,7 @@ test('nested command shows only top level', () => {
 Usage: cli <command>
 
 Commands:
-  command-1, command-2, c2
+  command-1, command-2 (c2)
 
 cli <command> -h         Get help for <command>
 

@@ -97,10 +97,10 @@ function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
   const result: string[] = []
   if (commands) {
     commands.forEach(c => {
-      result.push(c.name)
       if (c.alias) {
-        result.push(...c.alias)
+        result.push(`${c.name} (${c.alias.join('|')})`)
       }
+      else result.push(c.name)
     })
   }
   return result

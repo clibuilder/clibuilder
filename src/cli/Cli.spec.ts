@@ -62,7 +62,7 @@ Usage: cli plugins <command>
   Commands related to the plugins of the cli
 
 Commands:
-  list, ls, search
+  list (ls), search
 
 plugins <command> -h     Get help for <command>
 `
