@@ -78,6 +78,7 @@
     "codacy-coverage": "^3.4.0",
     "commitlint-circle": "^1.0.0",
     "husky": "^3.1.0",
+    "satisfier": "^5.1.0",
     "semantic-release": "^15.14.0"
   }
 }
