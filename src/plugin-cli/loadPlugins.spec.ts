@@ -22,3 +22,9 @@ test('local plugin will prevent global plugin to load', async () => {
   t.strictEqual(plugins.length, 1)
   t.strictEqual(plugins[0].name, 'dummy')
 })
+
+test('plugin using activation context with destructuring', async () => {
+  const plugins = await loadPlugins('clibuilder-plugin', { cwd: 'fixtures/destructuring' })
+  t.strictEqual(plugins.length, 2)
+  t.strictEqual(plugins[0].name, 'one')
+})
