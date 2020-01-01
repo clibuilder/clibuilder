@@ -3,14 +3,7 @@ import findup from 'find-up'
 import path from 'path'
 import { CliCommand } from '../cli-command'
 import { log } from '../log'
-
-class CliRegistrarImpl {
-  commands: CliCommand[] = []
-
-  addCommand(command: CliCommand) {
-    this.commands.push(command)
-  }
-}
+import { ActivationContext } from './types'
 
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   log.debug(`look up plugins with keyword: ${keyword}`)
@@ -82,8 +75,8 @@ function isValidPlugin(m: any) {
   return typeof m.activate === 'function'
 }
 
-function activatePlugin(m: { activate: any }) {
-  const registrar = new CliRegistrarImpl()
-  m.activate(registrar)
-  return registrar.commands
+function activatePlugin(m: { activate: (context: ActivationContext) => void }) {
+  const commands: CliCommand[] = []
+  m.activate({ addCommand: cmd => commands.push(cmd) })
+  return commands
 }

@@ -6978,7 +6978,7 @@ sane@^4.0.3:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-satisfier@^5.0.2:
+satisfier@^5.0.2, satisfier@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/satisfier/-/satisfier-5.1.0.tgz#d8d335b845200ef04e2c759126ec875cb7926605"
   integrity sha512-4Bq+9S2+lZ8EZzshbsq4NPBfLivHjtWQW9Jljt6iaECRKUkJsg65a5aEQJLuBhgqepNIn89H7ChPqwgzYJXgNQ==
