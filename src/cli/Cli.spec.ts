@@ -327,6 +327,28 @@ describe('config', () => {
 
     o.end()
   })
+
+  test('use different config name', async () => {
+    const o = new AssertOrder(1)
+    const cli = new Cli({
+      name: 'another-cli',
+      configName: 'test-cli',
+      version: '0.0.1',
+      defaultConfig: { a: 2 },
+      commands: [{
+        name: 'cfg',
+        run() {
+          expect(this.config).toEqual({ a: 1 })
+          o.once(1)
+        },
+      }],
+      context: {
+        cwd: 'fixtures/has-config',
+      },
+    })
+    await cli.parse(createCliArgv('test-cli', 'cfg'))
+    o.end()
+  })
 })
 
 test('can partially override the presenter factory implementation', async () => {
