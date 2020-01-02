@@ -11,10 +11,12 @@ import { loadConfig } from './loadConfig'
 export type CliOptions<Config, Context> = ({
   name: string,
   version: string,
+  configName?: string,
   defaultConfig?: Config,
 } | {
   name: string,
   version: string,
+  configName?: string,
   defaultConfig?: Config,
   context: Context,
 }) & ({
@@ -30,6 +32,7 @@ export type CliOptions<Config, Context> = ({
 export class Cli<Config, Context = unknown> {
   name: string
   version: string
+  configName?: string
   arguments: CliCommand.Argument[] | undefined
   options?: CliCommand.Options
   alias?: string[]
@@ -65,11 +68,12 @@ export class Cli<Config, Context = unknown> {
         },
       },
     }, pick(options, 'options', 'arguments', 'alias', 'run') as any))
+    this.configName = options.configName || options.name
     this.context = buildContext((options as any).context)
     log.debug('cwd', this.context.cwd)
 
     if (options.defaultConfig) {
-      this.config = required<Config>(options.defaultConfig, loadConfig(`${this.name}.json`, { cwd: this.context.cwd }))
+      this.config = required<Config>(options.defaultConfig, loadConfig(`${this.configName}.json`, { cwd: this.context.cwd }))
       log.debug('Loaded config', this.config)
     }
 

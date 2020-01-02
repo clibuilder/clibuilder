@@ -19,7 +19,7 @@ A highly customizable command line library.
 
 - Distributed commands. `CliCommand` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
 - Nested commands.
-- Support config file.
+- Load config file.
 - Provide additional context from `Cli` to `CliCommand`
 - Can use different UI at `Cli` and `CliCommand` level.
 - Plugin architecture using `PluginCli`
