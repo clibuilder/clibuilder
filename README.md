@@ -53,6 +53,37 @@ export const commandA: CliCommand = {
 }
 ```
 
+You can define arguments:
+
+```ts
+const commandA: CliCommand = {
+  name: 'command-a',
+  arguments: [{
+    name: 'arg1',
+    required: true
+  }]
+}
+```
+
+and/or options:
+
+```ts
+const commandB: CliCommand = {
+  name: 'command-b',
+  options: {
+    boolean: {
+      validate: { ... }
+    },
+    string: {
+      fileName: { ... }
+    },
+    number: {
+      maxSize: { ... }
+    }
+  }
+}
+```
+
 It comes with a plain presenter.
 You can override it to display your cli in any way you want:
 

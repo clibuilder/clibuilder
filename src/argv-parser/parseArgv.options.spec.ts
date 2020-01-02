@@ -3,23 +3,6 @@ import { NotNumberOption } from '..'
 import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
 
-test('throw with unknown options', () => {
-  const cmd = createParsable({
-    name: 'a',
-    options: {
-      boolean: {
-        silent: {
-          description: 'silent',
-          alias: ['S'],
-        },
-      },
-    },
-    run() { return },
-  }, {})
-  const argv = ['a', '--something']
-  t.throws(() => parseArgv(cmd, argv))
-})
-
 const verboseWithAlias = {
   name: 'cmd',
   options: {
@@ -118,21 +101,4 @@ test('options with wrong type will throws', () => {
     run() { return },
   }, {})
   t.throws(() => parseArgv(cmd, ['a', '--numberOption=true']), NotNumberOption)
-})
-
-test('camelCase option is not expanded to hyphenated option', () => {
-  const cmd = createParsable({
-    name: 'a',
-    options: {
-      string: {
-        specOutDir: {
-          description: 'string',
-          default: 'abc',
-        },
-      },
-    },
-    run() { return },
-  }, {})
-
-  t.doesNotThrow(() => parseArgv(cmd, ['a']))
 })

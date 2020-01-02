@@ -2,9 +2,9 @@ import { camelCase } from 'camel-case'
 import { filterKey } from 'type-plus'
 import yargs from 'yargs-parser'
 import { CliCommand } from '../cli-command'
-import { MissingArguments, NotNumberOption, TooManyArguments, UnknownOptionError } from '../errors'
-import { CliArgs, CliArgsWithoutDefaults, Parsable } from './types'
+import { MissingArguments, NotNumberOption, TooManyArguments } from '../errors'
 import { toYargsOption } from './toYargsOption'
+import { CliArgs, CliArgsWithoutDefaults, Parsable } from './types'
 
 export function parseArgv(parsable: Parsable, rawArgv: string[]): CliArgs {
   const options = toYargsOption(parsable.options)
@@ -119,16 +119,12 @@ function validateOptions(command: Parsable, args: CliArgsWithoutDefaults) {
   }
 
   Object.keys(args).forEach(name => {
-    if (name === '_')
-      return
+    if (name === '_') return
     const optionType = map[name]
     if (optionType) {
       const arg = args[name]
       if (Number.isNaN(arg))
         throw new NotNumberOption(name)
-    }
-    else {
-      throw new UnknownOptionError(name)
     }
   })
 }
