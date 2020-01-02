@@ -77,3 +77,14 @@ test('can define default config', async () => {
   })
   await cli.ready
 })
+
+test('is runnable with ui', async () => {
+  const cli = new TestPluginCli({
+    name: 'cli',
+    version: '1.0.0',
+    run() {
+      this.ui.info('hello world')
+    }
+  })
+  await cli.ready
+})
