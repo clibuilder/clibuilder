@@ -102,8 +102,10 @@ test('no matching command shows help', async () => {
     context: { presenterFactory },
   })
   await cli.parse(createCliArgv('cli', 'not-exist'))
-  const message = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
-  expect(message).toBe(helloHelpMessage)
+  const errors = generateDisplayedMessage(presenterFactory.cliPresenter!.display.errorLogs)
+  expect(errors).toBe(`Unknown command: not-exist`)
+  const info = generateDisplayedMessage(presenterFactory.cliPresenter!.display.infoLogs)
+  expect(info).toBe(helloHelpMessage)
 })
 
 test('command without run shows help', async () => {
