@@ -22,7 +22,7 @@ export type PluginCliOptions<Config, Context> = ({
   options?: CliCommand.Options,
   alias?: string[],
   commands?: CliCommand<any, Context>[],
-  run(args: CliArgs, argv: string[]): void | Promise<any>,
+  run(this: PluginCli<Config, Context>,args: CliArgs, argv: string[]): void | Promise<any>,
 })
 
 
