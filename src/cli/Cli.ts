@@ -104,6 +104,10 @@ export class Cli<Config, Context = unknown> {
       this.ui.showVersion(this.version)
     }
     else if (args.help || !this.run) {
+      console
+      if (args._.length > 0) {
+        this.ui.error(`Unknown command: ${args._.join(' ')}`)
+      }
       this.ui.showHelp(this)
     }
     else {
