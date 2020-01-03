@@ -5,6 +5,6 @@
     "module": "commonjs",
     "outDir": "lib",
     "target": "es5",
-    "tsBuildInfoFile": ".ts/es5.tsbuildinfo"
+    "tsBuildInfoFile": ".ts/lib.tsbuildinfo"
   }
 }
