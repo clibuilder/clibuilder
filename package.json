@@ -61,11 +61,17 @@
     "search-packages": "^2.0.0",
     "standard-log": "^4.0.2",
     "standard-log-color": "^1.5.15",
+    "tersify": "^3.5.1",
     "type-plus": "^1.29.0",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^16.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.7.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.7.5",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-typescript": "^7.7.7",
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "@types/lodash": "^4.14.149",

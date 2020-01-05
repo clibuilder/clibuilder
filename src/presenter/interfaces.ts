@@ -18,7 +18,7 @@ export enum DisplayLevel {
 // istanbul ignore next
 export class ConsoleDisplay implements Display {
   debug(...args: any[]): void {
-    console.log(...args)
+    console.info(...args)
   }
   info(...args: any[]): void {
     console.info(...args)

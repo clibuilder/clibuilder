@@ -11,10 +11,7 @@
       "files": [
         "*.ts",
         "*.tsx"
-      ],
-      "rules": {
-        "no-console": "off"
-      }
+      ]
     }
   ],
   "root": true
