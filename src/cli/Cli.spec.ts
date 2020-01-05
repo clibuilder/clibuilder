@@ -7,14 +7,14 @@ import { argCommand, createCliArgv, echoCommand, generateDisplayedMessage, hello
 import { Cli, CliOptions } from './Cli'
 import { pluginsCommand } from '../commands'
 
-test('CliOptions requires either run() or commands', () => {
+test.skip('CliOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<CliOptions<any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
   }))
 })
 
-test('show -v shows version', async () => {
+test.skip('show -v shows version', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -27,7 +27,7 @@ test('show -v shows version', async () => {
   expect(message).toBe('1.0.0')
 })
 
-test('--version shows version', async () => {
+test.skip('--version shows version', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -67,7 +67,7 @@ Commands:
 plugins <command> -h     Get help for <command>
 `
 
-test('-h shows help', async () => {
+test.skip('-h shows help', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -80,7 +80,7 @@ test('-h shows help', async () => {
   expect(message).toBe(helloHelpMessage)
 })
 
-test('--help shows help', async () => {
+test.skip('--help shows help', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -93,7 +93,7 @@ test('--help shows help', async () => {
   expect(message).toBe(helloHelpMessage)
 })
 
-test('no matching command shows help', async () => {
+test.skip('no matching command shows help', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -108,7 +108,7 @@ test('no matching command shows help', async () => {
   expect(info).toBe(helloHelpMessage)
 })
 
-test('command without run shows help', async () => {
+test.skip('command without run shows help', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -121,7 +121,7 @@ test('command without run shows help', async () => {
   expect(message).toBe(pluginsHelpMessage)
 })
 
-test('--silent disables ui', async () => {
+test.skip('--silent disables ui', async () => {
   const presenterFactory = new InMemoryPresenterFactory()
   const cli = new Cli({
     name: 'cli',
@@ -134,7 +134,7 @@ test('--silent disables ui', async () => {
   expect(message).toBe('')
 })
 
-test('invoke command by name', async () => {
+test.skip('invoke command by name', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
@@ -146,7 +146,7 @@ test('invoke command by name', async () => {
   expect(actual).toEqual('hello')
 })
 
-test('pass argument to command', async () => {
+test.skip('pass argument to command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
@@ -158,7 +158,7 @@ test('pass argument to command', async () => {
   a.satisfies(actual, { 'required-arg': 'abc' })
 })
 
-test('pass options to command', async () => {
+test.skip('pass options to command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
@@ -169,7 +169,7 @@ test('pass options to command', async () => {
   expect(actual).toBe(123)
 })
 
-test('invoke nested command', async () => {
+test.skip('invoke nested command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
@@ -184,7 +184,7 @@ test('invoke nested command', async () => {
   expect(actual).toEqual('hello')
 })
 
-test('pass arguments to nested command', async () => {
+test.skip('pass arguments to nested command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '1.0.0',
@@ -199,7 +199,7 @@ test('pass arguments to nested command', async () => {
   a.satisfies(actual, { 'required-arg': 'abc' })
 })
 
-test('prompt for input', async () => {
+test.skip('prompt for input', async () => {
   const o = new AssertOrder(1)
   const presenterFactory = createInquirePresenterFactory({ username: 'me' })
   const cli = new Cli({
@@ -220,7 +220,7 @@ test('prompt for input', async () => {
   o.end()
 })
 
-test('cli context passes down to command', async () => {
+test.skip('cli context passes down to command', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '',
@@ -236,7 +236,7 @@ test('cli context passes down to command', async () => {
   expect(await cli.parse(createCliArgv('cli', 'cmd'))).toEqual('123')
 })
 
-test('context in command always contains `cwd`', async () => {
+test.skip('context in command always contains `cwd`', async () => {
   const cli = new Cli({
     name: 'cli',
     version: '',
@@ -252,7 +252,7 @@ test('context in command always contains `cwd`', async () => {
   expect(await cli.parse(createCliArgv('cli', 'cmd'))).toEqual(process.cwd())
 })
 
-test('context in command does not have presenterFactory', async () => {
+test.skip('context in command does not have presenterFactory', async () => {
   new Cli({
     name: 'cli',
     version: '',
@@ -268,7 +268,7 @@ test('context in command does not have presenterFactory', async () => {
 })
 
 describe('config', () => {
-  test('read config file', async () => {
+  test.skip('read config file', async () => {
     const o = new AssertOrder(1)
     const cli = new Cli({
       name: 'test-cli',
@@ -288,7 +288,7 @@ describe('config', () => {
     await cli.parse(createCliArgv('test-cli', 'cfg'))
     o.end()
   })
-  test(`read config file in parent directory`, async () => {
+  test.skip(`read config file in parent directory`, async () => {
     const o = new AssertOrder(1)
     const cli = new Cli({
       name: 'test-cli',
@@ -309,7 +309,7 @@ describe('config', () => {
     o.end()
   })
 
-  test(`default config is overriden by value in config file`, async () => {
+  test.skip(`default config is overriden by value in config file`, async () => {
     const o = new AssertOrder(1)
     const cli = new Cli({
       name: 'test-cli',
@@ -330,7 +330,7 @@ describe('config', () => {
     o.end()
   })
 
-  test('use different config name', async () => {
+  test.skip('use different config name', async () => {
     const o = new AssertOrder(1)
     const cli = new Cli({
       name: 'another-cli',
@@ -353,7 +353,7 @@ describe('config', () => {
   })
 })
 
-test('can partially override the presenter factory implementation', async () => {
+test.skip('can partially override the presenter factory implementation', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli(
     {
@@ -378,7 +378,7 @@ test('can partially override the presenter factory implementation', async () => 
   o.end()
 })
 
-test('command can specify its own ui', async () => {
+test.skip('command can specify its own ui', async () => {
   const o = new AssertOrder(1)
   const cli = new Cli(
     {
@@ -400,7 +400,7 @@ test('command can specify its own ui', async () => {
   o.end()
 })
 
-test('--debug-cli not pass to command', async () => {
+test.skip('--debug-cli not pass to command', async () => {
   let actual
   const cli = new Cli({
     name: 'test-cli',
@@ -417,7 +417,7 @@ test('--debug-cli not pass to command', async () => {
   a.satisfies(actual, ['a'])
 })
 
-test('Can use commands with additional context (for dependency injection)', () => {
+test.skip('Can use commands with additional context (for dependency injection)', () => {
   const cmd1: CliCommand<NoConfig, { a: string, b: string }> = {
     name: 'cmd1',
     run() {
@@ -443,7 +443,7 @@ test('Can use commands with additional context (for dependency injection)', () =
 })
 
 describe('Runable Cli', () => {
-  test('invoke the run method', async () => {
+  test.skip('invoke the run method', async () => {
     const cli = new Cli({
       name: 'cli',
       version: '1.0.0',
@@ -454,7 +454,7 @@ describe('Runable Cli', () => {
     expect(actual).toEqual(['cli', 'miku'])
   })
 
-  test('arguments are processed', async () => {
+  test.skip('arguments are processed', async () => {
     const cli = new Cli({
       name: 'cli',
       version: '1.0.0',
@@ -468,7 +468,7 @@ describe('Runable Cli', () => {
     a.satisfies(actual, { singer: 'miku' })
   })
 
-  test('--silent disables ui', async () => {
+  test.skip('--silent disables ui', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
     const cli = new Cli({
       name: 'cli',
@@ -481,7 +481,7 @@ describe('Runable Cli', () => {
     expect(message).toBe('')
   })
 
-  test('--verbose enables debug log', async () => {
+  test.skip('--verbose enables debug log', async () => {
     const presenterFactory = new InMemoryPresenterFactory()
     const cli = new Cli({
       name: 'cli',
@@ -494,7 +494,7 @@ describe('Runable Cli', () => {
     expect(message).toBe('debug message')
   })
 
-  test('options are processed', async () => {
+  test.skip('options are processed', async () => {
     const cli = new Cli({
       name: 'cli',
       version: '1.0.0',
@@ -513,7 +513,7 @@ describe('Runable Cli', () => {
     a.satisfies(actual, { song: 'huh' })
   })
 
-  test('invoke run if no matching command', async () => {
+  test.skip('invoke run if no matching command', async () => {
     const cli = new Cli({
       name: 'cli',
       version: '1.0.0',
@@ -525,7 +525,7 @@ describe('Runable Cli', () => {
     expect(actual).toEqual(['cli', 'miku', 'dance'])
   })
 
-  test('prompt for input', async () => {
+  test.skip('prompt for input', async () => {
     const o = new AssertOrder(1)
     const presenterFactory = createInquirePresenterFactory({ username: 'me' })
     const cli = new Cli({
@@ -543,7 +543,7 @@ describe('Runable Cli', () => {
     o.end()
   })
 
-  test('invoke command if match', async () => {
+  test.skip('invoke command if match', async () => {
     const cli = new Cli({
       name: 'cli',
       version: '1.0.0',
@@ -560,7 +560,7 @@ describe('Runable Cli', () => {
   })
 })
 
-test('can specify Config type and omit Context', () => {
+test.skip('can specify Config type and omit Context', () => {
   new Cli<{ a: 1 }>({
     name: 'cli',
     version: '1.0',

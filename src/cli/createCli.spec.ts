@@ -1,22 +1,126 @@
-import { Except, assertType, typeAssertion } from 'type-plus'
-import { createCliArgv } from '../test-util'
-import { Cli2, createCli } from './createCli'
+import a from 'assertron'
+import { assertType, assignability, JSONTypes, PartialPick } from 'type-plus'
+import { Cli2, createCli } from '.'
+import { argCommand, createCliArgv, generateDisplayedMessage, helloCommand, helloHelpMessage, InMemoryPresenter, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
+import { log } from '../log'
+import { logLevels } from 'standard-log'
 
-describe('callable cli', () => {
+test('Cli2.ConstructOptions requires either run() or commands', () => {
+  assertType.isFalse(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+    name: 'direct-cli',
+    version: '1.0.0',
+  }))
+
+  assertType.isTrue(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+    name: 'direct-cli',
+    version: '1.0.0',
+    description: '',
+    run() { }
+  }))
+
+  assertType.isTrue(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+    name: 'direct-cli',
+    version: '1.0.0',
+    commands: []
+  }))
+})
+
+test('-v shows version', async () => {
+  createCli({
+    name: '',
+    version: '',
+    description: '',
+    run() { }
+  })
+
+  createCli({
+    name: '',
+    version: '',
+    description: '',
+    config: { a: 1 },
+    run() {
+      this.config.a
+    }
+  })
+
+  const [cli, argv, ui] = createCliTest({
+    description: '',
+    run() { }
+  }, '-v')
+  await cli.parse(argv);
+  const message = generateDisplayedMessage(ui.display.infoLogs)
+  expect(message).toBe('1.0.0')
+})
+
+test('--version shows version', async () => {
+  const [cli, argv, ui] = createCliTest({
+    description: '',
+    run() { }
+  }, '--version')
+  await cli.parse(argv);
+  const message = generateDisplayedMessage(ui.display.infoLogs)
+  expect(message).toBe('1.0.0')
+})
+
+const runnableCliHelpMessage = `
+Usage: cli
+
+  test cli
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+test('-h shows help', async () => {
+  const [cli, argv, ui] = createCliTest({
+    description: 'test cli',
+    run() { }
+  }, '-h')
+  await cli.parse(argv);
+  const message = generateDisplayedMessage(ui.display.infoLogs)
+  expect(message).toBe(runnableCliHelpMessage)
+})
+
+test('--help shows help', async () => {
+  const [cli, argv, ui] = createCliTest({
+    description: 'test cli',
+    run() { }
+  }, '--help')
+  await cli.parse(argv);
+  const message = generateDisplayedMessage(ui.display.infoLogs)
+  expect(message).toBe(runnableCliHelpMessage)
+})
+
+test('--silent disables ui', async () => {
+  const [cli, argv, ui] = createCliTest({
+    description: '',
+    run() { this.ui.info('should not print') }
+  }, '--silent')
+  await cli.parse(argv)
+  const message = generateDisplayedMessage(ui.display.infoLogs)
+  expect(message).toBe('')
+})
+
+describe('cli without command', () => {
   test('must specify name and version', () => {
     const cli = createCli({
-      name: 'callable cli',
+      name: 'cli',
       version: '1.0.0',
+      description: 'runnable cli also needs description',
       run() { }
     })
-    expect(cli.name).toBe('callable cli')
+    expect(cli.name).toBe('cli')
     expect(cli.version).toBe('1.0.0')
   })
 
   test('run(_, argv) receives argv without "node"', () => {
     expect.assertions(1)
 
-    const cli = createTestCli({
+    const [cli] = createCliTest({
+      description: '',
       run(_, argv) { expect(argv).toEqual(['cli']) }
     })
 
@@ -25,18 +129,20 @@ describe('callable cli', () => {
 
   test('args default with help', () => {
     expect.assertions(1)
-    const cli = createTestCli({
+    const [cli, argv] = createCliTest({
+      description: '',
       run(args) {
         assertType.isBoolean(args.help)
         expect(args.help).toBe(true)
       }
-    })
+    }, '--help')
 
-    cli.parse(createCliArgv('cli', '--help'))
+    cli.parse(argv)
   })
 
   test('specify argument', () => {
-    const cli = createTestCli({
+    const [cli, argv] = createCliTest({
+      description: '',
       arguments: [{ name: 'arg1' }, { name: 'arg2' }],
       run(args) {
         assertType<string>(args.arg1)
@@ -44,13 +150,14 @@ describe('callable cli', () => {
         expect(args.arg1).toEqual('value1')
         expect(args.arg2).toEqual('value2')
       }
-    })
+    }, 'value1', 'value2')
 
-    cli.parse(createCliArgv('cli', 'value1', 'value2'))
+    cli.parse(argv)
   })
 
   test('specify options', () => {
-    const cli = createTestCli({
+    const [cli, argv] = createCliTest({
+      description: '',
       options: {
         boolean: {
           option1: {
@@ -75,21 +182,339 @@ describe('callable cli', () => {
 
         expect(args.option1).toBe(true)
       }
+    }, '--option1')
+
+    cli.parse(argv)
+  })
+
+  test('ui.debug by default does not emit', async () => {
+    const [cli, argv, ui] = createCliTest({
+      description: '',
+      run() { this.ui.debug('should not print') }
     })
 
-    cli.parse(createCliArgv('cli', '--option1'))
+    await cli.parse(argv)
+    const message = generateDisplayedMessage(ui.display.debugLogs)
+    expect(message).toBe('')
+  })
+
+  test('--verbose enables debug log', async () => {
+    const [cli, argv, ui] = createCliTest({
+      description: '',
+      run() { this.ui.debug('should print') }
+    }, '--verbose')
+
+    await cli.parse(argv)
+    const message = generateDisplayedMessage(ui.display.debugLogs)
+    expect(message).toBe('should print')
+  })
+
+  test('--debug-cli not pass to run', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      run(args) {
+        expect(args['debug-cli']).toBeUndefined()
+      }
+    }, '--debug-cli')
+    await cli.parse(argv)
+  })
+
+  test('--verbose not pass to run', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      run(args) {
+        expect(args['verbose']).toBeUndefined()
+      }
+    }, '--verbose')
+    await cli.parse(argv)
+  })
+
+  test('--silent not pass to run', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      run(args) {
+        expect(args['silent']).toBeUndefined()
+      }
+    }, '--silent')
+    await cli.parse(argv)
+  })
+
+  test('--version not pass to run', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      run(args) {
+        expect(args['version']).toBeUndefined()
+      }
+    }, '--version')
+    await cli.parse(argv)
+  })
+
+  test('prompt for input', async () => {
+    const [cli, argv, ui] = createCliTest({
+      description: '',
+      async run() {
+        const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+        expect(answers.username).toBe('me')
+      }
+    }, '--version')
+    ui.answers = { username: 'me' }
+
+    await cli.parse(argv)
   })
 })
 
-function createTestCli<
-  Name extends string = string,
-  Name1 extends string = string,
-  Name2 extends string = string,
-  Name3 extends string = string,
-  >(options: Except<Cli2.ConstructOptions<Name, Name1, Name2, Name3>, 'name' | 'version'>) {
-  return createCli({
+describe('cli with commands', () => {
+  test('no matching command shows help', async () => {
+    const [cli, argv, ui] = createCliTest({
+      commands: [helloCommand as any],
+    }, 'not-exist')
+
+    await cli.parse(argv)
+    const errors = generateDisplayedMessage(ui.display.errorLogs)
+    expect(errors).toBe(`Unknown command: not-exist`)
+    const info = generateDisplayedMessage(ui.display.infoLogs)
+    expect(info).toBe(helloHelpMessage)
+  })
+
+
+  test('command without run shows help', async () => {
+    const [cli, argv, ui] = createCliTest({
+      commands: [nestedCommand as any],
+    }, 'nested')
+
+    await cli.parse(argv)
+    const info = generateDisplayedMessage(ui.display.infoLogs)
+    expect(info).toBe(nestedHelpMessage)
+  })
+
+
+  test('invoke run if no matching command', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      arguments: [{ name: 'arg1', multiple: true }],
+      async run(_, argv) { return argv },
+    }, 'miku', 'dance')
+
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual(['cli', 'miku', 'dance'])
+  })
+
+  test('--silent disables ui', async () => {
+    const [cli, argv, ui] = createCliTest({
+      commands: [helloCommand as any]
+    }, '--silent', 'hello')
+    await cli.parse(argv)
+    const message = generateDisplayedMessage(ui.display.infoLogs)
+    expect(message).toBe('')
+  })
+
+  test('invoke command by name', async () => {
+    const [cli, argv] = createCliTest({
+      commands: [helloCommand as any]
+    }, 'hello')
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual('hello')
+  })
+
+  test('pass argument to command', async () => {
+    const [cli, argv] = createCliTest({
+      commands: [argCommand as any]
+    }, 'arg', 'abc')
+    const actual = await cli.parse(argv)
+    a.satisfies(actual, { 'required-arg': 'abc' })
+  })
+
+  test('pass options to command', async () => {
+    const [cli, argv] = createCliTest({
+      commands: [numberOptionCommand as any]
+    }, 'number-option', '--value=123')
+    const actual = await cli.parse(argv)
+    expect(actual).toBe(123)
+  })
+
+  test('invoke nested command', async () => {
+    const [cli, argv] = createCliTest({
+      commands: [{
+        name: 'base',
+        description: '',
+        run() { throw new Error('should not reach') },
+        commands: [helloCommand as any],
+      }],
+    }, 'base', 'hello')
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual('hello')
+  })
+
+
+  test('pass arguments to nested command', async () => {
+    const [cli, argv] = createCliTest({
+      commands: [{
+        name: 'base',
+        description: '',
+        run() { throw new Error('should not reach') },
+        commands: [argCommand as any],
+      }],
+    }, 'base', 'arg', 'abc')
+    const actual = await cli.parse(argv)
+
+    a.satisfies(actual, { 'required-arg': 'abc' })
+  })
+
+  test('prompt for input', async () => {
+    expect.assertions(1)
+    const [cli, argv, ui] = createCliTest({
+      commands: [{
+        name: 'ask',
+        description: '',
+        async run() {
+          const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+          expect(answers.username).toBe('me')
+        },
+        commands: [argCommand as any],
+      }],
+    }, 'ask')
+    ui.answers = { username: 'me' }
+    await cli.parse(argv)
+  })
+
+  test('cli context passes down to command', async () => {
+    const [cli, argv] = createCliTest({
+      context: { abc: '123' },
+      commands: [{
+        name: 'cmd',
+        description: '',
+        async run() {
+          assertType.isString(this.abc)
+          return this.abc
+        },
+      }],
+    }, 'cmd')
+    const actual = await cli.parse(argv)
+
+    expect(actual).toEqual('123')
+  })
+
+  test('command can specify the context it is expecting', async () => {
+    const cmd: Cli2.Command<undefined, { a: number }> = {
+      name: 'cmd1',
+      description: '',
+      run() {
+        assertType.noUndefined(this.a)
+        return this.a
+      }
+    }
+
+    const [cli, argv] = createCliTest({
+      context: { a: 3 },
+      commands: [cmd]
+    }, 'cmd1')
+
+    const actual = await cli.parse(argv)
+    expect(actual).toBe(3)
+  })
+})
+
+describe('config', () => {
+  test('config is available as property', async () => {
+    const [cli, argv] = createCliTest({
+      description: '',
+      config: { a: 2 },
+      run() { return this.config }
+    })
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual({ a: 2 })
+  })
+
+  test.skip('config is not available in run context when not specified in the option', async () => {
+    createCliTest({
+      description: '',
+      run() {
+        // https://github.com/microsoft/TypeScript/issues/36005
+        // there is a bug in TypeScript to prevent me from properly eliminate this property,
+        // when it is not defined in the `ConstructOptions`.
+        // assertType.isUndefined(this.config)
+      }
+    })
+  })
+
+  test('load config', async () => {
+    const [cli, argv] = createCliTest({
+      name: 'test-cli',
+      description: '',
+      config: { a: 2 },
+      context: { cwd: 'fixtures/has-config' },
+      run() { return this.config }
+    })
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  test(`read config file in parent directory`, async () => {
+    const [cli, argv] = createCliTest({
+      name: 'test-cli',
+      config: { a: 2 },
+      context: { cwd: 'fixtures/has-config/sub-folder' },
+      description: '',
+      run() {
+        expect(this.config).toEqual({ a: 1 })
+      },
+    })
+
+    await cli.parse(argv)
+  })
+
+  test(`default config is overriden by value in config file`, async () => {
+    const [cli, argv] = createCliTest({
+      name: 'test-cli',
+      config: { a: 2, b: 3 },
+      context: { cwd: 'fixtures/has-config' },
+      description: '',
+      run() {
+        expect(this.config).toEqual({ a: 1, b: 3 })
+      },
+    })
+
+    await cli.parse(argv)
+  })
+  test('use different config name', async () => {
+    const [cli, argv] = createCliTest({
+      name: 'another-cli',
+      config: { a: 2 },
+      configName: 'test-cli',
+      context: { cwd: 'fixtures/has-config' },
+      description: '',
+      run() {
+        expect(this.config).toEqual({ a: 1 })
+      },
+    })
+
+    await cli.parse(argv)
+  })
+});
+
+function createCliTest<
+  Config extends Record<string, JSONTypes> | undefined,
+  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any>,
+  N1 extends string,
+  N2 extends string,
+  N3 extends string,
+  N4 extends string
+>(
+  options: PartialPick<Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>, 'name' | 'version'>,
+  ...args: string[]
+) {
+  const ui = new InMemoryPresenter()
+  const mergedOptions = {
     name: 'cli',
     version: '1.0.0',
     ...options,
-  })
+    context: { ui, ...options.context } as Context & { ui: InMemoryPresenter },
+  }
+  return [createCli(mergedOptions), createCliArgv(mergedOptions.name, ...args), mergedOptions.context!.ui] as const
+}
+
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function enableLog() {
+  log.level = logLevels.debug
 }
