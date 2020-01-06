@@ -5,7 +5,6 @@ import { log } from '../log'
 import { PluginCli2 } from './types'
 
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
-
   log.debug(`look up local plugins with keyword '${keyword}' at ${cwd}`)
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
     log.debug('found local plugins', pluginNames)
@@ -26,8 +25,7 @@ export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
       if (pluginNames.indexOf(p) !== -1)
         return
       const m = loadModule(p, globalFolder)
-      if (isValidPlugin(m))
-        commands.push(...activatePlugin(m))
+      if (isValidPlugin(m)) commands.push(...activatePlugin(m))
     })
 
     return commands
