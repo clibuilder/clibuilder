@@ -66,7 +66,10 @@ ${helpSections.join('\n\n')}
 
 function generateUsageSection(command: CommandModel) {
   const nameChain = getCommandNameChain(command)
-  return `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
+  let message = `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
+  if (command.arguments) message += ' [arguments]'
+  if (command.options) message += ' [options]'
+  return message
 }
 
 function generateDescriptionSection(command: CommandModel) {

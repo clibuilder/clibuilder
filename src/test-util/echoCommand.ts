@@ -14,7 +14,7 @@ export const echoCommand = createCommand({
 })
 
 export const echoCommandHelpMessage = `
-Usage: cli echo
+Usage: cli echo [arguments]
 
   Echoing input arguments
 
