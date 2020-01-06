@@ -8328,7 +8328,7 @@ term-size@^1.2.0:
   dependencies:
     execa "^0.7.0"
 
-tersify@^3.0.1, tersify@^3.0.6, tersify@^3.5.1:
+tersify@^3.0.1, tersify@^3.0.6:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/tersify/-/tersify-3.5.1.tgz#3a1705b5200db7c498894311d9db20162affb0c9"
   integrity sha512-I6Zr6ThNom8EiCuAmYJYTQLazLiIjJnNNDv3WtpXEJD1dbh5V6y/JXQjFTt6vE03MmLyaRL+M/cufKNp/wipYg==
