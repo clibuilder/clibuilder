@@ -1,4 +1,4 @@
-import { createPluginCommand } from '../plugin-cli'
+import { createPluginCommand } from './createPluginCommand'
 import { listPluginsCommand } from './listPluginsCommand'
 import { searchPluginsCommand } from './searchPluginsCommand'
 

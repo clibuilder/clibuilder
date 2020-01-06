@@ -1,5 +1,5 @@
 import { findByKeywords } from 'find-installed-packages'
-import { PluginCli } from '../plugin-cli/types'
+import { PluginCli } from './types'
 
 export const listPluginsCommand: PluginCli.Command = {
   name: 'list',
