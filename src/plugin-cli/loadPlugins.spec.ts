@@ -14,7 +14,7 @@ test(`loads no plugin when plugin's activate is not a function`, async () => {
 })
 
 test('loads one plugin in one-plugin folder', async () => {
-  const plugins = await loadPlugins('clibuilder-plugin', { cwd: 'fixtures/one-plugin' })
+  const plugins = await loadPlugins('plugin-cli-plugin', { cwd: 'fixtures/one-plugin' })
   a.satisfies(plugins, some({ name: 'one' }))
 })
 

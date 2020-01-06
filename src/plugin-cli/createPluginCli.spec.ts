@@ -3,7 +3,7 @@ import { createCliArgv, createPluginCliTest, generateDisplayedMessage } from '..
 
 test('use "{name}-plugin" as keyword to look for plugins', async () => {
   const { cli } = createPluginCliTest({
-    name: 'clibuilder',
+    name: 'plugin-cli',
     version: '1.0.0',
     context: { cwd: 'fixtures/one-plugin' },
   })
