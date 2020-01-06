@@ -3,7 +3,6 @@ import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
 
-
 const helloHelpMessage = `
 Usage: cli <command> [options]
 

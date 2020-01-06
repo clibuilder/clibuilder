@@ -7,11 +7,11 @@ import { PluginCli } from './types'
 export function createPluginCli<
   Config extends Record<string, JSONTypes> | undefined,
   Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any>,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string,
-  >(options: PluginCli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli {
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string,
+  >(options: PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName>): Cli {
   options.commands = options.commands ?? []
   options.commands.unshift(pluginsCommand as any)
   const cwd = options.context?.cwd ?? process.cwd()

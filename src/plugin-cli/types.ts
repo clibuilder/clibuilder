@@ -6,47 +6,47 @@ export namespace PluginCli {
     addCommand<
       Config extends Record<string, JSONTypes> | undefined,
       Context,
-      N1 extends string = string,
-      N2 extends string = string,
-      N3 extends string = string,
-      N4 extends string = string,
+      AName extends string = string,
+      BName extends string = string,
+      SName extends string = string,
+      NName extends string = string,
       >(
-        command: Cli.Command<Config, Context, N1, N2, N3, N4>
+        command: Cli.Command<Config, Context, AName, BName, SName, NName>
       ): void,
   }
 
   export type ConstructOptions<
     Config extends Record<string, JSONTypes> | undefined,
     Context,
-    N1 extends string,
-    N2 extends string,
-    N3 extends string,
-    N4 extends string,
-    O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
+    AName extends string,
+    BName extends string,
+    SName extends string,
+    NName extends string,
+    O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
     > = Cli.ConstructOptionsBase<Config, Context> & {
       keyword?: string,
       description?: string,
-      arguments?: Cli.Argument<N1>[],
+      arguments?: Cli.Argument<AName>[],
       options?: O,
       commands?: Command<Config, Context>[],
-      run?: Cli.RunFn<Config, Context, N1, N2, N3, N4, O>
+      run?: Cli.RunFn<Config, Context, AName, BName, SName, NName, O>
     }
 
   export type Command<
     Config extends Record<string, JSONTypes> | undefined = undefined,
     Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any> = Partial<Cli.BuildInContext>,
-    N1 extends string = string,
-    N2 extends string = string,
-    N3 extends string = string,
-    N4 extends string = string,
-    O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
+    AName extends string = string,
+    BName extends string = string,
+    SName extends string = string,
+    NName extends string = string,
+    O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
     > = {
       name: string,
       description: string,
-      arguments?: Cli.Argument<N1>[],
+      arguments?: Cli.Argument<AName>[],
       options?: O,
       alias?: string[],
       commands?: Command<Config, Context>[],
-      run?(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<N1, N2, N3, N4, O>, argv: string[]): Promise<any> | any,
+      run?(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
     }
 }

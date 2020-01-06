@@ -10,11 +10,11 @@ import { CommandInstance } from './typesInternal'
 export function createCli<
   Config extends Record<string, JSONTypes> | undefined,
   Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any>,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string,
-  >(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli {
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string,
+  >(options: Cli.ConstructOptions<Config, Context, AName, BName, SName, NName>): Cli {
   const context = buildContext(options)
   const opts = buildParseOption(options)
   log.debug('cwd:', context.cwd)
@@ -78,11 +78,11 @@ export function createCli<
 function buildContext<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string
->(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli.RunContext<Config, Context> {
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string
+>(options: Cli.ConstructOptions<Config, Context, AName, BName, SName, NName>): Cli.RunContext<Config, Context> {
   // as any because `config` is `Config | undefined`
   const context = {
     name: options.name,
@@ -106,11 +106,11 @@ function buildContext<
 function buildParseOption<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string
->(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli.ConstructOptions<Config, Context, N1, N2, N3, N4> {
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string
+>(options: Cli.ConstructOptions<Config, Context, AName, BName, SName, NName>): Cli.ConstructOptions<Config, Context, AName, BName, SName, NName> {
   return requiredDeep({ options: defaultOptions }, options)
 }
 
@@ -149,11 +149,11 @@ function removeCliLevelOptions(args: Cli.RunArgs, argv: string[]): [Cli.RunArgs<
 function buildCommands<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string
->(context: Cli.RunContext<Config, Context>, options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): CommandInstance[] {
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string
+>(context: Cli.RunContext<Config, Context>, options: Cli.ConstructOptions<Config, Context, AName, BName, SName, NName>): CommandInstance[] {
   if (hasProperty(options, 'commands')) {
     return options.commands.map(cmd => createCliCommand(cmd, context, []))
   }

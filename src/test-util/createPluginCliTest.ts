@@ -7,13 +7,13 @@ import { Cli } from '../cli/types'
 export function createPluginCliTest<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string,
-  O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
+  AName extends string,
+  BName extends string,
+  SName extends string,
+  NName extends string,
+  O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
 >(
-  options: PartialPick<PluginCli.ConstructOptions<Config, Context, N1, N2, N3, N4, O>, 'name' | 'version'>,
+  options: PartialPick<PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName, O>, 'name' | 'version'>,
   ...args: string[]
 ) {
   const ui = new InMemoryPresenter()
