@@ -1,14 +1,7 @@
 import { JSONTypes, KeyofOptional } from 'type-plus'
-import { HelpPresenter, Inquirer, LogPresenter, PresenterFactory, VersionPresenter } from '../presenter/types'
+import { HelpPresenter, Inquirer, LogPresenter, VersionPresenter } from '../presenter/types'
 
-export interface CliContext {
-  cwd: string,
-  presenterFactory: PresenterFactory,
-}
-
-export type NoConfig = never
-
-export type Cli2 = {
+export type Cli = {
   name: string,
   version: string,
   /**
@@ -17,7 +10,7 @@ export type Cli2 = {
   parse(argv: string[]): Promise<any>,
 }
 
-export namespace Cli2 {
+export namespace Cli {
   export type ConstructOptions<
     Config extends Record<string, JSONTypes> | undefined,
     Context,

@@ -1,7 +1,7 @@
 import { camelCase } from 'camel-case'
 import { filterKey } from 'type-plus'
 import yargs from 'yargs-parser'
-import { Cli2 } from '../cli/types'
+import { Cli } from '../cli/types'
 import { MissingArguments, NotNumberOption, TooManyArguments } from '../errors'
 import { toYargsOption } from './toYargsOption'
 import { CliArgsWithoutDefaults, Parsable } from './types'
@@ -172,7 +172,7 @@ function handleGroupedOptions(parsable: Parsable, args: CliArgsWithoutDefaults, 
   })
 }
 
-function getAllGroups(opts: Cli2.Options) {
+function getAllGroups(opts: Cli.Options) {
   const groups: Record<string, string[]> = {}
   if (opts.boolean) {
     for (const key in opts.boolean) {

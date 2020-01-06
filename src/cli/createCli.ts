@@ -4,17 +4,17 @@ import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from '../errors'
 import { log } from '../log'
 import { DisplayLevel, PlainPresenter } from '../presenter'
 import { loadConfig } from './loadConfig'
-import { Cli2 } from './types'
+import { Cli } from './types'
 import { CommandInstance } from './typesInternal'
 
 export function createCli<
   Config extends Record<string, JSONTypes> | undefined,
-  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any>,
+  Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any>,
   N1 extends string,
   N2 extends string,
   N3 extends string,
   N4 extends string,
-  >(options: Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli2 {
+  >(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli {
   const context = buildContext(options)
   const opts = buildParseOption(options)
   log.debug('cwd:', context.cwd)
@@ -82,7 +82,7 @@ function buildContext<
   N2 extends string,
   N3 extends string,
   N4 extends string
->(options: Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli2.RunContext<Config, Context> {
+>(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli.RunContext<Config, Context> {
   // as any because `config` is `Config | undefined`
   const context = {
     name: options.name,
@@ -110,7 +110,7 @@ function buildParseOption<
   N2 extends string,
   N3 extends string,
   N4 extends string
->(options: Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4> {
+>(options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli.ConstructOptions<Config, Context, N1, N2, N3, N4> {
   return requiredDeep({ options: defaultOptions }, options)
 }
 
@@ -137,7 +137,7 @@ const defaultOptions = {
   },
 }
 
-function removeCliLevelOptions(args: Cli2.RunArgs, argv: string[]): [Cli2.RunArgs<any, any, any, any>, string[]] {
+function removeCliLevelOptions(args: Cli.RunArgs, argv: string[]): [Cli.RunArgs<any, any, any, any>, string[]] {
   const keys = ['version', 'verbose', 'silent', 'debug-cli']
   const keys2 = ['--version', '--verbose', '--silent', '--debug-cli', '-V', '-v']
   return [reduceKey(args, (p, v) => {
@@ -153,7 +153,7 @@ function buildCommands<
   N2 extends string,
   N3 extends string,
   N4 extends string
->(context: Cli2.RunContext<Config, Context>, options: Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>): CommandInstance[] {
+>(context: Cli.RunContext<Config, Context>, options: Cli.ConstructOptions<Config, Context, N1, N2, N3, N4>): CommandInstance[] {
   if (hasProperty(options, 'commands')) {
     return options.commands.map(cmd => createCliCommand(cmd, context, []))
   }
@@ -163,11 +163,11 @@ function buildCommands<
 function createCliCommand<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  >(cmd: Cli2.Command<Config, Context>, parent: Cli2.RunContext<Config, Context>, parentNames: string[]) {
+  >(cmd: Cli.Command<Config, Context>, parent: Cli.RunContext<Config, Context>, parentNames: string[]) {
   log.debug('creatingCommand:', [...parentNames, cmd.name].join(' > '))
   validateCliCommand(cmd)
 
-  const context: Cli2.RunContext<Config, Context> = {
+  const context: Cli.RunContext<Config, Context> = {
     ...parent,
     ...omit(cmd, 'commands')
   }
@@ -187,12 +187,12 @@ function createCliCommand<
   return command as any
 }
 
-function validateCliCommand(cmd: Cli2.Command<any, any>) {
+function validateCliCommand(cmd: Cli.Command<any, any>) {
   validateArgument(cmd)
   validateOptions(cmd)
 }
 
-function validateArgument(cmd: Cli2.Command<any, any>) {
+function validateArgument(cmd: Cli.Command<any, any>) {
   const args = cmd.arguments
   if (args) {
     const multiIndex = args.findIndex(arg => arg.multiple === true)
@@ -202,7 +202,7 @@ function validateArgument(cmd: Cli2.Command<any, any>) {
   }
 }
 
-function validateOptions(cmd: Cli2.Command<any, any>) {
+function validateOptions(cmd: Cli.Command<any, any>) {
   const options = cmd.options
   if (options) {
     const strOptionNames = options.string ? Object.keys(options.string) : []

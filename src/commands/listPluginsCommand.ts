@@ -1,7 +1,7 @@
 import { findByKeywords } from 'find-installed-packages'
-import { PluginCli2 } from '../plugin-cli/types'
+import { PluginCli } from '../plugin-cli/types'
 
-export const listPluginsCommand: PluginCli2.Command = {
+export const listPluginsCommand: PluginCli.Command = {
   name: 'list',
   alias: ['ls'],
   description: 'List installed plugins',

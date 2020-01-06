@@ -1,22 +1,22 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
-import { Cli2, createCli } from '.'
+import { Cli, createCli } from '.'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, helloHelpMessage, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
 
 test('Cli2.ConstructOptions requires either run() or commands', () => {
-  assertType.isFalse(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isFalse(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
   }))
 
-  assertType.isTrue(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isTrue(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
     description: '',
     run() { }
   }))
 
-  assertType.isTrue(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isTrue(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
     commands: []
@@ -393,7 +393,7 @@ describe('cli with commands', () => {
   })
 
   test('command can specify the context it is expecting', async () => {
-    const cmd: Cli2.Command<undefined, { a: number }> = {
+    const cmd: Cli.Command<undefined, { a: number }> = {
       name: 'cmd1',
       description: '',
       run() {
