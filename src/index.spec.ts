@@ -1,11 +1,7 @@
 import t from 'assert'
 import a from 'assertron'
-import {
-  argCommand, booleanOptionsCommand,
-  echoCommand, echoNameOptionCommand,
-  errorCommand, generateDisplayedMessage,
-  groupOptionsCommand, noopCommand, verboseCommand
-} from '.'
+import { argCommand, booleanOptionsCommand, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, noopCommand, verboseCommand } from '.'
+import { MissingArguments } from './errors'
 import { createCliTest, echoCommandHelpMessage, echoDebugCommand } from './test-util'
 
 const noopHelpMessage = `
@@ -189,7 +185,7 @@ when called with 'arg'
 then show report missing argument`, async () => {
   const { cli, argv, ui } = createCliTest({ commands: [argCommand] }, 'arg')
 
-  await cli.parse(argv)
+  await a.throws(cli.parse(argv), MissingArguments)
 
   const actual = generateDisplayedMessage(ui.display.errorLogs)
   t.strictEqual(actual, 'Missing Argument. Expecting 1 but received 0.')

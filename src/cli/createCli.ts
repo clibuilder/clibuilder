@@ -39,7 +39,7 @@ export function createCli<
       ui.displayLevel = args.verbose ? DisplayLevel.Verbose :
         args.silent ? DisplayLevel.Silent : DisplayLevel.Normal
 
-      const [command, cmdArgv] = getCommandExecution(commands, getArgvForCommand(trimmedArgv))
+      const [command, cmdArgv] = getCommandExecution(commands, trimmedArgv.slice(1))
       if (command) {
         log.debug(`found command: ${command.name}`)
         if (args.help || !hasProperty(command, 'run')) {
@@ -47,13 +47,22 @@ export function createCli<
           return
         }
 
+        let cmdArgs
         try {
-          return (command as any).run(parseArgv(command, cmdArgv), cmdArgv)
+          cmdArgs = parseArgv(command, cmdArgv)
         }
         catch (e) {
           ui.error(e.message)
           ui.showHelp(command)
-          return
+          throw e
+        }
+
+        try {
+          return (command as any).run(cmdArgs, cmdArgv)
+        }
+        catch (e) {
+          ui.error(`command ${command.name} throws: ${e}`)
+          throw e
         }
       }
 
@@ -244,14 +253,4 @@ export function getCommandExecution(
     if (nested[0]) cmdExecution = nested
   })
   return cmdExecution
-}
-
-function getArgvForCommand(argv: string[]) {
-  const cmdArgv = argv.slice(1)
-  if (cmdArgv.length === 0) return cmdArgv
-  if (cmdArgv.every(a => a.startsWith('-'))) return cmdArgv
-  while (cmdArgv[0].startsWith('-')) {
-    cmdArgv.push(cmdArgv.shift()!)
-  }
-  return cmdArgv
 }

@@ -17,59 +17,92 @@ A highly customizable command line library.
 
 ## Features
 
-- Distributed commands. `Command` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
+- Cli and Command separation. You can define command in another file or even package.
+  - This means the same command can be used in different command lines.
 - Nested commands.
-- Load config file.
-- Provide additional context from `Cli` to `Command`
-- Can use different UI at `Cli` and `Command` level.
-- Plugin architecture using `PluginCli`
+- Configuration file.
+- Pass additional context from `Cli` to `Command`.
+- Build in ui for customization.
+- Plugin architecture using `PluginCli`.
 
 ## Usage
 
-```ts
-// bin.ts
-import { createCli } from 'clibuilder'
+### createCli
 
+You can create a simple cli without any commands.
+
+```ts
+const cli = createCli({
+  name: 'your-cli',
+  version: '1.0.0',
+  description: 'say hello world',
+  run() { this.ui.info('hello world') }
+})
+
+cli.parse(process.argv)
+```
+
+You can create a command based cli.
+
+```ts
 import { commandA, commandB } from './commands'
 
 const cli = createCli({
-  name: 'yourapp',
+  name: 'your-cli',
   version: '1.0.0',
-  commands: [commandA, commandB],
-  run() { /* when not matching any command */ },
-})
-cli.parse(process.argv)
-
-// commands.ts
-import { createCommand } from 'clibuilder'
-
-export const commandA = createCommand({
-  name: 'echo',
-  // `args` is the parsed arguments.
-  // `argv` is the raw argv.
-  run(args, argv) {
-    this.ui.info(argv)
-  }
+  commands: [commandA, commandB]
 })
 ```
 
-You can define arguments:
+You can also mix them together.
+When you supply a command name,
+the command will be executed.
+When you supply something else (or nothing if you cli does not take argument),
+the cli's `run()` will be execute.
 
 ```ts
-const commandA = createCommand({
-  name: 'command-a',
-  arguments: [{
-    name: 'arg1',
-    required: true,
-  }]
+const cli = createCli({
+  name: 'your-cli',
+  version: '1.0.0',
+  commands: [hello],
+  description: 'cli level command',
+  arguments: [{ name: 'some-arg' }],
+  run() { ... },
+})
+
+// runs hello command
+// terminal> your-cli hello
+
+// runs cli level command
+// terminal> your-cli abc
+```
+
+When creating `Command`, you can use the `createCommand()` function.
+
+```ts
+createCommand({
+  name: 'hello',
+  description: 'hello world',
+  run() { this.ui.info('hello world') }
 })
 ```
 
-and/or options:
+Both `Cli` and `Command` supports the `Argument`, `Options`, and `Alias`.
+
+Argument supports `required` and `multiple`.
+The arugment supporting `multiple` must be the last argument.
 
 ```ts
-const commandB = createCommand({
-  name: 'command-b',
+createCli({
+  arguments: [{ name: 'arg-1', required: true }, { name: 'arg-2', multiple: true }],
+  ...,
+})
+```
+
+Options support `boolean`, `string`, `number`.
+
+```ts
+createCommand({
   options: {
     boolean: {
       validate: { ... }
@@ -80,79 +113,133 @@ const commandB = createCommand({
     number: {
       maxSize: { ... }
     }
+  },
+  ...
+})
+```
+
+Alias are shorthands of a command.
+If there is a command name conflicting with an alias, the command name takes precedent.
+
+```ts
+createCommand({
+  name: 'my-command',
+  alias: ['mc', 'mcmd'],
+  ...
+})
+```
+
+Inside the `Cli` and `Command`'s `run()` method,
+you have access to the following:
+
+```ts
+createCli({
+  arguments: [{ name: 'arg1' }],
+  options: { ... },
+  run(args) {
+    args.arg1 // typed as string
+    args.yourBoolOption // typed as boolean
+    args.yourStrOption // typed as string
+    args.yourNumOption // typed as number
+
+    this.config // if you have config defined, yes it is typed
+    this.cwd // current working directory. Typically it is the same as process.cwd()
+    this.ui.error()
+    this.ui.warn()
+    this.ui.info()
+    this.ui.debug()
+    this.ui.prompt()
   }
 })
 ```
 
-It comes with a plain presenter.
-You can override it to display your cli in any way you want:
+Currently, the type inference for argument does not correctly detect `multiple`,
+so you have to cast it.
+
+```ts
+const cli = createCli({
+  name: 'your-cli',
+  arguments: [{ name: 'multi', multiple: true }],
+  options: { number: { id: { description: 'multiple id' }}}
+  run(args) {
+    args.multi as unknown as string[] // typed as string
+    args.ids as unknown as number[] // typed as number correctly, but your usage may expect number[]
+  }
+})
+
+await cli.parse(['node', 'your-cli', '--id=1', '--id=2'])
+```
+
+You can add addition code to the run context.
+
+```ts
+createCli({
+  context: { a: 1 },
+  run() {
+    this.a // 1
+  }
+})
+```
+
+The context will be available to the commands.
+So it can be used to inject dependencies to the commands.
+
+```ts
+createCli({
+  context: { a: 1 },
+  commands: [{
+    ...,
+    run() {
+      this.a // 1
+    }
+  }]
+})
+```
+
+You can also override the UI using context.
 
 ```ts
 const ui = new YourUI()
 
-const cli = createCli({
-  name: 'yourapp',
-  version: '1.0.0',
-  commands: [...],
+createCli({
   context: { ui },
+  ...
 })
-
-cli.parse(process.argv)
 ```
 
-You can specify the shape of the config, which will be loaded automatically using `<cli>.json` convension.
+When you specify `config`,
+it will be loaded automatically using `<cli>.json` convension.
 
 ```ts
 const cmd = createCommand({
   name: 'cmd',
-  config: { ... },
+  config: { a: 1 }, // this is the default config
   run() {
-    // this.config is typed and accessible
-    this.ui.info(this.config)
+    // config is loaded from `cmd.json`
+    this.config.a // 2 from cmd.json
   },
 })
-
-const cli = createCli({
-  name: 'yourapp',
-  version: '1.0.0',
-  config: { ... },
-  commands: [cmd],
-})
 ```
 
-When working with config, you can use the `overrideArgs(args, config)` helper function to get the args overridden by config in proper order:
+When using `config` and `context`,
+you can specify their type using `createCommand<Config, Context>()`.
+
+Due to TypeScript limitation,
+when explicitly specifying the `Config` or `Context` type,
+you lost the the ability to infer types from `Argument` and `Options`.
 
 ```ts
-import { CliCommand, overrideArgs } from 'clibuilder'
-
-interface Config { ... }
-
-const cmd = {
-  name: 'cmd',
-  // some options and arguments
+const cmd = createCommand<{ a: number }, { b: string }>({
+  arguments: [{ name: 'arg' }],
   run(args) {
-    const overridenConfig = overrideArgs(args, this.config)
-  }
-} CliCommand<Config>
-```
-
-You can add addition information in the context, which will be passed to your commands:
-
-```ts
-const cmd = createCommand<never, { something: number }>({
-  name: 'cmd',
-  run() {
-    this.ui.info(this.something) // 10
+    args.arg as unknown as string// typed as never
+    this.config.a // number
+    this.b // string
   }
 })
-
-const cli = new Cli({
-  name: 'yourapp',
-  version: '1.0.0',
-  context: { something: 10 },
-  commands: [cmd],
-})
 ```
+
+### createPluginCli
 
 `PluginCli` allows you to build plugins to add commands to your application.
 i.e. You can build your application in a distributed fashion.
@@ -164,13 +251,11 @@ const cli = createPluginCli({
 })
 
 // in plugin package
-import { PluginCli } from 'clibuilder'
-
 const cmd1 = createPluginCommand({ ... })
 const cmd2 = createPluginCommand({ ... })
 
-export function activate({ register }: ActivationContext) {
-  register({
+export function activate({ addCommand }: PluginCli.ActivationContext) {
+  addCommand({
     name: 'miku'
     commands: [cmd1, cmd2]
   })

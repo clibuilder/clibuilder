@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
+import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, throwCommand } from '../test-util'
 
 const helloHelpMessage = `
 Usage: cli <command> [options]
@@ -162,8 +162,8 @@ describe('cli without command', () => {
       arguments: [{ name: 'arg1' }, { name: 'arg2', multiple: true }],
       run(args) {
         assertType<string>(args.arg1)
-        // TOOD: this should be string[]
-        // assertType<string[]>(args.arg2)
+        // limitation
+        assertType<string[]>(args.arg2 as unknown as string[])
         expect(args.arg1).toEqual('value1')
         expect(args.arg2).toEqual(['value2', 'value3'])
       }
@@ -323,6 +323,14 @@ describe('cli with commands', () => {
     expect(message).toBe('')
   })
 
+  test('still works when cli level arguments are placed before command', async () => {
+    const { cli, argv } = createCliTest({
+      commands: [numberOptionCommand]
+    }, '--verbose', '--silent', 'number-option', '--value=3')
+    const actual = await cli.parse(argv)
+    a.satisfies(actual, { value: 3 })
+  })
+
   test('invoke command by name', async () => {
     const { cli, argv } = createCliTest({
       commands: [helloCommand as any]
@@ -426,6 +434,16 @@ describe('cli with commands', () => {
     const actual = await cli.parse(argv)
     expect(actual).toBe(3)
   })
+
+  test('command throws will throw the error at cli level', async () => {
+    const { cli, argv, ui } = createCliTest({ commands: [throwCommand] }, 'throw', 'some error')
+
+    const err = await a.throws(cli.parse(argv))
+
+    const msg = generateDisplayedMessage(ui.display.errorLogs)
+    expect(err.message).toEqual('some error')
+    expect(msg).toEqual('command throw throws: Error: some error')
+  })
 })
 
 describe('config', () => {
@@ -490,6 +508,7 @@ describe('config', () => {
 
     await cli.parse(argv)
   })
+
   test('use different config name', async () => {
     const { cli, argv } = createCliTest({
       name: 'another-cli',
