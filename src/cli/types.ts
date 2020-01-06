@@ -26,19 +26,7 @@ export namespace Cli2 {
     N3 extends string,
     N4 extends string,
     O extends Options<N2, N3, N4> = Options<N2, N3, N4>
-    > = {
-      name: string,
-      version: string,
-      config?: Config,
-      /**
-       * Specify the config name if differs from the cli name.
-       * e.g. name = `cli`,
-       * configName = `my-cli`,
-       * will load config from `my-cli.json`
-       */
-      configName?: string,
-      context?: Context,
-    } & ({
+    > = ConstructOptionsBase<Config, Context> & ({
       name: string,
       description: string,
       arguments?: Argument<N1>[],
@@ -48,6 +36,31 @@ export namespace Cli2 {
     } | {
       commands: Command<Config, Context>[],
     })
+
+  export type ConstructOptionsBase<
+    Config extends Record<string, JSONTypes> | undefined,
+    Context,
+    > = {
+      name: string,
+      version: string,
+      /**
+       * The default config for the cli.
+       * The config will be available to the cli and its command at `this.config`.
+       * If specified, the configuration will be loaded from `<cli-name>.json` (or `<configName>.json` if specified).
+       */
+      config?: Config,
+      /**
+       * Specify the config name if differs from the cli name.
+       * e.g. name = `cli`,
+       * configName = `my-cli`,
+       * will load config from `my-cli.json`
+       */
+      configName?: string,
+      /**
+       * A context that the cli and its commands will have access to (at `this`).
+       */
+      context?: Context,
+    }
 
   export type RunFn<
     Config,

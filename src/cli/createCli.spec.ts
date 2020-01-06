@@ -276,7 +276,6 @@ describe('cli with commands', () => {
     expect(info).toBe(helloHelpMessage)
   })
 
-
   test('command without run shows help', async () => {
     const [cli, argv, ui] = createCliTest({
       commands: [nestedCommand as any],
@@ -286,7 +285,6 @@ describe('cli with commands', () => {
     const info = generateDisplayedMessage(ui.display.infoLogs)
     expect(info).toBe(nestedHelpMessage)
   })
-
 
   test('invoke run if no matching command', async () => {
     const [cli, argv] = createCliTest({
@@ -344,7 +342,6 @@ describe('cli with commands', () => {
     const actual = await cli.parse(argv)
     expect(actual).toEqual('hello')
   })
-
 
   test('pass arguments to nested command', async () => {
     const [cli, argv] = createCliTest({
