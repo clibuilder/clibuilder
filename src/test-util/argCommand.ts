@@ -1,7 +1,8 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const argCommand = {
+export const argCommand = createCommand({
   name: 'arg',
+  description: '',
   arguments: [
     {
       name: 'required-arg',
@@ -16,4 +17,4 @@ export const argCommand = {
   async run(args) {
     return args
   },
-} as CliCommand
+})

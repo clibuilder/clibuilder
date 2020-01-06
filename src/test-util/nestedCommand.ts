@@ -1,11 +1,11 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 import { helloCommand } from './helloCommand'
 
-export const nestedCommand: CliCommand = {
+export const nestedCommand = createCommand({
   name: 'nested',
   description: 'nested command',
   commands: [helloCommand]
-}
+})
 
 export const nestedHelpMessage = `
 Usage: cli nested <command>

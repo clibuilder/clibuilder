@@ -1,9 +1,7 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-// istanbul ignore next
-export const noopCommand: CliCommand = {
+export const noopCommand = createCommand({
   name: 'noop',
-  run() {
-    return
-  },
-}
+  description: 'noop command',
+  run() { return },
+})

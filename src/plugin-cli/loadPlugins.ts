@@ -1,19 +1,19 @@
 import { findByKeywords } from 'find-installed-packages'
 import findup from 'find-up'
 import path from 'path'
-import { CliCommand } from '../cli-command'
 import { log } from '../log'
-import { ActivationContext } from './types'
+import { PluginCli2 } from './types'
 
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
-  log.debug(`look up plugins with keyword: ${keyword}`)
 
+  log.debug(`look up local plugins with keyword '${keyword}' at ${cwd}`)
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
     log.debug('found local plugins', pluginNames)
     return pluginNames
   })
 
   const globalFolder = getGlobalPackageFolder(__dirname)
+  log.debug(`look up global plugins with keyword '${keyword}' at ${globalFolder}`)
   const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
     log.debug('found global plugins', globalPluginNames)
     return globalPluginNames
@@ -43,7 +43,7 @@ function getGlobalPackageFolder(folder: string): string {
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
-  const commands: CliCommand[] = []
+  const commands: PluginCli2.Command<any, any>[] = []
   pluginNames
     .map(p => {
       return {
@@ -75,8 +75,8 @@ function isValidPlugin(m: any) {
   return typeof m.activate === 'function'
 }
 
-function activatePlugin(m: { activate: (context: ActivationContext) => void }) {
-  const commands: CliCommand[] = []
+function activatePlugin(m: { activate: (context: PluginCli2.ActivationContext) => void }) {
+  const commands: PluginCli2.Command<any, any>[] = []
   m.activate({ addCommand: cmd => commands.push(cmd) })
   return commands
 }

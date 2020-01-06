@@ -1,7 +1,8 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const verboseCommand: CliCommand = {
+export const verboseCommand = createCommand({
   name: 'verbose',
+  description: 'verbose command',
   alias: ['vb', 'detail'],
   options: {
     boolean: {
@@ -13,4 +14,4 @@ export const verboseCommand: CliCommand = {
   run() {
     this.ui.debug('print verbosely')
   },
-}
+})

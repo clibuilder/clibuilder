@@ -1,10 +1,10 @@
-import { CliCommand } from '../cli-command'
+import { Cli2 } from '../cli/types'
 
 export interface Parsable {
   name: string,
-  arguments?: CliCommand.Argument[],
+  arguments?: Cli2.Argument[],
   commands?: Parsable[],
-  options?: CliCommand.Options,
+  options?: Cli2.Options,
 }
 
 export interface CliArgsWithoutDefaults {

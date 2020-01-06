@@ -1,6 +1,6 @@
 import { hasProperty, JSONTypes, omit, pick, reduceKey, requiredDeep } from 'type-plus'
 import { parseArgv } from '../argv-parser'
-import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from '../cli-command'
+import { MultipleArgumentNotLastEntry, OptionNameNotUnique } from '../errors'
 import { log } from '../log'
 import { DisplayLevel, PlainPresenter } from '../presenter'
 import { loadConfig } from './loadConfig'
@@ -25,16 +25,21 @@ export function createCli<
   const cli = {
     name: opts.name,
     version: opts.version,
-    parse(argv: string[]) {
+    async parse(argv: string[]) {
       const argvWithoutNode = argv.slice(1)
       const args = parseArgv(opts, argvWithoutNode)
+
+      const [trimmedArgs, trimmedArgv] = removeCliLevelOptions(args, argvWithoutNode)
+
       if (args.version) {
         ui.showVersion(opts.version)
+        return
       }
+
       ui.displayLevel = args.verbose ? DisplayLevel.Verbose :
         args.silent ? DisplayLevel.Silent : DisplayLevel.Normal
 
-      const [command, cmdArgs, cmdArgv] = getCommandExecution(commands, getArgvForCommand(argvWithoutNode))
+      const [command, cmdArgv] = getCommandExecution(commands, getArgvForCommand(trimmedArgv))
       if (command) {
         log.debug(`found command: ${command.name}`)
         if (args.help || !hasProperty(command, 'run')) {
@@ -42,16 +47,23 @@ export function createCli<
           return
         }
 
-        return command.run(cmdArgs, cmdArgv)
+        try {
+          return (command as any).run(parseArgv(command, cmdArgv), cmdArgv)
+        }
+        catch (e) {
+          ui.error(e.message)
+          ui.showHelp(command)
+          return
+        }
       }
 
       if (args.help) {
         ui.showHelp(opts)
+        return
       }
 
       if (hasProperty(opts, 'run') && (opts.arguments && opts.arguments.length > 0 || args._.length === 0)) {
-        const trimmedArgs = removeCliLevelOptions(args)
-        return opts.run.call(context, trimmedArgs, argvWithoutNode)
+        return opts.run.call(context, trimmedArgs, trimmedArgv)
       }
 
       if (args._.length > 0)
@@ -125,12 +137,13 @@ const defaultOptions = {
   },
 }
 
-function removeCliLevelOptions(options: Record<string, any>): any {
+function removeCliLevelOptions(args: Cli2.RunArgs, argv: string[]): [Cli2.RunArgs<any, any, any, any>, string[]] {
   const keys = ['version', 'verbose', 'silent', 'debug-cli']
-  return reduceKey(options, (p, v) => {
-    if (keys.indexOf(v) === -1) p[v] = options[v]
+  const keys2 = ['--version', '--verbose', '--silent', '--debug-cli', '-V', '-v']
+  return [reduceKey(args, (p, v) => {
+    if (keys.indexOf(v) === -1) p[v] = args[v]
     return p
-  }, {} as any)
+  }, {} as any), argv.filter(a => keys2.indexOf(a) === -1)]
 }
 
 function buildCommands<
@@ -147,7 +160,10 @@ function buildCommands<
   return []
 }
 
-function createCliCommand<Config, Context>(cmd: Cli2.Command<Config, Context>, parent: Cli2.RunContext<Config, Context>, parentNames: string[]) {
+function createCliCommand<
+  Config extends Record<string, JSONTypes> | undefined,
+  Context,
+  >(cmd: Cli2.Command<Config, Context>, parent: Cli2.RunContext<Config, Context>, parentNames: string[]) {
   log.debug('creatingCommand:', [...parentNames, cmd.name].join(' > '))
   validateCliCommand(cmd)
 
@@ -211,8 +227,8 @@ function validateOptions(cmd: Cli2.Command<any, any>) {
 export function getCommandExecution(
   commands: CommandInstance[],
   argv: string[],
-): [CommandInstance | undefined, any, string[]] {
-  let cmdExecution: [CommandInstance | undefined, any, string[]] = [undefined, undefined, []]
+): [CommandInstance | undefined, string[]] {
+  let cmdExecution: [CommandInstance | undefined, string[]] = [undefined, []]
   if (argv.length === 0) return cmdExecution
 
   const cmdArgv = [...argv]
@@ -222,7 +238,7 @@ export function getCommandExecution(
       (!!cmd.alias && cmd.alias.indexOf(nameOrAlias) !== -1)
     if (!match) return
 
-    cmdExecution = [cmd, parseArgv(cmd, cmdArgv), cmdArgv]
+    cmdExecution = [cmd, cmdArgv]
     if (!cmd.commands) return
 
     const nested = getCommandExecution(cmd.commands, cmdArgv.slice(1))

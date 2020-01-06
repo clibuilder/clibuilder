@@ -1,6 +1,6 @@
+import t from 'assert'
 import a from 'assertron'
 import { some } from 'satisfier'
-import t from 'assert'
 import { loadPlugins } from './loadPlugins'
 
 test('empty folder will still load global plugins', async () => {

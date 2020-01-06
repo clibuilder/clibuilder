@@ -1,9 +1,8 @@
-import { JSONTypes } from 'type-plus';
-import { Cli2 } from '../cli/types';
-import { PluginCli2 } from './types';
-import { pluginsCommand } from '../commands';
-import { loadPlugins } from './loadPlugins';
-import { createCli } from '../cli';
+import { JSONTypes } from 'type-plus'
+import { Cli2, createCli } from '../cli'
+import { pluginsCommand } from '../commands'
+import { loadPlugins } from './loadPlugins'
+import { PluginCli2 } from './types'
 
 export function createPluginCli<
   Config extends Record<string, JSONTypes> | undefined,
@@ -18,8 +17,10 @@ export function createPluginCli<
   const cwd = options.context?.cwd ?? process.cwd()
 
   const keyword = options.keyword || `${options.name}-plugin`
-  const loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => options.commands!.push(...commands as any))
-
+  options.context = { ...options.context, keyword } as any
+  const loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
+    return options.commands!.push(...commands as any)
+  })
   let cli: Cli2
   return {
     name: options.name,

@@ -1,9 +1,7 @@
 import a from 'assertron'
-import { assertType, assignability, JSONTypes, PartialPick } from 'type-plus'
+import { assertType, assignability } from 'type-plus'
 import { Cli2, createCli } from '.'
-import { argCommand, createCliArgv, generateDisplayedMessage, helloCommand, helloHelpMessage, InMemoryPresenter, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
-import { log } from '../log'
-import { logLevels } from 'standard-log'
+import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, helloHelpMessage, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
 
 test('Cli2.ConstructOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<Cli2.ConstructOptions<any, any, any, any, any, any>>()({
@@ -43,7 +41,7 @@ test('-v shows version', async () => {
     }
   })
 
-  const [cli, argv, ui] = createCliTest({
+  const { cli, argv, ui } = createCliTest({
     description: '',
     run() { }
   }, '-v')
@@ -53,7 +51,7 @@ test('-v shows version', async () => {
 })
 
 test('--version shows version', async () => {
-  const [cli, argv, ui] = createCliTest({
+  const { cli, argv, ui } = createCliTest({
     description: '',
     run() { }
   }, '--version')
@@ -75,7 +73,7 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `
 test('-h shows help', async () => {
-  const [cli, argv, ui] = createCliTest({
+  const { cli, argv, ui } = createCliTest({
     description: 'test cli',
     run() { }
   }, '-h')
@@ -85,7 +83,7 @@ test('-h shows help', async () => {
 })
 
 test('--help shows help', async () => {
-  const [cli, argv, ui] = createCliTest({
+  const { cli, argv, ui } = createCliTest({
     description: 'test cli',
     run() { }
   }, '--help')
@@ -95,7 +93,7 @@ test('--help shows help', async () => {
 })
 
 test('--silent disables ui', async () => {
-  const [cli, argv, ui] = createCliTest({
+  const { cli, argv, ui } = createCliTest({
     description: '',
     run() { this.ui.info('should not print') }
   }, '--silent')
@@ -119,29 +117,16 @@ describe('cli without command', () => {
   test('run(_, argv) receives argv without "node"', () => {
     expect.assertions(1)
 
-    const [cli] = createCliTest({
+    const { cli } = createCliTest({
       description: '',
       run(_, argv) { expect(argv).toEqual(['cli']) }
     })
 
-    cli.parse(['node', 'cli'])
-  })
-
-  test('args default with help', () => {
-    expect.assertions(1)
-    const [cli, argv] = createCliTest({
-      description: '',
-      run(args) {
-        assertType.isBoolean(args.help)
-        expect(args.help).toBe(true)
-      }
-    }, '--help')
-
-    cli.parse(argv)
+    return cli.parse(['node', 'cli'])
   })
 
   test('specify argument', () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       arguments: [{ name: 'arg1' }, { name: 'arg2' }],
       run(args) {
@@ -152,11 +137,27 @@ describe('cli without command', () => {
       }
     }, 'value1', 'value2')
 
-    cli.parse(argv)
+    return cli.parse(argv)
+  })
+
+  test('multi-argument has type string[]', () => {
+    const { cli, argv } = createCliTest({
+      description: '',
+      arguments: [{ name: 'arg1' }, { name: 'arg2', multiple: true }],
+      run(args) {
+        assertType<string>(args.arg1)
+        // TOOD: this should be string[]
+        // assertType<string[]>(args.arg2)
+        expect(args.arg1).toEqual('value1')
+        expect(args.arg2).toEqual(['value2', 'value3'])
+      }
+    }, 'value1', 'value2', 'value3')
+
+    return cli.parse(argv)
   })
 
   test('specify options', () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       options: {
         boolean: {
@@ -188,7 +189,7 @@ describe('cli without command', () => {
   })
 
   test('ui.debug by default does not emit', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       description: '',
       run() { this.ui.debug('should not print') }
     })
@@ -199,7 +200,7 @@ describe('cli without command', () => {
   })
 
   test('--verbose enables debug log', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       description: '',
       run() { this.ui.debug('should print') }
     }, '--verbose')
@@ -210,7 +211,7 @@ describe('cli without command', () => {
   })
 
   test('--debug-cli not pass to run', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       run(args) {
         expect(args['debug-cli']).toBeUndefined()
@@ -220,7 +221,7 @@ describe('cli without command', () => {
   })
 
   test('--verbose not pass to run', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       run(args) {
         expect(args['verbose']).toBeUndefined()
@@ -230,7 +231,7 @@ describe('cli without command', () => {
   })
 
   test('--silent not pass to run', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       run(args) {
         expect(args['silent']).toBeUndefined()
@@ -240,7 +241,7 @@ describe('cli without command', () => {
   })
 
   test('--version not pass to run', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       run(args) {
         expect(args['version']).toBeUndefined()
@@ -250,7 +251,7 @@ describe('cli without command', () => {
   })
 
   test('prompt for input', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       description: '',
       async run() {
         const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
@@ -265,7 +266,7 @@ describe('cli without command', () => {
 
 describe('cli with commands', () => {
   test('no matching command shows help', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       commands: [helloCommand as any],
     }, 'not-exist')
 
@@ -277,7 +278,7 @@ describe('cli with commands', () => {
   })
 
   test('command without run shows help', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       commands: [nestedCommand as any],
     }, 'nested')
 
@@ -287,7 +288,7 @@ describe('cli with commands', () => {
   })
 
   test('invoke run if no matching command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       arguments: [{ name: 'arg1', multiple: true }],
       async run(_, argv) { return argv },
@@ -298,7 +299,7 @@ describe('cli with commands', () => {
   })
 
   test('--silent disables ui', async () => {
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       commands: [helloCommand as any]
     }, '--silent', 'hello')
     await cli.parse(argv)
@@ -307,7 +308,7 @@ describe('cli with commands', () => {
   })
 
   test('invoke command by name', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       commands: [helloCommand as any]
     }, 'hello')
     const actual = await cli.parse(argv)
@@ -315,7 +316,7 @@ describe('cli with commands', () => {
   })
 
   test('pass argument to command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       commands: [argCommand as any]
     }, 'arg', 'abc')
     const actual = await cli.parse(argv)
@@ -323,15 +324,15 @@ describe('cli with commands', () => {
   })
 
   test('pass options to command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       commands: [numberOptionCommand as any]
     }, 'number-option', '--value=123')
     const actual = await cli.parse(argv)
-    expect(actual).toBe(123)
+    a.satisfies(actual, { value: 123 })
   })
 
   test('invoke nested command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       commands: [{
         name: 'base',
         description: '',
@@ -344,7 +345,7 @@ describe('cli with commands', () => {
   })
 
   test('pass arguments to nested command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       commands: [{
         name: 'base',
         description: '',
@@ -359,7 +360,7 @@ describe('cli with commands', () => {
 
   test('prompt for input', async () => {
     expect.assertions(1)
-    const [cli, argv, ui] = createCliTest({
+    const { cli, argv, ui } = createCliTest({
       commands: [{
         name: 'ask',
         description: '',
@@ -375,7 +376,7 @@ describe('cli with commands', () => {
   })
 
   test('cli context passes down to command', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       context: { abc: '123' },
       commands: [{
         name: 'cmd',
@@ -401,7 +402,7 @@ describe('cli with commands', () => {
       }
     }
 
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       context: { a: 3 },
       commands: [cmd]
     }, 'cmd1')
@@ -413,7 +414,7 @@ describe('cli with commands', () => {
 
 describe('config', () => {
   test('config is available as property', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       description: '',
       config: { a: 2 },
       run() { return this.config }
@@ -435,7 +436,7 @@ describe('config', () => {
   })
 
   test('load config', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       name: 'test-cli',
       description: '',
       config: { a: 2 },
@@ -447,7 +448,7 @@ describe('config', () => {
   })
 
   test(`read config file in parent directory`, async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       name: 'test-cli',
       config: { a: 2 },
       context: { cwd: 'fixtures/has-config/sub-folder' },
@@ -461,7 +462,7 @@ describe('config', () => {
   })
 
   test(`default config is overriden by value in config file`, async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       name: 'test-cli',
       config: { a: 2, b: 3 },
       context: { cwd: 'fixtures/has-config' },
@@ -474,7 +475,7 @@ describe('config', () => {
     await cli.parse(argv)
   })
   test('use different config name', async () => {
-    const [cli, argv] = createCliTest({
+    const { cli, argv } = createCliTest({
       name: 'another-cli',
       config: { a: 2 },
       configName: 'test-cli',
@@ -488,30 +489,3 @@ describe('config', () => {
     await cli.parse(argv)
   })
 });
-
-function createCliTest<
-  Config extends Record<string, JSONTypes> | undefined,
-  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any>,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string
->(
-  options: PartialPick<Cli2.ConstructOptions<Config, Context, N1, N2, N3, N4>, 'name' | 'version'>,
-  ...args: string[]
-) {
-  const ui = new InMemoryPresenter()
-  const mergedOptions = {
-    name: 'cli',
-    version: '1.0.0',
-    ...options,
-    context: { ui, ...options.context } as Context & { ui: InMemoryPresenter },
-  }
-  return [createCli(mergedOptions), createCliArgv(mergedOptions.name, ...args), mergedOptions.context!.ui] as const
-}
-
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function enableLog() {
-  log.level = logLevels.debug
-}

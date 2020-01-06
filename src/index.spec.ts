@@ -1,7 +1,12 @@
 import t from 'assert'
 import a from 'assertron'
-import { argCommand, booleanOptionsCommand, Cli, createCliArgv, createInMemoryCli, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, InMemoryDisplay, InMemoryPresenter, noopCommand, spyDisplay, verboseCommand } from '.'
-import { createEchoDebugCommand } from './test-util/createEchoDebugCommand'
+import {
+  argCommand, booleanOptionsCommand,
+  echoCommand, echoNameOptionCommand,
+  errorCommand, generateDisplayedMessage,
+  groupOptionsCommand, noopCommand, verboseCommand
+} from '.'
+import { createCliTest, echoCommandHelpMessage, echoDebugCommand } from './test-util'
 
 const noopHelpMessage = `
 Usage: cli <command>
@@ -19,39 +24,34 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `
 
+
 test(`given cli with noop command
 when called with no argument
 then help will be shown`, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] })
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli'))
-
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, noopHelpMessage)
 })
 
 test(`given cli with noop command
 when called with '-help'
 then the help message will be shown`, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] }, '--help')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', '--help'))
-
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, noopHelpMessage)
 })
 
 test(`given cli with noop command
 when called with '-h'
 then the help message will be shown`, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] }, '-h')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', '-h'))
-
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, noopHelpMessage)
 })
 
@@ -60,113 +60,95 @@ given cli with noop command
 when called with '--silent'
 then the help message is shwon
 `, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] }, '--silent')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', '--silent'))
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, noopHelpMessage)
 })
 
 test(`given cli with noop command
 when called with unknown command 'oh'
 then the help message will be shown`, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] }, 'oh')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'oh'))
-
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, noopHelpMessage)
 })
 
 test(`given cli with noop command
 when called with '-v'
 then version will be shown`, async () => {
-  const cli = createInMemoryCli('cli', noopCommand)
-  const display: InMemoryDisplay = (cli as any).ui.display
+  const { cli, argv, ui } = createCliTest({ commands: [noopCommand] }, '-v')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', '-v'))
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, '1.0.0')
 })
 
 test(`given cli with verbose command
-when called with 'verbose'
+when called without  '--verbose'
 then no message is shown`, async () => {
-  const cli = createInMemoryCli('cli', verboseCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [verboseCommand] }, 'verbose')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'verbose'))
-  t.strictEqual(display.debugLogs.length, 0)
+  t.strictEqual(ui.display.debugLogs.length, 0)
 })
 
 test(`given cli with verbose command
 when called with 'verbose --verbose'
 then the verbosed message is shown`, async () => {
-  const cli = createInMemoryCli('cli', verboseCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [verboseCommand] }, 'verbose', '--verbose')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'verbose', '--verbose'))
-  t.strictEqual(display.debugLogs.length, 1)
+  t.strictEqual(ui.display.debugLogs.length, 1)
 })
 
 test(`given cli with verbose command
 when called with alias 'vb --verbose'
 then the verbosed message is shown`, async () => {
-  const cli = createInMemoryCli('cli', verboseCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [verboseCommand] }, 'vb', '--verbose')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'vb', '--verbose'))
-  t.strictEqual(display.debugLogs.length, 1)
+  t.strictEqual(ui.display.debugLogs.length, 1)
 })
 
 test(`given cli with verbose command
 when called with second alias 'detail --verbose'
 then the verbosed message is shown`, async () => {
-  const cli = createInMemoryCli('cli', verboseCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [verboseCommand] }, 'detail', '--verbose')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'detail', '--verbose'))
-  t.strictEqual(display.debugLogs.length, 1)
+  t.strictEqual(ui.display.debugLogs.length, 1)
 })
 
 test(`given cli with verbose command
 when called with 'verbose -V'
 then the verbosed message is shown`, async () => {
-  const cli = createInMemoryCli('cli', verboseCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [verboseCommand] }, 'verbose', '-V')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'verbose', '-V'))
-  t.strictEqual(display.debugLogs.length, 1)
+  t.strictEqual(ui.display.debugLogs.length, 1)
 })
 
 test(`given cli with error command
 when called with 'error --silent'
 then no message is shown`, async () => {
-  const cli = createInMemoryCli('cli', errorCommand)
-  const display: InMemoryDisplay = (cli.commands[0].ui as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [errorCommand] }, 'error', '--silent')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'error', '--silent'))
-  t.strictEqual(display.errorLogs.length, 0)
+  t.strictEqual(ui.display.errorLogs.length, 0)
 })
 
 test(`given cli with echo command
 when called with 'echo -h'
 then the help message for each is shwon`, async () => {
-  const cli = createInMemoryCli('cli', echoCommand)
-  const display: InMemoryDisplay = (cli['ui'] as any).display
+  const { cli, argv, ui } = createCliTest({ commands: [echoCommand] }, 'echo', '-h')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'echo', '-h'))
-  const infos = generateDisplayedMessage(display.infoLogs)
-  t.strictEqual(infos, `
-Usage: cli echo
-
-  Echoing input arguments
-
-Arguments:
-  [args]                 any argument(s)
-`)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
+  t.strictEqual(infos, echoCommandHelpMessage)
 })
 
 test(`
@@ -174,11 +156,10 @@ given cli with echo command
 when called with 'echo abc'
 then will echo 'abc'
 `, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [echoCommand] })
-  const display = spyDisplay(cli, 'echo')
+  const { cli, argv, ui } = createCliTest({ commands: [echoCommand] }, 'echo', 'abc')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'echo', 'abc'))
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, 'echo abc')
 })
 
@@ -186,11 +167,9 @@ test(`
 given cli with echoNameOption command
 when called with 'eno --name=abc'
 then will echo 'abc'`, async () => {
-  const cli = createInMemoryCli('cli', echoNameOptionCommand)
-  const display = (cli.commands[0].ui as any).display as InMemoryDisplay
-
-  await cli.parse(createCliArgv('cli', 'eno', '--name=abc'))
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const { cli, argv, ui } = createCliTest({ commands: [echoNameOptionCommand] }, 'eno', '--name=abc')
+  await cli.parse(argv)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, 'abc')
 })
 
@@ -198,32 +177,21 @@ test(`
 given cli with echoNameOption command
 when called with 'eno --name'
 then will each 'abc'`, async () => {
-  const cli = createInMemoryCli('cli', echoNameOptionCommand)
-  const display = (cli.commands[0].ui as any).display as InMemoryDisplay
-
-  await cli.parse(createCliArgv('cli', 'eno'))
-  const infos = generateDisplayedMessage(display.infoLogs)
+  const { cli, argv, ui } = createCliTest({ commands: [echoNameOptionCommand] }, 'eno')
+  await cli.parse(argv)
+  const infos = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(infos, 'abc')
-})
-
-test(`
-  given cli with async comand
-  when called with 'async'
-  then can await on parse`, async () => {
-  const cli = createInMemoryCli('cli', argCommand)
-  await cli.parse(createCliArgv('cli', 'async'))
 })
 
 test(`
 Given cli with arg command
 when called with 'arg'
 then show report missing argument`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
-  const display = spyDisplay(cli)
+  const { cli, argv, ui } = createCliTest({ commands: [argCommand] }, 'arg')
 
-  await cli.parse(createCliArgv('cli', 'arg'))
+  await cli.parse(argv)
 
-  const actual = generateDisplayedMessage(display.errorLogs)
+  const actual = generateDisplayedMessage(ui.display.errorLogs)
   t.strictEqual(actual, 'Missing Argument. Expecting 1 but received 0.')
 })
 
@@ -231,9 +199,8 @@ test(`
 Given cli with arg command
 when called with 'arg x'
 then echo x`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [argCommand] })
-
-  const actual = await cli.parse(createCliArgv('cli', 'arg', 'x'))
+  const { cli, argv } = createCliTest({ commands: [argCommand] }, 'arg', 'x')
+  const actual = await cli.parse(argv)
 
   a.satisfies(actual, { 'required-arg': 'x' })
 })
@@ -242,12 +209,10 @@ test(`
 Given cli with opt command
 When called with 'opt'
 Then options 'a' is true and 'b' is false`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
-  const display = spyDisplay(cli, 'opt')
+  const { cli, argv, ui } = createCliTest({ commands: [booleanOptionsCommand] }, 'opt')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'opt'))
-
-  const actual = generateDisplayedMessage(display.infoLogs)
+  const actual = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(actual, 'a: true, b: undefined')
 })
 
@@ -255,12 +220,10 @@ test(`
 Given cli with opt command
 When called with 'opt a'
 Then options 'a' is true`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
-  const display = spyDisplay(cli, 'opt')
+  const { cli, argv, ui } = createCliTest({ commands: [booleanOptionsCommand] }, 'opt', '-a')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'opt', '-a'))
-
-  const actual = generateDisplayedMessage(display.infoLogs)
+  const actual = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(actual, 'a: true, b: undefined')
 })
 
@@ -268,12 +231,10 @@ test(`
 Given cli with opt command
 When called with 'opt b'
 Then options 'a' is true and 'b' is true`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [booleanOptionsCommand] })
-  const display = spyDisplay(cli, 'opt')
+  const { cli, argv, ui } = createCliTest({ commands: [booleanOptionsCommand] }, 'opt', '-b')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'opt', '-b'))
-
-  const actual = generateDisplayedMessage(display.infoLogs)
+  const actual = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(actual, 'a: true, b: true')
 })
 
@@ -282,12 +243,10 @@ test(`
 Given cli with groupOption command
 When called with 'opt b'
 Then options 'a' is undefined and 'b' is true`, async () => {
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [groupOptionsCommand] })
-  const display = spyDisplay(cli, 'opt')
+  const { cli, argv, ui } = createCliTest({ commands: [groupOptionsCommand] }, 'opt', '-b')
+  await cli.parse(argv)
 
-  await cli.parse(createCliArgv('cli', 'opt', '-b'))
-
-  const actual = generateDisplayedMessage(display.infoLogs)
+  const actual = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(actual, 'a: undefined, b: true')
 })
 
@@ -296,14 +255,9 @@ Given cli with custom command presenter
 When called with '--verbose'
 Then command debug message is printed
 `, async () => {
-  const echoDebugCommand = createEchoDebugCommand()
-  echoDebugCommand.ui = new InMemoryPresenter({ name: 'echo-debug' })
-  const cli = new Cli({ name: 'cli', version: '0.0.0', commands: [echoDebugCommand] })
+  const { cli, argv, ui } = createCliTest({ commands: [echoDebugCommand] }, 'echo-debug', 'abc', '--verbose')
+  await cli.parse(argv)
 
-  const display = spyDisplay(cli, 'echo-debug')
-
-  await cli.parse(createCliArgv('cli', 'echo-debug', 'abc', '--verbose'))
-
-  const actual = generateDisplayedMessage(display.debugLogs)
+  const actual = generateDisplayedMessage(ui.display.debugLogs)
   t.strictEqual(actual, 'echo-debug abc')
 })
