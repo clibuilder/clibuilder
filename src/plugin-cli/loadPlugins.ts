@@ -11,22 +11,22 @@ export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
     return pluginNames
   })
 
-  // const globalFolder = getGlobalPackageFolder(__dirname)
-  // log.debug(`look up global plugins with keyword '${keyword}' at ${globalFolder}`)
-  // const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
-  //   log.debug('found global plugins', globalPluginNames)
-  //   return globalPluginNames
-  // })
-  const findingGlobal = Promise.resolve()
+  const globalFolder = getGlobalPackageFolder(__dirname)
+  log.debug(`look up global plugins with keyword '${keyword}' at ${globalFolder}`)
+  const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
+    log.debug('found global plugins', globalPluginNames)
+    return globalPluginNames
+  })
+
   return Promise.all([findingLocal, findingGlobal]).then(([pluginNames, globalPluginNames]) => {
     const commands = activatePlugins(pluginNames, cwd)
 
-    // globalPluginNames.forEach(p => {
-    //   if (pluginNames.indexOf(p) !== -1)
-    //     return
-    //   const m = loadModule(p, globalFolder)
-    //   if (isValidPlugin(m)) commands.push(...activatePlugin(m))
-    // })
+    globalPluginNames.forEach(p => {
+      if (pluginNames.indexOf(p) !== -1)
+        return
+      const m = loadModule(p, globalFolder)
+      if (isValidPlugin(m)) commands.push(...activatePlugin(m))
+    })
 
     return commands
   })
