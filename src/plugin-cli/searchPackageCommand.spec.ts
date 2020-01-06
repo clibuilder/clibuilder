@@ -1,5 +1,7 @@
 import t from 'assert'
-import { createPluginCliTest, generateDisplayedMessage, createCliTest } from '../test-util'
+import a from 'assertron'
+import { MissingArguments } from '../errors'
+import { createCliTest, createPluginCliTest, generateDisplayedMessage } from '../test-util'
 import { searchPackageCommand } from './searchPackageCommand'
 
 test('can only be used by PluginCli', async () => {
@@ -15,7 +17,8 @@ test('can only be used by PluginCli', async () => {
 
 test('requires at least one keyword', async () => {
   const { cli, argv, ui } = createPluginCliTest({ commands: [searchPackageCommand] }, 'search')
-  await cli.parse(argv)
+
+  await a.throws(cli.parse(argv), MissingArguments)
 
   const message = generateDisplayedMessage(ui.display.errorLogs)
   t.strictEqual(message, `Missing Argument. Expecting 1 but received 0.`)

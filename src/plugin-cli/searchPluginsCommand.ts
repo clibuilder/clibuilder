@@ -1,11 +1,13 @@
 import { searchByKeywords } from 'search-packages'
 import { required } from 'type-plus'
-import { PluginCli } from './types'
+import { createPluginCommand } from './createPluginCommand'
 
-export const searchPluginsCommand: PluginCli.Command<never, { _dep: { searchByKeywords: typeof searchByKeywords } }> = {
+export const searchPluginsCommand = createPluginCommand<never, { _dep: { searchByKeywords: typeof searchByKeywords } }>({
   name: 'search',
   description: 'Search online for available plugins',
-  async run() {
+  arguments: [{ name: 'adf' }],
+  async run(args) {
+    args.asdf
     if (!this.keyword) {
       this.ui.error('plugins search command can only be used by PluginCli')
       return
@@ -25,4 +27,4 @@ export const searchPluginsCommand: PluginCli.Command<never, { _dep: { searchByKe
       packages.forEach(p => this.ui.info(`  ${p}`))
     }
   },
-}
+})
