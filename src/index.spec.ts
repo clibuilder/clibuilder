@@ -9,7 +9,7 @@ import {
 import { createCliTest, echoCommandHelpMessage, echoDebugCommand } from './test-util'
 
 const noopHelpMessage = `
-Usage: cli <command>
+Usage: cli <command> [options]
 
 Commands:
   noop

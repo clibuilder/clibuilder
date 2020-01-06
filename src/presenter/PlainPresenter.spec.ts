@@ -27,7 +27,7 @@ test('help message indicates default boolean option', () => {
     },
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: a
+Usage: a [options]
 
 Options:
   [--some-option]        some description (default true)
@@ -44,7 +44,7 @@ test('single character option should use with single dash', () => {
     },
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: a
+Usage: a [options]
 
 Options:
   [-x]                   some description (default true)
@@ -61,7 +61,7 @@ test('multi-character option alias should be use with double dash', () => {
     },
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: a
+Usage: a [options]
 
 Options:
   [--sopt|--some-option]  some description (default true)
@@ -78,7 +78,7 @@ test('option and its alias should be sorted by length', () => {
     },
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: a
+Usage: a [options]
 
 Options:
   [-o|--sopt|--some-option]  some description (default true)
@@ -95,7 +95,7 @@ test('help message indicates default string option', () => {
     },
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: a
+Usage: a [options]
 
 Options:
   [--some-option]=value  some description (default 'yes')
@@ -122,7 +122,7 @@ test('nested command shows only top level', () => {
     }],
   })
   t.strictEqual(display.infoLogs[0][0], `
-Usage: cli <command>
+Usage: cli <command> [options]
 
 Commands:
   command-1, command-2 (c2)

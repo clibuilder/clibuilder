@@ -1,31 +1,32 @@
 import t from 'assert'
 import a from 'assertron'
-import { JSONTypes } from 'type-plus'
-import { Cli, createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
+import { assertType } from 'type-plus'
+import { createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
+import { createCommand } from './createCommand'
 
 test('definding cmd must to specify name, description and run can be () => void', () => {
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     run() { return },
   })
 })
 
-test(`run() can return a Promise<any>`, () => {
-  isCommand({
+test(`run() can return Promise<any>`, () => {
+  createCommand({
     name: 'cmd',
     description: '',
     run() { return Promise.resolve() },
   })
 
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     run() { return Promise.resolve(true) },
   })
 })
 
-test('this in run can access config', async () => {
+test('`this` in run can access config', async () => {
   const { cli, argv } = createCliTest({
     config: { a: 'a' },
     context: { b: 'b' },
@@ -40,27 +41,57 @@ test('this in run can access config', async () => {
   expect(await cli.parse(argv)).toBe('ab')
 })
 
-test.todo('add createCommand tests for argument and options types')
+test('createCommand() options type inference', () => {
+  createCommand({
+    name: 'cmd',
+    description: '',
+    options: {
+      boolean: {
+        bool: {
+          description: 'boolean option'
+        },
+      },
+      string: {
+        str: {
+          description: 'string option'
+        }
+      },
+      number: {
+        num: {
+          description: 'number option'
+        }
+      }
+    },
+    run(args) {
+      assertType<boolean>(args.bool)
+      assertType<string>(args.str)
+      assertType<number>(args.num)
+    }
+  })
+})
+
+test.todo('argument inference')
+
 test('can define arguments', () => {
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     arguments: [{ name: 'arg' }],
     run() { return },
   })
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     arguments: [{ name: 'arg2', description: 'desc' }],
     run() { return },
   })
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     arguments: [{ name: 'arg3', required: true }],
     run() { return },
   })
-  isCommand({
+  createCommand({
     name: 'cmd',
     description: '',
     arguments: [{ name: 'arg4', multiple: true }],
@@ -223,8 +254,3 @@ test('config and context type is available within the run() context', async () =
   const actual = await cli.parse(argv)
   t.strictEqual(actual, 'a.b')
 })
-
-function isCommand<
-  Config extends Record<string, JSONTypes> | undefined = undefined,
-  Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any> = Partial<Cli.BuildInContext>,
-  >(cmd: Cli.Command<Config, Context>) { return cmd }

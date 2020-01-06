@@ -1,7 +1,24 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, helloHelpMessage, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
+import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand } from '../test-util'
+
+
+const helloHelpMessage = `
+Usage: cli <command> [options]
+
+Commands:
+  hello
+
+cli <command> -h         Get help for <command>
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
 
 test('Cli2.ConstructOptions requires either run() or commands', () => {
   assertType.isFalse(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
@@ -61,7 +78,7 @@ test('--version shows version', async () => {
 })
 
 const runnableCliHelpMessage = `
-Usage: cli
+Usage: cli [options]
 
   test cli
 

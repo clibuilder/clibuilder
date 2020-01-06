@@ -9,7 +9,4 @@ export function createCommand<
   N3 extends string = string,
   N4 extends string = string,
   O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
-
->(command: Cli.Command<Config, Context, N1, N2, N3, N4, O>) {
-  return command
-}
+>(command: Cli.Command<Config, Context, N1, N2, N3, N4, O>) { return command }
