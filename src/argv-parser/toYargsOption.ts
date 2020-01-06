@@ -1,6 +1,6 @@
-import { Cli2 } from '../cli/types'
+import { Cli } from '../cli/types'
 
-export function toYargsOption(options: Cli2.Options | undefined) {
+export function toYargsOption(options: Cli.Options | undefined) {
   if (!options) {
     return {}
   }
@@ -11,7 +11,7 @@ export function toYargsOption(options: Cli2.Options | undefined) {
 
   return result
 
-  function fillOptions(options: Cli2.Options, typeName: keyof Cli2.Options) {
+  function fillOptions(options: Cli.Options, typeName: keyof Cli.Options) {
     if (options[typeName]) {
       const values = options[typeName]!
       result[typeName] = Object.keys(values)

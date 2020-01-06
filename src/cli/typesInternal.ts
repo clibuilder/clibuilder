@@ -1,6 +1,6 @@
-import { Cli2 } from './types'
+import { Cli } from './types'
 
-export type CommandInstance = Cli2.RunContext<any, any> & {
+export type CommandInstance = Cli.RunContext<any, any> & {
   parent?: { name: string },
-  run: Cli2.RunFn<any, any, any, any, any, any>
+  run: Cli.RunFn<any, any, any, any, any, any>
 }

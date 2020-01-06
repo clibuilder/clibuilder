@@ -1,6 +1,6 @@
 import { Answers, QuestionCollection } from 'inquirer'
 import { logLevel } from 'standard-log'
-import { Cli2 } from '../cli/types'
+import { Cli } from '../cli/types'
 
 export interface Display {
   debug(...args: any[]): void,
@@ -40,9 +40,9 @@ export interface CommandModel {
   name: string,
   description?: string,
   commands?: CommandModel[],
-  arguments?: Cli2.Argument<any>[],
+  arguments?: Cli.Argument<any>[],
   alias?: string[],
-  options?: Cli2.Options,
+  options?: Cli.Options,
   parent?: { name: string },
 }
 

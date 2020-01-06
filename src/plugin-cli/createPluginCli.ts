@@ -1,17 +1,17 @@
 import { JSONTypes } from 'type-plus'
-import { Cli2, createCli } from '../cli'
+import { Cli, createCli } from '../cli'
 import { pluginsCommand } from '../commands'
 import { loadPlugins } from './loadPlugins'
-import { PluginCli2 } from './types'
+import { PluginCli } from './types'
 
 export function createPluginCli<
   Config extends Record<string, JSONTypes> | undefined,
-  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any>,
+  Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any>,
   N1 extends string,
   N2 extends string,
   N3 extends string,
   N4 extends string,
-  >(options: PluginCli2.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli2 {
+  >(options: PluginCli.ConstructOptions<Config, Context, N1, N2, N3, N4>): Cli {
   options.commands = options.commands ?? []
   options.commands.unshift(pluginsCommand as any)
   const cwd = options.context?.cwd ?? process.cwd()
@@ -21,7 +21,7 @@ export function createPluginCli<
   const loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
     return options.commands!.push(...commands as any)
   })
-  let cli: Cli2
+  let cli: Cli
   return {
     name: options.name,
     version: options.version,

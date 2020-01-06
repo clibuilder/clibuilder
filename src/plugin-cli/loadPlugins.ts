@@ -2,7 +2,7 @@ import { findByKeywords } from 'find-installed-packages'
 import findup from 'find-up'
 import path from 'path'
 import { log } from '../log'
-import { PluginCli2 } from './types'
+import { PluginCli } from './types'
 
 export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
   log.debug(`look up local plugins with keyword '${keyword}' at ${cwd}`)
@@ -41,7 +41,7 @@ function getGlobalPackageFolder(folder: string): string {
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {
-  const commands: PluginCli2.Command<any, any>[] = []
+  const commands: PluginCli.Command<any, any>[] = []
   pluginNames
     .map(p => {
       return {
@@ -73,8 +73,8 @@ function isValidPlugin(m: any) {
   return typeof m.activate === 'function'
 }
 
-function activatePlugin(m: { activate: (context: PluginCli2.ActivationContext) => void }) {
-  const commands: PluginCli2.Command<any, any>[] = []
+function activatePlugin(m: { activate: (context: PluginCli.ActivationContext) => void }) {
+  const commands: PluginCli.Command<any, any>[] = []
   m.activate({ addCommand: cmd => commands.push(cmd) })
   return commands
 }

@@ -1,5 +1,5 @@
 import { JSONTypes } from 'type-plus'
-import { Cli2 } from './types'
+import { Cli } from './types'
 
 export function createCommand<
   Config extends Record<string, JSONTypes> | undefined,
@@ -8,8 +8,8 @@ export function createCommand<
   N2 extends string = string,
   N3 extends string = string,
   N4 extends string = string,
-  O extends Cli2.Options<N2, N3, N4> = Cli2.Options<N2, N3, N4>
+  O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
 
->(command: Cli2.Command<Config, Context, N1, N2, N3, N4, O>) {
+>(command: Cli.Command<Config, Context, N1, N2, N3, N4, O>) {
   return command
 }

@@ -1,7 +1,7 @@
 import t from 'assert'
 import a from 'assertron'
 import { JSONTypes } from 'type-plus'
-import { Cli2, createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
+import { Cli, createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
 
 
 test('definding cmd must to specify name, description and run can be () => void', () => {
@@ -227,5 +227,5 @@ test('config and context type is available within the run() context', async () =
 
 function isCommand<
   Config extends Record<string, JSONTypes> | undefined = undefined,
-  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any> = Partial<Cli2.BuildInContext>,
-  >(cmd: Cli2.Command<Config, Context>) { return cmd }
+  Context extends Partial<Cli.BuildInContext> & Record<string | symbol, any> = Partial<Cli.BuildInContext>,
+  >(cmd: Cli.Command<Config, Context>) { return cmd }

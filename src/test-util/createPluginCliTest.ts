@@ -1,5 +1,5 @@
 import { JSONTypes, PartialPick } from 'type-plus'
-import { createPluginCli, PluginCli2 } from '../plugin-cli'
+import { createPluginCli, PluginCli } from '../plugin-cli'
 import { createCliArgv } from './createCliArgv'
 import { InMemoryPresenter } from './InMemoryPresenter'
 
@@ -11,7 +11,7 @@ export function createPluginCliTest<
   N3 extends string,
   N4 extends string
 >(
-  options: PartialPick<PluginCli2.ConstructOptions<Config, Context, N1, N2, N3, N4>, 'name' | 'version'>,
+  options: PartialPick<PluginCli.ConstructOptions<Config, Context, N1, N2, N3, N4>, 'name' | 'version'>,
   ...args: string[]
 ) {
   const ui = new InMemoryPresenter()
