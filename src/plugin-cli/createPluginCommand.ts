@@ -5,11 +5,11 @@ import { Cli } from '../cli/types'
 export function createPluginCommand<
   Config extends Record<string, JSONTypes> | undefined,
   Context,
-  N1 extends string = string,
-  N2 extends string = string,
-  N3 extends string = string,
-  N4 extends string = string,
-  O extends Cli.Options<N2, N3, N4> = Cli.Options<N2, N3, N4>
->(command: PluginCli.Command<Config, Context, N1, N2, N3, N4, O>) {
+  AName extends string = string,
+  BName extends string = string,
+  SName extends string = string,
+  NName extends string = string,
+  O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
+>(command: PluginCli.Command<Config, Context, AName, BName, SName, NName, O>) {
   return command
 }

@@ -14,18 +14,18 @@ export namespace Cli {
   export type ConstructOptions<
     Config extends Record<string, JSONTypes> | undefined,
     Context,
-    N1 extends string,
-    N2 extends string,
-    N3 extends string,
-    N4 extends string,
-    O extends Options<N2, N3, N4> = Options<N2, N3, N4>
+    AName extends string,
+    BName extends string,
+    SName extends string,
+    NName extends string,
+    O extends Options<BName, SName, NName> = Options<BName, SName, NName>
     > = ConstructOptionsBase<Config, Context> & ({
       name: string,
       description: string,
-      arguments?: Argument<N1>[],
+      arguments?: Argument<AName>[],
       options?: O,
       commands?: Command<Config, Context>[],
-      run: RunFn<Config, Context, N1, N2, N3, N4, O>
+      run: RunFn<Config, Context, AName, BName, SName, NName, O>
     } | {
       commands: Command<Config, Context>[],
     })
@@ -58,30 +58,30 @@ export namespace Cli {
   export type RunFn<
     Config,
     Context,
-    N1 extends string,
-    N2 extends string,
-    N3 extends string,
-    N4 extends string,
-    O extends Options<N2, N3, N4> = Options<N2, N3, N4>
-    > = (this: RunContext<Config, Context>, args: RunArgs<N1, N2, N3, N4, O>, argv: string[]) => Promise<any> | any
+    AName extends string,
+    BName extends string,
+    SName extends string,
+    NName extends string,
+    O extends Options<BName, SName, NName> = Options<BName, SName, NName>
+    > = (this: RunContext<Config, Context>, args: RunArgs<AName, BName, SName, NName, O>, argv: string[]) => Promise<any> | any
 
   export type Command<
     Config extends Record<string, JSONTypes> | undefined = undefined,
     Context extends Partial<BuildInContext> & Record<string | symbol, any> = Partial<BuildInContext>,
-    N1 extends string = string,
-    N2 extends string = string,
-    N3 extends string = string,
-    N4 extends string = string,
-    O extends Options<N2, N3, N4> = Options<N2, N3, N4>
+    AName extends string = string,
+    BName extends string = string,
+    SName extends string = string,
+    NName extends string = string,
+    O extends Options<BName, SName, NName> = Options<BName, SName, NName>
     > = {
       name: string,
       description: string,
-      arguments?: Argument<N1>[],
+      arguments?: Argument<AName>[],
       options?: O,
       alias?: string[],
     } & ({
       commands?: Command<Config, Context>[],
-      run(this: RunContext<Config, Context>, args: RunArgs<N1, N2, N3, N4, O>, argv: string[]): Promise<any> | any,
+      run(this: RunContext<Config, Context>, args: RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
     } | {
       commands: Command<Config, Context>[],
     })
@@ -95,12 +95,12 @@ export namespace Cli {
   } & Omit<Context, 'ui' | 'cwd'>
 
   export type RunArgs<
-    Name extends string = string,
-    Name1 extends string = string,
-    Name2 extends string = string,
-    Name3 extends string = string,
-    O extends Options<Name1, Name2, Name3> = Options<Name1, Name2, Name3>
-    > = DefaultArgs & ArgumentNamesRecord<Argument<Name>> & Record<KeyofOptional<O['boolean']>, boolean> & Record<KeyofOptional<O['string']>, string> & Record<KeyofOptional<O['number']>, number>
+    AName extends string = string,
+    BName extends string = string,
+    SName extends string = string,
+    NName extends string = string,
+    O extends Options<BName, SName, NName> = Options<BName, SName, NName>
+    > = DefaultArgs & ArgumentNamesRecord<Argument<AName>> & Record<KeyofOptional<O['boolean']>, boolean> & Record<KeyofOptional<O['string']>, string> & Record<KeyofOptional<O['number']>, number>
 
   export type DefaultArgs = {
     help: boolean
@@ -116,13 +116,13 @@ export namespace Cli {
   export type ArgumentNamesRecord<A extends Argument<string>> = { [K in A['name']]: string }
 
   export type Options<
-    N1 extends string = string,
-    N2 extends string = string,
-    N3 extends string = string
+    BName extends string = string,
+    SName extends string = string,
+    NName extends string = string
     > = {
-      boolean?: Record<N1, TypedOptions<boolean>>,
-      string?: Record<N2, TypedOptions<string>>,
-      number?: Record<N3, TypedOptions<number>>,
+      boolean?: Record<BName, TypedOptions<boolean>>,
+      string?: Record<SName, TypedOptions<string>>,
+      number?: Record<NName, TypedOptions<number>>,
     }
 
   export type TypedOptions<T> = {
