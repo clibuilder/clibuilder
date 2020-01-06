@@ -211,7 +211,6 @@ function validateOptions(cmd: Cli2.Command<any, any>) {
     const names: string[] = []
     strOptionNames.forEach(n => {
       if (names.indexOf(n) === -1) names.push(n)
-      else throw new OptionNameNotUnique(cmd.name, n)
     })
     numOptionNames.forEach(n => {
       if (names.indexOf(n) === -1) names.push(n)

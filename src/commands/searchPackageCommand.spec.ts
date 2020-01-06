@@ -1,6 +1,14 @@
 import t from 'assert'
-import { createPluginCliTest, generateDisplayedMessage } from '../test-util'
+import { createPluginCliTest, generateDisplayedMessage, createCliTest } from '../test-util'
 import { searchPackageCommand } from './searchPackageCommand'
+
+test('can only be used by PluginCli', async () => {
+  const { cli, argv, ui } = createCliTest({ commands: [searchPackageCommand] }, 'search', 'somekey')
+  await cli.parse(argv)
+
+  const message = generateDisplayedMessage(ui.display.errorLogs)
+  t.strictEqual(message, 'plugins search command can only be used by PluginCli')
+})
 
 test('requires at least one keyword', async () => {
   const { cli, argv, ui } = createPluginCliTest({ commands: [searchPackageCommand] }, 'search')
