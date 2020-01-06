@@ -1,12 +1,12 @@
 import { camelCase } from 'camel-case'
 import { filterKey } from 'type-plus'
 import yargs from 'yargs-parser'
-import { CliCommand } from '../cli-command'
+import { Cli2 } from '../cli/types'
 import { MissingArguments, NotNumberOption, TooManyArguments } from '../errors'
 import { toYargsOption } from './toYargsOption'
-import { CliArgs, CliArgsWithoutDefaults, Parsable } from './types'
+import { CliArgsWithoutDefaults, Parsable } from './types'
 
-export function parseArgv(parsable: Parsable, rawArgv: string[]): CliArgs {
+export function parseArgv(parsable: Parsable, rawArgv: string[]): any /* Cli2.RunArg */ {
   const options = toYargsOption(parsable.options)
 
   const args = yargs(rawArgv, options)
@@ -172,7 +172,7 @@ function handleGroupedOptions(parsable: Parsable, args: CliArgsWithoutDefaults, 
   })
 }
 
-function getAllGroups(opts: CliCommand.Options) {
+function getAllGroups(opts: Cli2.Options) {
   const groups: Record<string, string[]> = {}
   if (opts.boolean) {
     for (const key in opts.boolean) {

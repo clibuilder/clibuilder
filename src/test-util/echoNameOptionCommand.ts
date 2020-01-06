@@ -1,6 +1,6 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const echoNameOptionCommand = {
+export const echoNameOptionCommand = createCommand({
   name: 'echoNameOption',
   alias: ['eno'],
   description: 'Echo the input "name" option',
@@ -15,4 +15,4 @@ export const echoNameOptionCommand = {
   run(args) {
     this.ui.info(args.name)
   },
-} as CliCommand
+})

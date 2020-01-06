@@ -1,9 +1,8 @@
 import t from 'assert'
-import { createParsable } from './createParsable'
 import { parseArgv } from './parseArgv'
 
 test(`group option should not set default if passed in`, () => {
-  const cmd = createParsable({
+  const cmd = {
     name: 'opts',
     options: {
       boolean: {
@@ -33,7 +32,7 @@ test(`group option should not set default if passed in`, () => {
       },
     },
     run() { return },
-  }, { cwd: '' })
+  }
 
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)
@@ -41,7 +40,7 @@ test(`group option should not set default if passed in`, () => {
 })
 
 test(`group option should not set default if alias of one of the options is passed in`, () => {
-  const cmd = createParsable({
+  const cmd = {
     name: 'opts',
     options: {
       boolean: {
@@ -65,7 +64,7 @@ test(`group option should not set default if alias of one of the options is pass
       },
     },
     run() { return },
-  }, { cwd: '' })
+  }
   const argv = ['cli', '-b']
   const actual = parseArgv(cmd, argv)
   t.deepStrictEqual(actual, { _: [], _defaults: [], b111: true })

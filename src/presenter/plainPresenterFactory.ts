@@ -1,5 +1,5 @@
 
-import { HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './interfaces'
+import { HelpPresenter, Inquirer, LogPresenter, PresenterOption, VersionPresenter } from './types'
 import { PlainPresenter } from './PlainPresenter'
 
 export const plainPresenterFactory = {

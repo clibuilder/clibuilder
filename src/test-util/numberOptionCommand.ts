@@ -1,7 +1,8 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const numberOptionCommand = {
+export const numberOptionCommand = createCommand({
   name: 'number-option',
+  description: 'number option',
   options: {
     number: {
       value: {
@@ -10,6 +11,6 @@ export const numberOptionCommand = {
     },
   },
   run(args) {
-    return args.value
+    return args
   },
-} as CliCommand
+})

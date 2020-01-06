@@ -1,30 +1,39 @@
 import t from 'assert'
-import a from 'assertron'
-import { MissingArguments } from '../errors'
-import { generateDisplayedMessage, setupCliCommandTest } from '../test-util'
+import { createPluginCliTest, generateDisplayedMessage } from '../test-util'
 import { searchPackageCommand } from './searchPackageCommand'
 
 test('requires at least one keyword', async () => {
-  a.throws(() => setupCliCommandTest(searchPackageCommand, []), MissingArguments)
+  const { cli, argv, ui } = createPluginCliTest({ commands: [searchPackageCommand] }, 'search')
+  await cli.parse(argv)
+
+  const message = generateDisplayedMessage(ui.display.errorLogs)
+  t.strictEqual(message, `Missing Argument. Expecting 1 but received 0.`)
 })
 
 test('displays no package found if keyword search does not yield any result', async () => {
-  const npmSearch = () => { return [] }
+  const npmSearch = () => { return Promise.resolve([] as string[]) }
 
-  const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
+  const { cli, argv, ui } = createPluginCliTest({
+    name: 'clibuilder',
+    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    commands: [searchPackageCommand]
+  }, 'search', 'x', 'y')
 
-  await cmd.run(args, argv)
+  await cli.parse(argv)
 
   const message = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(message, `no packages with keywords: x,y`)
 })
 
 test('found one package', async () => {
-  const npmSearch = () => { return ['pkg-x'] }
+  const npmSearch = () => { return Promise.resolve(['pkg-x']) }
 
-  const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
-
-  await cmd.run(args, argv)
+  const { cli, argv, ui } = createPluginCliTest({
+    name: 'clibuilder',
+    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    commands: [searchPackageCommand]
+  }, 'search', 'x', 'y')
+  await cli.parse(argv)
 
   const message = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(message, `found one package: pkg-x`)
@@ -32,11 +41,14 @@ test('found one package', async () => {
 
 
 test('found multiple packages', async () => {
-  const npmSearch = () => { return ['pkg-x', 'pkg-y'] }
+  const npmSearch = () => { return Promise.resolve(['pkg-x', 'pkg-y']) }
 
-  const { cmd, args, argv, ui } = setupCliCommandTest(searchPackageCommand, ['x', 'y'], undefined, { _dep: { searchByKeywords: npmSearch } })
-
-  await cmd.run(args, argv)
+  const { cli, argv, ui } = createPluginCliTest({
+    name: 'clibuilder',
+    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    commands: [searchPackageCommand]
+  }, 'search', 'x', 'y')
+  await cli.parse(argv)
 
   const message = generateDisplayedMessage(ui.display.infoLogs)
   t.strictEqual(message, `found multiple packages:

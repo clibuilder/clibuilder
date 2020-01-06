@@ -1,10 +1,8 @@
-import { createPluginCli, PluginCli2 } from '.'
-import { createCliArgv, InMemoryPresenter, generateDisplayedMessage } from '../test-util'
-import { PartialPick, JSONTypes, assertType } from 'type-plus'
-import { Cli2 } from '../cli/types'
+import { assertType } from 'type-plus'
+import { createCliArgv, createPluginCliTest, generateDisplayedMessage } from '../test-util'
 
 test('use "{name}-plugin" as keyword to look for plugins', async () => {
-  const [cli] = createPluginCliTest({
+  const { cli } = createPluginCliTest({
     name: 'clibuilder',
     version: '1.0.0',
     context: { cwd: 'fixtures/one-plugin' },
@@ -14,7 +12,7 @@ test('use "{name}-plugin" as keyword to look for plugins', async () => {
 })
 
 test('use custom keyword to look for plugins', async () => {
-  const [cli] = createPluginCliTest({
+  const { cli } = createPluginCliTest({
     name: 'clibuilder',
     version: '1.0.0',
     keyword: 'x-file',
@@ -25,7 +23,7 @@ test('use custom keyword to look for plugins', async () => {
 })
 
 test('pluginCli can specify its own commands', async () => {
-  const [cli, argv] = createPluginCliTest({
+  const { cli, argv } = createPluginCliTest({
     name: 'defaultCommands',
     version: '1.0.0',
     commands: [{
@@ -39,7 +37,7 @@ test('pluginCli can specify its own commands', async () => {
 })
 
 test('can define default config', async () => {
-  const [cli, argv] = createPluginCliTest({
+  const { cli, argv } = createPluginCliTest({
     name: 'defaultCommands',
     version: '1.0.0',
     config: { a: 1 },
@@ -59,7 +57,7 @@ test('can define default config', async () => {
 })
 
 test('is runnable with ui', async () => {
-  const [cli, argv, ui] = createPluginCliTest({
+  const { cli, argv, ui } = createPluginCliTest({
     name: 'cli',
     version: '1.0.0',
     run() {
@@ -71,24 +69,3 @@ test('is runnable with ui', async () => {
   const message = generateDisplayedMessage(ui.display.infoLogs)
   expect(message).toBe('hello world')
 })
-
-function createPluginCliTest<
-  Config extends Record<string, JSONTypes> | undefined,
-  Context extends Partial<Cli2.BuildInContext> & Record<string | symbol, any>,
-  N1 extends string,
-  N2 extends string,
-  N3 extends string,
-  N4 extends string
->(
-  options: PartialPick<PluginCli2.ConstructOptions<Config, Context, N1, N2, N3, N4>, 'name' | 'version'>,
-  ...args: string[]
-) {
-  const ui = new InMemoryPresenter()
-  const mergedOptions = {
-    name: 'cli',
-    version: '1.0.0',
-    ...options,
-    context: { ui, ...options.context } as Context & { ui: InMemoryPresenter },
-  }
-  return [createPluginCli(mergedOptions), createCliArgv(mergedOptions.name, ...args), mergedOptions.context!.ui] as const
-}

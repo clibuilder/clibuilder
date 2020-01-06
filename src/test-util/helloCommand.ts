@@ -1,12 +1,12 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const helloCommand: CliCommand = {
+export const helloCommand = createCommand({
   name: 'hello',
+  description: 'hello command',
   async run() {
-
     return 'hello'
   },
-}
+})
 
 export const helloHelpMessage = `
 Usage: cli <command>

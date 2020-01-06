@@ -1,8 +1,9 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const errorCommand: CliCommand = {
+export const errorCommand = createCommand({
   name: 'error',
+  description: 'emit error to ui',
   run() {
     this.ui.error('error...')
   },
-}
+})

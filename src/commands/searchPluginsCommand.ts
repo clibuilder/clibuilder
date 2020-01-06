@@ -1,22 +1,20 @@
 import { searchByKeywords } from 'search-packages'
 import { required } from 'type-plus'
-import { CliCommand } from '../cli-command'
-import { getPluginCli } from './getPluginCli'
+import { PluginCli2 } from '../plugin-cli/types'
 
-export const searchPluginsCommand: CliCommand<never, { _dep: { searchByKeywords: typeof searchByKeywords } }> = {
+export const searchPluginsCommand: PluginCli2.Command<never, { _dep: { searchByKeywords: typeof searchByKeywords }, keyword: string }> = {
   name: 'search',
   description: 'Search online for available plugins',
   async run() {
-    const cli = getPluginCli(this)
-    if (!cli || !cli.keyword) {
+    if (!this.keyword) {
       this.ui.error('plugins search command can only be used by PluginCli')
       return
     }
-    const dep = required({ searchByKeywords }, this.context._dep)
+    const dep = required({ searchByKeywords }, this._dep)
 
-    const packages = await dep.searchByKeywords([cli.keyword])
+    const packages = await dep.searchByKeywords([this.keyword])
     if (packages.length === 0) {
-      this.ui.info(`no package with keyword: ${cli.keyword}`)
+      this.ui.info(`no package with keyword: ${this.keyword}`)
     }
     else if (packages.length === 1) {
       this.ui.info(`found one package: ${packages[0]}`)

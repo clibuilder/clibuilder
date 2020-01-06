@@ -1,7 +1,8 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const booleanOptionsCommand = {
+export const booleanOptionsCommand = createCommand({
   name: 'opt',
+  description: 'emit opt info to info ui',
   options: {
     boolean: {
       'a': {
@@ -16,4 +17,4 @@ export const booleanOptionsCommand = {
   run(args) {
     this.ui.info(`a: ${args.a}, b: ${args.b}`)
   },
-} as CliCommand
+})

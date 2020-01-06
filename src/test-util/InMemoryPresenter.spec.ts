@@ -1,7 +1,6 @@
 import t from 'assert'
-
-import { DisplayLevel, InMemoryPresenter } from '../index'
 import { ListQuestion } from 'inquirer'
+import { DisplayLevel, InMemoryPresenter } from '..'
 
 test('should default to verbose', () => {
   const p = new InMemoryPresenter({ name: 'a' })

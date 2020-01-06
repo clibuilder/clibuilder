@@ -1,7 +1,8 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const stringOptionCommand = {
+export const stringOptionCommand = createCommand({
   name: 'opt',
+  description: 'string option command',
   options: {
     string: {
       'a': {
@@ -11,5 +12,6 @@ export const stringOptionCommand = {
   },
   run(args) {
     this.ui.info(`a: ${args.a}`)
+    return args
   },
-} as CliCommand
+})

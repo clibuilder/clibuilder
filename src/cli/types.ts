@@ -1,5 +1,5 @@
 import { JSONTypes, KeyofOptional } from 'type-plus'
-import { HelpPresenter, Inquirer, LogPresenter, PresenterFactory, VersionPresenter } from '../presenter'
+import { HelpPresenter, Inquirer, LogPresenter, PresenterFactory, VersionPresenter } from '../presenter/types'
 
 export interface CliContext {
   cwd: string,
@@ -14,7 +14,7 @@ export type Cli2 = {
   /**
    * parse process.argv
    */
-  parse(argv: string[]): Promise<any> | void,
+  parse(argv: string[]): Promise<any>,
 }
 
 export namespace Cli2 {
@@ -73,7 +73,8 @@ export namespace Cli2 {
     > = (this: RunContext<Config, Context>, args: RunArgs<N1, N2, N3, N4, O>, argv: string[]) => Promise<any> | any
 
   export type Command<
-    Config, Context,
+    Config extends Record<string, JSONTypes> | undefined = undefined,
+    Context extends Partial<BuildInContext> & Record<string | symbol, any> = Partial<BuildInContext>,
     Name extends string = string,
     Name1 extends string = string,
     Name2 extends string = string,
@@ -96,14 +97,15 @@ export namespace Cli2 {
     name: string,
     version: string,
     ui: LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
-    config: Config
+    config: Config,
+    cwd: string
   } & Omit<Context, 'ui' | 'cwd'>
 
   export type RunArgs<
-    Name extends string,
-    Name1 extends string,
-    Name2 extends string,
-    Name3 extends string,
+    Name extends string = string,
+    Name1 extends string = string,
+    Name2 extends string = string,
+    Name3 extends string = string,
     O extends Options<Name1, Name2, Name3> = Options<Name1, Name2, Name3>
     > = DefaultArgs & ArgumentNamesRecord<Argument<Name>> & Record<KeyofOptional<O['boolean']>, boolean> & Record<KeyofOptional<O['string']>, string> & Record<KeyofOptional<O['number']>, number>
 
@@ -111,7 +113,7 @@ export namespace Cli2 {
     help: boolean
   }
 
-  export type Argument<Name extends string> = {
+  export type Argument<Name extends string = string> = {
     name: Name,
     description?: string,
     required?: boolean,
@@ -121,9 +123,9 @@ export namespace Cli2 {
   export type ArgumentNamesRecord<A extends Argument<string>> = { [K in A['name']]: string }
 
   export type Options<
-    N1 extends string,
-    N2 extends string,
-    N3 extends string
+    N1 extends string = string,
+    N2 extends string = string,
+    N3 extends string = string
     > = {
       boolean?: Record<N1, TypedOptions<boolean>>,
       string?: Record<N2, TypedOptions<string>>,
@@ -143,6 +145,7 @@ export namespace Cli2 {
   }
 
   export type BuildInContext = {
-    ui: LogPresenter & HelpPresenter & VersionPresenter & Inquirer
+    ui: LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
+    cwd: string
   }
 }

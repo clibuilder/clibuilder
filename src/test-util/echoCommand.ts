@@ -1,6 +1,6 @@
-import { CliCommand } from '../cli-command'
+import { createCommand } from '../cli'
 
-export const echoCommand: CliCommand = {
+export const echoCommand = createCommand({
   name: 'echo',
   arguments: [{
     name: 'args',
@@ -11,4 +11,13 @@ export const echoCommand: CliCommand = {
   async run(_args, argv) {
     this.ui.info(...argv)
   },
-}
+})
+
+export const echoCommandHelpMessage = `
+Usage: cli echo
+
+  Echoing input arguments
+
+Arguments:
+  [args]                 any argument(s)
+`
