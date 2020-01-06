@@ -1,7 +1,7 @@
 import { JSONTypes } from 'type-plus'
 import { Cli, createCli } from '../cli'
-import { pluginsCommand } from '../commands'
 import { loadPlugins } from './loadPlugins'
+import { pluginsCommand } from './pluginsCommand'
 import { PluginCli } from './types'
 
 export function createPluginCli<

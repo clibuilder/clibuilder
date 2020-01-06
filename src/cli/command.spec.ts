@@ -3,7 +3,6 @@ import a from 'assertron'
 import { JSONTypes } from 'type-plus'
 import { Cli, createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
 
-
 test('definding cmd must to specify name, description and run can be () => void', () => {
   isCommand({
     name: 'cmd',
