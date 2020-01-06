@@ -2,7 +2,7 @@ import { searchByKeywords } from 'search-packages'
 import { required } from 'type-plus'
 import { PluginCli } from '../plugin-cli/types'
 
-export const searchPackageCommand: PluginCli.Command<never, { _dep: { searchByKeywords: typeof searchByKeywords }, keyword: string }> = {
+export const searchPackageCommand: PluginCli.Command<never, { _dep: { searchByKeywords: typeof searchByKeywords } }> = {
   name: 'search',
   description: 'search for npm packages by keywords',
   arguments: [{

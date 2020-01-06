@@ -3,7 +3,10 @@ import { createPluginCliTest, generateDisplayedMessage, createCliTest } from '..
 import { searchPackageCommand } from './searchPackageCommand'
 
 test('can only be used by PluginCli', async () => {
-  const { cli, argv, ui } = createCliTest({ commands: [searchPackageCommand] }, 'search', 'somekey')
+  // mark `as any` just for test.
+  // normally TypeScript will flag the problem in all situation,
+  // including when the command is created in another package.
+  const { cli, argv, ui } = createCliTest({ commands: [searchPackageCommand] as any }, 'search', 'somekey')
   await cli.parse(argv)
 
   const message = generateDisplayedMessage(ui.display.errorLogs)
@@ -23,7 +26,7 @@ test('displays no package found if keyword search does not yield any result', as
 
   const { cli, argv, ui } = createPluginCliTest({
     name: 'clibuilder',
-    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    context: { _dep: { searchByKeywords: npmSearch } },
     commands: [searchPackageCommand]
   }, 'search', 'x', 'y')
 
@@ -38,7 +41,7 @@ test('found one package', async () => {
 
   const { cli, argv, ui } = createPluginCliTest({
     name: 'clibuilder',
-    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    context: { _dep: { searchByKeywords: npmSearch } },
     commands: [searchPackageCommand]
   }, 'search', 'x', 'y')
   await cli.parse(argv)
@@ -53,7 +56,7 @@ test('found multiple packages', async () => {
 
   const { cli, argv, ui } = createPluginCliTest({
     name: 'clibuilder',
-    context: { _dep: { searchByKeywords: npmSearch }, keyword: '' },
+    context: { _dep: { searchByKeywords: npmSearch } },
     commands: [searchPackageCommand]
   }, 'search', 'x', 'y')
   await cli.parse(argv)
