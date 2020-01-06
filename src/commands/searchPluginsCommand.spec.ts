@@ -3,7 +3,10 @@ import { createCliTest, createPluginCliTest, generateDisplayedMessage } from '..
 import { searchPluginsCommand } from './searchPluginsCommand'
 
 test('can only be used by PluginCli', async () => {
-  const { cli, argv, ui } = createCliTest({ commands: [searchPluginsCommand] }, 'search')
+  // mark `as any` just for test.
+  // normally TypeScript will flag the problem in all situation,
+  // including when the command is created in another package.
+  const { cli, argv, ui } = createCliTest({ commands: [searchPluginsCommand] as any }, 'search')
   await cli.parse(argv)
 
   const message = generateDisplayedMessage(ui.display.errorLogs)

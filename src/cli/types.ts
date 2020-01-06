@@ -68,20 +68,20 @@ export namespace Cli {
   export type Command<
     Config extends Record<string, JSONTypes> | undefined = undefined,
     Context extends Partial<BuildInContext> & Record<string | symbol, any> = Partial<BuildInContext>,
-    Name extends string = string,
-    Name1 extends string = string,
-    Name2 extends string = string,
-    Name3 extends string = string,
-    O extends Options<Name1, Name2, Name3> = Options<Name1, Name2, Name3>
+    N1 extends string = string,
+    N2 extends string = string,
+    N3 extends string = string,
+    N4 extends string = string,
+    O extends Options<N2, N3, N4> = Options<N2, N3, N4>
     > = {
       name: string,
       description: string,
-      arguments?: Argument<Name>[],
+      arguments?: Argument<N1>[],
       options?: O,
       alias?: string[],
     } & ({
       commands?: Command<Config, Context>[],
-      run(this: RunContext<Config, Context>, args: RunArgs<Name, Name1, Name2, Name3, O>, argv: string[]): Promise<any> | any,
+      run(this: RunContext<Config, Context>, args: RunArgs<N1, N2, N3, N4, O>, argv: string[]): Promise<any> | any,
     } | {
       commands: Command<Config, Context>[],
     })

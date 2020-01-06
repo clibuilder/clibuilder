@@ -17,58 +17,58 @@ A highly customizable command line library.
 
 ## Features
 
-- Distributed commands. `CliCommand` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
+- Distributed commands. `Command` can be defined separately from `Cli`, even in different packages. This means the same command can be used in different command lines.
 - Nested commands.
 - Load config file.
-- Provide additional context from `Cli` to `CliCommand`
-- Can use different UI at `Cli` and `CliCommand` level.
+- Provide additional context from `Cli` to `Command`
+- Can use different UI at `Cli` and `Command` level.
 - Plugin architecture using `PluginCli`
 
 ## Usage
 
 ```ts
 // bin.ts
-import { Cli } from 'clibuilder'
+import { createCli } from 'clibuilder'
 
 import { commandA, commandB } from './commands'
 
-const cli = new Cli({
+const cli = createCli({
   name: 'yourapp',
   version: '1.0.0',
   commands: [commandA, commandB],
-  run() { /* when not matching any command */ }
+  run() { /* when not matching any command */ },
 })
 cli.parse(process.argv)
 
 // commands.ts
-import { CliCommand } from 'clibuilder'
+import { createCommand } from 'clibuilder'
 
-export const commandA: CliCommand = {
+export const commandA = createCommand({
   name: 'echo',
   // `args` is the parsed arguments.
   // `argv` is the raw argv.
   run(args, argv) {
     this.ui.info(argv)
   }
-}
+})
 ```
 
 You can define arguments:
 
 ```ts
-const commandA: CliCommand = {
+const commandA = createCommand({
   name: 'command-a',
   arguments: [{
     name: 'arg1',
-    required: true
+    required: true,
   }]
-}
+})
 ```
 
 and/or options:
 
 ```ts
-const commandB: CliCommand = {
+const commandB = createCommand({
   name: 'command-b',
   options: {
     boolean: {
@@ -81,39 +81,20 @@ const commandB: CliCommand = {
       maxSize: { ... }
     }
   }
-}
+})
 ```
 
 It comes with a plain presenter.
 You can override it to display your cli in any way you want:
 
 ```ts
-import {
-  Cli,
-  LogPresenter,
-  HelpPresenter,
-  Inquirer,
-  PresenterOptions,
-  VersionPresenter
-} from 'clibuilder'
+const ui = new YourUI()
 
-class YourCliPresenter implements LogPresenter, HelpPresenter, VersionPresenter, Inquirer { ... }
-class YourCmdPresenter implements LogPresenter, HelpPresenter, Inquirer { ... }
-
-const presenterFactory = {
-  createCliPresenter(options: PresenterOptions) {
-    return new YourCliPresenter(options)
-  },
-  createCommandPresenter(options: PresenterOptions) {
-    return new YourCmdPresenter(options)
-  }
-}
-
-const cli = new Cli({
+const cli = createCli({
   name: 'yourapp',
   version: '1.0.0',
   commands: [...],
-  context: { presenterFactory }
+  context: { ui },
 })
 
 cli.parse(process.argv)
@@ -122,21 +103,20 @@ cli.parse(process.argv)
 You can specify the shape of the config, which will be loaded automatically using `<cli>.json` convension.
 
 ```ts
-import { Cli, CliCommand } from 'clibuilder'
-
-const cmd: CliCommand<{ ... }> = {
+const cmd = createCommand({
   name: 'cmd',
+  config: { ... },
   run() {
     // this.config is typed and accessible
     this.ui.info(this.config)
-  }
-}
+  },
+})
 
-const cli = new Cli({
+const cli = createCli({
   name: 'yourapp',
   version: '1.0.0',
-  defualtConfig: { ... }
-  commands: [cmd]
+  config: { ... },
+  commands: [cmd],
 })
 ```
 
@@ -159,23 +139,18 @@ const cmd = {
 You can add addition information in the context, which will be passed to your commands:
 
 ```ts
-import { Cli, CliCommand } from 'clibuilder'
-
-const config = { ... }
-
-const cmd: CliCommand<typeof config, { something: number }> = {
+const cmd = createCommand<never, { something: number }>({
   name: 'cmd',
   run() {
     this.ui.info(this.something) // 10
   }
-}
+})
 
 const cli = new Cli({
   name: 'yourapp',
   version: '1.0.0',
-  defaultConfig: config
+  context: { something: 10 },
   commands: [cmd],
-  context: { something: 10 }
 })
 ```
 
@@ -183,18 +158,16 @@ const cli = new Cli({
 i.e. You can build your application in a distributed fashion.
 
 ```ts
-import { PluginCli } from 'clibuilder'
-
-const cli = new PluginCli({
+const cli = createPluginCli({
   name: 'yourapp',
   version: '1.0.0'
 })
 
 // in plugin package
-import { CliCommand, ActivationContext } from 'clibuilder'
+import { PluginCli } from 'clibuilder'
 
-const cmd1: CliCommand = { ... }
-const cmd2: CliCommand = { ... }
+const cmd1 = createPluginCommand({ ... })
+const cmd2 = createPluginCommand({ ... })
 
 export function activate({ register }: ActivationContext) {
   register({
@@ -215,15 +188,13 @@ By default it is looking for `${name}-plugin`
 You can override this by supplying your own keyword:
 
 ```ts
-new PluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
+createPluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
 ```
 
 There are also test utilites available for you to develop your command line tool.
 
-- `setupCliTest()`: override the cli or command ui for testing.
-- `setupCliCommandTest()`: instantiates a cli command with in-memory presenter for testing.
-- `createCliArgv()`: creates `argv` that the cli understands.
-- `findCliCommand()`: find a command within the cli.
+- `createCliTest()`: create test for `Cli`
+- `createPluginCliTest()`: create test for `PluginCli`
 - `generateDisplayedMessage()`: generate easy to check messages from logs in `InMemoryDisplay` (through `ui.display.xxxLogs`).
 
 [codacy-image]: https://api.codacy.com/project/badge/Grade/07959fd66e08490cbbd7da836f229053
