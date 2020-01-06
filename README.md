@@ -21,8 +21,8 @@ A highly customizable command line library.
   - This means the same command can be used in different command lines.
 - Nested commands.
 - Configuration file.
-- Pass additional context from `Cli` to `Command`.
-- Build in ui for customization.
+- Define and pass additional context from `Cli` to `Command`.
+- Build-in overridable ui.
 - Plugin architecture using `PluginCli`.
 
 ## Usage
