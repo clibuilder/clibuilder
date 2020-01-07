@@ -178,15 +178,16 @@ function createCliCommand<
 
   const context: Cli.RunContext<Config, Context> = {
     ...parent,
-    ...omit(cmd, 'commands')
+    ...omit(cmd, 'commands', 'config', 'context'),
   }
+
   const command = {
     ...cmd,
     parent: pick(parent, 'name')
   }
 
   if (hasProperty(command, 'run')) {
-    command.run = command.run.bind(context)
+    command.run = command.run.bind(command.context ? { ...command.context, ...context } : context)
   }
 
   if (command.commands) {

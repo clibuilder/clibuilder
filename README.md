@@ -196,6 +196,22 @@ createCli({
 })
 ```
 
+Note that `context` should be single leveled,
+they are merged using spread.
+It is done so to keep object instances working correctly.
+
+i.e. deep organization of dependencies does not work.
+
+```ts
+createCli({
+  context: { fs } // ok
+  context: {  // does not work
+    filesystem: { fs },
+    database: { db }
+  }
+})
+```
+
 You can also override the UI using `context`.
 
 ```ts

@@ -264,3 +264,18 @@ test('specify config type', () => {
     }
   })
 })
+
+test('properties in `command.context` will be used if not supplied by the cli', async () => {
+  const { cli, argv } = createCliTest({
+    commands: [{
+      name: 'cmd',
+      description: '',
+      context: { b: 3 },
+      run() { return this.b }
+    }]
+  }, 'cmd')
+
+  const actual = await cli.parse(argv)
+
+  expect(actual).toBe(3)
+})
