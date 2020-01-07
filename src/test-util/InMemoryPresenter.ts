@@ -1,5 +1,4 @@
-import { Answers, DistinctQuestion } from 'inquirer'
-import { DisplayLevel, PlainPresenter, PresenterOption } from '../presenter'
+import { DisplayLevel, Enquirer, PlainPresenter, PresenterOption } from '../presenter'
 import { InMemoryDisplay } from './InMemoryDisplay'
 
 export class InMemoryPresenter extends PlainPresenter {
@@ -8,15 +7,16 @@ export class InMemoryPresenter extends PlainPresenter {
   constructor(options?: PresenterOption, public answers: Record<string, (QuestionHandler) | string | number | boolean> = {}) {
     super(options)
     this.inquire = Object.assign(
-      (questions: DistinctQuestion[]) => {
+      (questions: Enquirer.PromptOptions[]) => {
         return Promise.resolve(questions.reduce((p, q) => {
           // istanbul ignore next
           if (q.name) {
-            const answer = this.answers[q.name]
-            p[q.name] = typeof answer === 'function' ? answer(q) : answer
+            const name = typeof q.name === 'string' ? q.name : q.name()
+            const answer = this.answers[name]
+            p[name] = typeof answer === 'function' ? answer(q) : answer
           }
           return p
-        }, {} as Answers))
+        }, {} as Record<string, any>))
       },
       {
         ...this.inquire,
@@ -24,4 +24,4 @@ export class InMemoryPresenter extends PlainPresenter {
   }
 }
 
-export type QuestionHandler<Q extends DistinctQuestion = any> = (question: Q) => any
+export type QuestionHandler = (question: Enquirer.PromptOptions) => any

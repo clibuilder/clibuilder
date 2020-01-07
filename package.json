@@ -41,7 +41,7 @@
     "codacy": "cat coverage/lcov.info | codacy-coverage",
     "coverage": "jest --coverage",
     "depcheck": "yarn dependency-check",
-    "dependency-check": "dependency-check . --unused --no-dev -i @types/inquirer -i standard-log-color && dependency-check . --missing --no-dev",
+    "dependency-check": "dependency-check . --unused --no-dev -i @types/node -i standard-log-color && dependency-check . --missing --no-dev",
     "lint": "eslint --ext=js,ts .",
     "nuke": "yarn clean && rimraf node_modules",
     "semantic-release": "semantic-release",
@@ -51,11 +51,11 @@
     "watch": "yarn test:watch"
   },
   "dependencies": {
-    "@types/inquirer": "^6.5.0",
+    "@types/node": "^13.1.4",
     "camel-case": "^4.1.1",
+    "enquirer": "^2.3.2",
     "find-installed-packages": "^2.1.5",
     "find-up": "^4.1.0",
-    "inquirer": "^7.0.1",
     "iso-error": "^3.2.1",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
