@@ -90,7 +90,7 @@ createCommand({
 Both `Cli` and `Command` supports the `Argument`, `Options`, and `Alias`.
 
 Argument supports `required` and `multiple`.
-The arugment supporting `multiple` must be the last argument.
+The argument supporting `multiple` must be the last argument.
 
 ```ts
 createCli({
@@ -119,7 +119,7 @@ createCommand({
 ```
 
 Alias are shorthands of a command.
-If there is a command name conflicting with an alias, the command name takes precedent.
+If there is a command name conflicts with an alias, the command name takes precedent.
 
 ```ts
 createCommand({
@@ -142,7 +142,7 @@ createCli({
     args.yourStrOption // typed as string
     args.yourNumOption // typed as number
 
-    this.config // if you have config defined, yes it is typed
+    this.config // if you have config defined, it is typed accordingly
     this.cwd // current working directory. Typically it is the same as process.cwd()
     this.ui.error()
     this.ui.warn()
@@ -186,17 +186,17 @@ So it can be used to inject dependencies to the commands.
 
 ```ts
 createCli({
-  context: { a: 1 },
+  context: { fs },
   commands: [{
     ...,
     run() {
-      this.a // 1
+      this.fs.openFileSync(...)
     }
   }]
 })
 ```
 
-You can also override the UI using context.
+You can also override the UI using `context`.
 
 ```ts
 const ui = new YourUI()
@@ -208,20 +208,20 @@ createCli({
 ```
 
 When you specify `config`,
-it will be loaded automatically using `<cli>.json` convension.
+it will automatically try to load the config from `<cli>.json`.
 
 ```ts
 createCli({
-  name: 'cmd',
+  name: 'your-cmd',
   config: { a: 1 }, // this is the default config
   run() {
-    // config is loaded from `cmd.json`
+    // config is loaded from `your-cmd.json`
     this.config.a // 2 from cmd.json
   },
 })
 ```
 
-You can specify a different config name.
+You can also specify a config name different then your cli name.
 
 ```ts
 createCli({
@@ -234,11 +234,11 @@ createCli({
 When using `Config` and `Context`,
 you can specify their type using `createCommand<Config, Context>()`.
 
-Due to TypeScript limitation,
+But due to TypeScript limitation,
 when explicitly specifying the `Config` or `Context` type,
 you lost the the ability to infer types from `Argument` and `Options`.
 
-instead, you can specify the `config` property and `context` property directly.
+Instead, you can specify the `config` property and `context` property directly.
 Note that the value in the `config` property is not being used.
 It is only for defining the shape of the config that the command expects.
 
