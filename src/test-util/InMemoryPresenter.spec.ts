@@ -1,5 +1,4 @@
 import t from 'assert'
-import { ListQuestion } from 'inquirer'
 import { DisplayLevel, InMemoryPresenter } from '..'
 
 test('should default to verbose', () => {
@@ -20,7 +19,11 @@ test('should default to verbose', () => {
 test('answers value will be used during prompt', async () => {
   const p = new InMemoryPresenter({ name: 'a' }, { lang: 'abc' })
 
-  const actual = await p.prompt([{ name: 'lang' }])
+  const actual = await p.prompt([{
+    type: 'text',
+    name: 'lang',
+    message: 'get lang'
+  }])
   expect(actual).toEqual({ lang: 'abc' })
 })
 
@@ -28,9 +31,10 @@ test('function in answers will be used to process the question', async () => {
   const p = new InMemoryPresenter({ name: 'a' }, { lang: () => 'abc' })
 
   const actual = await p.prompt([{
-    name: 'lang',
     type: 'list',
-    choices: ['a', 'b', 'c'],
+    name: 'lang',
+    message: '',
+    choices: ['a', 'b', 'c']
   }])
 
   expect(actual).toEqual({ lang: 'abc' })
@@ -41,14 +45,16 @@ test('function in answers receives the question', async () => {
   const p = new InMemoryPresenter({ name: 'a' }, { lang: q => actual = q })
 
   await p.prompt([{
-    name: 'lang',
     type: 'list',
+    name: 'lang',
+    message: '',
     choices: ['a', 'b', 'c'],
   }])
 
   expect(actual).toEqual({
     name: 'lang',
     type: 'list',
+    message: '',
     choices: ['a', 'b', 'c'],
   })
 })
@@ -56,18 +62,20 @@ test('function in answers receives the question', async () => {
 test('function in answers can specify question type', async () => {
   let actual: any
   const p = new InMemoryPresenter({ name: 'a' }, {
-    lang: (q: ListQuestion) => actual = q,
+    lang: q => actual = q,
   })
 
   await p.prompt([{
     name: 'lang',
     type: 'list',
+    message: '',
     choices: ['a', 'b', 'c'],
   }])
 
   expect(actual).toEqual({
     name: 'lang',
     type: 'list',
+    message: '',
     choices: ['a', 'b', 'c'],
   })
 })

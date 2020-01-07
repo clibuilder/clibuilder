@@ -270,7 +270,11 @@ describe('cli without command', () => {
     const { cli, argv, ui } = createCliTest({
       description: '',
       async run() {
-        const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+        const answers = await this.ui.prompt([{
+          type: 'text',
+          name: 'username',
+          message: 'Your username'
+        }])
         expect(answers.username).toBe('me')
       }
     }, '--version')
@@ -389,7 +393,11 @@ describe('cli with commands', () => {
         name: 'ask',
         description: '',
         async run() {
-          const answers = await this.ui.prompt([{ name: 'username', message: 'Your username' }])
+          const answers = await this.ui.prompt([{
+            type: 'text',
+            name: 'username',
+            message: 'Your username'
+          }])
           expect(answers.username).toBe('me')
         },
         commands: [argCommand as any],
