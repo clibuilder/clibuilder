@@ -3,7 +3,7 @@ import { Cli } from './types'
 
 export function createCommand<
   Config extends Record<string, JSONTypes> | undefined,
-  Context,
+  Context extends Record<string | symbol, any> = Record<string | symbol, any>,
   AName extends string = string,
   BName extends string = string,
   SName extends string = string,

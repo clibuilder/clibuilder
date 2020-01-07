@@ -8,7 +8,7 @@ test('options inference', () => {
     options: {
       boolean: {
         bool: {
-          description:'boolean option'
+          description: 'boolean option'
         },
       },
       string: {
@@ -31,3 +31,13 @@ test('options inference', () => {
 })
 
 test.todo('argument inference')
+
+test('specify config type', () => {
+  createPluginCommand<{ a: 1 }>({
+    name: 'with-config',
+    description: '',
+    run() {
+      assertType<1>(this.config.a)
+    }
+  })
+})
