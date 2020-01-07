@@ -5,7 +5,7 @@
     "declarationMap": true,
     "module": "esnext",
     "outDir": "libm",
-    "target": "esnext",
+    "target": "ES2019",
     "tsBuildInfoFile": ".ts/libm.tsbuildinfo"
   }
 }
