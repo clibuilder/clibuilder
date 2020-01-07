@@ -30,7 +30,7 @@
   "main": "lib/index.js",
   "module": "libm/index.js",
   "jsnext:main": "libm/index.js",
-  "typings": "libm/index.d.ts",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "build": "yarn build:libm && yarn build:lib",
     "build:lib": "tsc -p tsconfig.lib.json",
