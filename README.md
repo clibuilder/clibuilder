@@ -211,13 +211,23 @@ When you specify `config`,
 it will be loaded automatically using `<cli>.json` convension.
 
 ```ts
-const cmd = createCommand({
+createCli({
   name: 'cmd',
   config: { a: 1 }, // this is the default config
   run() {
     // config is loaded from `cmd.json`
     this.config.a // 2 from cmd.json
   },
+})
+```
+
+You can specify a different config name.
+
+```ts
+createCli({
+  name: 'cli',
+  config: { a: 1 },
+  configName: 'duh'  // will load from `duh.json` instead.
 })
 ```
 
