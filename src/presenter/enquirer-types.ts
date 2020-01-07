@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
+import { ReadStream, WriteStream } from 'tty'
 
-export declare class Enquirer<T = object> extends EventEmitter {
+export declare class Enquirer<T = Record<string, any>> extends EventEmitter {
   constructor(options?: object, answers?: T);
 
   /**
@@ -14,7 +15,7 @@ export declare class Enquirer<T = object> extends EventEmitter {
   /**
    * Register a custom prompt type.
    */
-  register(type: { [key: string]: typeof Enquirer.BasePrompt | (() => typeof Enquirer.BasePrompt) }): this;
+  register(type: Record<string, typeof Enquirer.BasePrompt | (() => typeof Enquirer.BasePrompt)>): this;
 
   /**
    * Prompt function that takes a "question" object or array of question objects,
@@ -22,12 +23,7 @@ export declare class Enquirer<T = object> extends EventEmitter {
    *
    * @param questions Options objects for one or more prompts to run.
    */
-  prompt(
-    questions:
-      | Enquirer.PromptOptions
-      | ((this: Enquirer) => Enquirer.PromptOptions)
-      | (Enquirer.PromptOptions | ((this: Enquirer) => Enquirer.PromptOptions))[]
-  ): Promise<T>;
+  prompt(questions: Enquirer.Question | Enquirer.Question[]): Promise<T>;
 
   /**
    * Use an enquirer plugin.
@@ -38,15 +34,7 @@ export declare class Enquirer<T = object> extends EventEmitter {
 }
 
 export declare namespace Enquirer {
-  function prompt<T = object>(
-    questions:
-      | PromptOptions
-      | ((this: Enquirer) => PromptOptions)
-      | (PromptOptions | ((this: Enquirer) => PromptOptions))[]
-  ): Promise<T>;
-
-  export class Prompt extends BasePrompt { }
-
+  export type Question = PromptOptions | ((this: Enquirer) => Enquirer.PromptOptions)
 
   export interface BasePromptOptions {
     name: string | (() => string),
@@ -60,8 +48,8 @@ export declare namespace Enquirer {
     validate?(value: string): boolean | Promise<boolean> | string | Promise<string>,
     onSubmit?(name: string, value: any, prompt: Enquirer.Prompt): boolean | Promise<boolean>,
     onCancel?(name: string, value: any, prompt: Enquirer.Prompt): boolean | Promise<boolean>,
-    stdin?: NodeJS.ReadStream,
-    stdout?: NodeJS.WriteStream
+    stdin?: ReadStream,
+    stdout?: WriteStream
   }
 
   export interface Choice {
@@ -146,4 +134,6 @@ export declare namespace Enquirer {
 
     run(): Promise<any>;
   }
+
+  export class Prompt extends BasePrompt { }
 }
