@@ -11,7 +11,7 @@ export namespace PluginCli {
       SName extends string = string,
       NName extends string = string,
       >(
-        command: Cli.Command<Config, Context, AName, BName, SName, NName>
+        command: PluginCli.Command<Config, Context, AName, BName, SName, NName>
       ): void,
   }
 
@@ -42,7 +42,9 @@ export namespace PluginCli {
     O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
     > = {
       name: string,
-    } & ({
+      commands?: Command<Config, Context>[],
+    } | {
+      name: string,
       description: string,
       /**
        * The config this command is expecting.
@@ -64,7 +66,5 @@ export namespace PluginCli {
       alias?: string[],
       commands?: Command<Config, Context>[],
       run(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
-    } | {
-      commands?: Command<Config, Context>[],
-    })
+    }
 }
