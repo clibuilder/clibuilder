@@ -42,11 +42,29 @@ export namespace PluginCli {
     O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
     > = {
       name: string,
+    } & ({
       description: string,
+      /**
+       * The config this command is expecting.
+       * The value in this property is not actively used.
+       * It is used to define the shape of the config.
+       * Defining this property has the same effect as specifying the generic type `Config`,
+       * but still keep the type inference working.
+       */
+      config?: Config,
+      /**
+       * A context that the the command will receive at `this`.
+       * Use this for dependency injection,
+       * and specifying the shape of the context,
+       * like the `config` property.
+       */
+      context?: Context,
       arguments?: Cli.Argument<AName>[],
       options?: O,
       alias?: string[],
       commands?: Command<Config, Context>[],
-      run?(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
-    }
+      run(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
+    } | {
+      commands?: Command<Config, Context>[],
+    })
 }

@@ -74,7 +74,7 @@ function isValidPlugin(m: any) {
 }
 
 function activatePlugin(m: { activate: (context: PluginCli.ActivationContext) => void }) {
-  const commands: PluginCli.Command<any, any>[] = []
+  const commands: PluginCli.Command[] = []
   m.activate({ addCommand: cmd => commands.push(cmd) })
   return commands
 }

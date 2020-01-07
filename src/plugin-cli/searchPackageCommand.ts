@@ -2,9 +2,10 @@ import { searchByKeywords } from 'search-packages'
 import { required } from 'type-plus'
 import { createPluginCommand } from './createPluginCommand'
 
-export const searchPackageCommand = createPluginCommand<never, { _dep: { searchByKeywords: typeof searchByKeywords } }>({
+export const searchPackageCommand = createPluginCommand({
   name: 'search',
   description: 'search for npm packages by keywords',
+  context: { _dep: { searchByKeywords } },
   arguments: [{
     name: 'keywords',
     required: true,

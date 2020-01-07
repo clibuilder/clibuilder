@@ -201,9 +201,9 @@ function validateCliCommand(cmd: Cli.Command<any, any>) {
   validateOptions(cmd)
 }
 
-function validateArgument(cmd: Cli.Command<any, any>) {
-  const args = cmd.arguments
-  if (args) {
+function validateArgument(cmd: Cli.Command) {
+  if (hasProperty(cmd, 'run') && cmd.arguments) {
+    const args = cmd.arguments
     const multiIndex = args.findIndex(arg => arg.multiple === true)
     if (multiIndex !== -1 && multiIndex !== args.length - 1) {
       throw new MultipleArgumentNotLastEntry(cmd.name, args[multiIndex].name)
@@ -212,8 +212,8 @@ function validateArgument(cmd: Cli.Command<any, any>) {
 }
 
 function validateOptions(cmd: Cli.Command<any, any>) {
-  const options = cmd.options
-  if (options) {
+  if (hasProperty(cmd, 'run') && cmd.options) {
+    const options = cmd.options
     const strOptionNames = options.string ? Object.keys(options.string) : []
     const numOptionNames = options.number ? Object.keys(options.number) : []
     const boolOptionNames = options.boolean ? Object.keys(options.boolean) : []

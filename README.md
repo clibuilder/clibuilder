@@ -231,20 +231,35 @@ createCli({
 })
 ```
 
-When using `config` and `context`,
+When using `Config` and `Context`,
 you can specify their type using `createCommand<Config, Context>()`.
 
 Due to TypeScript limitation,
 when explicitly specifying the `Config` or `Context` type,
 you lost the the ability to infer types from `Argument` and `Options`.
 
+instead, you can specify the `config` property and `context` property directly.
+Note that the value in the `config` property is not being used.
+It is only for defining the shape of the config that the command expects.
+
 ```ts
-const cmd = createCommand<{ a: number }, { b: string }>({
+createCommand<{ a: number }, { b: string }>({
   arguments: [{ name: 'arg' }],
   run(args) {
-    args.arg as unknown as string// typed as never
+    args.otherArgs as unknown as string// typed as never
     this.config.a // number
     this.b // string
+  }
+})
+
+// perferred
+createCommand({
+  config: { a: 1 },
+  context: { b: 'b' },
+  arguments: [{ name: 'arg' }],
+  run(args) {
+    this.config.a // number
+    this.b // = 'b'
   }
 })
 ```
