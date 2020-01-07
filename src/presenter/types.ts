@@ -1,6 +1,6 @@
-import { Answers, QuestionCollection } from 'inquirer'
 import { logLevel } from 'standard-log'
 import { Cli } from '../cli/types'
+import { Enquirer } from './enquirer-types'
 
 export interface Display {
   debug(...args: any[]): void,
@@ -29,11 +29,6 @@ export class ConsoleDisplay implements Display {
   error(...args: any[]): void {
     console.error(...args)
   }
-}
-
-export interface PresenterFactory {
-  createCliPresenter(options: PresenterOption): LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
-  createCommandPresenter(options: PresenterOption): LogPresenter & HelpPresenter & Inquirer,
 }
 
 export interface CommandModel {
@@ -70,6 +65,6 @@ export interface PresenterOption {
   name: string,
 }
 
-export interface Inquirer {
-  prompt(questions: QuestionCollection): Promise<Answers>,
+export type PromptPresenter = {
+  prompt(questions: Enquirer.PromptOptions[]): Promise<Record<string, any>>
 }

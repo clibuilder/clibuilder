@@ -1,5 +1,5 @@
 import { JSONTypes, KeyofOptional } from 'type-plus'
-import { HelpPresenter, Inquirer, LogPresenter, VersionPresenter } from '../presenter/types'
+import { HelpPresenter, LogPresenter, PromptPresenter, VersionPresenter } from '../presenter/types'
 
 export type Cli = {
   name: string,
@@ -89,7 +89,7 @@ export namespace Cli {
   export type RunContext<Config, Context> = {
     name: string,
     version: string,
-    ui: LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
+    ui: LogPresenter & HelpPresenter & VersionPresenter & PromptPresenter,
     config: Config,
     cwd: string
   } & Omit<Context, 'ui' | 'cwd'>
@@ -142,7 +142,7 @@ export namespace Cli {
   }
 
   export type BuildInContext = {
-    ui: LogPresenter & HelpPresenter & VersionPresenter & Inquirer,
+    ui: LogPresenter & HelpPresenter & VersionPresenter & PromptPresenter,
     cwd: string
   }
 }
