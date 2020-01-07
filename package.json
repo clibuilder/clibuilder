@@ -52,7 +52,7 @@
   "dependencies": {
     "@types/inquirer": "^6.5.0",
     "camel-case": "^4.1.1",
-    "find-installed-packages": "^2.1.4",
+    "find-installed-packages": "^2.1.5",
     "find-up": "^4.1.0",
     "inquirer": "^7.0.1",
     "iso-error": "^3.2.1",
@@ -60,7 +60,7 @@
     "search-packages": "^2.0.0",
     "standard-log": "^4.0.2",
     "standard-log-color": "^1.5.15",
-    "type-plus": "^1.29.0",
+    "type-plus": "^1.31.2",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^16.1.0"
   },
