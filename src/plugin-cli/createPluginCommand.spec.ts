@@ -23,9 +23,9 @@ test('options inference', () => {
       }
     },
     run(args) {
-      assertType<boolean>(args.bool)
-      assertType<string>(args.str)
-      assertType<number>(args.num)
+      assertType<boolean | undefined>(args.bool)
+      assertType<string | undefined>(args.str)
+      assertType<number | undefined>(args.num)
     }
   })
 })

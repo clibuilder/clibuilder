@@ -146,8 +146,8 @@ describe('cli without command', () => {
       description: '',
       arguments: [{ name: 'arg1' }, { name: 'arg2' }],
       run(args) {
-        assertType<string>(args.arg1)
-        assertType<string>(args.arg2)
+        assertType<string | undefined>(args.arg1)
+        assertType<string | undefined>(args.arg2)
         expect(args.arg1).toEqual('value1')
         expect(args.arg2).toEqual('value2')
       }
@@ -156,18 +156,31 @@ describe('cli without command', () => {
     return cli.parse(argv)
   })
 
-  test('multi-argument has type string[]', () => {
+  test.skip('multi-argument has type string[]', () => {
     const { cli, argv } = createCliTest({
       description: '',
       arguments: [{ name: 'arg1' }, { name: 'arg2', multiple: true }],
       run(args) {
-        assertType<string>(args.arg1)
+        assertType<string | undefined>(args.arg1)
         // limitation
         assertType<string[]>(args.arg2 as unknown as string[])
         expect(args.arg1).toEqual('value1')
         expect(args.arg2).toEqual(['value2', 'value3'])
       }
     }, 'value1', 'value2', 'value3')
+
+    return cli.parse(argv)
+  })
+
+  test('not required argument can be undefined', () => {
+    const { cli, argv } = createCliTest({
+      description: '',
+      arguments: [{ name: 'arg1' }],
+      run(args) {
+        assertType<string | undefined>(args.arg1)
+        expect(args.arg1).toEqual(undefined)
+      }
+    })
 
     return cli.parse(argv)
   })
@@ -193,9 +206,9 @@ describe('cli without command', () => {
         }
       },
       run(args) {
-        assertType<boolean>(args.option1)
-        assertType<string>(args.option2)
-        assertType<number>(args.option3)
+        assertType<boolean | undefined>(args.option1)
+        assertType<string | undefined>(args.option2)
+        assertType<number | undefined>(args.option3)
 
         expect(args.option1).toBe(true)
       }

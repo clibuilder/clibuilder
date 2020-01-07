@@ -117,9 +117,9 @@ export namespace Cli {
     O extends Options<BName, SName, NName> = Options<BName, SName, NName>
     > =
     DefaultArgs & ArgumentNamesRecord<Argument<AName>> &
-    Record<KeyofOptional<O['boolean']>, boolean> &
-    Record<KeyofOptional<O['string']>, string> &
-    Record<KeyofOptional<O['number']>, number>
+    Record<KeyofOptional<O['boolean']>, boolean | undefined> &
+    Record<KeyofOptional<O['string']>, string | undefined> &
+    Record<KeyofOptional<O['number']>, number | undefined>
 
   export type DefaultArgs = {
     help: boolean
@@ -132,7 +132,7 @@ export namespace Cli {
     multiple?: boolean,
   }
 
-  export type ArgumentNamesRecord<A extends Argument<string>> = { [K in A['name']]: string }
+  export type ArgumentNamesRecord<A extends Argument<string>> = { [K in A['name']]: string | undefined }
 
   export type Options<
     BName extends string = string,
