@@ -1,11 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
     "module": "esnext",
     "outDir": "libm",
-    "target": "esnext",
+    "target": "ES2019",
     "tsBuildInfoFile": ".ts/libm.tsbuildinfo"
   }
 }

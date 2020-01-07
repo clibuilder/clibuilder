@@ -30,7 +30,7 @@
   "main": "lib/index.js",
   "module": "libm/index.js",
   "jsnext:main": "libm/index.js",
-  "typings": "libm/index.d.ts",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "build": "yarn build:libm && yarn build:lib",
     "build:lib": "tsc -p tsconfig.lib.json",
@@ -65,6 +65,7 @@
     "yargs-parser": "^16.1.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.7.7",
     "@babel/core": "^7.7.7",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.7.4",
     "@babel/plugin-proposal-optional-chaining": "^7.7.5",
