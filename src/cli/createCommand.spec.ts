@@ -254,3 +254,13 @@ test('config and context type is available within the run() context', async () =
   const actual = await cli.parse(argv)
   t.strictEqual(actual, 'a.b')
 })
+
+test('specify config type', () => {
+  createCommand<{ a: 1 }>({
+    name: 'with-config',
+    description: '',
+    run() {
+      assertType<1>(this.config.a)
+    }
+  })
+})
