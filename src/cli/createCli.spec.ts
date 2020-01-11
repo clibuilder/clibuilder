@@ -141,6 +141,26 @@ describe('cli without command', () => {
     return cli.parse(['node', 'cli'])
   })
 
+  test('run(args) receives `_defaults` array', () => {
+    const { cli, argv } = createCliTest({
+      description: '',
+      options: {
+        number: {
+          abc: {
+            description: 'abc with default',
+            default: 123
+          }
+        }
+      },
+      run(args) {
+        expect(args.abc).toBe(123)
+        expect(args._defaults).toEqual(['abc'])
+      }
+    })
+
+    return cli.parse(argv)
+  })
+
   test('specify argument', () => {
     const { cli, argv } = createCliTest({
       description: '',
