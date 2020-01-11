@@ -122,7 +122,8 @@ export namespace Cli {
     Record<KeyofOptional<O['number']>, number | undefined>
 
   export type DefaultArgs = {
-    help: boolean
+    help: boolean,
+    _defaults: string[]
   }
 
   export type Argument<Name extends string = string> = {
