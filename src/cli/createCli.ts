@@ -106,10 +106,9 @@ function buildContext<
     cwd: process.cwd(),
     ...options.context
   } as any
-
   if (!context.ui) context.ui = new PlainPresenter()
 
-  if (options.config) {
+  if (options.config || options.configName) {
     const configName = options.configName || options.name
     context.config = requiredDeep(options.config ?? {}, loadConfig(`${configName}.json`, { cwd: context.cwd }))
     log.debug('Loaded config', context.config)
