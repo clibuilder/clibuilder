@@ -544,9 +544,11 @@ describe('cli with commands', () => {
 describe('config', () => {
   test('config is available as property', async () => {
     const { cli, argv } = createCliTest({
-      description: '',
       config: { a: 2 },
-      run() { return this.config }
+      run() {
+        assertType<{ a: number }>(this.config)
+        return this.config
+      }
     })
     const actual = await cli.parse(argv)
     expect(actual).toEqual({ a: 2 })
@@ -569,6 +571,18 @@ describe('config', () => {
       name: 'test-cli',
       description: '',
       config: { a: 2 },
+      context: { cwd: 'fixtures/has-config' },
+      run() { return this.config }
+    })
+    const actual = await cli.parse(argv)
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  test('load config if specify configName', async () => {
+    const { cli, argv } = createCliTest({
+      name: 'test-cli',
+      description: '',
+      configName: 'test-cli',
       context: { cwd: 'fixtures/has-config' },
       run() { return this.config }
     })

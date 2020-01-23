@@ -1,4 +1,4 @@
-import { JSONTypes } from 'type-plus'
+import { JSONTypes, hasProperty } from 'type-plus'
 import { Cli, createCli } from '../cli'
 import { loadPlugins } from './loadPlugins'
 import { pluginsCommand } from './pluginsCommand'
@@ -12,24 +12,41 @@ export function createPluginCli<
   SName extends string,
   NName extends string,
   >(options: PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName>): Cli {
-  options.commands = options.commands ?? []
-  options.commands.unshift(pluginsCommand as any)
+  const commands = options.commands ?? []
+  commands.unshift(pluginsCommand)
   const cwd = options.context?.cwd ?? process.cwd()
 
   const keyword = options.keyword || `${options.name}-plugin`
-  options.context = { ...options.context, keyword } as any
-  const loadingPlugins = loadPlugins(keyword, { cwd }).then(commands => {
-    return options.commands!.push(...commands as any)
-  })
+  const loadingPlugins = loadPlugins(keyword, { cwd })
+    .then(cmds => commands!.push(...cmds))
   let cli: Cli
   return {
     name: options.name,
     version: options.version,
     parse(argv) {
       return loadingPlugins.then(() => {
-        if (!cli) cli = createCli(options as any)
+        if (!cli) {
+          const configName = options.configName ?? (options.config || hasConfig(commands) ? options.name : undefined)
+          cli = createCli({
+            ...options,
+            configName,
+            commands,
+            context: {
+              ...options.context,
+              keyword
+            }
+          } as any)
+        }
         return cli.parse(argv)
       })
     }
   }
+}
+
+function hasConfig(commands: PluginCli.Command[]): boolean {
+  return commands.some(c => {
+    if (hasProperty(c, 'config')) return true
+    if (c.commands) return hasConfig(c.commands)
+    return false
+  })
 }
