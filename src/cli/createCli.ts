@@ -72,7 +72,13 @@ export function createCli<
       }
 
       if (hasProperty(opts, 'run') && (opts.arguments && opts.arguments.length > 0 || args._.length === 0)) {
-        return opts.run.call(context, trimmedArgs, trimmedArgv)
+        try {
+          return await opts.run.call(context, trimmedArgs, trimmedArgv)
+        }
+        catch (e) {
+          ui.error(`${cli.name} throws: ${e}`)
+          throw e
+        }
       }
 
       if (args._.length > 0)
