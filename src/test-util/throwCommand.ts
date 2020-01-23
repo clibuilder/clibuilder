@@ -10,3 +10,14 @@ export const throwCommand = createCommand({
     throw new Error(message)
   },
 })
+
+export const rejectCommand = createCommand({
+  name: 'reject',
+  description: 'emit error to ui',
+  arguments: [{
+    name: 'message'
+  }],
+  async run({ message }) {
+    throw new Error(message)
+  },
+})

@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, throwCommand } from '../test-util'
+import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, throwCommand, rejectCommand } from '../test-util'
 
 const helloHelpMessage = `
 Usage: cli <command> [options]
@@ -323,7 +323,7 @@ describe('cli without command', () => {
       }
     })
 
-    await a.throws(() => cli.parse(argv))
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
@@ -337,14 +337,14 @@ describe('cli without command', () => {
       }
     })
 
-    await a.throws(() => cli.parse(argv))
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
     expect(msg).toEqual(`cli throws: Error: some error`)
   })
 
-  test.skip('wait for async run to complete', async () => {
+  test('wait for async run to complete', async () => {
     expect.assertions(1)
     const { cli, argv } = createCliTest({
       run() {
@@ -528,6 +528,16 @@ describe('cli with commands', () => {
     const msg = generateDisplayedMessage(ui.display.errorLogs)
     expect(err.message).toEqual('some error')
     expect(msg).toEqual('command throw throws: Error: some error')
+  })
+
+  test('command reject will throw the error at cli level', async () => {
+    const { cli, argv, ui } = createCliTest({ commands: [rejectCommand] }, 'reject', 'some error')
+
+    const err = await a.throws(cli.parse(argv))
+
+    const msg = generateDisplayedMessage(ui.display.errorLogs)
+    expect(err.message).toEqual('some error')
+    expect(msg).toEqual('command reject throws: Error: some error')
   })
 })
 

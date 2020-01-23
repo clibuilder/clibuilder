@@ -58,7 +58,7 @@ export function createCli<
         }
 
         try {
-          return (command as any).run(cmdArgs, cmdArgv)
+          return await (command as any).run(cmdArgs, cmdArgv)
         }
         catch (e) {
           ui.error(`command ${command.name} throws: ${e}`)
