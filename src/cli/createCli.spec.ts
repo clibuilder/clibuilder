@@ -315,6 +315,50 @@ describe('cli without command', () => {
 
     await cli.parse(argv)
   })
+
+  test('emit error when cli throws an error', async () => {
+    const { cli, argv, ui } = createCliTest({
+      run() {
+        throw new Error('some error')
+      }
+    })
+
+    await a.throws(() => cli.parse(argv))
+
+    const msg = generateDisplayedMessage(ui.display.errorLogs)
+
+    expect(msg).toEqual(`cli throws: Error: some error`)
+  })
+
+  test('emit error when async cli throws an error', async () => {
+    const { cli, argv, ui } = createCliTest({
+      async run() {
+        throw new Error('some error')
+      }
+    })
+
+    await a.throws(() => cli.parse(argv))
+
+    const msg = generateDisplayedMessage(ui.display.errorLogs)
+
+    expect(msg).toEqual(`cli throws: Error: some error`)
+  })
+
+  test.skip('wait for async run to complete', async () => {
+    expect.assertions(1)
+    const { cli, argv } = createCliTest({
+      run() {
+        return new Promise(a => {
+          setTimeout(() => {
+            expect(true).toBe(true)
+            a()
+          }, 10)
+        })
+      }
+    })
+
+    await cli.parse(argv)
+  })
 })
 
 describe('cli with commands', () => {
@@ -397,7 +441,7 @@ describe('cli with commands', () => {
       commands: [{
         name: 'base',
         description: '',
-        run() { throw new Error('should not reach') },
+        run() { new Error('should not reach') },
         commands: [helloCommand as any],
       }],
     }, 'base', 'hello')
