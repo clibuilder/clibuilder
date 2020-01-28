@@ -36,15 +36,7 @@ function findConfigFile(configFileName: string, { cwd, home }: loadConfig.Option
 }
 
 function readConfig(filePath: string) {
-  try {
-    return path.extname(filePath) === '.json' ?
-      JSON.parse(fs.readFileSync(filePath, 'utf-8')) :
-      require(filePath)
-  }
-  catch (err) {
-    if (err.code === 'ENOENT')
-      return
-    // istanbul ignore next
-    throw err
-  }
+  return path.extname(filePath) === '.json' ?
+    JSON.parse(fs.readFileSync(filePath, 'utf-8')) :
+    require(filePath)
 }
