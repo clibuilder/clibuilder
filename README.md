@@ -224,7 +224,7 @@ createCli({
 ```
 
 When you specify `config`,
-it will automatically try to load the config from `<cli>.json`.
+it will automatically try to load the config from `<cli>.json`, `<cli>.js` or `<cli>rc`.
 
 ```ts
 createCli({

@@ -110,7 +110,7 @@ function buildContext<
 
   if (options.config || options.configName) {
     const configName = options.configName || options.name
-    context.config = requiredDeep(options.config ?? {}, loadConfig(`${configName}.json`, { cwd: context.cwd }))
+    context.config = requiredDeep(options.config ?? {}, loadConfig(configName, { cwd: context.cwd }))
     log.debug('Loaded config', context.config)
   }
 
