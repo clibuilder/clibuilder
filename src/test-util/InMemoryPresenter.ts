@@ -7,11 +7,11 @@ export class InMemoryPresenter extends PlainPresenter {
   constructor(options?: PresenterOption, public answers: Record<string, (QuestionHandler) | string | number | boolean> = {}) {
     super(options)
     this.inquire = Object.assign(
-      (questions: Enquirer.PromptOptions[]) => {
+      (questions: Enquirer.prompt.Question[]) => {
         return Promise.resolve(questions.reduce((p, q) => {
           // istanbul ignore next
           if (q.name) {
-            const name = typeof q.name === 'string' ? q.name : q.name()
+            const name = q.name
             const answer = this.answers[name]
             p[name] = typeof answer === 'function' ? answer(q) : answer
           }
@@ -24,4 +24,4 @@ export class InMemoryPresenter extends PlainPresenter {
   }
 }
 
-export type QuestionHandler = (question: Enquirer.PromptOptions) => any
+export type QuestionHandler = (question: Enquirer.prompt.Question) => any
