@@ -2,7 +2,7 @@ import { prompt } from 'enquirer'
 import padRight from 'pad-right'
 import wordwrap from 'wordwrap'
 import { CommandModel, ConsoleDisplay, Display, DisplayLevel, HelpPresenter, LogPresenter, PresenterOption, VersionPresenter, PromptPresenter } from './types'
-import { Enquirer } from './enquirer-types'
+import Enquirer from './enquirer-types'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -13,7 +13,7 @@ const wrap = wordwrap(80)
 export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPresenter, PromptPresenter {
   display: Display = new ConsoleDisplay()
   name: string
-  inquire = prompt
+  inquire = prompt as any
   displayLevel: DisplayLevel = DisplayLevel.Normal
   constructor(options: PresenterOption = { name: '' }) {
     this.name = options.name
@@ -46,7 +46,7 @@ export class PlainPresenter implements LogPresenter, HelpPresenter, VersionPrese
     if (this.displayLevel >= DisplayLevel.Verbose)
       this.display.debug(...args)
   }
-  prompt(questions: Enquirer.PromptOptions[]): Promise<Record<string, any>> {
+  prompt(questions: Enquirer.prompt.Question[]): Promise<Record<string, any>> {
     return this.inquire(questions)
   }
 }

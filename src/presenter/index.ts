@@ -1,3 +1,4 @@
 export * from './PlainPresenter'
 export * from './types'
-export * from './enquirer-types'
+import Enquirer from './enquirer-types'
+export { Enquirer }
