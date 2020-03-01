@@ -1,6 +1,6 @@
 import { logLevel } from 'standard-log'
 import { Cli } from '../cli/types'
-import Enquirer from './enquirer-types'
+import Enquirer from 'enquirer'
 
 export interface Display {
   debug(...args: any[]): void,
