@@ -1,6 +1,6 @@
 import { logLevel } from 'standard-log'
 import { Cli } from '../cli/types'
-import { Enquirer } from './enquirer-types'
+import Enquirer from 'enquirer'
 
 export interface Display {
   debug(...args: any[]): void,
@@ -66,5 +66,5 @@ export interface PresenterOption {
 }
 
 export type PromptPresenter = {
-  prompt(questions: Enquirer.PromptOptions[]): Promise<Record<string, any>>
+  prompt(questions: Enquirer.prompt.Question[]): Promise<Record<string, any>>
 }
