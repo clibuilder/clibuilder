@@ -65,7 +65,7 @@
     "tslib": "^1.10.0",
     "type-plus": "^1.34.0",
     "wordwrap": "^1.0.0",
-    "yargs-parser": "^16.1.0"
+    "yargs-parser": "^17.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
