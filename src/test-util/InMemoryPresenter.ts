@@ -1,4 +1,5 @@
-import { DisplayLevel, Enquirer, PlainPresenter, PresenterOption } from '../presenter'
+import Enquirer from 'enquirer'
+import { DisplayLevel, PlainPresenter, PresenterOption } from '../presenter'
 import { InMemoryDisplay } from './InMemoryDisplay'
 
 export class InMemoryPresenter extends PlainPresenter {
