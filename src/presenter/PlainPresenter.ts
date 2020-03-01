@@ -2,7 +2,7 @@ import { prompt } from 'enquirer'
 import padRight from 'pad-right'
 import wordwrap from 'wordwrap'
 import { CommandModel, ConsoleDisplay, Display, DisplayLevel, HelpPresenter, LogPresenter, PresenterOption, VersionPresenter, PromptPresenter } from './types'
-import Enquirer from './enquirer-types'
+import Enquirer from 'enquirer'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
