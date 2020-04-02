@@ -13,6 +13,11 @@ test(`loads no plugin when plugin's activate is not a function`, async () => {
   t.strictEqual(plugins.length, 1)
 })
 
+test(`loads no plugin when plugin has no index.js`, async () => {
+  const plugins = await loadPlugins('clibuilder-plugin', { cwd: 'fixtures/bad-plugin-no-code' })
+  t.strictEqual(plugins.length, 1)
+})
+
 test('loads one plugin in one-plugin folder', async () => {
   const plugins = await loadPlugins('plugin-cli-plugin', { cwd: 'fixtures/one-plugin' })
   a.satisfies(plugins, some({ name: 'one' }))

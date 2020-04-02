@@ -1,8 +1,9 @@
-import { JSONTypes, hasProperty } from 'type-plus'
+import { hasProperty, JSONTypes } from 'type-plus'
 import { Cli, createCli } from '../cli'
 import { loadPlugins } from './loadPlugins'
 import { pluginsCommand } from './pluginsCommand'
 import { PluginCli } from './types'
+import { log } from '../log'
 
 export function createPluginCli<
   Config extends Record<string, JSONTypes> | undefined,
@@ -38,6 +39,9 @@ export function createPluginCli<
           } as any)
         }
         return cli.parse(argv)
+      }).catch(e => {
+        log.error(`Unable to load plugins`)
+        throw e
       })
     }
   }

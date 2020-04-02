@@ -18,11 +18,11 @@ export async function loadPlugins(keyword: string, { cwd } = { cwd: '.' }) {
     return globalPluginNames
   })
 
-  return Promise.all([findingLocal, findingGlobal]).then(([pluginNames, globalPluginNames]) => {
-    const commands = activatePlugins(pluginNames, cwd)
+  return Promise.all([findingLocal, findingGlobal]).then(([localPluginsNames, globalPluginNames]) => {
+    const commands = activatePlugins(localPluginsNames, cwd)
 
     globalPluginNames.forEach(p => {
-      if (pluginNames.indexOf(p) !== -1)
+      if (localPluginsNames.indexOf(p) !== -1)
         return
       const m = loadModule(p, globalFolder)
       if (isValidPlugin(m)) commands.push(...activatePlugin(m))
@@ -66,11 +66,17 @@ function activatePlugins(pluginNames: string[], cwd: string) {
 
 function loadModule(name: string, cwd: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
-  return require(pluginPath)
+  try {
+    return require(pluginPath)
+  }
+  catch (e) {
+    log.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
+    return undefined
+  }
 }
 
 function isValidPlugin(m: any) {
-  return typeof m.activate === 'function'
+  return m && typeof m.activate === 'function'
 }
 
 function activatePlugin(m: { activate: (context: PluginCli.ActivationContext) => void }) {
