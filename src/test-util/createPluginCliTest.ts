@@ -11,9 +11,11 @@ export function createPluginCliTest<
   BName extends string,
   SName extends string,
   NName extends string,
+  CConfig extends Config,
+  CContext extends Context,
   O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
 >(
-  options: PartialPick<PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName, O>, 'name' | 'version'>,
+  options: PartialPick<PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName, CConfig, CContext, O>, 'name' | 'version'>,
   ...args: string[]
 ) {
   const ui = new InMemoryPresenter()
