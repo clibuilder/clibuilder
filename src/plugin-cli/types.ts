@@ -22,13 +22,15 @@ export namespace PluginCli {
     BName extends string,
     SName extends string,
     NName extends string,
-    O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
+    CConfig extends Config,
+    CContext extends Context,
+    O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>,
     > = Cli.ConstructOptionsBase<Config, Context> & {
       keyword?: string,
       description?: string,
       arguments?: Cli.Argument<AName>[],
       options?: O,
-      commands?: Command<Config, Context>[],
+      commands?: Command<CConfig, CContext>[],
       run?: Cli.RunFn<Config, Context, AName, BName, SName, NName, O>
     }
 
