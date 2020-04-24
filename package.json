@@ -77,11 +77,10 @@
     "@babel/core": "^7.9.0",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.8.3",
     "@babel/plugin-proposal-optional-chaining": "^7.9.0",
-    "@babel/preset-env": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
     "@babel/preset-typescript": "^7.9.0",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "@types/lodash": "^4.14.149",
     "@types/wordwrap": "github:types/wordwrap",
     "@types/yargs-parser": "^15.0.0",
     "@unional/devpkg-node": "^1.5.0",
@@ -89,9 +88,8 @@
     "babel-jest": "^25.1.0",
     "chalk": "^4.0.0",
     "clibuilder-plugin-dummy": "^1.0.1",
-    "codacy-coverage": "^3.4.0",
     "commitlint-circle": "^1.0.0",
-    "husky": "^4.2.3",
+    "husky": "^4.2.5",
     "satisfier": "^5.1.0",
     "semantic-release": "^17.0.4"
   }

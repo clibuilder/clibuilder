@@ -74,9 +74,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: codacy
         if: matrix.node-version == 12 && matrix.os == 'ubuntu-latest'
-        run: yarn codacy
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        uses: codacy/codacy-coverage-reporter-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
   release:
     name: release
     runs-on: ubuntu-latest
