@@ -58,11 +58,11 @@
   "dependencies": {
     "@types/node": "^8",
     "camel-case": "^4.1.1",
-    "enquirer": "^2.3.4",
+    "enquirer": "^2.3.5",
     "find-installed-packages": "^2.1.6",
     "find-up": "^4.1.0",
     "global-store": "^1.0.0-beta.15",
-    "iso-error": "^3.2.1",
+    "iso-error": "^3.2.5",
     "pad-right": "^0.2.2",
     "search-packages": "^2.0.0",
     "standard-log": "^4.1.2",
@@ -85,12 +85,15 @@
     "@types/yargs-parser": "^15.0.0",
     "@unional/devpkg-node": "^1.5.0",
     "assertron": "^7.1.3",
-    "babel-jest": "^25.1.0",
+    "babel-jest": "^25.4.0",
     "chalk": "^4.0.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "commitlint-circle": "^1.0.0",
     "husky": "^4.2.5",
     "satisfier": "^5.1.0",
-    "semantic-release": "^17.0.4"
+    "semantic-release": "^17.0.7"
+  },
+  "engines": {
+    "node": ">= 8"
   }
 }
