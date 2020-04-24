@@ -67,7 +67,7 @@ const cli = createCli({
   commands: [hello],
   description: 'cli level command',
   arguments: [{ name: 'some-arg' }],
-  run() { ... },
+  run() { ... }
 })
 
 // runs hello command
@@ -83,7 +83,7 @@ When creating `Command`, you can use the `createCommand()` function.
 createCommand({
   name: 'hello',
   description: 'hello world',
-  run() { this.ui.info('hello world') }
+  run() { this.ui.info('hello world') },
 })
 ```
 
@@ -160,7 +160,7 @@ so you have to cast it.
 const cli = createCli({
   name: 'your-cli',
   arguments: [{ name: 'multi', multiple: true }],
-  options: { number: { id: { description: 'multiple id' }}}
+  options: { number: { id: { description: 'multiple id' }}},
   run(args) {
     args.multi as unknown as string[] // typed as string
     args.ids as unknown as number[] // typed as number correctly, but your usage may expect number[]
@@ -204,7 +204,7 @@ i.e. deep organization of dependencies does not work.
 
 ```ts
 createCli({
-  context: { fs } // ok
+  context: { fs }, // ok
   context: {  // does not work
     filesystem: { fs },
     database: { db }
@@ -218,7 +218,7 @@ You can also override the UI using `context`.
 const ui = new YourUI()
 
 createCli({
-  context: { ui },
+  context: { ui }
   ...
 })
 ```
@@ -262,7 +262,7 @@ It is only for defining the shape of the config that the command expects.
 createCommand<{ a: number }, { b: string }>({
   arguments: [{ name: 'arg' }],
   run(args) {
-    args.otherArgs as unknown as string// typed as never
+    args.otherArgs as unknown as string // typed as never
     this.config.a // number
     this.b // string
   }
@@ -297,7 +297,7 @@ const cmd2 = createPluginCommand({ ... })
 
 export function activate({ addCommand }: PluginCli.ActivationContext) {
   addCommand({
-    name: 'miku'
+    name: 'miku',
     commands: [cmd1, cmd2]
   })
 }
