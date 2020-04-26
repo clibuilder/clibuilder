@@ -53,7 +53,7 @@
     }
   },
   "dependencies": {
-    "@types/node": "^8",
+    "@types/node": "^13.13.3",
     "camel-case": "^4.1.1",
     "enquirer": "^2.3.5",
     "find-installed-packages": "^2.1.6",
