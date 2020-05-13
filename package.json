@@ -64,7 +64,7 @@
     "search-packages": "^2.0.0",
     "standard-log": "^4.1.2",
     "standard-log-color": "^1.5.19",
-    "tslib": "^1.11.1",
+    "tslib": "^2.0.0",
     "type-plus": "^1.35.1",
     "wordwrap": "^1.0.0",
     "yargs-parser": "^17.1.0"
