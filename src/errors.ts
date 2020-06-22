@@ -31,3 +31,9 @@ export class OptionNameNotUnique extends IsoError {
     super(`'${commandName}' have declared multiple options with the same name '${optionName}'`)
   }
 }
+
+export class ProcessError extends IsoError {
+  constructor(message: string, public exitCode = 1) {
+    super(message)
+  }
+}
