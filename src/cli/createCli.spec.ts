@@ -1,7 +1,8 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, throwCommand, rejectCommand } from '../test-util'
+import { ProcessError } from '../errors'
+import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, rejectCommand, throwCommand } from '../test-util'
 
 const helloHelpMessage = `
 Usage: cli <command> [options]
@@ -406,7 +407,7 @@ describe('cli with commands', () => {
 
   test('still works when cli level arguments are placed before command', async () => {
     const { cli, argv } = createCliTest({
-      commands: [numberOptionCommand]
+      commands: [numberOptionCommand as any]
     }, '--verbose', '--silent', 'number-option', '--value=3')
     const actual = await cli.parse(argv)
     a.satisfies(actual, { value: 3 })
@@ -633,3 +634,28 @@ describe('config', () => {
     await cli.parse(argv)
   })
 });
+
+test('exit with specific error code for cli run()', async () => {
+  const { argv, cli } = createCliTest({
+    run() {
+      throw new ProcessError('abc', 2)
+    }
+  })
+  await cli.parse(argv)
+
+  expect(process.exitCode).toBe(2)
+})
+
+test('exit with specific error code for cmd run()', async () => {
+  const { argv, cli } = createCliTest({
+    commands: [{
+      name: 'throw',
+      run() {
+        throw new ProcessError('abc', 3)
+      }
+    } as any]
+  }, 'throw')
+  await cli.parse(argv)
+
+  expect(process.exitCode).toBe(3)
+})
