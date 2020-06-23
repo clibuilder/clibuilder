@@ -1,6 +1,6 @@
 import { hasProperty, JSONTypes, omit, pick, reduceKey, requiredDeep } from 'type-plus'
 import { parseArgv } from '../argv-parser'
-import { MultipleArgumentNotLastEntry, OptionNameNotUnique, ProcessError } from '../errors'
+import { MultipleArgumentNotLastEntry, OptionNameNotUnique, CliError } from '../errors'
 import { log } from '../log'
 import { DisplayLevel, PlainPresenter } from '../presenter'
 import { loadConfig } from './loadConfig'
@@ -61,7 +61,7 @@ export function createCli<
           return await (command as any).run(cmdArgs, cmdArgv)
         }
         catch (e) {
-          if (e instanceof ProcessError) {
+          if (e instanceof CliError) {
             ui.error(e.message)
             process.exitCode = e.exitCode
             return
@@ -81,7 +81,7 @@ export function createCli<
           return await opts.run.call(context, trimmedArgs, trimmedArgv)
         }
         catch (e) {
-          if (e instanceof ProcessError) {
+          if (e instanceof CliError) {
             ui.error(e.message)
             process.exitCode = e.exitCode
             return
