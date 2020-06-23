@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { ProcessError } from '../errors'
+import { CliError } from '../errors'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, rejectCommand, throwCommand } from '../test-util'
 
 const helloHelpMessage = `
@@ -638,7 +638,7 @@ describe('config', () => {
 test('exit with specific error code for cli run()', async () => {
   const { argv, cli } = createCliTest({
     run() {
-      throw new ProcessError('abc', 2)
+      throw new CliError('abc', 2)
     }
   })
   await cli.parse(argv)
@@ -651,7 +651,7 @@ test('exit with specific error code for cmd run()', async () => {
     commands: [{
       name: 'throw',
       run() {
-        throw new ProcessError('abc', 3)
+        throw new CliError('abc', 3)
       }
     } as any]
   }, 'throw')

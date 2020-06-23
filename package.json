@@ -29,7 +29,8 @@
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
-    "libm"
+    "libm",
+    "src"
   ],
   "scripts": {
     "build": "yarn build:libm && yarn build:lib",

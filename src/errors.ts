@@ -32,7 +32,10 @@ export class OptionNameNotUnique extends IsoError {
   }
 }
 
-export class ProcessError extends IsoError {
+/**
+ * Generic CLI error for specifying specific exit code.
+ */
+export class CliError extends IsoError {
   constructor(message: string, public exitCode = 1) {
     super(message)
   }
