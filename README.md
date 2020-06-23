@@ -24,7 +24,7 @@ A highly customizable command line library.
 - Define and pass additional context from `Cli` to `Command`.
 - Build-in overridable ui.
 - Plugin architecture using `PluginCli`.
-- Exit with specific error code by throwing `ProcessError`.
+- Exit with specific error code by throwing `CliError`.
 
 ## Usage
 
@@ -282,12 +282,12 @@ createCommand({
 ```
 
 If you want the cli to exit with specific code,
-you can use or inherit from `ProcessError`:
+you can use or inherit from `CliError`:
 
 ```ts
 const cli = createCli({
   name: 'cli',
-  run() { throw new ProcessError('some message', 123)}
+  run() { throw new CliError('some message', 123)}
 })
 ```
 
