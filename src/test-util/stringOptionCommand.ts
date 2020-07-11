@@ -5,7 +5,7 @@ export const stringOptionCommand = createCommand({
   description: 'string option command',
   options: {
     string: {
-      'a': {
+      a: {
         description: 'string option a',
       },
     },
