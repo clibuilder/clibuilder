@@ -1,4 +1,4 @@
-import { createCommand } from '../cli'
+import { createCommand } from '../create-cli'
 
 export const groupOptionsCommand = createCommand({
   name: 'opt',

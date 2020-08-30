@@ -1,5 +1,5 @@
 import { JSONTypes, PartialPick } from 'type-plus'
-import { Cli, createCli } from '../cli'
+import { Cli, createCli } from '../create-cli'
 import { createCliArgv } from './createCliArgv'
 import { InMemoryPresenter } from './InMemoryPresenter'
 

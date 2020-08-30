@@ -1,4 +1,4 @@
-import { createCommand } from '../cli'
+import { createCommand } from '../create-cli'
 
 export const throwCommand = createCommand({
   name: 'throw',

@@ -1,5 +1,5 @@
 import { JSONTypes } from 'type-plus'
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 
 export namespace PluginCli {
   export type ActivationContext = {

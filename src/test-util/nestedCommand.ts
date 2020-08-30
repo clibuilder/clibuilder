@@ -1,4 +1,4 @@
-import { createCommand } from '../cli'
+import { createCommand } from '../create-cli'
 import { helloCommand } from './helloCommand'
 
 export const nestedCommand = createCommand({
