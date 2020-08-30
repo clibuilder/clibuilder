@@ -1,4 +1,4 @@
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 
 export interface Parsable {
   name: string,

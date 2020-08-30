@@ -1,8 +1,8 @@
 import { JSONTypes, PartialPick } from 'type-plus'
-import { createPluginCli, PluginCli } from '../plugin-cli'
+import { createPluginCli, PluginCli } from '../create-plugin-cli'
 import { createCliArgv } from './createCliArgv'
 import { InMemoryPresenter } from './InMemoryPresenter'
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 
 export function createPluginCliTest<
   Config extends Record<string, JSONTypes> | undefined,

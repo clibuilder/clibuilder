@@ -1,5 +1,5 @@
 import { logLevel } from 'standard-log'
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 import Enquirer from 'enquirer'
 
 export interface Display {

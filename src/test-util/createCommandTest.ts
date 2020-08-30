@@ -1,5 +1,5 @@
 import { JSONTypes } from 'type-plus'
-import { Cli } from '../cli'
+import { Cli } from '../create-cli'
 import { createCliTest } from './createCliTest'
 
 export function createCommandTest<

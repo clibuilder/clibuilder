@@ -1,7 +1,7 @@
 import { camelCase } from 'camel-case'
 import { filterKey } from 'type-plus'
 import yargs from 'yargs-parser'
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 import { MissingArguments, NotNumberOption, TooManyArguments } from '../errors'
 import { toYargsOption } from './toYargsOption'
 import { CliArgsWithoutDefaults, Parsable } from './types'

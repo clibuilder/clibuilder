@@ -1,6 +1,6 @@
 import { JSONTypes } from 'type-plus'
 import { PluginCli } from './types'
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 
 export function createPluginCommand<
   Config extends Record<string, JSONTypes> | undefined,

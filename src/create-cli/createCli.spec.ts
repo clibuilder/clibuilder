@@ -540,6 +540,10 @@ describe('cli with commands', () => {
     expect(err.message).toEqual('some error')
     expect(msg).toEqual('command reject throws: Error: some error')
   })
+
+  // test('x', async () => {
+  //   createCli({ commands: [stringOptionCommand] })
+  // })
 })
 
 describe('config', () => {

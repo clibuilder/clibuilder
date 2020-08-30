@@ -1,5 +1,5 @@
 import { hasProperty, JSONTypes } from 'type-plus'
-import { Cli, createCli } from '../cli'
+import { Cli, createCli } from '../create-cli'
 import { loadPlugins } from './loadPlugins'
 import { pluginsCommand } from './pluginsCommand'
 import { PluginCli } from './types'

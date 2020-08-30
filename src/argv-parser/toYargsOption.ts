@@ -1,4 +1,4 @@
-import { Cli } from '../cli/types'
+import { Cli } from '../create-cli/types'
 
 export function toYargsOption(options: Cli.Options | undefined) {
   if (!options) {
