@@ -41,6 +41,7 @@ const cli = createCli({
 })
 
 cli.parse(process.argv)
+.catch(e => console.error(e))
 ```
 
 You can create a command based cli.
@@ -169,6 +170,7 @@ const cli = createCli({
 })
 
 await cli.parse(['node', 'your-cli', '--id=1', '--id=2'])
+  .catch(e => console.error(e))
 ```
 
 You can add addition code to the run context.
