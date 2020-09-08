@@ -27,7 +27,17 @@ export function createCli<
     version: opts.version,
     async parse(argv: string[]) {
       const argvWithoutNode = argv.slice(1)
-      const args = parseArgv(opts, argvWithoutNode)
+
+      let args
+      try {
+        args = parseArgv(opts, argvWithoutNode)
+      }
+      catch (e) {
+        ui.error(e.message)
+        ui.showHelp(opts)
+        return
+      }
+
 
       const [trimmedArgs, trimmedArgv] = removeCliLevelOptions(args, argvWithoutNode)
 
@@ -54,7 +64,7 @@ export function createCli<
         catch (e) {
           ui.error(e.message)
           ui.showHelp(command)
-          throw e
+          return
         }
 
         try {
@@ -67,7 +77,7 @@ export function createCli<
             return
           }
           ui.error(`command ${command.name} throws: ${e}`)
-          throw e
+          return
         }
       }
 
@@ -87,7 +97,7 @@ export function createCli<
             return
           }
           ui.error(`${cli.name} throws: ${e}`)
-          throw e
+          return
         }
       }
 
