@@ -62,7 +62,7 @@ test('-v shows version', async () => {
     description: '',
     run() { }
   }, '-v')
-  await cli.parse(argv);
+  await cli.parse(argv)
   const message = generateDisplayedMessage(ui.display.infoLogs)
   expect(message).toBe('1.0.0')
 })
@@ -72,7 +72,7 @@ test('--version shows version', async () => {
     description: '',
     run() { }
   }, '--version')
-  await cli.parse(argv);
+  await cli.parse(argv)
   const message = generateDisplayedMessage(ui.display.infoLogs)
   expect(message).toBe('1.0.0')
 })
@@ -94,7 +94,7 @@ test('-h shows help', async () => {
     description: 'test cli',
     run() { }
   }, '-h')
-  await cli.parse(argv);
+  await cli.parse(argv)
   const message = generateDisplayedMessage(ui.display.infoLogs)
   expect(message).toBe(runnableCliHelpMessage)
 })
@@ -104,7 +104,7 @@ test('--help shows help', async () => {
     description: 'test cli',
     run() { }
   }, '--help')
-  await cli.parse(argv);
+  await cli.parse(argv)
   const message = generateDisplayedMessage(ui.display.infoLogs)
   expect(message).toBe(runnableCliHelpMessage)
 })
@@ -324,7 +324,7 @@ describe('cli without command', () => {
       }
     })
 
-    await a.throws(cli.parse(argv))
+    await cli.parse(argv)
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
@@ -338,7 +338,7 @@ describe('cli without command', () => {
       }
     })
 
-    await a.throws(cli.parse(argv))
+    await cli.parse(argv)
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
@@ -521,23 +521,21 @@ describe('cli with commands', () => {
     expect(actual).toBe(3)
   })
 
-  test('command throws will throw the error at cli level', async () => {
+  test('command throws is captured in error logs', async () => {
     const { cli, argv, ui } = createCliTest({ commands: [throwCommand] }, 'throw', 'some error')
 
-    const err = await a.throws(cli.parse(argv))
+    await cli.parse(argv)
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
-    expect(err.message).toEqual('some error')
     expect(msg).toEqual('command throw throws: Error: some error')
   })
 
-  test('command reject will throw the error at cli level', async () => {
+  test('command reject is captured in error logs', async () => {
     const { cli, argv, ui } = createCliTest({ commands: [rejectCommand] }, 'reject', 'some error')
 
-    const err = await a.throws(cli.parse(argv))
+    await cli.parse(argv)
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
-    expect(err.message).toEqual('some error')
     expect(msg).toEqual('command reject throws: Error: some error')
   })
 
@@ -637,7 +635,7 @@ describe('config', () => {
 
     await cli.parse(argv)
   })
-});
+})
 
 test('exit with specific error code for cli run()', async () => {
   const { argv, cli } = createCliTest({
@@ -662,4 +660,31 @@ test('exit with specific error code for cmd run()', async () => {
   await cli.parse(argv)
 
   expect(process.exitCode).toBe(3)
+})
+
+test('missing required argument', async () => {
+  // const { cli, argv } = createCliTest({
+  //   arguments: [{
+  //     name: 'a',
+  //     required: true
+  //   }],
+  //   run(args) {
+  //     this.ui.info(args.a)
+  //   }
+  // })
+  const { cli, argv } = createCliTest({
+    commands: [{
+      name: 'x',
+      description: 'x',
+      arguments: [{
+        name: 'a',
+        required: true
+      }],
+      run(args) {
+        this.ui.info(args.a)
+      }
+    }]
+  }, 'x')
+
+  await cli.parse(argv)
 })
