@@ -35,7 +35,7 @@ export function createCli<
       catch (e) {
         ui.error(e.message)
         ui.showHelp(opts)
-        return
+        throw e
       }
 
 
@@ -64,7 +64,7 @@ export function createCli<
         catch (e) {
           ui.error(e.message)
           ui.showHelp(command)
-          return
+          throw e
         }
 
         try {
@@ -77,7 +77,7 @@ export function createCli<
             return
           }
           ui.error(`command ${command.name} throws: ${e}`)
-          return
+          throw e
         }
       }
 
@@ -97,7 +97,7 @@ export function createCli<
             return
           }
           ui.error(`${cli.name} throws: ${e}`)
-          return
+          throw e
         }
       }
 

@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType, assignability } from 'type-plus'
 import { Cli, createCli } from '.'
-import { CliError } from '../errors'
+import { CliError, MissingArguments } from '../errors'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, rejectCommand, throwCommand } from '../test-util'
 
 const helloHelpMessage = `
@@ -324,7 +324,7 @@ describe('cli without command', () => {
       }
     })
 
-    await cli.parse(argv)
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
@@ -338,7 +338,7 @@ describe('cli without command', () => {
       }
     })
 
-    await cli.parse(argv)
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
 
@@ -521,19 +521,19 @@ describe('cli with commands', () => {
     expect(actual).toBe(3)
   })
 
-  test('command throws is captured in error logs', async () => {
+  test('command throws is captured in error logs and throw', async () => {
     const { cli, argv, ui } = createCliTest({ commands: [throwCommand] }, 'throw', 'some error')
 
-    await cli.parse(argv)
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
     expect(msg).toEqual('command throw throws: Error: some error')
   })
 
-  test('command reject is captured in error logs', async () => {
+  test('command reject is captured in error logs and throw', async () => {
     const { cli, argv, ui } = createCliTest({ commands: [rejectCommand] }, 'reject', 'some error')
 
-    await cli.parse(argv)
+    await a.throws(cli.parse(argv))
 
     const msg = generateDisplayedMessage(ui.display.errorLogs)
     expect(msg).toEqual('command reject throws: Error: some error')
@@ -663,15 +663,20 @@ test('exit with specific error code for cmd run()', async () => {
 })
 
 test('missing required argument', async () => {
-  // const { cli, argv } = createCliTest({
-  //   arguments: [{
-  //     name: 'a',
-  //     required: true
-  //   }],
-  //   run(args) {
-  //     this.ui.info(args.a)
-  //   }
-  // })
+  const { cli, argv } = createCliTest({
+    arguments: [{
+      name: 'a',
+      required: true
+    }],
+    run(args) {
+      this.ui.info(args.a)
+    }
+  })
+
+  await a.throws(cli.parse(argv), MissingArguments)
+})
+
+test('missing required argument in command', async () => {
   const { cli, argv } = createCliTest({
     commands: [{
       name: 'x',
@@ -686,5 +691,5 @@ test('missing required argument', async () => {
     }]
   }, 'x')
 
-  await cli.parse(argv)
+  await a.throws(cli.parse(argv), MissingArguments)
 })
