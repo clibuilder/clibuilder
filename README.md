@@ -40,8 +40,7 @@ const cli = createCli({
   run() { this.ui.info('hello world') }
 })
 
-cli.parse(process.argv)
-.catch(e => console.error(e))
+cli.parse(process.argv).catch(e => process.exit(e?.code || 1))
 ```
 
 You can create a command based cli.
@@ -170,7 +169,7 @@ const cli = createCli({
 })
 
 await cli.parse(['node', 'your-cli', '--id=1', '--id=2'])
-  .catch(e => console.error(e))
+  .catch(e => process.exit(e?.code || 1))
 ```
 
 You can add addition code to the run context.
