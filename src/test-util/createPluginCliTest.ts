@@ -19,7 +19,7 @@ export function createPluginCliTest<
   ...args: string[]
 ) {
   const ui = new InMemoryPresenter()
-  const mergedOptions = {
+  const mergedOptions: PluginCli.ConstructOptions<any, any, any, any, any, any, any, any> = {
     name: 'plugin-cli',
     version: '1.0.0',
     ...options,

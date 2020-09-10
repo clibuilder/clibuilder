@@ -15,7 +15,7 @@ export function createPluginCli<
   CConfig extends Config,
   CContext extends Context,
   >(options: PluginCli.ConstructOptions<Config, Context, AName, BName, SName, NName, CConfig, CContext>): Cli {
-  const commands = options.commands ?? []
+  const commands: PluginCli.Command<any, any>[] = options.commands ?? []
   commands.unshift(pluginsCommand)
   const cwd = options.context?.cwd ?? process.cwd()
 

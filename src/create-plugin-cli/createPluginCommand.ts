@@ -10,6 +10,7 @@ export function createPluginCommand<
   SName extends string = string,
   NName extends string = string,
   O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
->(command: PluginCli.Command<Config, Context, AName, BName, SName, NName, O>) {
-  return command
+>(command: PluginCli.Command<Config, Context, AName, BName, SName, NName, O>):
+  PluginCli.Command {
+  return command as any
 }
