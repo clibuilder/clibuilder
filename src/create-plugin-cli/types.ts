@@ -44,9 +44,7 @@ export namespace PluginCli {
     O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
     > = {
       name: string,
-      commands?: Command<Config, Context>[],
-    } | {
-      name: string,
+    } & ({
       description: string,
       /**
        * The config this command is expecting.
@@ -68,5 +66,7 @@ export namespace PluginCli {
       alias?: string[],
       commands?: Command<Config, Context>[],
       run(this: Cli.RunContext<Config, Context & { keyword: string }>, args: Cli.RunArgs<AName, BName, SName, NName, O>, argv: string[]): Promise<any> | any,
-    }
+    } | {
+      commands: Command<Config, Context>[],
+    })
 }
