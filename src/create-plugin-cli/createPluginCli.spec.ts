@@ -168,10 +168,10 @@ describe('config', () => {
         name: 'cmd-a',
         description: '',
         run() {
-          assertType.isNumber(this.config.a),
+          assertType.isNumber(this.config.a)
           assertType.isString(this.b)
         }
       }],
     })
   })
-});
+})

@@ -4,6 +4,7 @@ import { helloCommand } from './helloCommand'
 export const nestedCommand = createCommand({
   name: 'nested',
   description: 'nested command',
+  config: { a: 'a' },
   commands: [helloCommand]
 })
 

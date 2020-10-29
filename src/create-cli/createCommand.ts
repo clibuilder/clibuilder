@@ -9,4 +9,6 @@ export function createCommand<
   SName extends string = string,
   NName extends string = string,
   O extends Cli.Options<BName, SName, NName> = Cli.Options<BName, SName, NName>
->(command: Cli.Command<Config, Context, AName, BName, SName, NName, O>) { return command }
+>(command: Cli.Command<Config, Context, AName, BName, SName, NName, O>) {
+  return command as Cli.Command<any, any, AName, BName, SName, NName, O>
+}
