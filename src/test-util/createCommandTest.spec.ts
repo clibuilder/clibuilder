@@ -29,5 +29,3 @@ test('command expecting context', async () => {
 
   expect(result.foo()).toEqual('foo')
 })
-
-test('create ')
