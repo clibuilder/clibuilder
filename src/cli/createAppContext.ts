@@ -1,4 +1,4 @@
-import { createUI } from './createUI'
+import { createUI } from './ui/createUI'
 import { AppInfo, loadAppInfo } from './loadAppInfo'
 
 export function createAppContext({
