@@ -1,11 +1,11 @@
 import { create } from 'domain'
 
-export function createUI(): createUI.UI {
+export function createUI(options: createUI.Options) {
   return {
 
   }
 }
 
 export namespace createUI {
-  export type UI = {}
+  export type Options = {}
 }
