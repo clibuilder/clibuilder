@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, assignability } from 'type-plus'
+import { assertType, canAssign, CanAssign, Equal } from 'type-plus'
 import { Cli, createCli } from '.'
 import { CliError, MissingArguments } from '../errors'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, rejectCommand, throwCommand } from '../test-util'
@@ -21,19 +21,19 @@ Options:
 `
 
 test('Cli2.ConstructOptions requires either run() or commands', () => {
-  assertType.isFalse(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isTrue(canAssign<Cli.ConstructOptions<any, any, any, any, any, any>>(false)({
     name: 'direct-cli',
     version: '1.0.0',
   }))
 
-  assertType.isTrue(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isTrue(canAssign<Cli.ConstructOptions<any, any, any, any, any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
     description: '',
     run() { }
   }))
 
-  assertType.isTrue(assignability<Cli.ConstructOptions<any, any, any, any, any, any>>()({
+  assertType.isTrue(canAssign<Cli.ConstructOptions<any, any, any, any, any, any>>()({
     name: 'direct-cli',
     version: '1.0.0',
     commands: []
