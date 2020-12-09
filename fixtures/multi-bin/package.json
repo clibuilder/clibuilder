@@ -2,7 +2,7 @@
   "name": "multi-bin",
   "version": "1.0.0",
   "bin": {
-    "clia": "bina.js",
-    "clib": "binb.js"
+    "cli-a": "bin-a.js",
+    "cli-b": "bin-b.js"
   }
 }

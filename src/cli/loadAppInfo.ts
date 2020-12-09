@@ -8,11 +8,11 @@ export function loadAppInfo(stack: string) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const pjson = require(pjsonPath)
   return {
-    name: pjson.name,
-    version: pjson.version,
-    bin: pjson.bin,
+    name: pjson.name || '',
+    version: pjson.version || '',
+    bin: pjson.bin || '',
     appPath
-  }
+  } as AppInfo
 }
 
 export type AppInfo = {
