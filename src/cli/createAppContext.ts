@@ -1,16 +1,15 @@
+import { loadAppInfo } from './loadAppInfo'
 import { createUI } from './ui/createUI'
-import { AppInfo, loadAppInfo } from './loadAppInfo'
 
-export function createAppContext({
-  stack = new Error().stack
-} = {}) {
-  let appInfo: AppInfo
+/**
+ * Creates an app context that provides interactions to external system
+ * This
+ */
+export function createAppContext() {
   return {
-    loadAppInfo() {
-      if (appInfo) return appInfo
-      return appInfo = loadAppInfo(stack!)
-    },
-    createUI
+    loadAppInfo,
+    ui: createUI(),
+    process
   }
 }
 

@@ -1,11 +1,8 @@
-import { create } from 'domain'
+import { getLogger } from 'standard-log'
 
-export function createUI(options: createUI.Options) {
+export function createUI() {
+  const log = getLogger('clibuilder')
   return {
-
+    ...log
   }
-}
-
-export namespace createUI {
-  export type Options = {}
 }
