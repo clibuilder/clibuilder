@@ -1,6 +1,7 @@
 {
   "name": "single-bin",
   "version": "1.2.3",
+  "description": "a single bin app",
   "bin": {
     "single-cli": "bin.js"
   }
