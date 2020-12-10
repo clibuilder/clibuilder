@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import path, { basename, dirname } from 'path'
 import { findKey } from 'type-plus'
 import { AppContext } from './createAppContext'
 import { AppInfo } from './loadAppInfo'
@@ -8,7 +9,8 @@ export function buildCli(context: AppContext) {
   return function clibuilder(options?: cli.Options) {
     const state = createAppState(context, options)
     return {
-      ...state,
+      name: state.name,
+      version: state.version || '',
       loadConfig(typeDef: any): Omit<cli.Builder, 'loadConfig'> { return {} as any },
       loadPlugins(): Omit<cli.Builder, 'loadPlugin'> { return {} as any },
       default(command: any): cli.Executable { return {} as any },
@@ -37,8 +39,9 @@ function createAppState({ ui, getAppPath, loadAppInfo, process }: AppContext, op
   }
 }
 
-function getCliName(appPath: string, { name, bin }: AppInfo): string | undefined {
-  if (!bin) return
+function getCliName(appPath: string, { name, bin, dir }: AppInfo): string | undefined {
+  if (!bin) return name || basename(dir)
+
   if (typeof bin === 'string') {
     return appPath.endsWith(bin) ? name : undefined
   }

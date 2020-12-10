@@ -6,8 +6,7 @@ test('no bin', () => {
   const appInfo = loadAppInfo(getFixturePath('no-bin/index.js'))
   a.satisfies(appInfo, {
     name: 'no-bin',
-    version: '1.0.0',
-    bin: ''
+    version: '1.0.0'
   })
 })
 
@@ -24,7 +23,7 @@ test('single bin', () => {
   const appInfo = loadAppInfo(getFixturePath('single-bin/bin.js'))
   a.satisfies(appInfo, {
     name: 'single-bin',
-    version: '1.0.0',
+    version: '1.2.3',
     bin: { 'single-cli': 'bin.js' }
   })
 })
