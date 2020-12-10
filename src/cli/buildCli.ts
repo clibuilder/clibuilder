@@ -8,7 +8,7 @@ export function buildCli(context: AppContext) {
   return function clibuilder(options?: cli.Options) {
     const state = createAppState(context, options)
     return {
-      name: state.name,
+      ...state,
       loadConfig(typeDef: any): Omit<cli.Builder, 'loadConfig'> { return {} as any },
       loadPlugins(): Omit<cli.Builder, 'loadPlugin'> { return {} as any },
       default(command: any): cli.Executable { return {} as any },
