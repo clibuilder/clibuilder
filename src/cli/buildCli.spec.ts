@@ -1,22 +1,31 @@
 import a from 'assertron'
-import { getLogReporter, MemoryLogReporter } from 'standard-log'
 import { buildCli } from './buildCli'
 import { mockAppContext } from './mockAppContext'
 
 describe('configuration', () => {
   describe('not specified', () => {
-    test('exit no bin is in package.json', () => {
-      const context = mockAppContext('no-bin/index.js')
-      const reporter = getLogReporter('mock-reporter') as MemoryLogReporter
-      buildCli(context)()
-      a.satisfies(reporter.logs, [{
+    test('exit when no bin is in package.json', () => {
+      const ctx = mockAppContext('no-bin/index.js')
+      buildCli(ctx)()
+      a.satisfies(ctx.reporter.logs, [{
+        level: 400,
+        args: [/Unable to locate/]
+      }, {
         id: 'mock-ui',
         level: 400,
         args: ['exit with 1']
       }])
     })
-    test.todo('get name from package.json/bin')
-    test.todo('get name from package.json/bin object')
+    test('get name from package.json/bin', () => {
+      const ctx = mockAppContext('single-bin/bin.js')
+      const app = buildCli(ctx)()
+      expect(app.name).toBe('single-cli')
+    })
+    test('get name from package.json/bin object', () => {
+      const ctx = mockAppContext('multi-bin/bin-a.js')
+      const app = buildCli(ctx)()
+      expect(app.name).toBe('cli-a')
+    })
     test.todo('throw if call path is not listed in bin')
     test.skip('get all config automatically', async () => {
       // const context = mockAppContext('single-bin/bin.js')

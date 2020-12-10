@@ -1,19 +1,25 @@
 import path from 'path'
-import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
+import { config, createMemoryLogReporter, getLogger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
 import { AppContext, createAppContext } from './createAppContext'
+import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
 
-export function mockAppContext(fixtureFilePath: string) {
+export type MockAppContext = AppContext & {
+  reporter: MemoryLogReporter
+}
+
+export function mockAppContext(fixtureFilePath: string): MockAppContext {
   return compose(
     createAppContext,
     mockUI,
     mockProcess,
-    (ctx: AppContext) => mockLoadAppInfo(ctx, fixtureFilePath)
+    (ctx) => mockGetAppPath(ctx, fixtureFilePath),
+    (ctx) => mockLoadAppInfo(ctx)
   )
 }
 
-export function mockUI(context: AppContext): AppContext {
+export function mockUI(context: AppContext): MockAppContext {
   const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
   config({
     logLevel: logLevels.all,
@@ -22,7 +28,7 @@ export function mockUI(context: AppContext): AppContext {
   })
   const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
   context.ui = log
-  return context
+  return { ...context, reporter }
 }
 
 export function mockProcess(context: AppContext) {
@@ -35,9 +41,15 @@ export function mockProcess(context: AppContext) {
   return context
 }
 
-export function mockLoadAppInfo(context: AppContext, fixtureFilePath: string) {
+export function mockGetAppPath(context: AppContext, fixtureFilePath: string) {
   const stack = mockStack(fixtureFilePath)
-  context.loadAppInfo = () => loadAppInfo(stack)
+  context.getAppPath = () => getAppPath(stack)
+  return context
+}
+
+export function mockLoadAppInfo(context: AppContext) {
+  const cwd = context.getAppPath('anything')
+  context.loadAppInfo = () => loadAppInfo(cwd)
   return context
 }
 
