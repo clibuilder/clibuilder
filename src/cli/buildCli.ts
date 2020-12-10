@@ -11,6 +11,7 @@ export function buildCli(context: AppContext) {
     return {
       name: state.name,
       version: state.version || '',
+      description: state.description || '',
       loadConfig(typeDef: any): Omit<cli.Builder, 'loadConfig'> { return {} as any },
       loadPlugins(): Omit<cli.Builder, 'loadPlugin'> { return {} as any },
       default(command: any): cli.Executable { return {} as any },
@@ -35,7 +36,8 @@ function createAppState({ ui, getAppPath, loadAppInfo, process }: AppContext, op
   }
   return {
     name: name!,
-    version: appInfo.version
+    version: appInfo.version,
+    description: appInfo.description
   }
 }
 

@@ -41,6 +41,16 @@ describe('configuration', () => {
       const app = buildCli(ctx)()
       expect(app.version).toBe('')
     })
+    test('get description', () => {
+      const ctx = mockAppContext('single-bin/bin.js')
+      const app = buildCli(ctx)()
+      expect(app.description).toBe('a single bin app')
+    })
+    test('no description in package.json receive empty description string', () => {
+      const ctx = mockAppContext('no-nothing/index.js')
+      const app = buildCli(ctx)()
+      expect(app.description).toBe('')
+    })
   })
 })
 

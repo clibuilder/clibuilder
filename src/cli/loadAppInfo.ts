@@ -8,6 +8,7 @@ export function loadAppInfo(cwd: string) {
   return {
     name: pjson.name,
     version: pjson.version,
+    description: pjson.description,
     bin: pjson.bin,
     dir: dirname(pjsonPath)
   } as AppInfo
@@ -16,6 +17,7 @@ export function loadAppInfo(cwd: string) {
 export type AppInfo = {
   name: string | undefined,
   version: string | undefined,
+  description: string | undefined,
   bin: string | Record<string, string> | undefined,
   dir: string
 }

@@ -4,12 +4,14 @@ export namespace cli {
      * Name of the cli
      */
     name: string,
-    version?: string
+    version?: string,
+    description?: string,
   }
 
   export type AppState = {
     name: string,
-    version?: string
+    version?: string,
+    description?: string,
   }
 
   export type Builder = {
