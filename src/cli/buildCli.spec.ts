@@ -16,20 +16,9 @@ describe('configuration', () => {
         args: ['exit with 1']
       }])
     })
-    test('get name from package.json/bin', () => {
-      const ctx = mockAppContext('single-bin/bin.js')
-      const app = buildCli(ctx)()
-      expect(app.name).toBe('single-cli')
-    })
-    test('get name from package.json/bin object', () => {
-      const ctx = mockAppContext('multi-bin/bin-a.js')
-      const app = buildCli(ctx)()
-      expect(app.name).toBe('cli-a')
-    })
     test('exit if call path is not listed in bin', () => {
       const ctx = mockAppContext('single-bin/other.js')
       buildCli(ctx)()
-      console.info(ctx.reporter.logs)
       a.satisfies(ctx.reporter.logs, [{
         level: 400,
         args: [/Unable to locate/]
@@ -39,55 +28,56 @@ describe('configuration', () => {
         args: ['exit with 1']
       }])
     })
-    test.skip('get all config automatically', async () => {
-      // const context = mockAppContext('single-bin/bin.js')
-      // const cli = buildCli(context)
-      // await cli()
-      //   .default({
-      //     description: '',
-      //     arguments: [],
-      //     options: {},
-      //     interactive: true,
-      //     handler() { }
-      //   })
-      //   .parse()
-      //   .catch()
+    test('get name from package.json/bin string', () => {
+      const ctx = mockAppContext('single-bin/bin.js')
+      const app = buildCli(ctx)()
+      expect(app.name).toBe('single-cli')
     })
-    test.skip('load config', async () => {
-      // const context = createAppContext({ stack: mockStack('with-config/bin.js') })
-      // const cli = buildCli(context)
-      // await cli()
-      //   .loadConfig(O.object.create({
-      //     'foo': O.boolean
-      //   }))
-      //   .default({
-      //     description: '',
-      //     handler() {
-      //       expect(this.config.foo).toBe(false)
-      //     }
-      //   })
-      //   .parse()
+    test('get name from package.json/bin object', () => {
+      const ctx = mockAppContext('multi-bin/bin-a.js')
+      const app = buildCli(ctx)()
+      expect(app.name).toBe('cli-a')
     })
-    test.skip('load plugin', async () => {
-      // const context = createAppContext({ stack: mockStack('with-plugins/bin.js') })
-      // const cli = buildCli(context)
-      // await cli()
-      //   .loadPlugins()
-      //   .default({})
-      //   .parse()
-    })
-    test.skip('command', async () => {
-      // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
-      // const cli = buildCli(context)
-      // await cli().addCommand({
-      //   name: '',
-      //   description: '',
-      //   arguments: [],
-      //   options: {},
-      //   interactive: true,
-      //   handler() { }
-      // }).parse()
+    test('get version', async () => {
+      const ctx = mockAppContext('single-bin/bin.js')
+      const app = buildCli(ctx)()
+      expect(app.version).toBe('1.2.3')
     })
   })
+})
 
+test.skip('load config', async () => {
+  // const context = createAppContext({ stack: mockStack('with-config/bin.js') })
+  // const cli = buildCli(context)
+  // await cli()
+  //   .loadConfig(O.object.create({
+  //     'foo': O.boolean
+  //   }))
+  //   .default({
+  //     description: '',
+  //     handler() {
+  //       expect(this.config.foo).toBe(false)
+  //     }
+  //   })
+  //   .parse()
+})
+test.skip('load plugin', async () => {
+  // const context = createAppContext({ stack: mockStack('with-plugins/bin.js') })
+  // const cli = buildCli(context)
+  // await cli()
+  //   .loadPlugins()
+  //   .default({})
+  //   .parse()
+})
+test.skip('command', async () => {
+  // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
+  // const cli = buildCli(context)
+  // await cli().addCommand({
+  //   name: '',
+  //   description: '',
+  //   arguments: [],
+  //   options: {},
+  //   interactive: true,
+  //   handler() { }
+  // }).parse()
 })
