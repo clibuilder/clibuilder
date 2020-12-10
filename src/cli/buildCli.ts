@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import path, { basename, dirname } from 'path'
+import { basename } from 'path'
 import { findKey } from 'type-plus'
 import { AppContext } from './createAppContext'
 import { AppInfo } from './loadAppInfo'

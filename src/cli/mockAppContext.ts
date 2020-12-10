@@ -15,7 +15,7 @@ export function mockAppContext(fixtureFilePath: string): MockAppContext {
     mockUI,
     mockProcess,
     (ctx) => mockGetAppPath(ctx, fixtureFilePath),
-    (ctx) => mockLoadAppInfo(ctx)
+    mockLoadAppInfo
   )
 }
 
