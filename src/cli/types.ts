@@ -6,6 +6,12 @@ export namespace cli {
     name: string,
     version?: string
   }
+
+  export type AppState = {
+    name: string,
+    version?: string
+  }
+
   export type Builder = {
     loadConfig(typeDef: any): Omit<Builder, 'loadConfig'>,
     loadPlugins(): Omit<Builder, 'loadPlugin'>,

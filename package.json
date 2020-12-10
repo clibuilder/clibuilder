@@ -59,6 +59,7 @@
     "enquirer": "^2.3.6",
     "find-installed-packages": "^2.1.6",
     "find-up": "^5.0.0",
+    "fp-ts": "^2.9.1",
     "global-store": "^1.0.0-beta.17",
     "iso-error": "^3.2.5",
     "pad-right": "^0.2.2",

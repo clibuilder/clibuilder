@@ -1,11 +1,14 @@
+import chalk from 'chalk'
+import { findKey } from 'type-plus'
 import { AppContext } from './createAppContext'
+import { AppInfo } from './loadAppInfo'
 import { cli } from './types'
 
 export function buildCli(context: AppContext) {
   return function clibuilder(options?: cli.Options) {
     const state = createAppState(context, options)
-    context.process.exit(1)
     return {
+      name: state.name,
       loadConfig(typeDef: any): Omit<cli.Builder, 'loadConfig'> { return {} as any },
       loadPlugins(): Omit<cli.Builder, 'loadPlugin'> { return {} as any },
       default(command: any): cli.Executable { return {} as any },
@@ -15,7 +18,29 @@ export function buildCli(context: AppContext) {
   }
 }
 
-function createAppState(context: AppContext, options?: cli.Options) {
+function createAppState({ ui, getAppPath, loadAppInfo, process }: AppContext, options?: cli.Options): cli.AppState {
   if (options) return options
-  return context.loadAppInfo(new Error().stack!)
+  const stack = new Error().stack!
+  const appPath = getAppPath(stack)
+  const appInfo = loadAppInfo(appPath)
+  const name = getCliName(appPath, appInfo)
+  if (!name) {
+    ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
+    ${chalk.cyan(appPath)}
+
+    please specify the name of the application manually.`)
+    process.exit(1)
+  }
+  return {
+    name: name!,
+    version: appInfo.version
+  }
+}
+
+function getCliName(appPath: string, { name, bin }: AppInfo): string | undefined {
+  if (!bin) return
+  if (typeof bin === 'string') {
+    return appPath.endsWith(bin) ? name : undefined
+  }
+  return findKey(bin, (key) => appPath.endsWith(bin[key]))
 }

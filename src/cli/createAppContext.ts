@@ -1,3 +1,4 @@
+import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
 import { createUI } from './ui/createUI'
 
@@ -7,6 +8,7 @@ import { createUI } from './ui/createUI'
  */
 export function createAppContext() {
   return {
+    getAppPath,
     loadAppInfo,
     ui: createUI(),
     process
