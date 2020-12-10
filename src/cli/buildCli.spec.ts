@@ -26,7 +26,19 @@ describe('configuration', () => {
       const app = buildCli(ctx)()
       expect(app.name).toBe('cli-a')
     })
-    test.todo('throw if call path is not listed in bin')
+    test('exit if call path is not listed in bin', () => {
+      const ctx = mockAppContext('single-bin/other.js')
+      buildCli(ctx)()
+      console.info(ctx.reporter.logs)
+      a.satisfies(ctx.reporter.logs, [{
+        level: 400,
+        args: [/Unable to locate/]
+      }, {
+        id: 'mock-ui',
+        level: 400,
+        args: ['exit with 1']
+      }])
+    })
     test.skip('get all config automatically', async () => {
       // const context = mockAppContext('single-bin/bin.js')
       // const cli = buildCli(context)
