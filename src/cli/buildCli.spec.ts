@@ -4,18 +4,6 @@ import { mockAppContext } from './mockAppContext'
 
 describe('configuration', () => {
   describe('not specified', () => {
-    test('exit when no bin is in package.json', () => {
-      const ctx = mockAppContext('no-bin/index.js')
-      buildCli(ctx)()
-      a.satisfies(ctx.reporter.logs, [{
-        level: 400,
-        args: [/Unable to locate/]
-      }, {
-        id: 'mock-ui',
-        level: 400,
-        args: ['exit with 1']
-      }])
-    })
     test('exit if call path is not listed in bin', () => {
       const ctx = mockAppContext('single-bin/other.js')
       buildCli(ctx)()
@@ -28,6 +16,11 @@ describe('configuration', () => {
         args: ['exit with 1']
       }])
     })
+    test('no name in package.json receive folder as name', () => {
+      const ctx = mockAppContext('no-nothing/index.js')
+      const app = buildCli(ctx)()
+      expect(app.name).toBe('no-nothing')
+    })
     test('get name from package.json/bin string', () => {
       const ctx = mockAppContext('single-bin/bin.js')
       const app = buildCli(ctx)()
@@ -38,13 +31,20 @@ describe('configuration', () => {
       const app = buildCli(ctx)()
       expect(app.name).toBe('cli-a')
     })
-    test('get version', async () => {
+    test('get version', () => {
       const ctx = mockAppContext('single-bin/bin.js')
       const app = buildCli(ctx)()
       expect(app.version).toBe('1.2.3')
     })
+    test('no version in package.json receive empty version string', () => {
+      const ctx = mockAppContext('no-nothing/index.js')
+      const app = buildCli(ctx)()
+      expect(app.version).toBe('')
+    })
   })
 })
+
+
 
 test.skip('load config', async () => {
   // const context = createAppContext({ stack: mockStack('with-config/bin.js') })
