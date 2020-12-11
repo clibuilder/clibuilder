@@ -1,8 +1,11 @@
 import a from 'assertron'
+import { assertType, HasKey } from 'type-plus'
 import { buildCli } from './buildCli'
 import { mockAppContext } from './mockAppContext'
+import { getFixturePath } from '../test-utils'
+import path from 'path'
 
-describe('configuration', () => {
+describe('options', () => {
   describe('not specified', () => {
     test('exit if call path is not listed in bin', () => {
       const ctx = mockAppContext('single-bin/other.js')
@@ -54,7 +57,66 @@ describe('configuration', () => {
   })
 })
 
-
+describe('loadConfig', () => {
+  test('load config from `{name}.json` at cwd', () => {
+    const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig()
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config from `.{name}rc` at cwd', () => {
+    const ctx = mockAppContext('string-bin/bin.js', 'has-rc-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig()
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config from `.{name}rc.json` at cwd', () => {
+    const ctx = mockAppContext('string-bin/bin.js', 'has-rc-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig()
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config with specified name', () => {
+    const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig({ name: 'string-bin.json' })
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `{name}.json`', () => {
+    const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig({ name: 'string-bin' })
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `.{name}rc`', () => {
+    const ctx = mockAppContext('single-bin/bin.js', 'has-rc-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig({ name: 'string-bin' })
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `.${name}rc.json`', () => {
+    const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig({ name: 'string-bin' })
+    expect(ctx.config).toEqual({ a: 1 })
+  })
+  test('handler receives ui, filepath, and config', () => {
+    const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
+    const cli = buildCli(ctx)()
+    cli.loadConfig({
+      handler({ ui, filepath, config }) {
+        expect(ui).toEqual(ctx.ui)
+        expect(filepath).toBe(getFixturePath(path.join(`has-json-config`, 'string-bin.json')))
+        expect(config).toEqual({ a: 1 })
+      }
+    })
+  })
+  test('after calling loadConfig, it is removed from builder', () => {
+    const cli = buildCli(mockAppContext('string-bin/bin.js', 'has-config'))()
+    const actual = cli.loadConfig()
+    assertType.isFalse(false as HasKey<typeof actual, 'loadConfig'>)
+  })
+})
 
 test.skip('load config', async () => {
   // const context = createAppContext({ stack: mockStack('with-config/bin.js') })

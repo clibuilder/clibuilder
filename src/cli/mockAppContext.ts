@@ -1,25 +1,27 @@
-import path from 'path'
 import { config, createMemoryLogReporter, getLogger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
+import { getFixturePath } from '../test-utils'
 import { AppContext, createAppContext } from './createAppContext'
 import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
 
 export type MockAppContext = AppContext & {
-  reporter: MemoryLogReporter
+  reporter: MemoryLogReporter,
+  config: any
 }
 
-export function mockAppContext(fixtureFilePath: string): MockAppContext {
+export function mockAppContext(binFixturePath: string, cwdFixturePath = process.cwd()): MockAppContext {
   return compose(
     createAppContext,
     mockUI,
-    mockProcess,
-    (ctx) => mockGetAppPath(ctx, fixtureFilePath),
+    (ctx) => mockProcess(ctx, cwdFixturePath),
+    mockLoadConfig,
+    (ctx) => mockGetAppPath(ctx, binFixturePath),
     mockLoadAppInfo
   )
 }
 
-export function mockUI(context: AppContext): MockAppContext {
+export function mockUI(context: AppContext) {
   const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
   config({
     logLevel: logLevels.all,
@@ -27,13 +29,15 @@ export function mockUI(context: AppContext): MockAppContext {
     mode: 'test'
   })
   const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  context.ui = log
+  context.ui = log as any
   return { ...context, reporter }
 }
 
-export function mockProcess(context: AppContext) {
+export function mockProcess(context: AppContext, cwdFixturePath: string) {
+  const cwd = getFixturePath(cwdFixturePath)
   context.process = {
     ...process,
+    cwd: () => cwd,
     exit: ((code?: number) => {
       context.ui.error(code === undefined ? `exit` : `exit with ${code}`)
     }) as any
@@ -53,8 +57,21 @@ export function mockLoadAppInfo(context: AppContext) {
   return context
 }
 
+export function mockLoadConfig(context: MockAppContext) {
+  const loadConfig = context.loadConfig
+  context.loadConfig = (
+    cwd: string,
+    configFileName: string
+  ) => {
+    const result = loadConfig(cwd, configFileName)
+    context.config = result?.config
+    return result
+  }
+  return context
+}
+
 export function mockStack(fixtureFilePath: string) {
-  const p = path.resolve(process.cwd(), 'fixtures', fixtureFilePath)
+  const p = getFixturePath(fixtureFilePath)
   return `Error
   at Object.<anonymous> (${p}:1:13)
   at Module._compile (internal/modules/cjs/loader.js:1075:30)

@@ -4,6 +4,7 @@ import { findKey } from 'type-plus'
 import { AppContext } from './createAppContext'
 import { AppInfo } from './loadAppInfo'
 import { cli } from './types'
+import { AppState } from './typesInternal'
 
 export function buildCli(context: AppContext) {
   return function clibuilder(options?: cli.Options) {
@@ -12,7 +13,21 @@ export function buildCli(context: AppContext) {
       name: state.name,
       version: state.version || '',
       description: state.description || '',
-      loadConfig(typeDef: any): Omit<cli.Builder, 'loadConfig'> { return {} as any },
+      loadConfig(
+        options?: cli.ConfigOptions
+      ): Omit<cli.Builder, 'loadConfig'> {
+        const config = context.loadConfig(
+          context.process.cwd(),
+          options?.name || state.name
+        )
+        if (config) {
+          state.config = options?.handler?.({
+            ui: context.ui,
+            ...config
+          }) || config.config
+        }
+        return this
+      },
       loadPlugins(): Omit<cli.Builder, 'loadPlugin'> { return {} as any },
       default(command: any): cli.Executable { return {} as any },
       addCommand(command: any): cli.Executable { return {} as any },
@@ -21,7 +36,9 @@ export function buildCli(context: AppContext) {
   }
 }
 
-function createAppState({ ui, getAppPath, loadAppInfo, process }: AppContext, options?: cli.Options): cli.AppState {
+function createAppState(
+  { ui, getAppPath, loadAppInfo, process }: AppContext,
+  options?: cli.Options): AppState {
   if (options) return options
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
