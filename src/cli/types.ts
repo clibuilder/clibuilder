@@ -8,11 +8,24 @@ export namespace cli {
     description?: string,
   }
 
-  export type AppState = {
-    name: string,
-    version?: string,
-    description?: string,
+  export type ConfigOptions = {
+    name?: string,
+    handler?: (params: {
+      ui: unknown,
+      filepath: string,
+      config: unknown
+    }) => unknown
   }
+
+  export type UI = {
+    displayLevel: DisplayLevel,
+    info(...args: any[]): void,
+    warn(...args: any[]): void,
+    error(...args: any[]): void,
+    debug(...args: any[]): void,
+  }
+
+  export type DisplayLevel = 'none' | 'info' | 'debug'
 
   export type Builder = {
     loadConfig(typeDef: any): Omit<Builder, 'loadConfig'>,

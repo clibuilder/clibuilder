@@ -1,8 +1,8 @@
 import findUp from 'find-up'
 import { dirname } from 'path'
 
-export function loadAppInfo(cwd: string) {
-  const pjsonPath = findUp.sync('package.json', { cwd })!
+export function loadAppInfo(appPkgPath: string) {
+  const pjsonPath = findUp.sync('package.json', { cwd: appPkgPath })!
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const pjson = require(pjsonPath)
   return {
