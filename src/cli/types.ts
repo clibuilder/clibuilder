@@ -59,7 +59,7 @@ export namespace cli {
      */
     default<
       This extends Partial<Builder<any>>
-    >(this: This, command: Command<This['config']>): Omit<typeof this, 'default'>,
+    >(this: This, command: Omit<Command<This['config']>, 'name'>): Omit<typeof this, 'default'>,
     addCommands<
       This extends Partial<Builder<any>>
     >(this: This, commands: Command<This['config']>[]): typeof this,
@@ -69,6 +69,8 @@ export namespace cli {
   }
 
   export type Command<Config> = {
+    name: string,
+    description?: string,
     run(this: { config: Config }, args: any): any
   }
 
