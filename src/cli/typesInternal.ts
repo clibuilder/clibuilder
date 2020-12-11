@@ -1,6 +1,7 @@
-export type AppState = {
+export type AppState<C> = {
   name: string,
   version?: string,
   description?: string,
-  config?: any
+  configFilePath?: string,
+  config?: C,
 }
