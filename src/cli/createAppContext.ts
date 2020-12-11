@@ -20,12 +20,12 @@ export function createAppContext() {
 
 export type AppContext = ReturnType<typeof createAppContext>
 
-function loadConfig(cwd: string, configFileName: string) {
-  const filepath = resolveConfigFilename(cwd, configFileName)
-  if (!filepath) return undefined
+function loadConfig(cwd: string, configFileName: string): { configFilePath?: string, config?: unknown } {
+  const configFilePath = resolveConfigFilename(cwd, configFileName)
+  if (!configFilePath) return {}
   return {
-    filepath,
-    config: JSON.parse(readFileSync(filepath, 'utf8'))
+    configFilePath,
+    config: JSON.parse(readFileSync(configFilePath, 'utf8'))
   }
 }
 

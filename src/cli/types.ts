@@ -1,3 +1,5 @@
+import { T } from 'type-plus'
+
 export namespace cli {
   export type Options = {
     /**
@@ -8,13 +10,23 @@ export namespace cli {
     description?: string,
   }
 
-  export type ConfigOptions = {
+  export type ConfigOptions<T extends T.AllType> = {
+    /**
+     * Name of the config file to load.
+     * Defaults to the name of the cli package (not the bin).
+     * You can specify the exact file name,
+     * or it will automatically look for the following:
+     *
+     * `{name}.json`
+     * `.{name}rc`
+     * `.{name}rc.json
+     */
     name?: string,
-    handler?: (params: {
-      ui: unknown,
-      filepath: string,
-      config: unknown
-    }) => unknown
+    /**
+     * Describe the shape of the config,
+     * using `T` from `type-plus`.
+     */
+    type: T
   }
 
   export type UI = {
@@ -27,14 +39,37 @@ export namespace cli {
 
   export type DisplayLevel = 'none' | 'info' | 'debug'
 
-  export type Builder = {
-    loadConfig(typeDef: any): Omit<Builder, 'loadConfig'>,
-    loadPlugins(): Omit<Builder, 'loadPlugin'>,
+  export type Builder<Config> = {
+    readonly name: string,
+    readonly version?: string,
+    readonly description?: string,
+    readonly config: Config,
+    loadConfig<
+      ConfigType extends T.AllType,
+      This extends Partial<Builder<any>>
+    >(
+      this: This,
+      options: cli.ConfigOptions<ConfigType>
+    ): Omit<typeof this, 'loadConfig' | 'config'> & { config: T.Generate<ConfigType> },
+    loadPlugins<
+      This extends Partial<Builder<any>>
+    >(this: This): Omit<typeof this, 'loadPlugin'>,
     /**
      * Default command when no sub-command matches.
      */
-    default(command: any): cli.Executable,
-    addCommand(command: any): cli.Executable
+    default<
+      This extends Partial<Builder<any>>
+    >(this: This, command: Command<This['config']>): Omit<typeof this, 'default'>,
+    addCommands<
+      This extends Partial<Builder<any>>
+    >(this: This, commands: Command<This['config']>[]): typeof this,
+    parse<
+      This extends Partial<Builder<any>>
+    >(this: This, argv?: string[]): Promise<void>
+  }
+
+  export type Command<Config> = {
+    run(this: { config: Config }, args: any): any
   }
 
   export type Executable = {

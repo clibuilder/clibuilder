@@ -1,7 +1,7 @@
-import { buildCli } from './buildCli'
+import { clibuilder } from './clibuilder'
 import { createAppContext } from './createAppContext'
 import { cli } from './types'
 
 export function cli(options?: cli.Options) {
-  return buildCli(createAppContext())(options)
+  return clibuilder(createAppContext(), options)
 }
