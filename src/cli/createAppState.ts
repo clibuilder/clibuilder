@@ -1,9 +1,9 @@
 import chalk from 'chalk'
 import { basename } from 'path'
 import { findKey } from 'type-plus'
+import { cli } from './cli'
 import { AppContext } from './createAppContext'
 import { AppInfo } from './loadAppInfo'
-import { cli } from './types'
 
 export type AppState<C = any> = {
   name: string,
@@ -11,30 +11,44 @@ export type AppState<C = any> = {
   description?: string,
   configFilePath?: string,
   config?: C,
-  commands: cli.Command[]
+  commands: cli.Command[],
+  debugLogs: any[][]
 }
 
 export function createAppState(
   { ui, getAppPath, loadAppInfo, process }: AppContext,
   options?: cli.Options): AppState<any> {
-  if (options) return { ...options, commands: [] }
+  const debugLogs: any[][] = []
+  if (options) return {
+    ...options,
+    debugLogs,
+    commands: []
+  }
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
-  const appInfo = loadAppInfo(appPath)
-  const name = getCliName(appPath, appInfo)
-  if (!name) {
-    ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
+  const appInfo = loadAppInfo(debugLogs, appPath)
+  if (appInfo) {
+    const name = getCliName(appPath, appInfo)
+    if (name) {
+      debugLogs.push([`package name: ${name}`])
+      debugLogs.push([`version: ${appInfo.version}`])
+      debugLogs.push([`description: ${appInfo.description}`])
+      return {
+        name,
+        version: appInfo.version,
+        description: appInfo.description,
+        debugLogs,
+        commands: []
+      }
+    }
+  }
+
+  ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
     ${chalk.cyan(appPath)}
 
     please specify the name of the application manually.`)
-    process.exit(1)
-  }
-  return {
-    name: name!,
-    version: appInfo.version,
-    description: appInfo.description,
-    commands: []
-  }
+  process.exit(1)
+  return {} as any
 }
 
 function getCliName(appPath: string, { name, bin, dir }: AppInfo): string | undefined {

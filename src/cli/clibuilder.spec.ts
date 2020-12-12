@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType, CanAssign, Equal, HasKey, T } from 'type-plus'
 import { createCliArgv } from '../test-util'
-import { argv, getLogMessage } from '../test-utils'
+import { argv, getFixturePath, getLogMessage } from '../test-utils'
 import { cli } from './cli'
 import { clibuilder } from './clibuilder'
 import { mockAppContext } from './mockAppContext'
@@ -295,12 +295,21 @@ describe('--verbose', () => {
 })
 
 describe('--debug-cli', () => {
-  test.skip('turns on cli-level debug messages', async () => {
-    // const ctx = mockAppContext('string-bin/bin.js')
-    const app = cli().default({ run() { } })
+  test('turns on cli-level debug messages', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const app = clibuilder(ctx).default({ run() { } })
     await app.parse(argv('string-bin --debug-cli'))
-    // expect(getLogMessage(ctx.reporter)).toEqual('some debug message')
+    const startPath = getFixturePath('string-bin/bin.js')
+    const pjsonPath = getFixturePath('string-bin/package.json')
+    a.true(getLogMessage(ctx.reporter).startsWith(`finding package.json starting from '${startPath}'...
+found package.json at '${pjsonPath}'
+package name: string-bin
+version: 1.0.0
+description: undefined
+argv: node string-bin --debug-cli`))
   })
+  test.todo('log commands added')
+  test.todo('log loading plugins')
 })
 
 describe('loadPlugin()', () => {

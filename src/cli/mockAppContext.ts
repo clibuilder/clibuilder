@@ -15,9 +15,9 @@ export function mockAppContext(binFixturePath: string, cwdFixturePath = process.
     createAppContext,
     mockUI,
     (ctx) => mockProcess(ctx, cwdFixturePath),
-    mockLoadConfig,
     (ctx) => mockGetAppPath(ctx, binFixturePath),
-    mockLoadAppInfo
+    mockLoadAppInfo,
+    mockLoadConfig,
   )
 }
 
@@ -54,7 +54,7 @@ export function mockGetAppPath(context: AppContext, fixtureFilePath: string) {
 
 export function mockLoadAppInfo(context: AppContext) {
   const cwd = context.getAppPath('anything')
-  context.loadAppInfo = () => loadAppInfo(cwd)
+  context.loadAppInfo = (debugLogs) => loadAppInfo(debugLogs, cwd)
   return context
 }
 
