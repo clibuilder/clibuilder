@@ -65,9 +65,7 @@ export namespace cli {
     addCommands<
       This extends Partial<Builder<any>>
     >(this: This, commands: Command<This['config']>[]): typeof this,
-    parse<
-      This extends Partial<Builder<any>>
-    >(this: This, argv: string[]): Promise<void>
+    parse(this: Builder<any>, argv: string[]): Promise<void>
   }
 
   export type Command<Config = any> = {

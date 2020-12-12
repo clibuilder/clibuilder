@@ -4,6 +4,7 @@ import { createCliArgv } from '../test-util'
 import { argv, getLogMessage } from '../test-utils'
 import { clibuilder } from './clibuilder'
 import { mockAppContext } from './mockAppContext'
+import { cli } from './types'
 
 describe('fluent syntax', () => {
   test('order does not matter', () => {
@@ -187,6 +188,35 @@ describe('version', () => {
     await cli.parse(argv('string-bin -v'))
     expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
   })
+  test('--version shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    await cli.parse(argv('string-bin --version'))
+    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  })
+})
+
+describe('help', () => {
+  test('-h shows help', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    await cli.parse(argv('string-bin -h'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test('--help shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    await cli.parse(argv('string-bin --help'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test('help with cli.description', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx)
+    await cli.parse(argv('single-bin -h'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test.todo('show help if no command matches')
+  test.todo('show help if missing argument')
 })
 
 describe('loadPlugin()', () => {
@@ -213,3 +243,18 @@ describe('addCommands()', () => {
     // }).parse()
   })
 })
+
+function getHelpMessage(app: Pick<cli.Builder<any>, 'name' | 'description'>) {
+  return `
+Usage: ${app.name} [options]
+${app.description ? `
+  ${app.description}
+`: ''}
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+}
