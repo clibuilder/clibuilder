@@ -1,5 +1,7 @@
 import a from 'assertron'
 import { assertType, Equal, HasKey, T } from 'type-plus'
+import { createCliArgv } from '../test-util'
+import { argv, getLogMessage } from '../test-utils'
 import { clibuilder } from './clibuilder'
 import { mockAppContext } from './mockAppContext'
 
@@ -78,7 +80,7 @@ describe('options', () => {
   })
 })
 
-describe('loadConfig', () => {
+describe('loadConfig()', () => {
   test('load config from `{name}.json` at cwd', () => {
     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
     const cli = clibuilder(ctx)
@@ -169,23 +171,39 @@ describe('loadConfig', () => {
   })
 })
 
-test.skip('load plugin', async () => {
-  // const context = createAppContext({ stack: mockStack('with-plugins/bin.js') })
-  // const cli = buildCli(context)
-  // await cli()
-  //   .loadPlugins()
-  //   .default({})
-  //   .parse()
+describe('default()', () => {
 })
-test.skip('command', async () => {
-  // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
-  // const cli = buildCli(context)
-  // await cli().addCommand({
-  //   name: '',
-  //   description: '',
-  //   arguments: [],
-  //   options: {},
-  //   interactive: true,
-  //   handler() { }
-  // }).parse()
+
+describe('version', () => {
+  test('-v shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    await cli.parse(argv('string-bin -v'))
+    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  })
+})
+
+describe('loadPlugin()', () => {
+  test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
+    const ctx = mockAppContext('one-plugin/bin.js')
+    const actual = await clibuilder(ctx)
+      .loadPlugins()
+      .parse(createCliArgv('one-plugin', 'one', 'echo', 'bird'))
+    expect(actual).toEqual('bird')
+  })
+})
+
+describe('addCommands()', () => {
+  test.skip('command', async () => {
+    // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
+    // const cli = buildCli(context)
+    // await cli().addCommand({
+    //   name: '',
+    //   description: '',
+    //   arguments: [],
+    //   options: {},
+    //   interactive: true,
+    //   handler() { }
+    // }).parse()
+  })
 })

@@ -11,12 +11,13 @@ export type AppState<C> = {
   description?: string,
   configFilePath?: string,
   config?: C,
+  commands: cli.Command[]
 }
 
 export function createAppState(
   { ui, getAppPath, loadAppInfo, process }: AppContext,
   options?: cli.Options): AppState<any> {
-  if (options) return options
+  if (options) return { ...options, commands: [] }
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
   const appInfo = loadAppInfo(appPath)
@@ -31,7 +32,8 @@ export function createAppState(
   return {
     name: name!,
     version: appInfo.version,
-    description: appInfo.description
+    description: appInfo.description,
+    commands: []
   }
 }
 

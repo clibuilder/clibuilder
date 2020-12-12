@@ -1,4 +1,5 @@
 import { T } from 'type-plus'
+import { CommandModel } from '../presenter'
 
 export namespace cli {
   export type Options = {
@@ -35,6 +36,8 @@ export namespace cli {
     warn(...args: any[]): void,
     error(...args: any[]): void,
     debug(...args: any[]): void,
+    showHelp(command: CommandModel): void,
+    showVersion(version?: string): void,
   }
 
   export type DisplayLevel = 'none' | 'info' | 'debug'
@@ -65,13 +68,17 @@ export namespace cli {
     >(this: This, commands: Command<This['config']>[]): typeof this,
     parse<
       This extends Partial<Builder<any>>
-    >(this: This, argv?: string[]): Promise<void>
+    >(this: This, argv: string[]): Promise<void>
   }
 
-  export type Command<Config> = {
+  export type Command<Config = any> = {
     name: string,
     description?: string,
-    run(this: { config: Config }, args: any): any
+    options?: any,
+    run(this: {
+      ui: cli.UI,
+      config: Config
+    }, args: any): any
   }
 
   export type Executable = {

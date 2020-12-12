@@ -17,7 +17,7 @@ export function parseArgv(parsable: Parsable, rawArgv: string[]): any /* Cli2.Ru
 
   if (parsable.commands) {
     fillArguments(parsable, args)
-    return args as any  // TODO: fix type:  _defaults is undefiend
+    return args as any  // TODO: fix type:  _defaults is undefined
   }
 
   validateArguments(parsable, args)
