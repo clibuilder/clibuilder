@@ -1,5 +1,4 @@
 import { T } from 'type-plus'
-import { CommandModel } from '../presenter'
 
 export namespace cli {
   export type Options = {
@@ -36,8 +35,8 @@ export namespace cli {
     warn(...args: any[]): void,
     error(...args: any[]): void,
     debug(...args: any[]): void,
-    showHelp(command: CommandModel): void,
-    showVersion(version?: string): void,
+    showHelp(): void,
+    showVersion(): void,
   }
 
   export type DisplayLevel = 'none' | 'info' | 'debug'
@@ -79,6 +78,30 @@ export namespace cli {
       ui: cli.UI,
       config: Config
     }, args: any): any
+  }
+
+  export namespace Command {
+    export type Options<
+      BName extends string = string,
+      SName extends string = string,
+      NName extends string = string
+      > = {
+        boolean?: Record<BName, TypedOptions<boolean>>,
+        string?: Record<SName, TypedOptions<string>>,
+        number?: Record<NName, TypedOptions<number>>,
+      }
+
+    export type TypedOptions<T> = {
+      description: string,
+      alias?: string[],
+      default?: T,
+      /**
+       * An option group this option belongs to.
+       * If the option belongs to a group and one of the options has be set,
+       * the other options will not have their default value.
+       */
+      group?: string,
+    }
   }
 
   export type Executable = {

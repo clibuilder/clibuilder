@@ -27,7 +27,8 @@ export const clibuilderCommand: cli.Command = {
   async run(args) {
     if (args.version) {
       this.ui.showVersion()
+      return
     }
-    return false
+    this.ui.showHelp()
   }
 }
