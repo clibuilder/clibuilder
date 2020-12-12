@@ -102,7 +102,7 @@ describe('config', () => {
     await cli.parse(argv)
   })
 
-  test(`default config is overriden by value in config file`, async () => {
+  test(`default config is overridden by value in config file`, async () => {
     const { cli, argv } = createPluginCliTest({
       name: 'test-cli',
       config: { a: 2, b: 3 },

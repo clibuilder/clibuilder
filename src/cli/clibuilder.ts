@@ -1,10 +1,10 @@
-import chalk from 'chalk'
-import { basename } from 'path'
-import { findKey, T } from 'type-plus'
+import { T } from 'type-plus'
+import { parseArgv } from '../argv-parser'
 import { AppContext } from './createAppContext'
-import { AppInfo } from './loadAppInfo'
+import { createAppState } from './createAppState'
+import { defaultCommandOptions } from './defaultCommandOptions'
+import { removeClibuilderOptions } from './removeClibuilderOptions'
 import { cli } from './types'
-import { AppState } from './typesInternal'
 
 export function clibuilder(context: AppContext, options?: cli.Options): cli.Builder<any> {
   const state = createAppState(context, options)
@@ -30,41 +30,40 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
       }
       return this as any
     },
-    loadPlugins() { return {} as any },
-    default(command) { return {} as any },
-    addCommands(commands) { return {} as any },
-    parse(argv?: string[]): Promise<void> { return {} as any }
+    loadPlugins() { return this as any },
+    default(command) {
+      state.commands.unshift({ ...command, name: '' })
+      return this
+    },
+    addCommands(commands) {
+      state.commands.push(...commands)
+      return this
+    },
+    parse(argv: string[]): Promise<void> {
+      const argvWithoutNode = argv.slice(1)
+      const { ui } = context
+      const command = {
+        name: state.name,
+        options: defaultCommandOptions
+      }
+
+      let args
+      try {
+        args = parseArgv(command, argvWithoutNode)
+      }
+      catch (e) {
+        ui.error(e.message)
+        ui.showHelp(command)
+        throw e
+      }
+      const [trimmedArgs, trimmedArgv] = removeClibuilderOptions(args, argvWithoutNode)
+
+      if (args.version) {
+        ui.showVersion(state.version)
+        return Promise.resolve()
+      }
+
+      return Promise.resolve()
+    }
   }
-}
-
-function createAppState(
-  { ui, getAppPath, loadAppInfo, process }: AppContext,
-  options?: cli.Options): AppState<any> {
-  if (options) return options
-  const stack = new Error().stack!
-  const appPath = getAppPath(stack)
-  const appInfo = loadAppInfo(appPath)
-  const name = getCliName(appPath, appInfo)
-  if (!name) {
-    ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
-    ${chalk.cyan(appPath)}
-
-    please specify the name of the application manually.`)
-    process.exit(1)
-  }
-  return {
-    name: name!,
-    version: appInfo.version,
-    description: appInfo.description
-  }
-}
-
-
-function getCliName(appPath: string, { name, bin, dir }: AppInfo): string | undefined {
-  if (!bin) return name || basename(dir)
-
-  if (typeof bin === 'string') {
-    return appPath.endsWith(bin) ? name : undefined
-  }
-  return findKey(bin, (key) => appPath.endsWith(bin[key]))
 }
