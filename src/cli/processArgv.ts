@@ -1,5 +1,4 @@
 import yargs from 'yargs-parser'
-import { clibuilderCommand } from './clibuilderCommand'
 import { cli } from './types'
 
 export function processArgv(commands: cli.Command[], argv: string[]) {
@@ -7,7 +6,7 @@ export function processArgv(commands: cli.Command[], argv: string[]) {
   const args = yargs(argv, yargsOptions)
   args._.shift()
 
-  return { command: clibuilderCommand, args }
+  return { command: commands[0], args }
 }
 
 function toYargsOption(commands: cli.Command[]) {
