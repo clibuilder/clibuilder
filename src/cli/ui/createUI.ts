@@ -15,7 +15,9 @@ export function createUI(log: Logger = getLogger('clibuilder')) {
       if (log.level! <= logLevels.none) return 'none'
 
       if (log.level! <= logLevels.info) return 'info'
-      return 'debug'
+
+      if (log.level! <= logLevels.debug) return 'debug'
+      return 'trace'
     },
     set displayLevel(level) {
       switch (level) {
@@ -29,8 +31,12 @@ export function createUI(log: Logger = getLogger('clibuilder')) {
         case 'debug':
           log.level = logLevels.debug
           break
+        case 'trace':
+          log.level = logLevels.trace
+          break
       }
     },
+    trace: (...args: any[]) => log.trace(...args),
     debug: (...args: any[]) => log.debug(...args),
     info: (...args: any[]) => log.info(...args),
     warn: (...args: any[]) => log.warn(...args),

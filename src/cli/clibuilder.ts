@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { requiredDeep, T } from 'type-plus'
 import type { cli } from './cli'
+=======
+import { T } from 'type-plus'
+import { cli } from './cli'
+>>>>>>> fdde1d1... feat: support --debug-cli options
 import { AppContext } from './createAppContext'
 import { AppState, createAppState } from './createAppState'
 import { getBottomCommand } from './getBottomCommand'
@@ -22,8 +27,11 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
         if (T.satisfy(options.type, config)) {
           state.configFilePath = configFilePath
           state.config = (this as any).config = config
+          state.debugLogs.push([`config file path: ${configFilePath}`])
+          state.debugLogs.push([`config:`, config])
         }
         else {
+          state.debugLogs.map(logEntries => context.ui.trace(...logEntries))
           context.ui.error(T.satisfy.getReport())
           context.process.exit(1)
         }
@@ -45,6 +53,7 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
       return this as any
     },
     addCommands(commands) {
+<<<<<<< HEAD
       commands.push(...commands);
       (this as any).parse = parse
       return this as any
@@ -53,6 +62,22 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
 
   function parse(this: cli.Builder<any>, argv: string[]): Promise<any> {
     const { command, args } = processArgv(commands, argv)
+=======
+      commands.push(...commands)
+      return this
+    },
+    parse(argv: string[]): Promise<any> {
+      state.debugLogs.push(['argv:', argv.join(' ')])
+      commands.push(getBottomCommand(this))
+      const { command, args } = processArgv(commands, argv)
+
+      if (args.silent) context.ui.displayLevel = 'none'
+      if (args.verbose) context.ui.displayLevel = 'debug'
+      if (args.debugCli) {
+        context.ui.displayLevel = 'trace'
+        state.debugLogs.map(logEntries => context.ui.trace(...logEntries))
+      }
+>>>>>>> fdde1d1... feat: support --debug-cli options
 
     if (args.silent) context.ui.displayLevel = 'none'
     if (args.verbose) context.ui.displayLevel = 'debug'
@@ -83,6 +108,11 @@ function createCommandUI(ui: AppContext['ui'], state: AppState, command: cli.Com
   return {
     ...ui,
     showVersion: () => ui.showVersion(state.version),
+<<<<<<< HEAD
     showHelp: () => ui.showHelp(state.name, command)
   }
+=======
+    showHelp: () => ui.showHelp(command)
+  } as cli.UI
+>>>>>>> fdde1d1... feat: support --debug-cli options
 }

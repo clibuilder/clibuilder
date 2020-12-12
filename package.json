@@ -90,7 +90,8 @@
     "commitlint-circle": "^1.0.0",
     "husky": "^4.3.0",
     "satisfier": "^5.1.0",
-    "semantic-release": "^17.2.1"
+    "semantic-release": "^17.2.1",
+    "tersify": "^3.7.5"
   },
   "engines": {
     "node": ">= 8"
