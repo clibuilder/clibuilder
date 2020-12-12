@@ -2,14 +2,13 @@ import padRight from 'pad-right'
 import { getLogger, Logger, logLevels } from 'standard-log'
 import wordwrap from 'wordwrap'
 import { CommandModel } from '../../presenter'
-import { cli } from '../types'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
-export function createUI(log: Logger = getLogger('clibuilder')): cli.UI {
+export function createUI(log: Logger = getLogger('clibuilder')) {
   log.level = logLevels.info
   return {
     get displayLevel() {
@@ -32,10 +31,10 @@ export function createUI(log: Logger = getLogger('clibuilder')): cli.UI {
           break
       }
     },
-    debug: (...args) => log.debug(...args),
-    info: (...args) => log.info(...args),
-    warn: (...args) => log.warn(...args),
-    error: (...args) => log.error(...args),
+    debug: (...args: any[]) => log.debug(...args),
+    info: (...args: any[]) => log.info(...args),
+    warn: (...args: any[]) => log.warn(...args),
+    error: (...args: any[]) => log.error(...args),
     showHelp: (command: CommandModel) => {
       const msg = generateHelpMessage(command)
       log.info(msg)

@@ -5,7 +5,7 @@ import { AppContext } from './createAppContext'
 import { AppInfo } from './loadAppInfo'
 import { cli } from './types'
 
-export type AppState<C> = {
+export type AppState<C = any> = {
   name: string,
   version?: string,
   description?: string,

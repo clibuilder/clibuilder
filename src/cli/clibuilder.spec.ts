@@ -85,43 +85,43 @@ describe('loadConfig()', () => {
     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config from `.{name}rc` at cwd', () => {
     const ctx = mockAppContext('string-bin/bin.js', 'has-rc-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config from `.{name}rc.json` at cwd', () => {
     const ctx = mockAppContext('string-bin/bin.js', 'has-rc-json-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config with specified name', () => {
     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ name: 'string-bin.json', type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config with specified `{name}.json`', () => {
     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config with specified `.{name}rc`', () => {
     const ctx = mockAppContext('single-bin/bin.js', 'has-rc-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('load config with specified `.${name}rc.json`', () => {
     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
     const cli = clibuilder(ctx)
     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-    expect(ctx.config).toEqual({ a: 1 })
+    expect(cli.config).toEqual({ a: 1 })
   })
   test('fail validation will emit warning and exit', () => {
     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
@@ -168,6 +168,12 @@ describe('loadConfig()', () => {
           assertType<{ a: number }>(this.config)
         }
       }])
+  })
+  test('can observe config from cli.config', () => {
+    const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
+    const cli = clibuilder(ctx)
+    cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
+    expect(cli.config).toEqual({ a: 1 })
   })
 })
 

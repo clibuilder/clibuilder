@@ -7,8 +7,7 @@ import { loadAppInfo } from './loadAppInfo'
 import { createUI } from './ui/createUI'
 
 export type MockAppContext = AppContext & {
-  reporter: MemoryLogReporter,
-  config: any
+  reporter: MemoryLogReporter
 }
 
 export function mockAppContext(binFixturePath: string, cwdFixturePath = process.cwd()): MockAppContext {
@@ -65,9 +64,7 @@ export function mockLoadConfig(context: MockAppContext) {
     cwd: string,
     configFileName: string
   ) => {
-    const result = loadConfig(cwd, configFileName)
-    context.config = result?.config
-    return result
+    return loadConfig(cwd, configFileName)
   }
   return context
 }

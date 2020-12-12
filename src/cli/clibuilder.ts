@@ -1,13 +1,13 @@
 import { T } from 'type-plus'
-import { parseArgv } from '../argv-parser'
+import { clibuilderCommand } from './clibuilderCommand'
 import { AppContext } from './createAppContext'
-import { createAppState } from './createAppState'
-import { defaultCommandOptions } from './defaultCommandOptions'
-import { removeClibuilderOptions } from './removeClibuilderOptions'
+import { AppState, createAppState } from './createAppState'
+import { processArgv } from './processArgv'
 import { cli } from './types'
 
 export function clibuilder(context: AppContext, options?: cli.Options): cli.Builder<any> {
   const state = createAppState(context, options)
+  const commands: cli.Command[] = []
   return {
     name: state.name,
     version: state.version || '',
@@ -20,8 +20,8 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
       )
       if (config) {
         if (T.satisfy(options.type, config)) {
-          state.configFilePath = configFilePath;
-          (this as any).config = config
+          state.configFilePath = configFilePath
+          state.config = (this as any).config = config
         }
         else {
           context.ui.error(T.satisfy.getReport())
@@ -32,38 +32,36 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
     },
     loadPlugins() { return this as any },
     default(command) {
-      state.commands.unshift({ ...command, name: '' })
+      commands.unshift({ ...command, name: '' })
       return this
     },
     addCommands(commands) {
-      state.commands.push(...commands)
+      commands.push(...commands)
       return this
     },
-    parse(argv: string[]): Promise<void> {
-      const argvWithoutNode = argv.slice(1)
-      const { ui } = context
-      const command = {
-        name: state.name,
-        options: defaultCommandOptions
-      }
+    parse(argv: string[]): Promise<any> {
+      commands.push(clibuilderCommand)
+      const { command, args } = processArgv(commands, argv)
 
-      let args
-      try {
-        args = parseArgv(command, argvWithoutNode)
-      }
-      catch (e) {
-        ui.error(e.message)
-        ui.showHelp(command)
-        throw e
-      }
-      const [trimmedArgs, trimmedArgv] = removeClibuilderOptions(args, argvWithoutNode)
+      const commandInstance = createCommandInstance(context, state, command)
 
-      if (args.version) {
-        ui.showVersion(state.version)
-        return Promise.resolve()
-      }
-
-      return Promise.resolve()
+      return Promise.resolve(commandInstance.run(args))
     }
+  }
+}
+
+function createCommandInstance({ ui }: AppContext, state: AppState, command: cli.Command) {
+  return {
+    ...command,
+    ui: createCommandUI(ui, state, command),
+    config: state.config,
+  }
+}
+
+function createCommandUI(ui: AppContext['ui'], state: AppState, command: cli.Command) {
+  return {
+    ...ui,
+    showVersion: () => ui.showVersion(state.version),
+    showHelp: () => ui.showHelp(command)
   }
 }

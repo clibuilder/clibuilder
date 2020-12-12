@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, canAssign, CanAssign, Equal } from 'type-plus'
+import { assertType, canAssign } from 'type-plus'
 import { Cli, createCli } from '.'
 import { CliError, MissingArguments } from '../errors'
 import { argCommand, createCliTest, generateDisplayedMessage, helloCommand, nestedCommand, nestedHelpMessage, numberOptionCommand, rejectCommand, throwCommand } from '../test-util'
@@ -607,7 +607,7 @@ describe('config', () => {
     await cli.parse(argv)
   })
 
-  test(`default config is overriden by value in config file`, async () => {
+  test(`default config is overridden by value in config file`, async () => {
     const { cli, argv } = createCliTest({
       name: 'test-cli',
       config: { a: 2, b: 3 },
