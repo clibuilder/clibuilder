@@ -15,15 +15,15 @@ function toYargsOption(commands: cli.Command[]) {
     { alias: {}, default: {} } as Record<string, any>)
 }
 
-function addOptions(options: Record<string, any>, cmdOptions: cli.Command.Options) {
+function addOptions(options: Record<string, any>, cmdOptions: cli.Command.Options | undefined) {
   fillOptions(options, cmdOptions, 'boolean')
   fillOptions(options, cmdOptions, 'string')
   fillOptions(options, cmdOptions, 'number')
   return options
 }
 
-function fillOptions(result: Record<string, any>, options: cli.Command.Options, typeName: keyof cli.Command.Options) {
-  if (options[typeName]) {
+function fillOptions(result: Record<string, any>, options: cli.Command.Options | undefined, typeName: keyof cli.Command.Options) {
+  if (options?.[typeName]) {
     const values = options[typeName]!
     result[typeName] = Object.keys(values)
     result[typeName].forEach((k: string) => {

@@ -1,7 +1,7 @@
 import { T } from 'type-plus'
-import { getBottomCommand } from './getBottomCommand'
 import { AppContext } from './createAppContext'
 import { AppState, createAppState } from './createAppState'
+import { getBottomCommand } from './getBottomCommand'
 import { processArgv } from './processArgv'
 import { cli } from './types'
 
@@ -42,6 +42,8 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
     parse(argv: string[]): Promise<any> {
       commands.push(getBottomCommand(this))
       const { command, args } = processArgv(commands, argv)
+
+      if (args.silent) context.ui.displayLevel = 'none'
 
       const commandInstance = createCommandInstance(context, state, command)
 
