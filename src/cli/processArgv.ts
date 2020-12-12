@@ -1,5 +1,5 @@
 import yargs from 'yargs-parser'
-import { cli } from './types'
+import type { cli } from './cli'
 
 export function processArgv(commands: cli.Command[], argv: string[]) {
   const yargsOptions = toYargsOption(commands)

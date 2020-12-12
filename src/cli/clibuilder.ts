@@ -1,9 +1,9 @@
 import { T } from 'type-plus'
+import type { cli } from './cli'
 import { AppContext } from './createAppContext'
 import { AppState, createAppState } from './createAppState'
 import { getBottomCommand } from './getBottomCommand'
 import { processArgv } from './processArgv'
-import { cli } from './types'
 
 export function clibuilder(context: AppContext, options?: cli.Options): cli.Builder<any> {
   const state = createAppState(context, options)
@@ -44,6 +44,7 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
       const { command, args } = processArgv(commands, argv)
 
       if (args.silent) context.ui.displayLevel = 'none'
+      if (args.verbose) context.ui.displayLevel = 'debug'
 
       const commandInstance = createCommandInstance(context, state, command)
 
