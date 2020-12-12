@@ -219,6 +219,18 @@ describe('help', () => {
   test.todo('show help if missing argument')
 })
 
+test('--silent disables ui', async () => {
+  const ctx = mockAppContext('single-bin/bin.js')
+  const cli = clibuilder(ctx)
+  cli.default({
+    run() {
+      this.ui.info('should not print')
+    }
+  })
+  await cli.parse(argv('single-bin --silent'))
+  expect(getLogMessage(ctx.reporter)).toEqual('')
+})
+
 describe('loadPlugin()', () => {
   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
     const ctx = mockAppContext('one-plugin/bin.js')
