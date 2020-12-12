@@ -1,4 +1,4 @@
-import { cli } from './types'
+import type { cli } from './cli'
 
 export function getBottomCommand({ name, description }: Pick<cli.Builder<any>, 'name' | 'description'>) {
   return {

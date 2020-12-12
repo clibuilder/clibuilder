@@ -2,9 +2,9 @@ import a from 'assertron'
 import { assertType, Equal, HasKey, T } from 'type-plus'
 import { createCliArgv } from '../test-util'
 import { argv, getLogMessage } from '../test-utils'
+import { cli } from './cli'
 import { clibuilder } from './clibuilder'
 import { mockAppContext } from './mockAppContext'
-import { cli } from './types'
 
 describe('fluent syntax', () => {
   test('order does not matter', () => {
@@ -219,17 +219,56 @@ describe('help', () => {
   test.todo('show help if missing argument')
 })
 
-test('--silent disables ui', async () => {
-  const ctx = mockAppContext('single-bin/bin.js')
-  const cli = clibuilder(ctx)
-  cli.default({
-    run() {
-      this.ui.info('should not print')
-    }
+describe('--silent', () => {
+  test('--silent disables ui', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx)
+    cli.default({
+      run() {
+        this.ui.info('should not print')
+      }
+    })
+    await cli.parse(argv('single-bin --silent'))
+    expect(getLogMessage(ctx.reporter)).toEqual('')
   })
-  await cli.parse(argv('single-bin --silent'))
-  expect(getLogMessage(ctx.reporter)).toEqual('')
+  test.todo('command.run() will not get args.silent')
 })
+
+describe('--verbose', () => {
+  test('--verbose enables debug messages', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx)
+    cli.default({
+      run() {
+        this.ui.debug('should print')
+      }
+    })
+    await cli.parse(argv('single-bin --verbose'))
+    expect(getLogMessage(ctx.reporter)).toEqual('should print')
+  })
+  test('-V enables debug messages', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx)
+    cli.default({
+      run() {
+        this.ui.debug('should print')
+      }
+    })
+    await cli.parse(argv('single-bin -V'))
+    expect(getLogMessage(ctx.reporter)).toEqual('should print')
+  })
+  test.todo('command.run() will not get args.silent')
+})
+
+describe('--debug-cli', () => {
+  test.skip('turns on cli-level debug messages', async () => {
+    // const ctx = mockAppContext('string-bin/bin.js')
+    const app = cli()
+    await app.parse(argv('string-bin --debug-cli'))
+    // expect(getLogMessage(ctx.reporter)).toEqual('some debug message')
+  })
+})
+
 
 describe('loadPlugin()', () => {
   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
