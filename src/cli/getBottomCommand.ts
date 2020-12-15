@@ -1,8 +1,8 @@
 import type { cli } from './cli'
 
-export function getBottomCommand({ name, description }: Pick<cli.Builder<any>, 'name' | 'description'>) {
+export function getBottomCommand({ description }: Pick<cli.Builder<any>, 'description'>) {
   return {
-    name,
+    name: '',
     description,
     options: {
       boolean: {
@@ -26,15 +26,7 @@ export function getBottomCommand({ name, description }: Pick<cli.Builder<any>, '
         },
       }
     },
-    async run(args) {
-      if (args.version) {
-        this.ui.showVersion()
-        return
-      }
-      if (args.help) {
-        this.ui.showHelp()
-        return
-      }
+    run() {
       this.ui.showHelp()
     }
   } as cli.Command

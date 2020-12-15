@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, Equal, HasKey, T } from 'type-plus'
+import { assertType, Equal, HasKey, T, CanAssign } from 'type-plus'
 import { createCliArgv } from '../test-util'
 import { argv, getLogMessage } from '../test-utils'
 import { cli } from './cli'
@@ -26,6 +26,11 @@ describe('fluent syntax', () => {
     assertType.isTrue(true as Equal<
       'name' | 'version' | 'config' | 'description' |
       'loadPlugins' | 'addCommands' | 'parse', Actual2>)
+  })
+  test('no parse without default, addCommands, or loadPlugin', () => {
+    const cli = clibuilder(mockAppContext('string-bin/bin.js', 'has-json-config'))
+    type K1 = keyof typeof cli
+    assertType.isFalse(false as CanAssign<'parse', K1>)
   })
 })
 
@@ -181,16 +186,31 @@ describe('loadConfig()', () => {
 describe('default()', () => {
 })
 
+describe('addCommands()', () => {
+  test.skip('command', async () => {
+    // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
+    // const cli = buildCli(context)
+    // await cli().addCommand({
+    //   name: '',
+    //   description: '',
+    //   arguments: [],
+    //   options: {},
+    //   interactive: true,
+    //   handler() { }
+    // }).parse()
+  })
+})
+
 describe('version', () => {
   test('-v shows version', async () => {
     const ctx = mockAppContext('string-bin/bin.js')
-    const cli = clibuilder(ctx)
+    const cli = clibuilder(ctx).default({ run() { } })
     await cli.parse(argv('string-bin -v'))
     expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
   })
   test('--version shows version', async () => {
     const ctx = mockAppContext('string-bin/bin.js')
-    const cli = clibuilder(ctx)
+    const cli = clibuilder(ctx).default({ run() { } })
     await cli.parse(argv('string-bin --version'))
     expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
   })
@@ -199,19 +219,19 @@ describe('version', () => {
 describe('help', () => {
   test('-h shows help', async () => {
     const ctx = mockAppContext('string-bin/bin.js')
-    const cli = clibuilder(ctx)
+    const cli = clibuilder(ctx).default({ run() { } })
     await cli.parse(argv('string-bin -h'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
   test('--help shows version', async () => {
     const ctx = mockAppContext('string-bin/bin.js')
-    const cli = clibuilder(ctx)
+    const cli = clibuilder(ctx).default({ run() { } })
     await cli.parse(argv('string-bin --help'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
   test('help with cli.description', async () => {
     const ctx = mockAppContext('single-bin/bin.js')
-    const cli = clibuilder(ctx)
+    const cli = clibuilder(ctx).default({ run() { } })
     await cli.parse(argv('single-bin -h'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
@@ -222,8 +242,7 @@ describe('help', () => {
 describe('--silent', () => {
   test('--silent disables ui', async () => {
     const ctx = mockAppContext('single-bin/bin.js')
-    const cli = clibuilder(ctx)
-    cli.default({
+    const cli = clibuilder(ctx).default({
       run() {
         this.ui.info('should not print')
       }
@@ -237,8 +256,7 @@ describe('--silent', () => {
 describe('--verbose', () => {
   test('--verbose enables debug messages', async () => {
     const ctx = mockAppContext('single-bin/bin.js')
-    const cli = clibuilder(ctx)
-    cli.default({
+    const cli = clibuilder(ctx).default({
       run() {
         this.ui.debug('should print')
       }
@@ -248,8 +266,7 @@ describe('--verbose', () => {
   })
   test('-V enables debug messages', async () => {
     const ctx = mockAppContext('single-bin/bin.js')
-    const cli = clibuilder(ctx)
-    cli.default({
+    const cli = clibuilder(ctx).default({
       run() {
         this.ui.debug('should print')
       }
@@ -263,12 +280,11 @@ describe('--verbose', () => {
 describe('--debug-cli', () => {
   test.skip('turns on cli-level debug messages', async () => {
     // const ctx = mockAppContext('string-bin/bin.js')
-    const app = cli()
+    const app = cli().default({ run() { } })
     await app.parse(argv('string-bin --debug-cli'))
     // expect(getLogMessage(ctx.reporter)).toEqual('some debug message')
   })
 })
-
 
 describe('loadPlugin()', () => {
   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
@@ -277,21 +293,6 @@ describe('loadPlugin()', () => {
       .loadPlugins()
       .parse(createCliArgv('one-plugin', 'one', 'echo', 'bird'))
     expect(actual).toEqual('bird')
-  })
-})
-
-describe('addCommands()', () => {
-  test.skip('command', async () => {
-    // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
-    // const cli = buildCli(context)
-    // await cli().addCommand({
-    //   name: '',
-    //   description: '',
-    //   arguments: [],
-    //   options: {},
-    //   interactive: true,
-    //   handler() { }
-    // }).parse()
   })
 })
 

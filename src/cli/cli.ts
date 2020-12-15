@@ -62,17 +62,21 @@ export namespace cli {
     ): Omit<typeof this, 'loadConfig' | 'config'> & { config: T.Generate<ConfigType> },
     loadPlugins<
       This extends Partial<Builder<any>>
-    >(this: This): Omit<typeof this, 'loadPlugin'>,
+    >(this: This): Omit<typeof this, 'loadPlugin'> & Executable<This['config']>,
     /**
      * Default command when no sub-command matches.
      */
     default<
       This extends Partial<Builder<any>>
-    >(this: This, command: Omit<Command<This['config']>, 'name'>): Omit<typeof this, 'default'>,
+    >(this: This, command: Omit<Command<This['config']>, 'name'>):
+      Omit<typeof this, 'default'> & Executable<This['config']>,
     addCommands<
       This extends Partial<Builder<any>>
-    >(this: This, commands: Command<This['config']>[]): typeof this,
-    parse(this: Builder<any>, argv: string[]): Promise<void>
+    >(this: This, commands: Command<This['config']>[]): (typeof this) & Executable<This['config']>
+  }
+
+  export type Executable<Config> = {
+    parse<R = any>(this: Pick<Builder<Config>, 'config'>, argv: string[]): Promise<R>
   }
 
   export type Command<Config = any> = {
@@ -107,9 +111,5 @@ export namespace cli {
        */
       group?: string,
     }
-  }
-
-  export type Executable = {
-    parse<Result extends any>(argv?: string[]): Promise<Result>
   }
 }
