@@ -35,8 +35,8 @@ export function createUI(log: Logger = getLogger('clibuilder')) {
     info: (...args: any[]) => log.info(...args),
     warn: (...args: any[]) => log.warn(...args),
     error: (...args: any[]) => log.error(...args),
-    showHelp: (command: CommandModel) => {
-      const msg = generateHelpMessage(command)
+    showHelp: (cliName: string, command: CommandModel) => {
+      const msg = generateHelpMessage(cliName, command)
       log.info(msg)
     },
     showVersion(version?: string) {
@@ -44,9 +44,9 @@ export function createUI(log: Logger = getLogger('clibuilder')) {
     }
   }
 }
-function generateHelpMessage(command: CommandModel) {
+function generateHelpMessage(cliName: string, command: CommandModel) {
   const helpSections = [
-    generateUsageSection(command),
+    generateUsageSection(cliName, command),
     generateDescriptionSection(command),
     generateCommandsSection(command),
     generateArgumentsSection(command),
@@ -58,8 +58,8 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(command: CommandModel) {
-  const nameChain = getCommandNameChain(command)
+function generateUsageSection(cliName: string, command: CommandModel) {
+  const nameChain = getCommandNameChain(cliName, command)
   let message = `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
   if (command.arguments) message += ' [arguments]'
   if (command.options) message += ' [options]'
@@ -70,13 +70,13 @@ function generateDescriptionSection(command: CommandModel) {
   return command.description ? '  ' + command.description : ''
 }
 
-function getCommandNameChain(command: CommandModel) {
+function getCommandNameChain(cliName: string, command: CommandModel) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
     command = command.parent
   }
-  return commands.map(c => c.name)
+  return [cliName, ...commands.map(c => c.name).filter(x => x)]
 }
 
 function generateCommandsSection(command: CommandModel) {
