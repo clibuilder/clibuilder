@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, Equal, HasKey, T, CanAssign } from 'type-plus'
+import { assertType, CanAssign, Equal, HasKey, T } from 'type-plus'
 import { createCliArgv } from '../test-util'
 import { argv, getLogMessage } from '../test-utils'
 import { cli } from './cli'
@@ -183,22 +183,39 @@ describe('loadConfig()', () => {
   })
 })
 
-describe('default()', () => {
+describe('addCommands()', () => {
+  test.skip('add default command options to help', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    const actual = cli.default({
+      options: { number: { a: { description: 'a number ' } } },
+      run(args) {
+        return args.a
+      }
+    }).parse(argv('-a 123'))
+    expect(actual).toBe(123)
+  })
+  test('use default command description in help', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx)
+    cli.default({
+      description: 'is used',
+      run() { }
+    }).parse(argv('--help'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage({ ...cli, description: 'is used' }))
+  })
+  // test('add default command options to help', async () => {
+  //   const ctx = mockAppContext('string-bin/bin.js')
+  //   const cli = clibuilder(ctx)
+  //   cli.default({
+  //     options: { number: { a: { description: 'a number ' } } },
+  //     run() { }
+  //   }).parse(argv('--help'))
+  //   expect(getLogMessage(ctx.reporter)).toEqual('')
+  // })
 })
 
-describe('addCommands()', () => {
-  test.skip('command', async () => {
-    // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
-    // const cli = buildCli(context)
-    // await cli().addCommand({
-    //   name: '',
-    //   description: '',
-    //   arguments: [],
-    //   options: {},
-    //   interactive: true,
-    //   handler() { }
-    // }).parse()
-  })
+describe('default()', () => {
 })
 
 describe('version', () => {

@@ -39,7 +39,7 @@ export function clibuilder(context: AppContext, options?: cli.Options): cli.Buil
       commands[0] = {
         ...cmd,
         ...command,
-        options: requiredDeep(cmd.options, command.options)
+        options: requiredDeep(cmd.options!, command.options)
       };
       (this as any).parse = parse
       return this as any
