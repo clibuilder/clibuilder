@@ -79,37 +79,42 @@ export namespace cli {
     parse<R = any>(this: Pick<Builder<Config>, 'config'>, argv: string[]): Promise<R>
   }
 
-  export type Command<Config = any> = {
-    name: string,
-    description?: string,
-    options?: any,
-    run(this: {
-      ui: cli.UI,
-      config: Config
-    }, args: any): any
-  }
+  export type Command<
+    Config extends Record<string, any> = any,
+    A extends Command.Argument[] = Command.Argument[],
+    B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
+    S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
+    N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>,
+    O extends Command.Options<B, S, N> = Command.Options<B, S, N>
+    > = {
+      name: string,
+      description?: string,
+      arguments?: A,
+      options?: O,
+      run(this: {
+        ui: cli.UI,
+        config: Config
+      }, args: any): any
+    }
 
   export namespace Command {
+    export type Argument<Name extends string = string> = {
+      name: Name,
+      description?: string,
+      required?: boolean,
+      multiple?: boolean,
+    }
+
     export type Options<
-      BName extends string = string,
-      SName extends string = string,
-      NName extends string = string
-      > = {
-        boolean?: Record<BName, TypedOptions<boolean>>,
-        string?: Record<SName, TypedOptions<string>>,
-        number?: Record<NName, TypedOptions<number>>,
-      }
+      B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
+      S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
+      N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>
+      > = { boolean?: B, string?: S, number?: N }
 
     export type TypedOptions<T> = {
       description: string,
       alias?: string[],
       default?: T,
-      /**
-       * An option group this option belongs to.
-       * If the option belongs to a group and one of the options has be set,
-       * the other options will not have their default value.
-       */
-      group?: string,
     }
   }
 }
