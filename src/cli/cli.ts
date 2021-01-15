@@ -1,10 +1,8 @@
-// import { Omit, T } from 'type-plus'
+import { Omit } from 'type-plus'
 import { clibuilder } from './clibuilder'
 import { createAppContext } from './createAppContext'
 
-export function cli(): clibuilder.Builder
-export function cli(options: cli.Options): clibuilder.BuilderWithOptions
-export function cli(options?: cli.Options) {
+export function cli(options?: cli.Options): cli.Builder<void> {
   const ctx = createAppContext()
   return options ? clibuilder(ctx, options) : clibuilder(ctx)
 }
@@ -18,7 +16,82 @@ export namespace cli {
     version: string,
     description: string,
   }
-  export type Command = {}
+  export type Builder<Config> = {
+    readonly name: string,
+    readonly version: string,
+    readonly description: string,
+    default(command: DefaultCommand<Config>): Omit<Builder<Config>, 'default'> & Executable<Config>
+  }
+
+  export type Command<
+    Config extends Record<string, any> = any,
+    A extends Command.Argument[] = Command.Argument[],
+    B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
+    S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
+    N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>,
+    O extends Command.Options<B, S, N> = Command.Options<B, S, N>
+    > = {
+      name: string,
+    } & DefaultCommand<Config, A, B, S, N, O>
+
+  export type DefaultCommand<
+    Config extends Record<string, any> = any,
+    A extends Command.Argument[] = Command.Argument[],
+    B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
+    S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
+    N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>,
+    O extends Command.Options<B, S, N> = Command.Options<B, S, N>
+    > = {
+      description?: string,
+      arguments?: A,
+      options?: O,
+      run(this: {
+        ui: cli.UI,
+        config: Config
+      }, args: any): any
+    }
+
+  export namespace Command {
+    export type Argument<Name extends string = string> = {
+      name: Name,
+      description?: string,
+      required?: boolean,
+      multiple?: boolean,
+    }
+
+    export type Options<
+      B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
+      S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
+      N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>
+      > = { boolean?: B, string?: S, number?: N }
+
+    export type TypedOptions<T> = {
+      description: string,
+      alias?: string[],
+      default?: T,
+      multiple?: boolean
+    }
+  }
+
+  export type UI = {
+    displayLevel: DisplayLevel,
+    info(...args: any[]): void,
+    warn(...args: any[]): void,
+    error(...args: any[]): void,
+    debug(...args: any[]): void,
+    showHelp(): void,
+    showVersion(): void,
+  }
+
+  export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
+
+  export type Executable<Config> = {
+    parse<R = any>(this: Executable.This<Config>, argv: string[]): Promise<R>
+  }
+
+  export namespace Executable {
+    export type This<Config> = { commands: Command<Config>[] } & { description: string }
+  }
 
   //   export type ConfigOptions<T extends T.AllType> = {
   //     /**
@@ -39,17 +112,7 @@ export namespace cli {
   //     type: T
   //   }
 
-  //   export type UI = {
-  //     displayLevel: DisplayLevel,
-  //     info(...args: any[]): void,
-  //     warn(...args: any[]): void,
-  //     error(...args: any[]): void,
-  //     debug(...args: any[]): void,
-  //     showHelp(): void,
-  //     showVersion(): void,
-  //   }
 
-  //   export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
 
   //   export type Builder<Config> = {
   //     readonly name: string,
@@ -76,52 +139,5 @@ export namespace cli {
   //     addCommands<
   //       This extends Partial<Builder<any>>
   //     >(this: This, commands: Command<This['config']>[]): typeof this
-  //   }
-
-  //   export type Executable<Config> = {
-  //     parse<R = any>(this: Executable.This<Config>, argv: string[]): Promise<R>
-  //   }
-
-  //   export namespace Executable {
-  //     export type This<Config> = Pick<Builder<Config>, 'config'> & { description: string }
-  //   }
-
-  //   export type Command<
-  //     Config extends Record<string, any> = any,
-  //     A extends Command.Argument[] = Command.Argument[],
-  //     B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
-  //     S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
-  //     N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>,
-  //     O extends Command.Options<B, S, N> = Command.Options<B, S, N>
-  //     > = {
-  //       name: string,
-  //       description?: string,
-  //       arguments?: A,
-  //       options?: O,
-  //       run(this: {
-  //         ui: cli.UI,
-  //         config: Config
-  //       }, args: any): any
-  //     }
-
-  //   export namespace Command {
-  //     export type Argument<Name extends string = string> = {
-  //       name: Name,
-  //       description?: string,
-  //       required?: boolean,
-  //       multiple?: boolean,
-  //     }
-
-  //     export type Options<
-  //       B extends Record<string, Command.TypedOptions<boolean>> = Record<string, Command.TypedOptions<boolean>>,
-  //       S extends Record<string, Command.TypedOptions<string>> = Record<string, Command.TypedOptions<string>>,
-  //       N extends Record<string, Command.TypedOptions<number>> = Record<string, Command.TypedOptions<number>>
-  //       > = { boolean?: B, string?: S, number?: N }
-
-  //     export type TypedOptions<T> = {
-  //       description: string,
-  //       alias?: string[],
-  //       default?: T,
-  //     }
   //   }
 }
