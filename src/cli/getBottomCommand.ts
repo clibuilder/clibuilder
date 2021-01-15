@@ -1,6 +1,6 @@
 import type { cli } from './cli'
 
-export function getBottomCommand({ description }: Pick<cli.Builder<any>, 'description'>) {
+export function getBottomCommand(description: string): cli.Command<any> {
   return {
     name: '',
     description,
@@ -29,5 +29,5 @@ export function getBottomCommand({ description }: Pick<cli.Builder<any>, 'descri
     run() {
       this.ui.showHelp()
     }
-  } as cli.Command
+  }
 }

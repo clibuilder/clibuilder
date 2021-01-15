@@ -7,7 +7,6 @@
 [![Codecov][codecov-image]][codecov-url]
 [![Codacy Badge][codacy-image]][codacy-url]
 
-[![Greenkeeper][greenkeeper-image]][greenkeeper-url]
 [![Semantic Release][semantic-release-image]][semantic-release-url]
 
 [![Visual Studio Code][vscode-image]][vscode-url]
@@ -22,7 +21,7 @@ A highly customizable command line library.
 - Nested commands.
 - Configuration file.
 - Define and pass additional context from `Cli` to `Command`.
-- Build-in overridable ui.
+- Build-in override-able ui.
 - Plugin architecture using `PluginCli`.
 - Exit with specific error code by throwing `CliError`.
 
@@ -270,7 +269,7 @@ createCommand<{ a: number }, { b: string }>({
   }
 })
 
-// perferred
+// preferred
 createCommand({
   config: { a: 1 },
   context: { b: 'b' },
@@ -329,11 +328,22 @@ You can override this by supplying your own keyword:
 createPluginCli({ name: 'x', version: '1.0.0', keyword: 'another-keyword'})
 ```
 
-There are also test utilites available for you to develop your command line tool.
+There are also test utilities available for you to develop your command line tool.
 
 - `createCliTest()`: create test for `Cli`
 - `createPluginCliTest()`: create test for `PluginCli`
 - `generateDisplayedMessage()`: generate easy to check messages from logs in `InMemoryDisplay` (through `ui.display.xxxLogs`).
+
+### shebang
+
+To make your cli easily executable,
+you should add shebang to your script:
+
+```js
+#!/usr/bin/env node
+
+// your code
+```
 
 [codacy-image]: https://api.codacy.com/project/badge/Grade/07959fd66e08490cbbd7da836f229053
 [codacy-url]: https://www.codacy.com/manual/homawong/clibuilder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=unional/clibuilder&amp;utm_campaign=Badge_Grade

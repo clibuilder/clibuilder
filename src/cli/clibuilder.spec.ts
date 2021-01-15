@@ -1,12 +1,8 @@
-// import a from 'assertron'
 // import { assertType, CanAssign, Equal, HasKey, T } from 'type-plus'
 // import { createCliArgv } from '../test-util'
-// import { argv, getFixturePath, getLogMessage } from '../test-utils'
 import a from 'assertron'
-// import { cli } from './cli'
-// import { clibuilder } from './clibuilder'
-// import { mockAppContext } from './mockAppContext'
-
+import { argv, getFixturePath, getLogMessage } from '../test-utils'
+import { cli } from './cli'
 import { clibuilder } from './clibuilder'
 import { mockAppContext } from './mockAppContext'
 
@@ -73,6 +69,125 @@ describe('without options', () => {
       args: ['exit with 1']
     }])
   })
+})
+
+describe('default()', () => {
+  test('adds default command for cli to run', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({
+      run() {
+        return 'hello'
+      }
+    })
+    expect(await cli.parse(argv('single-bin'))).toEqual('hello')
+  })
+  test('run --version', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({
+      run() {
+        return 'hello'
+      }
+    })
+    await cli.parse(argv('single-bin --version'))
+
+    expect(getLogMessage(ctx.reporter)).toEqual('1.2.3')
+  })
+})
+
+describe('version', () => {
+  test('-v shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx).default({ run() { } })
+    await cli.parse(argv('string-bin -v'))
+    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  })
+  test('--version shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx).default({ run() { } })
+    await cli.parse(argv('string-bin --version'))
+    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  })
+})
+
+describe.skip('help', () => {
+  test('-h shows help', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx).default({ run() { } })
+    await cli.parse(argv('string-bin -h'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test('--help shows version', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const cli = clibuilder(ctx).default({ run() { } })
+    await cli.parse(argv('string-bin --help'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test('help with cli.description', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({ run() { } })
+    await cli.parse(argv('single-bin -h'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
+  test.todo('show help if no command matches')
+  test.todo('show help if missing argument')
+})
+
+describe('--silent', () => {
+  test('--silent disables ui', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({
+      run() {
+        this.ui.info('should not print')
+        this.ui.warn('should not print')
+        this.ui.error('should not print')
+      }
+    })
+    await cli.parse(argv('single-bin --silent'))
+    expect(getLogMessage(ctx.reporter)).toEqual('')
+  })
+  test.todo('command.run() will not get args.silent')
+})
+
+describe('--verbose', () => {
+  test('--verbose enables debug messages', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({
+      run() {
+        this.ui.debug('should print')
+      }
+    })
+    await cli.parse(argv('single-bin --verbose'))
+    expect(getLogMessage(ctx.reporter)).toEqual('should print')
+  })
+  test('-V enables debug messages', async () => {
+    const ctx = mockAppContext('single-bin/bin.js')
+    const cli = clibuilder(ctx).default({
+      run() {
+        this.ui.debug('should print')
+      }
+    })
+    await cli.parse(argv('single-bin -V'))
+    expect(getLogMessage(ctx.reporter)).toEqual('should print')
+  })
+  test.todo('command.run() will not get args.silent')
+})
+
+describe('--debug-cli', () => {
+  test('turns on cli-level debug messages', async () => {
+    const ctx = mockAppContext('string-bin/bin.js')
+    const app = clibuilder(ctx).default({ run() { } })
+    await app.parse(argv('string-bin --debug-cli'))
+    const startPath = getFixturePath('string-bin/bin.js')
+    const pjsonPath = getFixturePath('string-bin/package.json')
+    a.true(getLogMessage(ctx.reporter).startsWith(`finding package.json starting from '${startPath}'...
+found package.json at '${pjsonPath}'
+package name: string-bin
+version: 1.0.0
+description: undefined
+argv: node string-bin --debug-cli`))
+  })
+  test.todo('log commands added')
+  test.todo('log loading plugins')
 })
 
 // describe('fluent syntax', () => {
@@ -233,29 +348,6 @@ describe('without options', () => {
 //   // })
 // })
 
-// describe('default()', () => {
-//   test('adds default command for cli to run', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({
-//       run() {
-//         return 'hello'
-//       }
-//     })
-//     expect(await cli.parse(argv('single-bin'))).toEqual('hello')
-//   })
-//   test('run --version', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({
-//       run() {
-//         return 'hello'
-//       }
-//     })
-//     await cli.parse(argv('single-bin --version'))
-
-//     expect(getLogMessage(ctx.reporter)).toEqual('1.2.3')
-//   })
-// })
-
 // describe('addCommands()', () => {
 //   test.skip('command', async () => {
 //     // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
@@ -271,102 +363,6 @@ describe('without options', () => {
 //   })
 // })
 
-// describe('version', () => {
-//   test('-v shows version', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = clibuilder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin -v'))
-//     expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
-//   })
-//   test('--version shows version', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = clibuilder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin --version'))
-//     expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
-//   })
-// })
-
-// describe('help', () => {
-//   test('-h shows help', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = clibuilder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin -h'))
-//     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('--help shows version', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = clibuilder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin --help'))
-//     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('help with cli.description', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({ run() { } })
-//     await cli.parse(argv('single-bin -h'))
-//     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test.todo('show help if no command matches')
-//   test.todo('show help if missing argument')
-// })
-
-// describe('--silent', () => {
-//   test('--silent disables ui', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({
-//       run() {
-//         this.ui.info('should not print')
-//         this.ui.warn('should not print')
-//         this.ui.error('should not print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin --silent'))
-//     expect(getLogMessage(ctx.reporter)).toEqual('')
-//   })
-//   test.todo('command.run() will not get args.silent')
-// })
-
-// describe('--verbose', () => {
-//   test('--verbose enables debug messages', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({
-//       run() {
-//         this.ui.debug('should print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin --verbose'))
-//     expect(getLogMessage(ctx.reporter)).toEqual('should print')
-//   })
-//   test('-V enables debug messages', async () => {
-//     const ctx = mockAppContext('single-bin/bin.js')
-//     const cli = clibuilder(ctx).default({
-//       run() {
-//         this.ui.debug('should print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin -V'))
-//     expect(getLogMessage(ctx.reporter)).toEqual('should print')
-//   })
-//   test.todo('command.run() will not get args.silent')
-// })
-
-// describe('--debug-cli', () => {
-//   test('turns on cli-level debug messages', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const app = clibuilder(ctx).default({ run() { } })
-//     await app.parse(argv('string-bin --debug-cli'))
-//     const startPath = getFixturePath('string-bin/bin.js')
-//     const pjsonPath = getFixturePath('string-bin/package.json')
-//     a.true(getLogMessage(ctx.reporter).startsWith(`finding package.json starting from '${startPath}'...
-// found package.json at '${pjsonPath}'
-// package name: string-bin
-// version: 1.0.0
-// description: undefined
-// argv: node string-bin --debug-cli`))
-//   })
-//   test.todo('log commands added')
-//   test.todo('log loading plugins')
-// })
-
 // describe('loadPlugin()', () => {
 //   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
 //     const ctx = mockAppContext('one-plugin/bin.js')
@@ -377,17 +373,17 @@ describe('without options', () => {
 //   })
 // })
 
-// function getHelpMessage(app: Pick<cli.Builder<any>, 'name' | 'description'>) {
-//   return `
-// Usage: ${app.name} [options]
-// ${app.description ? `
-//   ${app.description}
-// `: ''}
-// Options:
-//   [-h|--help]            Print help message
-//   [-v|--version]         Print the CLI version
-//   [-V|--verbose]         Turn on verbose logging
-//   [--silent]             Turn off logging
-//   [--debug-cli]          Display clibuilder debug messages
-// `
-// }
+function getHelpMessage(app: Pick<cli.Builder<any>, 'name' | 'description'>) {
+  return `
+Usage: ${app.name} [options]
+${app.description ? `
+  ${app.description}
+`: ''}
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+}
