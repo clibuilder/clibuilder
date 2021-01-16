@@ -42,7 +42,7 @@ function processArgvInternal(context: AppContext, command: cli.Command, argv: st
     forEachKey(numOptions, (k) => {
       if (!numOptions[k].multiple && Array.isArray(args[k])) {
         // TODO: log warning
-        context.ui.warn('.....')
+        context.ui.warn(`multiple '--${k}' received while expecting only one. Only the last value is used.`)
         args[k] = args[k].pop()
       }
     })

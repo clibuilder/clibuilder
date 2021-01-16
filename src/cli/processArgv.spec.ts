@@ -273,7 +273,7 @@ describe('with default command', () => {
     expect(command).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 123 })
   })
-  test.skip('boolean options with multiple values gets the last value and emit warning', () => {
+  test('number options with multiple values gets the last value and emit warning', () => {
     const defaultCommand: cli.Command = {
       name: '',
       options: {
@@ -287,7 +287,7 @@ describe('with default command', () => {
       argv('my-cli --abc=2 --abc=3'))
     expect(command).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 3 })
-    expect(getLogMessage(ctx.reporter)).toEqual(`get multiple 'abc' options. Only the last one is used`)
+    expect(getLogMessage(ctx.reporter)).toEqual(`multiple '--abc' received while expecting only one. Only the last value is used.`)
   })
   test('string options with = syntax', () => {
     const defaultCommand: cli.Command = {
