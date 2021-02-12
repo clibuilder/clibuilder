@@ -1,27 +1,29 @@
 // import { T } from 'type-plus'
 import { cli } from './cli'
-import { getBottomCommand } from './getBottomCommand'
-import { processArgv } from './processArgv'
+import { getBaseCommand } from './getBaseCommand'
+import { processArgv } from './processArgv2'
 import { AppContext } from './createAppContext'
 import { AppState, createAppState } from './createAppState'
+import { command } from './command'
+import { UI } from './types'
 
 export function clibuilder(context: AppContext, options?: cli.Options) {
   const state = createAppState(context, options)
   const description = state.description || ''
-  const commands: cli.Command[] = [getBottomCommand(description)]
+  const commands: command.Command[] = []
   return {
     name: state.name,
     version: state.version || '',
     description,
-    default(command: cli.DefaultCommand) {
-      commands.unshift({ ...command, name: '' })
+    default(command: command.DefaultCommand) {
+      commands.push({ ...command, name: '' })
       return { ...this, parse }
     }
   }
 
   function parse(argv: string[]): Promise<any> {
     state.debugLogs.push(['argv:', argv.join(' ')])
-    const { command, args } = processArgv(commands, argv)
+    const { command, args, errors } = processArgv(getBaseCommand(description), commands, argv)
     if (args.silent) context.ui.displayLevel = 'none'
     if (args.verbose) context.ui.displayLevel = 'debug'
     if (args.debugCli) {
@@ -38,10 +40,10 @@ export function clibuilder(context: AppContext, options?: cli.Options) {
       commandInstance.ui.showHelp()
       return Promise.resolve()
     }
-    return Promise.resolve(commandInstance.run(args))
+    return Promise.resolve(commandInstance.run(args as any))
   }
 
-  function createCommandInstance({ ui }: AppContext, state: AppState, command: cli.Command) {
+  function createCommandInstance({ ui }: AppContext, state: AppState, command: command.Command) {
     return {
       ...command,
       ui: createCommandUI(ui, state, command),
@@ -49,18 +51,18 @@ export function clibuilder(context: AppContext, options?: cli.Options) {
     }
   }
 
-  function createCommandUI(ui: AppContext['ui'], state: AppState, command: cli.Command) {
+  function createCommandUI(ui: AppContext['ui'], state: AppState, command: command.Command) {
     return {
       ...ui,
       showVersion: () => ui.showVersion(state.version),
       showHelp: () => ui.showHelp(state.name, command)
-    } as cli.UI
+    } as UI
   }
 }
 
 // export function clibuilder(context: AppContext, options?: cli.Options): cli.Builder<any> {
 //   const state = createAppState(context, options)
-//   const commands: cli.Command[] = [getBottomCommand(state)]
+//   const commands: command.Command[] = [getBaseCommand(state)]
 //   return {
 //     name: state.name,
 //     version: state.version || '',
