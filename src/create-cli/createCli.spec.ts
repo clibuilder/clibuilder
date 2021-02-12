@@ -349,7 +349,7 @@ describe('cli without command', () => {
     expect.assertions(1)
     const { cli, argv } = createCliTest({
       run() {
-        return new Promise(a => {
+        return new Promise<void>(a => {
           setTimeout(() => {
             expect(true).toBe(true)
             a()

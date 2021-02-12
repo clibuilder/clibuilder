@@ -1,24 +1,25 @@
 import { filterKey, forEachKey } from 'type-plus'
 import yargs from 'yargs-parser'
-import type { cli } from './cli'
+import { command } from './command'
 import { AppContext } from './createAppContext'
 
-export function processArgv2(context: AppContext, commands: cli.Command[], argv: string[]): {
-  command: cli.Command,
+export function processArgv2(context: AppContext, commands: command.Command[], argv: string[]): {
+  command: command.Command,
   args: { _: string[] } & Record<string, any>
 } {
+  const baseCommand = commands.pop()!
+
   // remove node and cli name
   argv = argv.slice(2)
-  const baseCommand = commands.pop()!
-  commands = commands.sort((a, b) => a.name.length - b.name.length)
+
   const result: {
-    command: cli.Command,
+    command: command.Command,
     args: { _: string[] } & Record<string, any>
-  } = processArgvInternal(context, baseCommand, argv)!
+  } = processArgvPerCommand(context, baseCommand, argv)!
   if (result.args.version) return result
 
   for (let i = 0; i < commands.length; i++) {
-    const result = processArgvInternal(context, commands[i], argv)
+    const result = processArgvPerCommand(context, commands[i], argv)
     if (result) return result
   }
 
@@ -28,25 +29,41 @@ export function processArgv2(context: AppContext, commands: cli.Command[], argv:
   return result
 }
 
-function processArgvInternal(context: AppContext, command: cli.Command, argv: string[]) {
+function parseArgv(context: AppContext, command: command.Command, argv: string[]) {
+
   const options = addOptions({
     alias: {}, default: {},
-    configuration: {
-      'strip-aliased': true,
-      'camel-case-expansion': false
-    }
+    configuration: { 'strip-aliased': true, 'camel-case-expansion': false }
   }, command.options)
+
   const args = yargs(argv, options)
+  const boolOptions = command.options?.boolean
+  if (boolOptions) {
+    const as = yargs(argv, { ...options, boolean: undefined })
+    forEachKey(boolOptions, (k: string) => {
+      if (as[k] === undefined) return
+      const o = boolOptions[k]
+      if (o.multiple && !Array.isArray(as[k])) {
+        args[k] = [args[k]]
+      }
+      else if (!o.multiple && Array.isArray(as[k])) {
+        context.ui.warn(`received multiple '--${k}' while expecting only one. Only the last value is used.`)
+      }
+    })
+  }
   const numOptions = command.options?.number
   if (numOptions) {
     forEachKey(numOptions, (k) => {
       if (!numOptions[k].multiple && Array.isArray(args[k])) {
-        // TODO: log warning
-        context.ui.warn(`multiple '--${k}' received while expecting only one. Only the last value is used.`)
+        context.ui.warn(`received multiple '--${k}' while expecting only one. Only the last value is used.`)
         args[k] = args[k].pop()
       }
     })
   }
+  return args
+}
+function processArgvPerCommand(context: AppContext, command: command.Command, argv: string[]) {
+  const args = parseArgv(context, command, argv)
   if (args._.length === 0) {
     return command.name ? undefined : { command, args }
   }
@@ -57,7 +74,7 @@ function processArgvInternal(context: AppContext, command: cli.Command, argv: st
   return { command, args }
 }
 
-export function processArgv(commands: cli.Command[], argv: string[]) {
+export function processArgv(commands: command.Command[], argv: string[]) {
   const yargsOptions = toYargsOption(commands)
   // const args = yargs(argv.slice(2), yargsOptions)
   const args = yargs(argv, yargsOptions)
@@ -73,7 +90,7 @@ export function processArgv(commands: cli.Command[], argv: string[]) {
   return { command, args }
 }
 
-function toYargsOption(commands: cli.Command[]) {
+function toYargsOption(commands: command.Command[]) {
   return commands.reduce(
     (options, cmd) => addOptions(options, cmd.options),
     { alias: {}, default: {} } as Record<string, any>)
@@ -99,7 +116,7 @@ function fixBooleanOptions(args: yargs.Arguments, argv: string[]) {
   })
 }
 
-function clearAlias(commands: cli.Command[], args: yargs.Arguments) {
+function clearAlias(commands: command.Command[], args: yargs.Arguments) {
   commands.forEach(command => {
     if (!command.options)
       return
@@ -120,14 +137,14 @@ function getAlias(options: { [k: string]: { alias?: string[] } } | undefined) {
   return filterKey(options, k => !!options[k].alias).reduce<string[]>((p, k) => p.concat(options[k].alias!), [])
 }
 
-function addOptions(options: Record<string, any>, cmdOptions: cli.Command.Options | undefined) {
+function addOptions(options: Record<string, any>, cmdOptions: command.Command.Options | undefined) {
   fillOptions(options, cmdOptions, 'boolean')
   fillOptions(options, cmdOptions, 'string')
   fillOptions(options, cmdOptions, 'number')
   return options
 }
 
-function fillOptions(result: Record<string, any>, options: cli.Command.Options | undefined, typeName: keyof cli.Command.Options) {
+function fillOptions(result: Record<string, any>, options: command.Command.Options | undefined, typeName: keyof command.Command.Options) {
   if (options?.[typeName]) {
     const values = options[typeName]!
     result[typeName] = Object.keys(values)
@@ -143,7 +160,7 @@ function fillOptions(result: Record<string, any>, options: cli.Command.Options |
   }
 }
 
-function findMatchingCommand(commands: cli.Command[], args: Record<string, any> & { _: string[] }) {
+function findMatchingCommand(commands: command.Command[], args: Record<string, any> & { _: string[] }) {
   const name = args._.shift()
   return commands.find(cmd => cmd.name === name)!
 }

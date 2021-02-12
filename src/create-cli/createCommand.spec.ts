@@ -4,11 +4,14 @@ import { assertType } from 'type-plus'
 import { createCliTest, MultipleArgumentNotLastEntry, OptionNameNotUnique } from '..'
 import { createCommand } from './createCommand'
 
-test('definding cmd must to specify name, description and run can be () => void', () => {
+test('must specify name, description and run can be () => void', () => {
   createCommand({
     name: 'cmd',
     description: '',
-    run() { return },
+    arguments: [{ name: 'a' }, { name: 'b' }],
+    run() {
+      return
+    },
   })
 })
 

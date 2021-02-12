@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
-import { createUI } from './ui/createUI'
+import { ui } from './ui'
 
 /**
  * Creates an app context that provides interactions to external system
@@ -13,7 +13,7 @@ export function createAppContext() {
     getAppPath,
     loadAppInfo,
     loadConfig,
-    ui: createUI(),
+    ui: ui(),
     process
   }
 }

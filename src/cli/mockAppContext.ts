@@ -4,7 +4,7 @@ import { getFixturePath } from '../test-utils'
 import { AppContext, createAppContext } from './createAppContext'
 import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
-import { createUI } from './ui/createUI'
+import { ui } from './ui'
 
 export type MockAppContext = AppContext & {
   reporter: MemoryLogReporter
@@ -29,7 +29,7 @@ export function mockUI(context: AppContext) {
     mode: 'test'
   })
   const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  context.ui = createUI(log)
+  context.ui = ui(log)
 
   return { ...context, reporter }
 }
