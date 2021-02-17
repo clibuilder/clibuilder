@@ -3,22 +3,20 @@ export namespace parseArgv {
     args: Result,
     key: string,
     values: string[],
-    pipe?: boolean
   }
-  export type Result = { _: string[] } & Record<string, string[]>
+  export type Result = { _: string[], __?: string[] } & Record<string, string[]>
 }
 
 export function parseArgv(argv: string[]) {
   const result = argv.slice(2)
     .reduce<parseArgv.State>((result, v) => {
-      if (result.pipe) return result
-
+      if (result.args.__) result.args.__.push(v)
       else if (isOption(v)) {
         if (isInOptionState(result)) result = endOption(result)
         result = startOption(result, v)
       }
       else if (isInOptionState(result)) result.values.push(v)
-      else if (v === '--') result.pipe = true
+      else if (v === '--') result.args.__ = []
       else result.args._.push(v)
 
       return result

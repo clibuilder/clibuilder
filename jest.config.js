@@ -12,7 +12,10 @@ module.exports = {
     '<rootDir>/src',
   ],
   'testEnvironment': 'node',
-  'testMatch': ['**/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'],
+  'testMatch': [
+    // 'src/cli/(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)',
+    '**/src/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'
+  ],
   'watchPlugins': [
     'jest-watch-suspend',
     'jest-watch-repeat',

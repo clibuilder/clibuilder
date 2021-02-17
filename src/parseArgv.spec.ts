@@ -1,5 +1,5 @@
-import { argv } from '../test-utils'
-import { parseArgv } from './parseArgv'
+import { argv } from './test-utils'
+import { parseArgv } from '.'
 
 test('empty', () => {
   testParse('cli', { _: [] })
@@ -123,8 +123,8 @@ describe('options with value(s)', () => {
 })
 
 describe('pipe (--) syntax', () => {
-  test('ignore everything after the pipe', () => {
-    testParse('cli -- abc', { _: [] })
+  test('save remaining args under __', () => {
+    testParse('cli -- abc def', { _: [], __:['abc', 'def'] })
   })
 })
 

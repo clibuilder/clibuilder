@@ -48,10 +48,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eslint", "npm:7.2.6"],
             ["@types/jest", "npm:26.0.20"],
             ["@types/node", "npm:14.14.26"],
+            ["@types/rimraf", "npm:3.0.0"],
             ["@types/wordwrap", "https://github.com/types/wordwrap.git#commit=caf776ac962b305476b491499cb8457db9729c1a"],
             ["@types/yargs-parser", "npm:20.2.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:4.15.0"],
             ["@typescript-eslint/parser", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:4.15.0"],
+            ["@yarnpkg/core", "npm:2.4.0"],
             ["@yarnpkg/pnpify", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.4.0"],
             ["assertron", "npm:7.1.3"],
             ["babel-jest", "virtual:caddf51df4928b33a437ca87b8f5ddfb6205ebd6d8231f74d4ee7223f3866e6f815b221aa1e2bd33e98915f701e95bae72a93d2288b49a34a6246bdbc2a4a132#npm:26.6.3"],
@@ -72,12 +74,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest-audio-reporter", "npm:2.2.1"],
             ["jest-junit", "npm:12.0.0"],
             ["jest-progress-tracker", "npm:2.0.2"],
+            ["jest-validate", "npm:26.6.2"],
             ["jest-watch-repeat", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.0.0"],
             ["jest-watch-suspend", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:1.1.2"],
             ["jest-watch-toggle-config", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.0.1"],
             ["jest-watch-typeahead", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:0.6.1"],
             ["npm-check-updates", "npm:11.1.1"],
             ["pad-right", "npm:0.2.2"],
+            ["rimraf", "npm:3.0.2"],
             ["satisfier", "npm:5.1.0"],
             ["search-packages", "npm:2.1.0"],
             ["semantic-release", "npm:17.3.8"],
@@ -3601,6 +3605,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/rimraf", [
+        ["npm:3.0.0", {
+          "packageLocation": "./.yarn/cache/@types-rimraf-npm-3.0.0-8a09fb283d-00a00a430f.zip/node_modules/@types/rimraf/",
+          "packageDependencies": [
+            ["@types/rimraf", "npm:3.0.0"],
+            ["@types/glob", "npm:7.1.3"],
+            ["@types/node", "npm:14.14.26"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/semver", [
         ["npm:7.3.4", {
           "packageLocation": "./.yarn/cache/@types-semver-npm-7.3.4-96fde085ea-7e8588aa55.zip/node_modules/@types/semver/",
@@ -5434,10 +5449,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eslint", "npm:7.2.6"],
             ["@types/jest", "npm:26.0.20"],
             ["@types/node", "npm:14.14.26"],
+            ["@types/rimraf", "npm:3.0.0"],
             ["@types/wordwrap", "https://github.com/types/wordwrap.git#commit=caf776ac962b305476b491499cb8457db9729c1a"],
             ["@types/yargs-parser", "npm:20.2.0"],
             ["@typescript-eslint/eslint-plugin", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:4.15.0"],
             ["@typescript-eslint/parser", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:4.15.0"],
+            ["@yarnpkg/core", "npm:2.4.0"],
             ["@yarnpkg/pnpify", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.4.0"],
             ["assertron", "npm:7.1.3"],
             ["babel-jest", "virtual:caddf51df4928b33a437ca87b8f5ddfb6205ebd6d8231f74d4ee7223f3866e6f815b221aa1e2bd33e98915f701e95bae72a93d2288b49a34a6246bdbc2a4a132#npm:26.6.3"],
@@ -5458,12 +5475,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest-audio-reporter", "npm:2.2.1"],
             ["jest-junit", "npm:12.0.0"],
             ["jest-progress-tracker", "npm:2.0.2"],
+            ["jest-validate", "npm:26.6.2"],
             ["jest-watch-repeat", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.0.0"],
             ["jest-watch-suspend", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:1.1.2"],
             ["jest-watch-toggle-config", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:2.0.1"],
             ["jest-watch-typeahead", "virtual:0b7021e9bf6de9f073a018999760894a88744a58a8820fcb50661f8660db137e5f9624d4fd64bf5b8f3917d7dbbc613b75442399a2ad4ae5e44f60f8e93f6ba9#npm:0.6.1"],
             ["npm-check-updates", "npm:11.1.1"],
             ["pad-right", "npm:0.2.2"],
+            ["rimraf", "npm:3.0.2"],
             ["satisfier", "npm:5.1.0"],
             ["search-packages", "npm:2.1.0"],
             ["semantic-release", "npm:17.3.8"],
@@ -9834,7 +9853,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest-validate", null],
             ["chalk", "npm:4.1.0"],
             ["jest", "npm:26.6.3"],
-            ["jest-validate", null]
+            ["jest-validate", "npm:26.6.2"]
           ],
           "packagePeers": [
             "@types/jest-validate",

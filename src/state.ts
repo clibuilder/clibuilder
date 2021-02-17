@@ -1,23 +1,25 @@
 import chalk from 'chalk'
 import { basename } from 'path'
 import { findKey } from 'type-plus'
-import { cli } from './cli'
-import { AppContext } from './createAppContext'
+import type { cli } from './cli'
+import { Context } from './context'
 import { AppInfo } from './loadAppInfo'
 
-export type AppState<C = any> = {
-  name: string,
-  version?: string,
-  description?: string,
-  configFilePath?: string,
-  config?: C,
-  commands: cli.Command[],
-  debugLogs: any[][]
+export namespace state {
+  export type Result<C = any> = {
+    name: string,
+    version?: string,
+    description?: string,
+    configFilePath?: string,
+    config?: C,
+    commands: cli.Command[],
+    debugLogs: any[][]
+  }
 }
 
-export function createAppState(
-  { ui, getAppPath, loadAppInfo, process }: AppContext,
-  options?: cli.Options): AppState<any> {
+export function state(
+  { ui, getAppPath, loadAppInfo, process }: Context,
+  options?: cli.Options): state.Result<any> {
   const debugLogs: any[][] = []
   if (options) return {
     ...options,
