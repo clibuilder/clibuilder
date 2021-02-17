@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { getFixturePath } from '../test-utils'
+import { getFixturePath } from './test-utils'
 import { loadAppInfo } from './loadAppInfo'
 
 test('no package.json', () => {

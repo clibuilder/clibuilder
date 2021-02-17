@@ -34,9 +34,7 @@ namespace processArgv {
 
 export function processArgv(baseCommand: command.Command, commands: command.Command[], argv: string[]) {
   const rawArgs = parseArgv(argv)
-  console.log('rawArgs', rawArgs)
   const result = processCommands(commands, rawArgs)
-  console.log('result', result)
   if (result &&
     !result?.errors.find(e => e.type === 'invalid-key' && e.key === 'version')
   ) return result

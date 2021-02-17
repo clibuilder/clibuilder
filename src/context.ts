@@ -8,7 +8,7 @@ import { ui } from './ui'
  * Creates an app context that provides interactions to external system
  * This
  */
-export function createAppContext() {
+export function context() {
   return {
     getAppPath,
     loadAppInfo,
@@ -18,7 +18,7 @@ export function createAppContext() {
   }
 }
 
-export type AppContext = ReturnType<typeof createAppContext>
+export type Context = ReturnType<typeof context>
 
 function loadConfig(cwd: string, configFileName: string): { configFilePath?: string, config?: unknown } {
   const configFilePath = resolveConfigFilename(cwd, configFileName)

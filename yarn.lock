@@ -2200,7 +2200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/glob@npm:^7.1.1":
+"@types/glob@npm:*, @types/glob@npm:^7.1.1":
   version: 7.1.3
   resolution: "@types/glob@npm:7.1.3"
   dependencies:
@@ -2349,6 +2349,16 @@ __metadata:
   version: 0.12.0
   resolution: "@types/retry@npm:0.12.0"
   checksum: 0755164f2c8d615a0385609c478aaa20b17e55bc8b16d5d56ffe6a5d30b0a9845d49452a2e8903ec7c43fa361f19daf5e68c60e7381ad10a95dd3d0bb5c9f7fd
+  languageName: node
+  linkType: hard
+
+"@types/rimraf@npm:^3":
+  version: 3.0.0
+  resolution: "@types/rimraf@npm:3.0.0"
+  dependencies:
+    "@types/glob": "*"
+    "@types/node": "*"
+  checksum: 00a00a430f838ddafdbc17386f08d928b1ae7aeada84d112f4369a7a89b4d47c1bb6849688f1d6ee404a08338ab52a80c742f0c3040d63ccc2aaec04bd1009f5
   languageName: node
   linkType: hard
 
@@ -3930,10 +3940,12 @@ __metadata:
     "@types/eslint": ^7
     "@types/jest": ^26.0.20
     "@types/node": ^14
+    "@types/rimraf": ^3
     "@types/wordwrap": "github:types/wordwrap"
     "@types/yargs-parser": ^20.2.0
     "@typescript-eslint/eslint-plugin": ^4.15.0
     "@typescript-eslint/parser": ^4.15.0
+    "@yarnpkg/core": ^2.4.0
     "@yarnpkg/pnpify": ^2.4.0
     assertron: ^7.1.3
     babel-jest: ^26.6.3
@@ -3954,12 +3966,14 @@ __metadata:
     jest-audio-reporter: ^2.2.1
     jest-junit: ^12.0.0
     jest-progress-tracker: ^2.0.2
+    jest-validate: ^26.6.2
     jest-watch-repeat: ^2.0.0
     jest-watch-suspend: ^1.1.2
     jest-watch-toggle-config: ^2.0.1
     jest-watch-typeahead: ^0.6.1
     npm-check-updates: ^11.1.1
     pad-right: ^0.2.2
+    rimraf: ^3.0.2
     satisfier: ^5.1.0
     search-packages: ^2.1.0
     semantic-release: ^17.3.8

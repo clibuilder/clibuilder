@@ -3,9 +3,8 @@ import { clibuilder } from './clibuilder'
 import { command } from './command'
 import { createAppContext } from './createAppContext'
 
-export function cli(options?: cli.Options): cli.Builder<void> {
-  const ctx = createAppContext()
-  return options ? clibuilder(ctx, options) : clibuilder(ctx)
+export function cli(options?: cli.Options) {
+  return clibuilder(createAppContext(), options)
 }
 
 export namespace cli {

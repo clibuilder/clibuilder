@@ -2,9 +2,9 @@ import { config, createMemoryLogReporter, getLogger, logLevels, MemoryLogReporte
 import { AnyFunction } from 'type-plus'
 import { getFixturePath } from '../test-utils'
 import { AppContext, createAppContext } from './createAppContext'
-import { getAppPath } from './getAppPath'
+import { getAppPath } from '../getAppPath'
 import { loadAppInfo } from './loadAppInfo'
-import { ui } from './ui'
+import { ui } from '../ui'
 
 export type MockAppContext = AppContext & {
   reporter: MemoryLogReporter

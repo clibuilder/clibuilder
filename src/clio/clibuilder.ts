@@ -1,14 +1,15 @@
 // import { T } from 'type-plus'
 import { cli } from './cli'
-import { getBaseCommand } from './getBaseCommand'
+import { getBaseCommand } from '../getBaseCommand'
 import { processArgv } from './processArgv2'
 import { AppContext } from './createAppContext'
-import { AppState, createAppState } from './createAppState'
+import { State, state } from '../state'
 import { command } from './command'
 import { UI } from './types'
+import { parseArgv } from './parseArgv'
 
 export function clibuilder(context: AppContext, options?: cli.Options) {
-  const state = createAppState(context, options)
+  const state = state(context, options)
   const description = state.description || ''
   const commands: command.Command[] = []
   return {
@@ -23,13 +24,15 @@ export function clibuilder(context: AppContext, options?: cli.Options) {
 
   function parse(argv: string[]): Promise<any> {
     state.debugLogs.push(['argv:', argv.join(' ')])
-    const { command, args, errors } = processArgv(getBaseCommand(description), commands, argv)
+    const args = parseArgv(argv)
     if (args.silent) context.ui.displayLevel = 'none'
     if (args.verbose) context.ui.displayLevel = 'debug'
     if (args.debugCli) {
       context.ui.displayLevel = 'trace'
       state.debugLogs.map(logEntries => context.ui.trace(...logEntries))
     }
+
+    // const { command, args, errors } = processArgv(getBaseCommand(description), commands, argv)
 
     const commandInstance = createCommandInstance(context, state, command)
     if (args.version) {
@@ -43,7 +46,7 @@ export function clibuilder(context: AppContext, options?: cli.Options) {
     return Promise.resolve(commandInstance.run(args as any))
   }
 
-  function createCommandInstance({ ui }: AppContext, state: AppState, command: command.Command) {
+  function createCommandInstance({ ui }: AppContext, state: State, command: command.Command) {
     return {
       ...command,
       ui: createCommandUI(ui, state, command),
@@ -51,7 +54,7 @@ export function clibuilder(context: AppContext, options?: cli.Options) {
     }
   }
 
-  function createCommandUI(ui: AppContext['ui'], state: AppState, command: command.Command) {
+  function createCommandUI(ui: AppContext['ui'], state: State, command: command.Command) {
     return {
       ...ui,
       showVersion: () => ui.showVersion(state.version),

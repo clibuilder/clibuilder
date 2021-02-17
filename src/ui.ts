@@ -1,7 +1,8 @@
 import padRight from 'pad-right'
 import { getLogger, Logger, logLevels } from 'standard-log'
 import wordwrap from 'wordwrap'
-import { CommandModel } from '../presenter'
+import z from 'zod'
+import type { cli } from './cli'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -41,7 +42,7 @@ export function ui(log: Logger = getLogger('clibuilder')) {
     info: (...args: any[]) => log.info(...args),
     warn: (...args: any[]) => log.warn(...args),
     error: (...args: any[]) => log.error(...args),
-    showHelp: (cliName: string, command: CommandModel) => {
+    showHelp: (cliName: string, command: ui.Command) => {
       const msg = generateHelpMessage(cliName, command)
       log.info(msg)
     },
@@ -50,7 +51,13 @@ export function ui(log: Logger = getLogger('clibuilder')) {
     }
   }
 }
-function generateHelpMessage(cliName: string, command: CommandModel) {
+
+export namespace ui {
+  export type Command = cli.Command & {
+    parent?: cli.Command
+  }
+}
+function generateHelpMessage(cliName: string, command: ui.Command) {
   const helpSections = [
     generateUsageSection(cliName, command),
     generateDescriptionSection(command),
@@ -64,7 +71,7 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(cliName: string, command: CommandModel) {
+function generateUsageSection(cliName: string, command: ui.Command) {
   const nameChain = getCommandNameChain(cliName, command)
   let message = `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
   if (command.arguments) message += ' [arguments]'
@@ -72,11 +79,11 @@ function generateUsageSection(cliName: string, command: CommandModel) {
   return message
 }
 
-function generateDescriptionSection(command: CommandModel) {
+function generateDescriptionSection(command: ui.Command) {
   return command.description ? '  ' + command.description : ''
 }
 
-function getCommandNameChain(cliName: string, command: CommandModel) {
+function getCommandNameChain(cliName: string, command: ui.Command) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
@@ -85,7 +92,7 @@ function getCommandNameChain(cliName: string, command: CommandModel) {
   return [cliName, ...commands.map(c => c.name).filter(x => x)]
 }
 
-function generateCommandsSection(command: CommandModel) {
+function generateCommandsSection(command: ui.Command) {
   const commandNames = getCommandsNamesAndAlias(command.commands)
   if (commandNames.length === 0)
     return ''
@@ -96,7 +103,7 @@ function generateCommandsSection(command: CommandModel) {
 ${padRight(command.name + ' <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
 }
 
-function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
+function getCommandsNamesAndAlias(commands: cli.Command[] | undefined) {
   const result: string[] = []
   if (commands) {
     commands.forEach(c => {
@@ -109,7 +116,7 @@ function getCommandsNamesAndAlias(commands: CommandModel[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(command: CommandModel) {
+function generateArgumentsSection(command: ui.Command) {
   if (!command.arguments) {
     return ''
   }
@@ -118,7 +125,7 @@ function generateArgumentsSection(command: CommandModel) {
   const entries: string[][] = []
   let maxWidth = 0
   command.arguments.forEach(a => {
-    const argStr = a.required ? `<${a.name}>` : `[${a.name}]`
+    const argStr = !a.type?.isOptional ? `<${a.name}>` : `[${a.name}]`
     maxWidth = Math.max(maxWidth, argStr.length)
     entries.push([argStr, a.description || ''])
   })
@@ -131,31 +138,31 @@ function generateArgumentsSection(command: CommandModel) {
   return message
 }
 
-function generateOptionsSection(command: CommandModel) {
+function generateOptionsSection(command: ui.Command) {
   if (!command.options) {
     return ''
   }
   let message = 'Options:\n'
   const entries: string[][] = []
   let maxOptionStrWidth = 0
-  if (command.options.string) {
-    for (const key in command.options.string) {
-      const value = command.options.string[key]
-      const optionStr = `${formatKeyValue(key, value)}=value`
-      maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-      const description = value.default ? `${value.description} (default '${value.default}')` : value.description
+  if (command.options) {
+    for (const key in command.options) {
+      const value = command.options[key]
+      const optionStr = formatKeyValue(key, value)
+      const description = formatDescription(value)
       entries.push([optionStr, description])
+      maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
     }
   }
-  if (command.options.boolean) {
-    for (const key in command.options.boolean) {
-      const value = command.options.boolean[key]
-      const optionStr = `${formatKeyValue(key, value)}`
-      maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-      const description = value.default ? `${value.description} (default true)` : value.description
-      entries.push([optionStr, description])
-    }
-  }
+  // if (command.options.boolean) {
+  //   for (const key in command.options.boolean) {
+  //     const value = command.options.boolean[key]
+  //     const optionStr = `${formatKeyValue(key, value)}`
+  //     maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
+  //     const description = value.default ? `${value.description} (default true)` : value.description
+  //     entries.push([optionStr, description])
+  //   }
+  // }
 
   const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxOptionStrWidth + RIGHT_PADDING)
 
@@ -165,12 +172,16 @@ function generateOptionsSection(command: CommandModel) {
   return message
 }
 
-function formatKeyValue(key: string, value: any) {
+function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
   const values = value.alias ? [...value.alias, key].sort((a, b) => a.length - b.length) : [key]
-  return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]`
+  const y = value.type instanceof z.ZodString ? '=value' : ''
+  return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]${y}`
 }
-
-function generateAliasSection(command: CommandModel) {
+function formatDescription(value: cli.Command.Options.Entry) {
+  const d = value.type instanceof z.ZodString ? `'${value.default}'` : value.default
+  return value.default ? `${value.description} (default '${d}')` : value.description
+}
+function generateAliasSection(command: ui.Command) {
   if (!command.alias)
     return ''
   return `Alias:

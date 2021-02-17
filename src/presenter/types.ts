@@ -1,4 +1,4 @@
-import { logLevel } from 'standard-log'
+import { logLevels } from 'standard-log'
 import { Cli } from '../create-cli/types'
 import Enquirer from 'enquirer'
 
@@ -10,9 +10,9 @@ export interface Display {
 }
 
 export enum DisplayLevel {
-  Silent = logLevel.none,
-  Normal = logLevel.info,
-  Verbose = logLevel.debug
+  Silent = logLevels.none,
+  Normal = logLevels.info,
+  Verbose = logLevels.debug
 }
 
 // istanbul ignore next

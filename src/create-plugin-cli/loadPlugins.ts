@@ -1,5 +1,5 @@
 import { findByKeywords } from 'find-installed-packages'
-import findup from 'find-up'
+import findUp from 'find-up'
 import path from 'path'
 import { log } from '../log'
 import { PluginCli } from './types'
@@ -36,8 +36,8 @@ function getGlobalPackageFolder(folder: string): string {
   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
   // in NodeJS@6 the following fails tsc due to null is not assignable to string.
-  // in this context the `findup()` call should not fail and will not return null.
-  return path.resolve(findup.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
+  // in this context the `findUp()` call should not fail and will not return null.
+  return path.resolve(findUp.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
 }
 
 function activatePlugins(pluginNames: string[], cwd: string) {

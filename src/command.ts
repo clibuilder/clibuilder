@@ -1,8 +1,12 @@
 import * as z from 'zod'
-import { command } from './command'
+import type { cli } from './cli'
 
-export function getBaseCommand(description: string): command.Command {
-  return {
+export function command(cmd: cli.Command) {
+  return cmd
+}
+
+export function getBaseCommand(description: string) {
+  return command({
     name: '',
     description,
     options: {
@@ -33,5 +37,5 @@ export function getBaseCommand(description: string): command.Command {
     run() {
       this.ui.showHelp()
     }
-  }
+  })
 }
