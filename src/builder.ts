@@ -31,15 +31,19 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
   function parse(argv: string[]): Promise<any> {
     s.debugLogs.push(['argv:', argv.join(' ')])
     const args = parseArgv(argv)
-    if (args.silent) context.ui.displayLevel = 'none'
-    if (args.verbose) context.ui.displayLevel = 'debug'
-    if (args.debugCli) {
-      context.ui.displayLevel = 'trace'
-      s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
-    }
-    if (args.version) {
-      context.ui.showVersion()
-      return Promise.resolve()
+    const baseCommand = getBaseCommand(description)
+    const b = lookupCommand([baseCommand], args)
+    if (b) {
+      if (b.args.silent) context.ui.displayLevel = 'none'
+      if (b.args.verbose) context.ui.displayLevel = 'debug'
+      if (b.args['debug-cli']) {
+        context.ui.displayLevel = 'trace'
+        s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
+      }
+      if (b.args.version) {
+        context.ui.showVersion(s.version)
+        return Promise.resolve()
+      }
     }
 
     const r = lookupCommand(s.commands, args)
