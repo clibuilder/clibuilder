@@ -1,9 +1,15 @@
 import * as z from 'zod'
 import type { cli } from './cli'
 
-export function command(cmd: cli.Command) {
+export function command<
+  Config extends Record<string, any> = Record<string, any>,
+  AName extends string = string,
+  A extends cli.Command.Argument<AName>[] = cli.Command.Argument<AName>[],
+  O extends cli.Command.Options = cli.Command.Options
+>(cmd: cli.Command<Config, A, O>) {
   return cmd
 }
+
 
 export function getBaseCommand(description: string) {
   return command({
