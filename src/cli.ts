@@ -96,13 +96,13 @@ export namespace cli {
       A extends Argument<infer AName>[] ? O extends Options<infer OName>
       ? (
         { [k in AName]: Extract<UnionOfValues<A>, { name: k }>['type'] extends infer AT
-          ? AT extends z.ZodType<any> ? z.infer<AT> : never
+          ? AT extends z.ZodType<any> ? z.infer<AT> : string
           : never
         }
         & { [k in OName]: O[k]['type'] extends infer OT
-          ? OT extends z.ZodType<any> ? z.infer<OT> : never
+          ? OT extends z.ZodType<any> ? z.infer<OT> : boolean
           : never }
-        & Options.Default)
+        & (string extends OName ? Options.Default : Omit<Options.Default, OName>))
       : never : never
   }
 
