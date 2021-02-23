@@ -7,7 +7,7 @@ namespace lookupCommand {
   export type Result = {
     command: cli.Command,
     args: parseArgv.Result
-    errors?: Error[]
+    errors: Error[]
   }
   export type Error = InvalidKey | InvalidValueType | ExpectSingle |
     ExtraArguments | MissingArgument
@@ -29,6 +29,7 @@ namespace lookupCommand {
   }
   export type ExtraArguments = {
     type: 'extra-arguments',
+    name: string,
     values: string[]
   }
   export type MissingArgument = {
@@ -89,6 +90,9 @@ function fillArguments(state: processCommand.State) {
     }
     return p
   }, { _: [] as string[], multiple: false })._
+  if (args.length > 0) {
+    state.errors.push({ type: 'extra-arguments', name: state.command.name, values: args })
+  }
   return state
 }
 function fillInputOptions(state: processCommand.State) {

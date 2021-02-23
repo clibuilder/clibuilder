@@ -1,7 +1,7 @@
 import padRight from 'pad-right'
 import { getLogger, Logger, logLevels } from 'standard-log'
 import wordwrap from 'wordwrap'
-import z from 'zod'
+import * as z from 'zod'
 import type { cli } from './cli'
 
 const INDENT = 2

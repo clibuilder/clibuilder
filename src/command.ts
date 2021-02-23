@@ -10,7 +10,6 @@ export function command<
   return cmd
 }
 
-
 export function getBaseCommand(description: string) {
   return command({
     name: '',
@@ -40,8 +39,6 @@ export function getBaseCommand(description: string) {
         description: 'Display clibuilder debug messages',
       },
     },
-    run() {
-      this.ui.showHelp()
-    }
+    run() { }
   })
 }

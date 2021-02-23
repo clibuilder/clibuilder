@@ -8,7 +8,7 @@ import { mockContext } from './mockContext'
 
 describe('with options', () => {
   test('need to specify name, version, and description', () => {
-    const cli = builder(mockContext('no-bin/index.js'), {
+    const cli = builder(mockContext('no-bin/other.js'), {
       name: 'app',
       version: '1.0.0',
       description: 'my app'
@@ -74,23 +74,8 @@ describe('without options', () => {
 describe('default()', () => {
   test('adds default command for cli to run', async () => {
     const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
-      run() {
-        return 'hello'
-      }
-    })
+    const cli = builder(ctx).default({ run() { return 'hello' } })
     expect(await cli.parse(argv('single-bin'))).toEqual('hello')
-  })
-  test('run --version', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
-      run() {
-        return 'hello'
-      }
-    })
-    await cli.parse(argv('single-bin --version'))
-
-    expect(getLogMessage(ctx.reporter)).toEqual('1.2.3')
   })
 })
 
@@ -109,7 +94,7 @@ describe('version', () => {
   })
 })
 
-describe.skip('help', () => {
+describe('help', () => {
   test('-h shows help', async () => {
     const ctx = mockContext('string-bin/bin.js')
     const cli = builder(ctx).default({ run() { } })
@@ -128,7 +113,12 @@ describe.skip('help', () => {
     await cli.parse(argv('single-bin -h'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
-  test.todo('show help if no command matches')
+  test('show help if no command matches', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run() { } })
+    await cli.parse(argv('single-bin not-exist'))
+    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  })
   test.todo('show help if missing argument')
 })
 
@@ -385,6 +375,6 @@ Options:
   [-v|--version]         Print the CLI version
   [-V|--verbose]         Turn on verbose logging
   [--silent]             Turn off logging
-  [--debug-cli]          Display builder debug messages
+  [--debug-cli]          Display clibuilder debug messages
 `
 }
