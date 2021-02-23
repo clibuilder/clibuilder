@@ -8,6 +8,7 @@ import { state } from './state'
 export function builder(context: Context, options?: cli.Options): cli.Builder<any> {
   const s = state(context, options)
   const description = s.description || ''
+  s.commands = [getBaseCommand(description)]
   return {
     name: s.name,
     version: s.version || '',
@@ -19,6 +20,10 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
       return { ...this, config: {} }
     },
     default(command) {
+      s.commands[0] = {
+        ...s.commands[0], ...command,
+        options: { ...s.commands[0].options, ...command.options }
+      }
       s.commands.push({ ...command, name: '' })
       return { ...this, parse }
     },
@@ -31,28 +36,24 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
   function parse(argv: string[]): Promise<any> {
     s.debugLogs.push(['argv:', argv.join(' ')])
     const args = parseArgv(argv)
-    const baseCommand = getBaseCommand(description)
-    const b = lookupCommand([baseCommand], args)
-    if (b) {
-      if (b.args.silent) context.ui.displayLevel = 'none'
-      if (b.args.verbose) context.ui.displayLevel = 'debug'
-      if (b.args['debug-cli']) {
-        context.ui.displayLevel = 'trace'
-        s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
-      }
-      if (b.args.version) {
-        context.ui.showVersion(s.version)
-        return Promise.resolve()
-      }
-    }
 
     const r = lookupCommand(s.commands, args)
-    if (!r) {
-      createCommandInstance(context, s, getBaseCommand(description)).ui.showHelp()
+    if (!r || r.errors.length > 0) {
+      createCommandInstance(context, s, s.commands[0]).ui.showHelp()
+      return Promise.resolve()
+    }
+    if (r.args.silent) context.ui.displayLevel = 'none'
+    if (r.args.verbose) context.ui.displayLevel = 'debug'
+    if (r.args['debug-cli']) {
+      context.ui.displayLevel = 'trace'
+      s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
+    }
+    if (r.args.version) {
+      context.ui.showVersion(s.version)
       return Promise.resolve()
     }
 
-    const commandInstance = createCommandInstance(context, s, r ? r.command : getBaseCommand(description))
+    const commandInstance = createCommandInstance(context, s, r.command)
     if (r.args.help) {
       commandInstance.ui.showHelp()
       return Promise.resolve()
