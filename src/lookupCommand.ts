@@ -1,4 +1,4 @@
-import { reduceByKey } from 'type-plus'
+import { findKey, reduceByKey } from 'type-plus'
 import * as z from 'zod'
 import type { cli } from './cli'
 import { parseArgv } from './parseArgv'
@@ -72,7 +72,7 @@ function fillArguments(state: processCommand.State) {
   const argSpecs = state.command.arguments || []
   state.args._ = argSpecs.reduce((p, s) => {
     if (args.length === 0) {
-      state.errors.push({ type: 'extra-arguments', values: args })
+      state.errors.push({ type: 'missing-argument', name: s.name })
       return p
     }
     if (s.type instanceof z.ZodArray) {
@@ -99,7 +99,6 @@ function fillInputOptions(state: processCommand.State) {
       s.errors.push({ type: 'invalid-key', key })
       return s
     }
-
     const [name, optionEntry] = lookupOptions(state.command, key)
     if (!name) {
       s.errors.push({ type: 'invalid-key', key })
@@ -116,7 +115,6 @@ function fillInputOptions(state: processCommand.State) {
 function fillDefaultOptions(state: processCommand.State) {
   const optionsMap = state.command.options || {}
   return reduceByKey(optionsMap, (p, key) => {
-    // option `key` is specified by user
     if (p.args[key]) return p
 
     const options = optionsMap[key]
@@ -129,19 +127,22 @@ function fillDefaultOptions(state: processCommand.State) {
 
 function lookupOptions(command: cli.Command, key: string)
   : [string, cli.Command.Options.Entry] | [] {
-  if (!command.options) return []
-  const options = command.options[key]
-  if (!options) return []
-  if (typeof options === 'string') return lookupOptions(command, options)
-  return [key, options]
+  const opts = command.options
+  if (!opts) return []
+  const options = opts[key]
+  if (options) return [key, options]
+  const optKey = findKey(opts, (k) => {
+    const opt = opts[k]
+    if (!opt.alias) return false
+    // console.log(key, k, opt)
+    return opt.alias.some(a => a === key || (a as { alias: string }).alias === key)
+  })
+  return optKey ? [optKey, opts[optKey]] : []
 }
 
 function convertValue(t: z.ZodType<any>, key: string, values: string[]) {
   const [r, errors] = parse(t, key, values)
-  if (r.success) return [r.data, errors]
-
-  errors.push({ type: 'invalid-value', key, value: values, message: r.error.message })
-  return [undefined, errors]
+  return [r.success ? r.data : undefined, errors]
 }
 
 function parse(t: z.ZodType<any>, key: string, values: string[]) {
@@ -168,21 +169,22 @@ function toParsable(
     return [values[values.length - 1], errors]
   }
   if (t instanceof z.ZodArray) {
-    if (t instanceof z.ZodBoolean) {
+    const e = t.element
+    if (e instanceof z.ZodBoolean) {
       return values.reduce(([i, e], v) => {
         const [r, errors] = toBoolean(key, v, e)
         i.push(r)
         return [i, errors]
       }, [[] as Array<boolean | undefined>, errors])
     }
-    if (t instanceof z.ZodNumber) {
+    if (e instanceof z.ZodNumber) {
       return values.reduce(([i, e], v) => {
         const [r, errors] = toNumber(key, v, e)
         i.push(r)
         return [i, errors]
       }, [[] as Array<number | undefined>, errors])
     }
-    if (t instanceof z.ZodString) {
+    if (e instanceof z.ZodString) {
       return [values, errors]
     }
   }
@@ -211,32 +213,3 @@ function toNumber(
   errors.push({ type: 'invalid-value', key, value, message: 'expected to be number' })
   return [undefined, errors]
 }
-// function convertValues(
-//   options: command.OptionEntry,
-//   key: string,
-//   values: string[]): [boolean[] | number[] | string[], processArgv.Error[]] {
-//   const errors: processArgv.Error[] = []
-//   const t = options.type
-//   if (t instanceof z.ZodArray) {
-//     if (t.element instanceof
-// }
-//   switch (options.type) {
-//     case 'boolean':
-//       return [values.map(value => {
-//         if (value.toLowerCase() === 'true') return true
-//         if (value.toLowerCase() === 'false') return false
-//         errors.push({ type: 'invalid-value-type', key, keyType: options.type, value })
-//         return false
-//       }), errors]
-//     case 'number':
-//       return [values.map(value => {
-//         if (Number.isNaN(value)) {
-//           errors.push({ type: 'invalid-value-type', key, keyType: options.type, value })
-//           return value
-//         }
-//         return +value
-//       }).filter(v => !Number.isNaN(v)) as number[], errors]
-//     default:
-//       return [values, errors]
-//   }
-// }
