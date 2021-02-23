@@ -87,8 +87,10 @@ export namespace cli {
           description: string,
           type?: Type,
           default?: z.infer<Type>,
-          alias?: string[]
+          alias?: Alias[]
         }
+
+      export type Alias = string | { alias: string, hidden: boolean }
     }
     export type RunArgs<A extends Argument[], O extends Options> =
       A extends Argument<infer AName>[] ? O extends Options<infer OName>

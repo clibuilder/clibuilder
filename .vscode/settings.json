@@ -16,5 +16,11 @@
     "**/.pnp.*": true
   },
   "eslint.enable": true,
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "cSpell.words": [
+    "greenkeeper",
+    "macos",
+    "pnpify",
+    "yarnpkg"
+  ]
 }
