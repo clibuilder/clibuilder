@@ -87,7 +87,7 @@ describe('with default command', () => {
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli abc')!
     expect(cmd).toBe(defaultCommand)
-    expect(args).toEqual({ _: ['abc'] })
+    expect(args).toEqual({ _: [], arg: 'abc' })
   })
 })
 describe('argument', () => {

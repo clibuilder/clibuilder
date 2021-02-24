@@ -6,7 +6,9 @@ import { parseArgv } from './parseArgv'
 namespace lookupCommand {
   export type Result = {
     command: cli.Command,
-    args: parseArgv.Result,
+    args: {
+      __?: string[] | undefined
+    } & Record<string, string[]>,
     errors: Error[]
   }
   export type Error = InvalidKey | InvalidValueType | ExpectSingle |
@@ -87,7 +89,7 @@ function fillArguments(state: processCommand.State | undefined) {
   const command = state.command
   const args = [...state.rawArgs._]
   const argSpecs = command.arguments || []
-  state.args._ = argSpecs.reduce((p, s) => {
+  state.args = argSpecs.reduce((p, s) => {
     if (args.length === 0) {
       state.errors.push({ type: 'missing-argument', name: s.name })
       return p
@@ -95,17 +97,22 @@ function fillArguments(state: processCommand.State | undefined) {
     if (s.type instanceof z.ZodArray) {
       const e = s.type.element
       let r = e.safeParse(args[0])
+      p.args[s.name] = p.args[s.name] || []
       while (r.success) {
-        p._.push(r.data)
+        p.args[s.name].push(r.data)
         args.pop()
         r = e.safeParse(args[0])
       }
     }
     else {
-      p._.push(args.pop()!)
+      p.args[s.name] = args.pop()!
     }
     return p
-  }, { _: [] as string[], multiple: false })._
+  }, {
+    args: { _: [] } as {
+      _: string[]
+    } & Record<any, any>, multiple: false
+  }).args
   if (args.length > 0) {
     state.errors.push({ type: 'extra-arguments', name: command.name, values: args })
   }
