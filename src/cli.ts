@@ -67,12 +67,12 @@ export namespace cli {
 
     export type Argument<
       Name extends string = string,
-      Type extends z.ZodType<any> = z.ZodType<any>,
+      Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>,
       > = { name: Name, description: string, type?: Type }
 
     export type Options<
       Name extends string = string,
-      Type extends z.ZodType<any> = z.ZodType<any>,
+      Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>,
       > = Record<Name, Options.Entry<Type>>
 
     export namespace Options {
@@ -82,7 +82,7 @@ export namespace cli {
         verbose: boolean
       }
       export type Entry<
-        Type extends z.ZodType<any> = z.ZodType<any>
+        Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>
         > = {
           description: string,
           type?: Type,
@@ -100,7 +100,7 @@ export namespace cli {
           : never
         }
         & { [k in OName]: O[k]['type'] extends infer OT
-          ? OT extends z.ZodType<any> ? z.infer<OT> : boolean
+          ? OT extends z.ZodType<any> ? z.infer<OT> : boolean | undefined
           : never }
         & (string extends OName ? Options.Default : Omit<Options.Default, OName>))
       : never : never

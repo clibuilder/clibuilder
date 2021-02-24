@@ -1,5 +1,6 @@
 import padRight from 'pad-right'
 import { getLogger, Logger, logLevels } from 'standard-log'
+import { someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import * as z from 'zod'
 import type { cli } from './cli'
@@ -74,9 +75,20 @@ ${helpSections.join('\n\n')}
 function generateUsageSection(cliName: string, command: ui.Command) {
   const nameChain = getCommandNameChain(cliName, command)
   let message = `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
-  if (command.arguments) message += ' [arguments]'
-  if (command.options) message += ' [options]'
+  if (command.arguments) {
+    message += command.arguments.some(a => isRequired(a, true)) ? ' <arguments>' : ' [arguments]'
+  }
+  if (command.options) {
+    message += someKey(command.options, (k) => isRequired(command.options![k], false))
+      ? ' <options>'
+      : ' [options]'
+  }
   return message
+}
+
+function isRequired({ type }: { type?: z.ZodType<any> }, defaultValue: boolean) {
+  if (!type) return defaultValue
+  return !type.isOptional()
 }
 
 function generateDescriptionSection(command: ui.Command) {

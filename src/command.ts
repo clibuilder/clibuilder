@@ -16,29 +16,31 @@ export function getBaseCommand(description: string) {
     description,
     options: {
       'help': {
-        type: z.boolean(),
+        type: z.optional(z.boolean()),
         description: 'Print help message',
         alias: ['h']
       },
       'version': {
-        type: z.boolean(),
+        type: z.optional(z.boolean()),
         description: 'Print the CLI version',
         alias: ['v']
       },
       'verbose': {
-        type: z.boolean(),
+        type: z.optional(z.boolean()),
         description: 'Turn on verbose logging',
         alias: ['V']
       },
       'silent': {
-        type: z.boolean(),
+        type: z.optional(z.boolean()),
         description: 'Turn off logging',
       },
       'debug-cli': {
-        type: z.boolean(),
+        type: z.optional(z.boolean()),
         description: 'Display clibuilder debug messages',
       },
     },
-    run() { }
+    run() {
+      this.ui.showHelp()
+    }
   })
 }

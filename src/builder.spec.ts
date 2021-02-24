@@ -119,7 +119,29 @@ describe('help', () => {
     await cli.parse(argv('single-bin not-exist'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
-  test.todo('show help if missing argument')
+  test.only('show help if missing argument', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({
+      arguments: [{ name: 'abc', description: 'arg abc' }],
+      run() { }
+    })
+    await cli.parse(argv('single-bin'))
+    expect(getLogMessage(ctx.reporter)).toEqual(`
+Usage: single-cli <arguments> [options]
+
+  a single bin app
+
+Arguments:
+  <abc>                  arg abc
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`)
+  })
 })
 
 describe('--silent', () => {
