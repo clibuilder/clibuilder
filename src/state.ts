@@ -25,7 +25,7 @@ export function state(
   }
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
-  const appInfo = loadAppInfo(log, appPath)
+  const appInfo = loadAppInfo(appPath)
   if (appInfo) {
     const name = getCliName(appPath, appInfo)
     if (name) {
@@ -40,7 +40,6 @@ export function state(
       }
     }
   }
-
   ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
     ${chalk.cyan(appPath)}
 

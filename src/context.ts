@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
-import { captureLogs, getLogger, LogEntry, logLevels } from 'standard-log'
+import { captureLogs, getLogger, LogEntry } from 'standard-log'
 import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
 import { loadPlugins } from './loadPlugins'
@@ -11,20 +11,45 @@ import { ui } from './ui'
  * This
  */
 export function context() {
-  const log = getLogger('clibuilder', { level: logLevels.all })
   const debugLogs: LogEntry[] = []
+  const logger = getLogger('clibuilder')
+  const log = {
+    ...logger,
+    get level(): number | undefined {
+      return logger.level
+    },
+    set level(value: number | undefined) {
+      logger.level = value
+    },
+    debug(...args: any[]) {
+      const [, logs] = captureLogs(logger, () => logger.debug(...args))
+      debugLogs.push(...logs)
+    },
+    info(...args: any[]) {
+      const [, logs] = captureLogs(logger, () => logger.info(...args))
+      debugLogs.push(...logs)
+    },
+    warn(...args: any[]) {
+      const [, logs] = captureLogs(logger, () => logger.warn(...args))
+      debugLogs.push(...logs)
+    },
+    error(...args: any[]) {
+      const [, logs] = captureLogs(logger, () => logger.error(...args))
+      debugLogs.push(...logs)
+    },
+  }
   return {
     getAppPath,
-    loadAppInfo,
+    loadAppInfo(appPkgPath: string) {
+      return loadAppInfo(log, appPkgPath)
+    },
     loadConfig(configFileName: string) {
       const cwd = this.process.cwd()
       return loadConfig(cwd, configFileName)
     },
     async loadPlugins(keyword: string) {
       const cwd = this.process.cwd()
-      const [result, logs] = await captureLogs(log, () => loadPlugins({ cwd, log }, keyword))
-      debugLogs.push(...logs)
-      return result
+      return loadPlugins({ cwd, log: logger }, keyword)
     },
     log,
     debugLogs,

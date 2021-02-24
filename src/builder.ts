@@ -1,4 +1,4 @@
-import { toLogLevelName } from 'standard-log'
+import { logLevels, toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import type { cli } from './cli'
 import { getBaseCommand } from './command'
@@ -8,6 +8,10 @@ import { parseArgv } from './parseArgv'
 import { state } from './state'
 
 export function builder(context: Context, options?: cli.Options): cli.Builder<any> {
+  // turn all `clibuilder-debug` logs manually,
+  // as user will run `config()` to set the log levels
+  // and override the log level for this logger.
+  context.log.level = logLevels.all
   const s = state(context, options)
   const description = s.description || ''
   s.commands = [getBaseCommand(description) as any]

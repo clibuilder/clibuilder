@@ -3,15 +3,6 @@ import { createCliArgv, createPluginCliTest, generateDisplayedMessage, echoComma
 import { configCommand } from '../test-util/configCommand'
 import { createPluginCli } from './createPluginCli'
 
-test('use "{name}-plugin" as keyword to look for plugins', async () => {
-  const { cli } = createPluginCliTest({
-    name: 'plugin-cli',
-    version: '1.0.0',
-    context: { cwd: 'fixtures/one-plugin' },
-  })
-  const actual = await cli.parse(createCliArgv('cli', 'one', 'echo', 'bird'))
-  expect(actual).toEqual('bird')
-})
 
 test('use custom keyword to look for plugins', async () => {
   const { cli } = createPluginCliTest({
