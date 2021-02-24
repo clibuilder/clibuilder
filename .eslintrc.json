@@ -11,7 +11,10 @@
       "files": [
         "*.ts",
         "*.tsx"
-      ]
+      ],
+      "rules": {
+        "no-use-before-define": "off"
+      }
     }
   ],
   "root": true

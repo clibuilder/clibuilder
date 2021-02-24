@@ -6,7 +6,7 @@ import { parseArgv } from './parseArgv'
 namespace lookupCommand {
   export type Result = {
     command: cli.Command,
-    args: parseArgv.Result
+    args: parseArgv.Result,
     errors: Error[]
   }
   export type Error = InvalidKey | InvalidValueType | ExpectSingle |

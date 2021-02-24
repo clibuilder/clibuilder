@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 declare module 'enquirer' {
   import { SymbolsType } from 'ansi-colors';
   import { EventEmitter } from 'events';
