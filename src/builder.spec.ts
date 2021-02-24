@@ -375,16 +375,19 @@ describe('loadConfig()', () => {
     // }])
   })
   test('default() receives config type', async () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-config'))
-    cli.loadConfig({ type: z.object({ a: z.number() }) })
+    const cli = builder(mockContext('has-config/bin.js', 'has-config'))
+      .loadConfig({ type: z.object({ a: z.number() }) })
       .default({
         run() {
           assertType<{ a: number }>(this.config)
+          return this.config
         }
       })
+    const a = await cli.parse(argv('has-config'))
+    expect(a).toEqual({ a: 1 })
   })
   test('addCommands() receives config type', async () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-config'))
+    const cli = builder(mockContext('has-config/bin.js'))
     cli.loadConfig({ type: z.object({ a: z.number() }) })
       .addCommands([{
         name: 'cmd-a',
@@ -398,10 +401,52 @@ describe('loadConfig()', () => {
         }
       }])
   })
+  test(`read config file in parent directory`, async () => {
+    const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
+    const cli = builder(ctx)
+      .loadConfig({ type: z.object({ a: z.number() }) })
+      .default({
+        run() {
+          return this.config
+        }
+      })
+    const a = await cli.parse(argv('has-config'))
+    expect(a).toEqual({ a: 1 })
+  })
+  // seems to be some issue with `zod` default system
+  test.skip(`default config is overridden by value in config file`, async () => {
+    const ctx = mockContext('has-config/bin.js', 'has-config')
+    const cli = builder(ctx)
+      .loadConfig({
+        type: z.object({
+          a: z.number().default(2),
+          b: z.optional(z.number()).default(3)
+        })
+      })
+    expect(cli.config).toEqual({ a: 1, b: 3 })
+  })
+
+  test.skip('load config if any command has config', async () => {
+    const ctx = mockContext('has-config/bin.js', 'has-config')
+    const cli = builder(ctx)
+      .addCommands([{
+        name: 'group',
+        commands: [{
+          name: 'config',
+          config: z.object({ a: z.number() }),
+          run() { return this.config }
+        }],
+        // TODO
+        run() { }
+      }])
+
+    const a = await cli.parse(argv('has-config group config'))
+    expect(a).toEqual({ a: 1 })
+  })
 })
 
 describe('loadPlugins()', () => {
-  test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
+  test('use "{name}-plugin" as keyword to look for plugins', async () => {
     const ctx = mockContext('string-bin/bin.js', 'one-plugin')
     const cli = builder(ctx, {
       name: 'plugin-cli',
@@ -411,6 +456,31 @@ describe('loadPlugins()', () => {
 
     const actual = await cli.parse(argv('string-bin one echo bird'))
     expect(actual).toEqual('bird')
+  })
+  test('use custom keyword to look for plugins', async () => {
+    const ctx = mockContext('string-bin/bin.js', 'alt-keyword-plugin')
+    const cli = builder(ctx, {
+      name: 'clibuilder',
+      version: '1.0.0',
+      description: ''
+    }).loadPlugins('x-file')
+    const actual = await cli.parse(argv('string-bin x echo'))
+    expect(actual).toEqual('echo invoked')
+  })
+
+  test('pluginCli can specify its own commands', async () => {
+    const ctx = mockContext('string-bin/bin.js')
+    const cli = builder(ctx, {
+      name: 'defaultCommands',
+      version: '1.0.0',
+      description: ''
+    }).addCommands([{
+      name: 'local',
+      run() { return 'local' }
+    }])
+
+    const actual = await cli.parse(argv('string-bin local'))
+    expect(actual).toBe('local')
   })
 })
 

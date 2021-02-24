@@ -1,3 +1,4 @@
+import findUp from 'find-up'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { captureLogs, getLogger, LogEntry } from 'standard-log'
@@ -45,7 +46,9 @@ export function context() {
     },
     loadConfig(configFileName: string) {
       const cwd = this.process.cwd()
-      return loadConfig(cwd, configFileName)
+      const win = this.process.platform === 'win32'
+      const home = win ? process.env.USERPROFILE : process.env.HOME
+      return loadConfig(cwd, home, configFileName)
     },
     async loadPlugins(keyword: string) {
       const cwd = this.process.cwd()
@@ -60,8 +63,8 @@ export function context() {
 
 export type Context = ReturnType<typeof context>
 
-function loadConfig(cwd: string, configFileName: string): { configFilePath?: string, config?: unknown } {
-  const configFilePath = resolveConfigFilename(cwd, configFileName)
+function loadConfig(cwd: string, home: string | undefined, configFileName: string): { configFilePath?: string, config?: unknown } {
+  const configFilePath = resolveConfigFilename(cwd, home, configFileName)
   if (!configFilePath) return {}
   return {
     configFilePath,
@@ -69,18 +72,24 @@ function loadConfig(cwd: string, configFileName: string): { configFilePath?: str
   }
 }
 
-function resolveConfigFilename(cwd: string, configFileName: string) {
+function resolveConfigFilename(cwd: string, home: string | undefined, configFileName: string) {
   if (configFileName.indexOf('.') >= 0) {
     return path.join(cwd, configFileName)
   }
 
-  const filepaths = [
-    path.join(cwd, `${configFileName}.json`),
-    path.join(cwd, `.${configFileName}rc.json`),
-    path.join(cwd, `.${configFileName}rc`),
+  const filenames = [
+    path.join(`${configFileName}.json`),
+    path.join(`.${configFileName}rc.json`),
+    path.join(`.${configFileName}rc`),
   ]
-  for (const filepath of filepaths) {
-    if (existsSync(filepath)) return filepath
+  for (const filename of filenames) {
+    let filePath = findUp.sync(filename, { cwd })
+    if (filePath) return filePath
+
+    if (home) {
+      filePath = path.join(home, filename)
+      if (existsSync(filePath)) return filePath
+    }
   }
   return undefined
 }
