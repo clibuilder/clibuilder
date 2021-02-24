@@ -1,9 +1,8 @@
 import { config, createMemoryLogReporter, getLogger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
-import { getFixturePath } from './test-utils'
 import { Context, context } from './context'
 import { getAppPath } from './getAppPath'
-import { loadAppInfo } from './loadAppInfo'
+import { getFixturePath } from './test-utils'
 import { ui } from './ui'
 
 export type MockAppContext = Context & {
@@ -15,8 +14,7 @@ export function mockContext(binFixturePath: string, cwdFixturePath = process.cwd
     context,
     mockUI,
     (ctx) => mockProcess(ctx, cwdFixturePath),
-    (ctx) => mockGetAppPath(ctx, binFixturePath),
-    mockLoadAppInfo
+    (ctx) => mockGetAppPath(ctx, binFixturePath)
   )
 }
 
@@ -48,12 +46,6 @@ export function mockProcess(context: Context, cwdFixturePath: string) {
 export function mockGetAppPath(context: Context, fixtureFilePath: string) {
   const stack = mockStack(fixtureFilePath)
   context.getAppPath = () => getAppPath(stack)
-  return context
-}
-
-export function mockLoadAppInfo(context: Context) {
-  const cwd = context.getAppPath('anything')
-  context.loadAppInfo = (debugLogs) => loadAppInfo(debugLogs, cwd)
   return context
 }
 
