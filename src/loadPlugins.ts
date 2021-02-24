@@ -58,7 +58,10 @@ function activatePlugins(cwd: string, log: Logger, pluginNames: string[]) {
     })
     .forEach(({ name, pluginModule }) => {
       log.debug('activating plugin', name)
-      commands.push(...activatePlugin(pluginModule))
+      activatePlugin(pluginModule).forEach(cmd => {
+        log.debug('adding command', cmd.name)
+        commands.push(cmd)
+      })
       log.debug('activated plugin', name)
     })
   return commands
