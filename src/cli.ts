@@ -15,6 +15,17 @@ export namespace cli {
     name: string,
     version: string,
     description: string,
+    /**
+     * Specify the config name if differs from the cli name.
+     * e.g. name = `cli`,
+     * configName = `my-cli`,
+     * will load the first config named as:
+     * - `my-cli.json`
+     * - `.my-clirc.json`
+     * - `.my-clirc`
+     * in that order
+     */
+    configName?: string
   }
 
   export type Builder<Config = undefined> = {
@@ -33,7 +44,7 @@ export namespace cli {
       : (HasKey<T, 'loadPlugins'> extends false
         ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>
         : Omit<Builder<z.infer<C>>, 'loadConfig'>),
-    loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable,
+    loadPlugins<T>(this: T, keyword?: string): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
       AName extends string,

@@ -34,9 +34,13 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
         context.log.debug(`load config from: ${configFilePath}`)
         context.log.debug(`config: ${JSON.stringify(config)}`)
       }
+      else {
+        context.log.debug(`unable to load config from ${configFilePath}`)
+      }
       const r = options.type.safeParse(config)
       if (r.success) {
         (this as any).config = config
+        s.config = config
         return this as any
       }
       else {
