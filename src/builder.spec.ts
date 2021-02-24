@@ -120,7 +120,7 @@ describe('help', () => {
     await cli.parse(argv('single-bin not-exist'))
     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
   })
-  test.only('show help if missing argument', async () => {
+  test('show help if missing argument', async () => {
     const ctx = mockContext('single-bin/bin.js')
     const cli = builder(ctx).default({
       arguments: [{ name: 'abc', description: 'arg abc' }],
@@ -210,6 +210,27 @@ argv: node string-bin --debug-cli`))
   })
   test.todo('log commands added')
   test.todo('log loading plugins')
+})
+
+describe('addCommands()', () => {
+  test('single command', async () => {
+    const cli = builder(mockContext('single-bin/bin.js'))
+      .addCommands([{ name: 'cmd1', run() { return 'cmd1' } }])
+    const actual = await cli.parse(argv('single-bin cmd1'))
+    expect(actual).toEqual('cmd1')
+  })
+
+  test('multiple commands', async () => {
+    const cli = builder(mockContext('single-bin/bin.js'))
+      .addCommands([
+        { name: 'cmd1', run() { return 'cmd1' } },
+        { name: 'cmd2', run() { return 'cmd2' } },
+        { name: 'cmd3', run() { return 'cmd3' } },
+        { name: 'cmd4', run() { return 'cmd4' } }
+      ])
+    const actual = await cli.parse(argv('single-bin cmd3'))
+    expect(actual).toEqual('cmd3')
+  })
 })
 
 // describe('fluent syntax', () => {
@@ -337,52 +358,6 @@ argv: node string-bin --debug-cli`))
 //   })
 // })
 
-// describe('addCommands()', () => {
-//   test.skip('add default command options to help', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = builder(ctx)
-//     const actual = cli.default({
-//       description: '',
-//       options: { number: { a: { description: 'a number ' } } },
-//       run(args) {
-//         return args.a
-//       }
-//     }).parse(argv('-a 123'))
-//     expect(actual).toBe(123)
-//   })
-//   test('use default command description in help', async () => {
-//     const ctx = mockAppContext('string-bin/bin.js')
-//     const cli = builder(ctx)
-//     cli.default({
-//       description: 'is used',
-//       run() { }
-//     }).parse(argv('--help'))
-//     expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage({ ...cli, description: 'is used' }))
-//   })
-//   // test('add default command options to help', async () => {
-//   //   const ctx = mockAppContext('string-bin/bin.js')
-//   //   const cli = builder(ctx)
-//   //   cli.default({
-//   //     options: { number: { a: { description: 'a number ' } } },
-//   //     run() { }
-//   //   }).parse(argv('--help'))
-//   //   expect(getLogMessage(ctx.reporter)).toEqual('')
-//   // })
-// })
-
-describe('addCommands()', () => {
-  test('command', async () => {
-    const cli = builder(mockContext('single-bin/bin.js'))
-      .addCommands([{
-        name: 'cmd1',
-        run() { return 'cmd1' }
-      }])
-    const actual = await cli.parse(argv('single-bin cmd1'))
-    expect(actual).toEqual('cmd1')
-  })
-})
-
-// describe('loadPlugin()', () => {
 //   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
 //     const ctx = mockAppContext('one-plugin/bin.js')
 //     const actual = await builder(ctx)
