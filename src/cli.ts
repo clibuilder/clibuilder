@@ -27,12 +27,12 @@ export namespace cli {
       type: C
     }):
       keyof T & 'default' extends never
-      ? (HasKey<T,'loadPlugins'> extends false
+      ? (HasKey<T, 'loadPlugins'> extends false
         ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default' | 'loadPlugins'>
         : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default'>)
       : (HasKey<T, 'loadPlugins'> extends false
         ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>
-        : Omit<Builder<z.infer<C>>, 'loadConfig'>)
+        : Omit<Builder<z.infer<C>>, 'loadConfig'>),
     loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
@@ -42,12 +42,12 @@ export namespace cli {
       O extends Command.Options<OName>
     >(this: T, command: Command.DefaultCommand<Config, A, O>): Omit<T, 'default'> & Executable,
     addCommands<
-    T,
-    AName extends string,
-    A extends Command.Argument<AName>[],
-    OName extends string,
-    O extends Command.Options<OName>
-  >(this: T, commands: Command<Config, A, O>[]): T & Executable
+      T,
+      AName extends string,
+      A extends Command.Argument<AName>[],
+      OName extends string,
+      O extends Command.Options<OName>
+    >(this: T, commands: Command<Config, A, O>[]): T & Executable
   }
 
   export type Executable = {
@@ -131,5 +131,15 @@ export namespace cli {
     debug(...args: any[]): void,
     showHelp(): void,
     showVersion(): void,
+  }
+
+  export type PluginActivationContext = {
+    addCommand<
+      Config,
+      AName extends string,
+      A extends Command.Argument<AName>[],
+      OName extends string,
+      O extends Command.Options<OName>
+    >(command: Command<Config, A, O>): void
   }
 }

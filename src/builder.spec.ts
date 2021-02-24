@@ -313,7 +313,7 @@ describe('loadConfig()', () => {
     const cli = builder(ctx).loadConfig({ type: z.object({ a: z.number() }) })
     expect(cli.config).toEqual({ a: 1 })
   })
-  test('load config from `.{name}rc` at cwd', () => {
+  test.only('load config from `.{name}rc` at cwd', () => {
     const ctx = mockContext('string-bin/bin.js', 'has-rc-config')
     const cli = builder(ctx)
     cli.loadConfig({ type: z.object({ a: z.number() }) })

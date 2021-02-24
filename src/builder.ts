@@ -1,3 +1,4 @@
+import { toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import type { cli } from './cli'
 import { getBaseCommand } from './command'
@@ -19,10 +20,10 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
       return { ...this, parse }
     },
     loadConfig(options) {
-      const { config, configFilePath } = context.loadConfig(context.process.cwd(), options.name || s.name)
+      const { config, configFilePath } = context.loadConfig(options.name || s.name)
       if (configFilePath) {
-        s.debugLogs.push([`load config from: ${configFilePath}`])
-        s.debugLogs.push([`config: ${JSON.stringify(config)}`])
+        context.log.debug(`load config from: ${configFilePath}`)
+        context.log.debug(`config: ${JSON.stringify(config)}`)
       }
       const r = options.type.safeParse(config)
       if (r.success) {
@@ -50,7 +51,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
   }
 
   function parse(argv: string[]): Promise<any> {
-    s.debugLogs.push(['argv:', argv.join(' ')])
+    context.log.debug('argv:', argv.join(' '))
     const r = lookupCommand(s.commands, parseArgv(argv))
     if (!r || r.errors.length > 0) {
       createCommandInstance(context, s, s.commands[0]).ui.showHelp()
@@ -61,7 +62,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     if (args.verbose) context.ui.displayLevel = 'debug'
     if (args['debug-cli']) {
       context.ui.displayLevel = 'trace'
-      s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
+      context.debugLogs.map(entry => (context.ui as any)[toLogLevelName(entry.level)](...entry.args))
     }
     if (args.version) {
       context.ui.showVersion(s.version)

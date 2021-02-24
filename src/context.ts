@@ -1,7 +1,9 @@
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { captureLogs, getLogger, LogEntry, logLevels } from 'standard-log'
 import { getAppPath } from './getAppPath'
 import { loadAppInfo } from './loadAppInfo'
+import { loadPlugins } from './loadPlugins'
 import { ui } from './ui'
 
 /**
@@ -9,10 +11,23 @@ import { ui } from './ui'
  * This
  */
 export function context() {
+  const log = getLogger('clibuilder', { level: logLevels.all })
+  const debugLogs: LogEntry[] = []
   return {
     getAppPath,
     loadAppInfo,
-    loadConfig,
+    loadConfig(configFileName: string) {
+      const cwd = this.process.cwd()
+      return loadConfig(cwd, configFileName)
+    },
+    async loadPlugins(keyword: string) {
+      const cwd = this.process.cwd()
+      const [result, logs] = await captureLogs(log, () => loadPlugins({ cwd, log }, keyword))
+      debugLogs.push(...logs)
+      return result
+    },
+    log,
+    debugLogs,
     ui: ui(),
     process
   }

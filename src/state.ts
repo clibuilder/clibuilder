@@ -12,34 +12,30 @@ export namespace state {
     description?: string,
     configFilePath?: string,
     config?: C,
-    commands: cli.Command[],
-    debugLogs: any[][]
+    commands: cli.Command[]
   }
 }
 
 export function state(
-  { ui, getAppPath, loadAppInfo, process }: Context,
+  { ui, getAppPath, loadAppInfo, process, log }: Context,
   options?: cli.Options): state.Result<any> {
-  const debugLogs: any[][] = []
   if (options) return {
     ...options,
-    debugLogs,
     commands: []
   }
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
-  const appInfo = loadAppInfo(debugLogs, appPath)
+  const appInfo = loadAppInfo(log, appPath)
   if (appInfo) {
     const name = getCliName(appPath, appInfo)
     if (name) {
-      debugLogs.push([`package name: ${name}`])
-      debugLogs.push([`version: ${appInfo.version}`])
-      debugLogs.push([`description: ${appInfo.description}`])
+      log.debug(`package name: ${name}`)
+      log.debug(`version: ${appInfo.version}`)
+      log.debug(`description: ${appInfo.description}`)
       return {
         name,
         version: appInfo.version,
         description: appInfo.description,
-        debugLogs,
         commands: []
       }
     }
