@@ -173,7 +173,15 @@ function generateOptionsSection(command: ui.Command) {
 }
 
 function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
-  const values = value.alias ? [...value.alias, key].sort((a, b) => a.length - b.length) : [key]
+  const alias = value.alias
+    ? value.alias.map(a => typeof a === 'string'
+      ? a
+      : a.hidden
+        ? undefined
+        : a.alias)
+      .filter(a => a) as string[]
+    : []
+  const values = [...alias, key].sort((a, b) => a.length - b.length)
   const y = value.type instanceof z.ZodString ? '=value' : ''
   return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]${y}`
 }
