@@ -18,6 +18,7 @@
   "eslint.enable": true,
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "cSpell.words": [
+    "USERPROFILE",
     "greenkeeper",
     "macos",
     "pnpify",

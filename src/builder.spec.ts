@@ -1,6 +1,6 @@
 import a from 'assertron'
 import * as z from 'zod'
-import { IsExtend, isType } from 'type-plus'
+import { assertType, IsExtend, isType } from 'type-plus'
 import { builder } from './builder'
 import { cli } from './cli'
 import { mockContext } from './mockContext'
@@ -261,7 +261,7 @@ describe('fluent syntax', () => {
 
   test('loadConfig() removes itself', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadConfig(z.object({ a: z.string() }))
+    const a = cli.loadConfig({ type: z.object({ a: z.string() }) })
     isType.equal<true, never, keyof typeof a & 'loadConfig'>()
   })
 
@@ -291,119 +291,116 @@ describe('fluent syntax', () => {
 
   test('loadConfig() keeps others removed', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.default({ run() { } }).loadConfig(z.object({ a: z.string() }))
+    const a = cli.default({ run() { } }).loadConfig({ type: z.object({ a: z.string() }) })
     isType.equal<true, never, keyof typeof a & 'default'>()
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
 
-    const b = cli.loadPlugins().loadConfig(z.object({ a: z.string() }))
+    const b = cli.loadPlugins().loadConfig({ type: z.object({ a: z.string() }) })
     isType.equal<true, never, keyof typeof b & 'loadPlugins'>()
     isType.equal<true, 'parse', keyof typeof b & 'parse'>()
 
     const c = cli.default({ run() { } })
-      .loadPlugins().loadConfig(z.object({ a: z.string() }))
+      .loadPlugins().loadConfig({ type: z.object({ a: z.string() }) })
     isType.equal<true, never, keyof typeof c & 'default'>()
     isType.equal<true, never, keyof typeof c & 'loadPlugins'>()
     isType.equal<true, 'parse', keyof typeof c & 'parse'>()
   })
 })
 
+describe('loadConfig()', () => {
+  test('load config from `{name}.json` at cwd', () => {
+    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
+    const cli = builder(ctx).loadConfig({ type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config from `.{name}rc` at cwd', () => {
+    const ctx = mockContext('string-bin/bin.js', 'has-rc-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config from `.{name}rc.json` at cwd', () => {
+    const ctx = mockContext('string-bin/bin.js', 'has-rc-json-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config with specified name', () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ name: 'string-bin.json', type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `{name}.json`', () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `.{name}rc`', () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('load config with specified `.${name}rc.json`', () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const cli = builder(ctx)
+    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
+    expect(cli.config).toEqual({ a: 1 })
+  })
+  test('fail validation will emit warning and exit', () => {
+    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
+    const cli = builder(ctx)
+    cli.loadConfig({
+      type: z.object({
+        a: z.object({ c: z.number() }),
+        b: z.string()
+      })
+    })
+
+    // TODO: error message is weak in `zod`.
+    // improve this when switching back to type-plus
+    expect(getLogMessage(ctx.reporter)).toEqual(`config fails validation:
+  a: Expected object, received number
+  b: Required`)
+    // a.satisfies(ctx.reporter.logs, [{
+    //   id: 'mock-ui',
+    //   level: 400,
+    //   args: [`subject expects to be { a: string } but is actually { a: 1 }\nsubject.a expects to be string but is actually 1`]
+    // }, {
+    //   id: 'mock-ui',
+    //   level: 400,
+    //   args: ['exit with 1']
+    // }])
+  })
+  test('default() receives config type', async () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-config'))
+    cli.loadConfig({ type: z.object({ a: z.number() }) })
+      .default({
+        run() {
+          assertType<{ a: number }>(this.config)
+        }
+      })
+  })
+  test('addCommands() receives config type', async () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-config'))
+    cli.loadConfig({ type: z.object({ a: z.number() }) })
+      .addCommands([{
+        name: 'cmd-a',
+        run() {
+          assertType<{ a: number }>(this.config)
+        }
+      }, {
+        name: 'cmd-b',
+        run() {
+          assertType<{ a: number }>(this.config)
+        }
+      }])
+  })
+})
+
 // describe('loadConfig()', () => {
-//   test('load config from `{name}.json` at cwd', () => {
-//     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config from `.{name}rc` at cwd', () => {
-//     const ctx = mockAppContext('string-bin/bin.js', 'has-rc-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config from `.{name}rc.json` at cwd', () => {
-//     const ctx = mockAppContext('string-bin/bin.js', 'has-rc-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config with specified name', () => {
-//     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ name: 'string-bin.json', type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config with specified `{name}.json`', () => {
-//     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config with specified `.{name}rc`', () => {
-//     const ctx = mockAppContext('single-bin/bin.js', 'has-rc-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('load config with specified `.${name}rc.json`', () => {
-//     const ctx = mockAppContext('single-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ name: 'string-bin', type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-//   test('fail validation will emit warning and exit', () => {
-//     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({
-//       type: T.object.create({ a: T.string.any })
-//     })
-
-//     a.satisfies(ctx.reporter.logs, [{
-//       id: 'mock-ui',
-//       level: 400,
-//       args: [`subject expects to be { a: string } but is actually { a: 1 }\nsubject.a expects to be string but is actually 1`]
-//     }, {
-//       id: 'mock-ui',
-//       level: 400,
-//       args: ['exit with 1']
-//     }])
-//   })
-//   test('after calling loadConfig, it is removed from builder', () => {
-//     const cli = builder(mockAppContext('string-bin/bin.js', 'has-config'))
-//     const actual = cli.loadConfig({ type: T.any })
-//     assertType.isFalse(false as HasKey<typeof actual, 'loadConfig'>)
-//   })
-//   test('default() receives config type', async () => {
-//     const cli = builder(mockAppContext('string-bin/bin.js', 'has-config'))
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//       .default({
-//         run() {
-//           assertType<{ a: number }>(this.config)
-//         }
-//       })
-//   })
-//   test('addCommands() receives config type', async () => {
-//     const cli = builder(mockAppContext('string-bin/bin.js', 'has-config'))
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//       .addCommands([{
-//         name: 'cmd-a',
-//         run() {
-//           assertType<{ a: number }>(this.config)
-//         }
-//       }, {
-//         name: 'cmd-b',
-//         run() {
-//           assertType<{ a: number }>(this.config)
-//         }
-//       }])
-//   })
-//   test('can observe config from cli.config', () => {
-//     const ctx = mockAppContext('string-bin/bin.js', 'has-json-config')
-//     const cli = builder(ctx)
-//     cli.loadConfig({ type: T.object.create({ a: T.number.any }) })
-//     expect(cli.config).toEqual({ a: 1 })
-//   })
-// })
-
 //   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
 //     const ctx = mockAppContext('one-plugin/bin.js')
 //     const actual = await builder(ctx)
