@@ -409,7 +409,7 @@ describe('loadPlugins()', () => {
       description: ''
     }).loadPlugins()
 
-    const actual = await cli.parse(argv('one echo bird'))
+    const actual = await cli.parse(argv('string-bin one echo bird'))
     expect(actual).toEqual('bird')
   })
 })

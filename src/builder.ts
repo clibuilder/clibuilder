@@ -15,12 +15,17 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
   const s = state(context, options)
   const description = s.description || ''
   s.commands = [getBaseCommand(description) as any]
+  const pending: Promise<any>[] = []
   return {
     name: s.name,
     version: s.version || '',
     description,
     config: undefined,
-    loadPlugins() {
+    loadPlugins(keyword?: string) {
+      const search = keyword || `${s.name}-plugin`
+      pending.push(context
+        .loadPlugins(search)
+        .then(commands => s.commands.push(...commands)))
       return { ...this, parse }
     },
     loadConfig(options) {
@@ -54,12 +59,13 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     }
   }
 
-  function parse(argv: string[]): Promise<any> {
+  async function parse(argv: string[]) {
+    await Promise.all(pending)
     context.log.debug('argv:', argv.join(' '))
     const r = lookupCommand(s.commands, parseArgv(argv))
     if (!r || r.errors.length > 0) {
       createCommandInstance(context, s, s.commands[0]).ui.showHelp()
-      return Promise.resolve()
+      return
     }
     const { args, command } = r
     if (args.silent) context.ui.displayLevel = 'none'
@@ -70,15 +76,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     }
     if (args.version) {
       context.ui.showVersion(s.version)
-      return Promise.resolve()
+      return
     }
 
     const commandInstance = createCommandInstance(context, s, command)
     if (args.help) {
       commandInstance.ui.showHelp()
-      return Promise.resolve()
+      return
     }
-    return Promise.resolve(commandInstance.run(args as any))
+    return commandInstance.run(args as any)
   }
 }
 
