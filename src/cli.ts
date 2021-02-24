@@ -1,8 +1,7 @@
-
 import { UnionOfValues } from 'type-plus'
 import z from 'zod'
-import { context } from './context'
 import { builder } from './builder'
+import { context } from './context'
 
 export function cli(options?: cli.Options): cli.Builder<void> {
   return builder(context(), options)
@@ -22,8 +21,8 @@ export namespace cli {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadConfig<T>(this: T): Omit<T, 'loadConfig'> & { config: any }
-    loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable
+    loadConfig<T>(this: T): Omit<T, 'loadConfig'> & { config: any },
+    loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
       AName extends string,
@@ -54,11 +53,11 @@ export namespace cli {
       O extends Options = Options,
       > = {
         description?: string,
-        alias?: string[]
+        alias?: string[],
         config?: z.ZodType<any>,
         arguments?: A,
         options?: O,
-        commands?: Command[]
+        commands?: Command[],
         run(this: {
           ui: UI,
           config: Config
