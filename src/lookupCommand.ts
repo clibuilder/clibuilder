@@ -49,9 +49,9 @@ export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
 }
 
 function processCommands(commands: cli.Command[], rawArgs: parseArgv.Result) {
-  for (let i = 0; i < commands.length; i++) {
+  for (let i = commands.length - 1; i >= 0; i--) {
     const result = processCommand(commands[i], rawArgs)
-    if (result.command) return result
+    if (result) return result
   }
   return undefined
 }
@@ -65,12 +65,21 @@ namespace processCommand {
 }
 function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
   const state: processCommand.State = { command, rawArgs, args: { _: [] }, errors: [] }
-  return fillDefaultOptions(fillInputOptions(fillArguments(state)))
+  return fillDefaultOptions(fillInputOptions(fillArguments(matchCommand(state))))
 }
 
-function fillArguments(state: processCommand.State) {
+function matchCommand(state: processCommand.State) {
+  if (!state.command.name) return state
+  if (state.rawArgs._[0] !== state.command.name) return undefined
+  state.rawArgs._.shift()
+  return state
+}
+
+function fillArguments(state: processCommand.State|undefined) {
+  if(!state) return state
+  const command = state.command
   const args = [...state.rawArgs._]
-  const argSpecs = state.command.arguments || []
+  const argSpecs = command.arguments || []
   state.args._ = argSpecs.reduce((p, s) => {
     if (args.length === 0) {
       state.errors.push({ type: 'missing-argument', name: s.name })
@@ -91,11 +100,12 @@ function fillArguments(state: processCommand.State) {
     return p
   }, { _: [] as string[], multiple: false })._
   if (args.length > 0) {
-    state.errors.push({ type: 'extra-arguments', name: state.command.name, values: args })
+    state.errors.push({ type: 'extra-arguments', name: command.name, values: args })
   }
   return state
 }
-function fillInputOptions(state: processCommand.State) {
+function fillInputOptions(state: processCommand.State | undefined) {
+  if (!state) return state
   return reduceByKey(state.rawArgs, (s, key) => {
     if (key === '_') return s
     if (/^-/.test(key)) {
@@ -103,7 +113,7 @@ function fillInputOptions(state: processCommand.State) {
       s.errors.push({ type: 'invalid-key', key })
       return s
     }
-    const [name, optionEntry] = lookupOptions(state.command, key)
+    const [name, optionEntry] = lookupOptions(state.command!, key)
     if (!name) {
       s.errors.push({ type: 'invalid-key', key })
       return s
@@ -116,7 +126,8 @@ function fillInputOptions(state: processCommand.State) {
   }, state)
 }
 
-function fillDefaultOptions(state: processCommand.State) {
+function fillDefaultOptions(state: processCommand.State | undefined) {
+  if (!state) return state
   const optionsMap = state.command.options || {}
   return reduceByKey(optionsMap, (p, key) => {
     if (p.args[key]) return p

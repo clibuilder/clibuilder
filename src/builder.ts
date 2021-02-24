@@ -24,7 +24,6 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
         ...s.commands[0], ...command,
         options: { ...s.commands[0].options, ...command.options }
       }
-      s.commands.push({ ...command, name: '' })
       return { ...this, parse }
     },
     addCommands(commands) {
@@ -36,6 +35,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
   function parse(argv: string[]): Promise<any> {
     s.debugLogs.push(['argv:', argv.join(' ')])
     const r = lookupCommand(s.commands, parseArgv(argv))
+    console.log('lookup', r)
     if (!r || r.errors.length > 0) {
       createCommandInstance(context, s, s.commands[0]).ui.showHelp()
       return Promise.resolve()
