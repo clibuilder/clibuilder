@@ -9351,19 +9351,19 @@ stack-utils@^2.0.2:
   dependencies:
     escape-string-regexp "^2.0.0"
 
-standard-log-color@^1.5.25:
-  version "1.5.25"
-  resolved "https://registry.yarnpkg.com/standard-log-color/-/standard-log-color-1.5.25.tgz#6dc33c269d089cad67f16ca08e12e2e9347d6617"
-  integrity sha512-Syr0vjPtY+uRiq/cTsJG1n5/dRfdM9Vxrq+iLBWDLNdLcWx6HyXAcdMSqjGaQ6u2v8PrlFUToD0qtGmVOTg07g==
+standard-log-color@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/standard-log-color/-/standard-log-color-2.1.0.tgz#fcd7943d077461a5b29dc09c3a80a197b3de39e2"
+  integrity sha512-2dEZ9pjUhqlsBvsVdHNY/eXCOR4ffu2tCyPHmraVaDLXlaiISPGJUX5EFpLOkB4ylJLMzmd/hqK69CPf8ZYwEg==
   dependencies:
     color-map "^1.1.0"
     tslib "^2.0.3"
     unpartial "^0.6.3"
 
-standard-log@^4.1.8:
-  version "4.1.8"
-  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-4.1.8.tgz#4f6ff4d053d530f974e391d324b8d65f20fe84a6"
-  integrity sha512-FXg79x4rCiYR19FdxBiH8OeR6Bb8KU8aI2sSiSMyeDuw98pUpvsaoG7wwdrb8touNq0g/MFnRjx1ZkUwrKxUdQ==
+standard-log@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-5.1.0.tgz#1029391534e995ad06f5383318b990733cf26c62"
+  integrity sha512-9yaIfpZ0etUXiFyNFpfwk+j2rilNBfJN/YIaCfjDd4BUK0gmYywcmrijqH1D8iLsQs6nuXijbAVGasRIDnSRZw==
   dependencies:
     global-store "^1.0.0-beta.17"
     is-node "^1.0.2"

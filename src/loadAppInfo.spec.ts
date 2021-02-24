@@ -1,16 +1,22 @@
 import a from 'assertron'
 import { getFixturePath } from './test-utils'
 import { loadAppInfo } from './loadAppInfo'
+import { getLogger } from 'standard-log'
+
+function testLoadAppInfo(fixturePath: string) {
+  const log = getLogger('test-loadAppInfo')
+  return loadAppInfo(log, getFixturePath(fixturePath))
+}
 
 test('no package.json', () => {
-  const appInfo = loadAppInfo([], getFixturePath('no-pjson/index.js'))
+  const appInfo = testLoadAppInfo('no-pjson/index.js')
 
   // `findUp` will find `package.json` at root.
   a.satisfies(appInfo, { name: 'clibuilder' })
 })
 
 test('no bin', () => {
-  const appInfo = loadAppInfo([], getFixturePath('no-bin/index.js'))
+  const appInfo = testLoadAppInfo('no-bin/index.js')
   a.satisfies(appInfo, {
     name: 'no-bin',
     version: '1.0.0'
@@ -18,7 +24,7 @@ test('no bin', () => {
 })
 
 test('string bin', () => {
-  const appInfo = loadAppInfo([], getFixturePath('string-bin/bin.js'))
+  const appInfo = testLoadAppInfo('string-bin/bin.js')
   a.satisfies(appInfo, {
     name: 'string-bin',
     version: '1.0.0',
@@ -27,7 +33,7 @@ test('string bin', () => {
 })
 
 test('single bin', () => {
-  const appInfo = loadAppInfo([], getFixturePath('single-bin/bin.js'))
+  const appInfo = testLoadAppInfo('single-bin/bin.js')
   a.satisfies(appInfo, {
     name: 'single-bin',
     version: '1.2.3',
@@ -36,7 +42,7 @@ test('single bin', () => {
 })
 
 test('multi bin', () => {
-  const appInfo = loadAppInfo([], getFixturePath('multi-bin/bin-b.js'))
+  const appInfo = testLoadAppInfo('multi-bin/bin-b.js')
 
   a.satisfies(appInfo, {
     name: 'multi-bin',
