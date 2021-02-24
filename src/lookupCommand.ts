@@ -49,12 +49,26 @@ export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
 }
 
 function processCommands(commands: cli.Command[], rawArgs: parseArgv.Result) {
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const result = processCommand(commands[i], rawArgs)
-    if (result) return result
-  }
-  return undefined
+  const m = matchCommand(commands, rawArgs)
+  return m[0] ? processCommand(m[0], m[1]) : undefined
 }
+
+function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
+  : [cli.Command | undefined, parseArgv.Result] {
+  for (let i = commands.length - 1; i >= 0; i--) {
+    const command = commands[i]
+    if (!command.name) return [command, rawArgs]
+    if (rawArgs._[0] !== command.name) continue
+    rawArgs._.shift()
+    if (command.commands) {
+      const m = matchCommand(command.commands, rawArgs)
+      return m[0] ? m : [command, rawArgs]
+    }
+    return [command, rawArgs]
+  }
+  return [undefined, rawArgs]
+}
+
 namespace processCommand {
   export type State = {
     command: cli.Command,
@@ -65,18 +79,11 @@ namespace processCommand {
 }
 function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
   const state: processCommand.State = { command, rawArgs, args: { _: [] }, errors: [] }
-  return fillDefaultOptions(fillInputOptions(fillArguments(matchCommand(state))))
+  return fillDefaultOptions(fillInputOptions(fillArguments(state)))
 }
 
-function matchCommand(state: processCommand.State) {
-  if (!state.command.name) return state
-  if (state.rawArgs._[0] !== state.command.name) return undefined
-  state.rawArgs._.shift()
-  return state
-}
-
-function fillArguments(state: processCommand.State|undefined) {
-  if(!state) return state
+function fillArguments(state: processCommand.State | undefined) {
+  if (!state) return state
   const command = state.command
   const args = [...state.rawArgs._]
   const argSpecs = command.arguments || []
