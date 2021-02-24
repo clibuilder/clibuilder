@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, HasKey, isType } from 'type-plus'
+import { assertType } from 'type-plus'
 import * as z from 'zod'
 import { cli } from './cli'
 
@@ -36,17 +36,10 @@ test('args is typed based on arguments and options, with default options', () =>
         onm: number[],
         os: string,
         osm: string[],
-        help: boolean,
-        silent: boolean,
-        verbose: boolean
+        help: boolean | undefined
       }>(args)
     }
   })
-})
-
-test('loadConfig, loadPlugins, and default removes itself after called', () => {
-  const a = cli().loadConfig().loadPlugins().default({} as any)
-  isType.false<HasKey<typeof a, 'default' | 'loadConfig' | 'loadPlugins'>>()
 })
 
 // function def<

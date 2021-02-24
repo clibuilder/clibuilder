@@ -1,9 +1,9 @@
-import { UnionOfValues } from 'type-plus'
+import { HasKey, UnionOfValues } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
 import { context } from './context'
 
-export function cli(options?: cli.Options): cli.Builder<void> {
+export function cli(options?: cli.Options): cli.Builder {
   return builder(context(), options)
 }
 
@@ -17,18 +17,22 @@ export namespace cli {
     description: string,
   }
 
-  export type Builder<Config> = {
+  export type Builder<Config = undefined> = {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadConfig<T, C extends z.ZodTypeAny>(this: T, type: C):
-      keyof T extends 'default'
-      ? (keyof T extends 'loadPlugins'
-        ? Omit<Builder<z.infer<C>>, 'loadConfig'>
-        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>)
-      : (keyof T extends 'loadPlugins'
-        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default'>
-        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default' | 'loadPlugins'>)
+    config: Config,
+    loadConfig<T, C extends z.ZodTypeAny>(this: T, options: {
+      name?: string,
+      type: C
+    }):
+      keyof T & 'default' extends never
+      ? (HasKey<T,'loadPlugins'> extends false
+        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default' | 'loadPlugins'>
+        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default'>)
+      : (HasKey<T, 'loadPlugins'> extends false
+        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>
+        : Omit<Builder<z.infer<C>>, 'loadConfig'>)
     loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
@@ -37,7 +41,13 @@ export namespace cli {
       OName extends string,
       O extends Command.Options<OName>
     >(this: T, command: Command.DefaultCommand<Config, A, O>): Omit<T, 'default'> & Executable,
-    addCommands<T>(this: T, commands: Command[]): T & Executable
+    addCommands<
+    T,
+    AName extends string,
+    A extends Command.Argument<AName>[],
+    OName extends string,
+    O extends Command.Options<OName>
+  >(this: T, commands: Command<Config, A, O>[]): T & Executable
   }
 
   export type Executable = {

@@ -1,3 +1,4 @@
+import { forEachKey } from 'type-plus'
 import type { cli } from './cli'
 import { getBaseCommand } from './command'
 import { Context } from './context'
@@ -13,11 +14,27 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     name: s.name,
     version: s.version || '',
     description,
+    config: undefined,
     loadPlugins() {
       return { ...this, parse }
     },
-    loadConfig(configType) {
-      return { ...this, config: configType } as any
+    loadConfig(options) {
+      const { config, configFilePath } = context.loadConfig(context.process.cwd(), options.name || s.name)
+      if (configFilePath) {
+        s.debugLogs.push([`load config from: ${configFilePath}`])
+        s.debugLogs.push([`config: ${JSON.stringify(config)}`])
+      }
+      const r = options.type.safeParse(config)
+      if (r.success) {
+        (this as any).config = config
+        return this as any
+      }
+      else {
+        const errors = r.error.flatten().fieldErrors
+        context.ui.error(`config fails validation:`)
+        forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+        return this as any
+      }
     },
     default(command) {
       s.commands[0] = {
