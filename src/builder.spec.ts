@@ -1,10 +1,11 @@
 // import { assertType, CanAssign, Equal, HasKey, T } from 'type-plus'
 // import { createCliArgv } from '../test-util'
 import a from 'assertron'
-import { argv, getFixturePath, getLogMessage } from './test-utils'
-import { cli } from './cli'
+import { IsExtend, isType } from 'type-plus'
 import { builder } from './builder'
+import { cli } from './cli'
 import { mockContext } from './mockContext'
+import { argv, getFixturePath, getLogMessage } from './test-utils'
 
 describe('with options', () => {
   test('need to specify name, version, and description', () => {
@@ -181,7 +182,15 @@ describe('--verbose', () => {
     await cli.parse(argv('single-bin -V'))
     expect(getLogMessage(ctx.reporter)).toEqual('should print')
   })
-  test.todo('command.run() will not get args.silent')
+  test('command.run() will not get args.silent or verbose', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    builder(ctx).default({
+      run(args) {
+        isType.false<IsExtend<typeof args, { silent: any }>>()
+        isType.false<IsExtend<typeof args, { verbose: any }>>()
+      }
+    })
+  })
 })
 
 describe('--debug-cli', () => {
@@ -361,20 +370,17 @@ argv: node string-bin --debug-cli`))
 //   // })
 // })
 
-// describe('addCommands()', () => {
-//   test.skip('command', async () => {
-//     // const context = createAppContext({ stack: mockStack('single-bin/bin.js') })
-//     // const cli = buildCli(context)
-//     // await cli().addCommand({
-//     //   name: '',
-//     //   description: '',
-//     //   arguments: [],
-//     //   options: {},
-//     //   interactive: true,
-//     //   handler() { }
-//     // }).parse()
-//   })
-// })
+describe('addCommands()', () => {
+  test('command', async () => {
+    const cli = builder(mockContext('single-bin/bin.js'))
+      .addCommands([{
+        name: 'cmd1',
+        run() { return 'cmd1' }
+      }])
+    const actual = await cli.parse(argv('single-bin cmd1'))
+    expect(actual).toEqual('cmd1')
+  })
+})
 
 // describe('loadPlugin()', () => {
 //   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {

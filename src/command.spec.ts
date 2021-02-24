@@ -6,7 +6,7 @@ test('when no argument and options, args will have help', () => {
   command({
     name: 'cmd',
     run(args) {
-      isType.equal<true, boolean, typeof args.help>()
+      isType.equal<true, boolean | undefined, typeof args.help>()
     }
   })
 })
