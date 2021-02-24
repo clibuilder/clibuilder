@@ -231,6 +231,21 @@ describe('addCommands()', () => {
     const actual = await cli.parse(argv('single-bin cmd3'))
     expect(actual).toEqual('cmd3')
   })
+
+  test('nested command', async () => {
+    const cli = builder(mockContext('single-bin/bin.js'))
+      .addCommands([
+        {
+          name: 'cmd1',
+          commands: [
+            { name: 'cmd2', run() { return 'cmd2' } }
+          ],
+          run() { return 'cmd1' }
+        },
+      ])
+    const actual = await cli.parse(argv('single-bin cmd1 cmd2'))
+    expect(actual).toEqual('cmd2')
+  })
 })
 
 // describe('fluent syntax', () => {
