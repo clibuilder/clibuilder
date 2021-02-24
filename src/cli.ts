@@ -1,5 +1,5 @@
 import { UnionOfValues } from 'type-plus'
-import z from 'zod'
+import * as z from 'zod'
 import { builder } from './builder'
 import { context } from './context'
 
@@ -21,7 +21,14 @@ export namespace cli {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadConfig<T>(this: T): Omit<T, 'loadConfig'> & { config: any },
+    loadConfig<T, C extends z.ZodTypeAny>(this: T, type: C):
+      keyof T extends 'default'
+      ? (keyof T extends 'loadPlugins'
+        ? Omit<Builder<z.infer<C>>, 'loadConfig'>
+        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>)
+      : (keyof T extends 'loadPlugins'
+        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default'>
+        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default' | 'loadPlugins'>)
     loadPlugins<T>(this: T): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,

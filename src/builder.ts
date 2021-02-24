@@ -1,6 +1,6 @@
 import type { cli } from './cli'
-import { Context } from './context'
 import { getBaseCommand } from './command'
+import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
 import { state } from './state'
@@ -16,8 +16,8 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     loadPlugins() {
       return { ...this, parse }
     },
-    loadConfig() {
-      return { ...this, config: {} }
+    loadConfig(configType) {
+      return { ...this, config: configType } as any
     },
     default(command) {
       s.commands[0] = {

@@ -1,6 +1,5 @@
-// import { assertType, CanAssign, Equal, HasKey, T } from 'type-plus'
-// import { createCliArgv } from '../test-util'
 import a from 'assertron'
+import * as z from 'zod'
 import { IsExtend, isType } from 'type-plus'
 import { builder } from './builder'
 import { cli } from './cli'
@@ -248,33 +247,65 @@ describe('addCommands()', () => {
   })
 })
 
-// describe('fluent syntax', () => {
-//   test('order does not matter', () => {
-//     const cli = builder(mockAppContext('string-bin/bin.js', 'has-json-config'))
-//     const order1 = cli.loadConfig({ type: T.any })
-//       .loadPlugins()
-//       .default({ run() { } })
-//       .addCommands([])
-//     type Actual1 = keyof typeof order1
-//     assertType.isTrue(true as Equal<
-//       'name' | 'version' | 'config' | 'description' |
-//       'addCommands' | 'parse', Actual1>)
+describe('fluent syntax', () => {
+  test('default() removes itself', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.default({ run() { } })
+    isType.equal<true, never, keyof typeof a & 'default'>()
+  })
 
-//     const order2 = cli.loadConfig({ type: T.any })
-//       .default({ run() { } })
-//       .addCommands([])
-//       .loadPlugins()
-//     type Actual2 = keyof typeof order2
-//     assertType.isTrue(true as Equal<
-//       'name' | 'version' | 'config' | 'description' |
-//       'addCommands' | 'parse', Actual2>)
-//   })
-//   test('no parse without default, addCommands, or loadPlugin', () => {
-//     const cli = builder(mockAppContext('string-bin/bin.js', 'has-json-config'))
-//     type K1 = keyof typeof cli
-//     assertType.isFalse(false as CanAssign<'parse', K1>)
-//   })
-// })
+  test('addCommands() can be called multiple times', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    cli.addCommands([]).addCommands([])
+  })
+
+  test('loadConfig() removes itself', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.loadConfig(z.object({ a: z.string() }))
+    isType.equal<true, never, keyof typeof a & 'loadConfig'>()
+  })
+
+  test('loadPlugins() removes itself', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.loadPlugins()
+    isType.equal<true, never, keyof typeof a & 'loadPlugins'>()
+  })
+
+  test('default() adds parse()', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.default({ run() { } })
+    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+  })
+
+  test('addCommands() adds parse()', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.addCommands([])
+    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+  })
+
+  test('loadPlugins() adds parse()', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.loadPlugins()
+    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+  })
+
+  test('loadConfig() keeps others removed', () => {
+    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const a = cli.default({ run() { } }).loadConfig(z.object({ a: z.string() }))
+    isType.equal<true, never, keyof typeof a & 'default'>()
+    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+
+    const b = cli.loadPlugins().loadConfig(z.object({ a: z.string() }))
+    isType.equal<true, never, keyof typeof b & 'loadPlugins'>()
+    isType.equal<true, 'parse', keyof typeof b & 'parse'>()
+
+    const c = cli.default({ run() { } })
+      .loadPlugins().loadConfig(z.object({ a: z.string() }))
+    isType.equal<true, never, keyof typeof c & 'default'>()
+    isType.equal<true, never, keyof typeof c & 'loadPlugins'>()
+    isType.equal<true, 'parse', keyof typeof c & 'parse'>()
+  })
+})
 
 // describe('loadConfig()', () => {
 //   test('load config from `{name}.json` at cwd', () => {
