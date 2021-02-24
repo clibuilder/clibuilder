@@ -76,9 +76,7 @@ export namespace cli {
 
     export namespace Options {
       export type Default = {
-        help: boolean,
-        silent: boolean,
-        verbose: boolean
+        help: boolean | undefined
       }
       export type Entry<
         Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>

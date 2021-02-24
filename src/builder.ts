@@ -35,30 +35,29 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
 
   function parse(argv: string[]): Promise<any> {
     s.debugLogs.push(['argv:', argv.join(' ')])
-    const args = parseArgv(argv)
-
-    const r = lookupCommand(s.commands, args)
+    const r = lookupCommand(s.commands, parseArgv(argv))
     if (!r || r.errors.length > 0) {
       createCommandInstance(context, s, s.commands[0]).ui.showHelp()
       return Promise.resolve()
     }
-    if (r.args.silent) context.ui.displayLevel = 'none'
-    if (r.args.verbose) context.ui.displayLevel = 'debug'
-    if (r.args['debug-cli']) {
+    const { args, command } = r
+    if (args.silent) context.ui.displayLevel = 'none'
+    if (args.verbose) context.ui.displayLevel = 'debug'
+    if (args['debug-cli']) {
       context.ui.displayLevel = 'trace'
       s.debugLogs.map(logEntries => context.ui.trace(...logEntries))
     }
-    if (r.args.version) {
+    if (args.version) {
       context.ui.showVersion(s.version)
       return Promise.resolve()
     }
 
-    const commandInstance = createCommandInstance(context, s, r.command)
-    if (r.args.help) {
+    const commandInstance = createCommandInstance(context, s, command)
+    if (args.help) {
       commandInstance.ui.showHelp()
       return Promise.resolve()
     }
-    return Promise.resolve(commandInstance.run(r.args as any))
+    return Promise.resolve(commandInstance.run(args as any))
   }
 }
 
