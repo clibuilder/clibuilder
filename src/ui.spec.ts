@@ -1,3 +1,4 @@
+import * as z from 'zod'
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
 import { command } from './command'
 import { getLogMessage } from './test-utils'
@@ -25,7 +26,11 @@ Options:
     ui.showHelp('cli', command({
       name: 'cmd',
       options: {
-        long: { description: 'description', alias: [{ alias: 'l', hidden: true }] }
+        long: {
+          type: z.optional(z.string()),
+          description: 'description',
+          alias: [{ alias: 'l', hidden: true }]
+        }
       },
       run() { }
     }))

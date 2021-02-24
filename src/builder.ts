@@ -1,6 +1,6 @@
 import type { cli } from './cli'
 import { Context } from './context'
-import { getBaseCommand } from './getBaseCommand'
+import { getBaseCommand } from './command'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
 import { state } from './state'
@@ -8,7 +8,7 @@ import { state } from './state'
 export function builder(context: Context, options?: cli.Options): cli.Builder<any> {
   const s = state(context, options)
   const description = s.description || ''
-  s.commands = [getBaseCommand(description)]
+  s.commands = [getBaseCommand(description) as any]
   return {
     name: s.name,
     version: s.version || '',

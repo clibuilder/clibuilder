@@ -71,7 +71,7 @@ test('option type defaults to boolean', () => {
       abc: { description: 'abc' }
     },
     run(args) {
-      isType.equal<true, boolean, typeof args.abc>()
+      isType.equal<true, boolean | undefined, typeof args.abc>()
     }
   })
 })
@@ -97,7 +97,7 @@ test('multiple options with omitted type', () => {
     },
     run(args) {
       isType.equal<true, string[], typeof args.abc>()
-      isType.equal<true, boolean, typeof args.def>()
+      isType.equal<true, boolean | undefined, typeof args.def>()
     }
   })
 })
@@ -116,7 +116,19 @@ test('with arguments and options', () => {
       isType.equal<true, string, typeof args.arg1>()
       isType.equal<true, boolean, typeof args.arg2>()
       isType.equal<true, string[], typeof args.abc>()
-      isType.equal<true, boolean, typeof args.def>()
+      isType.equal<true, boolean | undefined, typeof args.def>()
+    }
+  })
+})
+
+test('options with optional type', () => {
+  command({
+    name: 'cmd',
+    options: {
+      abc: { description: 'abc', type: z.optional(z.string()) }
+    },
+    run(args) {
+      isType.equal<true, string | undefined, typeof args.abc>()
     }
   })
 })

@@ -114,11 +114,11 @@ describe('argument', () => {
 })
 describe('boolean options', () => {
   test('accepts true/false', () => {
-    const { args } = testLookupCommand([getBaseCommand('')], 'my-cli -h false -v true')!
+    const { args } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h false -v true')!
     expect(args).toEqual({ _: [], help: false, version: true })
   })
   test('other strings are invalid', () => {
-    const { errors } = testLookupCommand([getBaseCommand('')], 'my-cli -h x')!
+    const { errors } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h x')!
     a.satisfies(errors, [{ type: 'invalid-value', key: 'h', value: 'x' }])
   })
   test('boolean options with space syntax', () => {

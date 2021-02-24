@@ -108,7 +108,7 @@ function fillInputOptions(state: processCommand.State) {
       s.errors.push({ type: 'invalid-key', key })
       return s
     }
-    const [value, errors] = convertValue(optionEntry!.type || z.string(), key, state.rawArgs[key])
+    const [value, errors] = convertValue(optionEntry!.type || z.optional(z.string()), key, state.rawArgs[key])
     if (errors) s.errors.push(...errors)
     s.args[name] = value
 
@@ -160,6 +160,9 @@ function toParsable(
   values: string[],
   errors: lookupCommand.Error[]
 ): [any, lookupCommand.Error[]] {
+  if (t instanceof z.ZodOptional) {
+    return toParsable(t._def.innerType, key, values, errors)
+  }
   if (t instanceof z.ZodBoolean) {
     if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
     return toBoolean(key, values[values.length - 1], errors)
