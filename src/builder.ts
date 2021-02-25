@@ -1,5 +1,6 @@
 import { logLevels, toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
+import { ZodTypeAny } from 'zod'
 import type { cli } from './cli'
 import { getBaseCommand } from './command'
 import { Context } from './context'
@@ -7,7 +8,7 @@ import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
 import { state } from './state'
 
-export function builder(context: Context, options?: cli.Options): cli.Builder<any> {
+export function builder(context: Context, options?: cli.Options): cli.Builder {
   // turn all `clibuilder-debug` logs manually,
   // as user will run `config()` to set the log levels
   // and override the log level for this logger.
@@ -20,7 +21,6 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
     name: s.name,
     version: s.version || '',
     description,
-    config: undefined,
     loadPlugins(keyword?: string) {
       const search = keyword || `${s.name}-plugin`
       pending.push(context
@@ -28,28 +28,28 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
         .then(commands => s.commands.push(...commands)))
       return { ...this, parse }
     },
-    loadConfig(options) {
-      const { config, configFilePath } = context.loadConfig(options.name || s.name)
-      if (configFilePath) {
-        context.log.debug(`load config from: ${configFilePath}`)
-        context.log.debug(`config: ${JSON.stringify(config)}`)
-      }
-      else {
-        context.log.debug(`unable to load config from ${configFilePath}`)
-      }
-      const r = options.type.safeParse(config)
-      if (r.success) {
-        (this as any).config = config
-        s.config = config
-        return this as any
-      }
-      else {
-        const errors = r.error.flatten().fieldErrors
-        context.ui.error(`config fails validation:`)
-        forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
-        return this as any
-      }
-    },
+    // loadConfig(options) {
+    //   const { config, configFilePath } = context.loadConfig(options.name || s.name)
+    //   if (configFilePath) {
+    //     context.log.debug(`load config from: ${configFilePath}`)
+    //     context.log.debug(`config: ${JSON.stringify(config)}`)
+    //   }
+    //   else {
+    //     context.log.debug(`unable to load config from ${configFilePath}`)
+    //   }
+    //   const r = options.type.safeParse(config)
+    //   if (r.success) {
+    //     (this as any).config = config
+    //     s.config = config
+    //     return this as any
+    //   }
+    //   else {
+    //     const errors = r.error.flatten().fieldErrors
+    //     context.ui.error(`config fails validation:`)
+    //     forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+    //     return this as any
+    //   }
+    // },
     default(command) {
       s.commands[0] = {
         ...s.commands[0], ...command,
@@ -83,12 +83,35 @@ export function builder(context: Context, options?: cli.Options): cli.Builder<an
       return
     }
 
+    if (command.config) {
+      loadConfig(command.config)
+    }
     const commandInstance = createCommandInstance(context, s, command)
     if (args.help) {
       commandInstance.ui.showHelp()
       return
     }
     return commandInstance.run(args as any)
+  }
+
+  function loadConfig(configType: ZodTypeAny) {
+    const { config, configFilePath } = context.loadConfig(s.configName || s.name)
+    if (configFilePath) {
+      context.log.debug(`load config from: ${configFilePath}`)
+      context.log.debug(`config: ${JSON.stringify(config)}`)
+    }
+    else {
+      context.log.debug(`unable to load config from ${configFilePath}`)
+    }
+    const r = configType.safeParse(config)
+    if (r.success) {
+      s.config = config
+    }
+    else {
+      const errors = r.error.flatten().fieldErrors
+      context.ui.error(`config fails validation:`)
+      forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+    }
   }
 }
 

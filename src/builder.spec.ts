@@ -1,6 +1,6 @@
 import a from 'assertron'
-import * as z from 'zod'
 import { assertType, IsExtend, isType } from 'type-plus'
+import * as z from 'zod'
 import { builder } from './builder'
 import { cli } from './cli'
 import { mockContext } from './mockContext'
@@ -259,12 +259,6 @@ describe('fluent syntax', () => {
     cli.addCommands([]).addCommands([])
   })
 
-  test('loadConfig() removes itself', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadConfig({ type: z.object({ a: z.string() }) })
-    isType.equal<true, never, keyof typeof a & 'loadConfig'>()
-  })
-
   test('loadPlugins() removes itself', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
     const a = cli.loadPlugins()
@@ -288,76 +282,85 @@ describe('fluent syntax', () => {
     const a = cli.loadPlugins()
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
-
-  test('loadConfig() keeps others removed', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.default({ run() { } }).loadConfig({ type: z.object({ a: z.string() }) })
-    isType.equal<true, never, keyof typeof a & 'default'>()
-    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
-
-    const b = cli.loadPlugins().loadConfig({ type: z.object({ a: z.string() }) })
-    isType.equal<true, never, keyof typeof b & 'loadPlugins'>()
-    isType.equal<true, 'parse', keyof typeof b & 'parse'>()
-
-    const c = cli.default({ run() { } })
-      .loadPlugins().loadConfig({ type: z.object({ a: z.string() }) })
-    isType.equal<true, never, keyof typeof c & 'default'>()
-    isType.equal<true, never, keyof typeof c & 'loadPlugins'>()
-    isType.equal<true, 'parse', keyof typeof c & 'parse'>()
-  })
 })
 
 describe('loadConfig()', () => {
-  test('load config from `{name}.json` at cwd', () => {
+  test('load config from `{name}.json` at cwd', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx).loadConfig({ type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
+    const cli = builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      })
+    const a = await cli.parse(argv('string-bin'))
+    expect(a).toEqual({ a: 1 })
   })
-  test('load config from `.{name}rc` at cwd', () => {
+  test('load config from `.{name}rc` at cwd', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-rc-config')
-    const cli = builder(ctx)
-    cli.loadConfig({ type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
+    const cli = builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      })
+    const a = await cli.parse(argv('string-bin'))
+    expect(a).toEqual({ a: 1 })
   })
-  test('load config from `.{name}rc.json` at cwd', () => {
+  test('load config from `.{name}rc.json` at cwd', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-rc-json-config')
     const cli = builder(ctx)
-    cli.loadConfig({ type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
-  })
-  test('load config with specified name', () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx)
-    cli.loadConfig({ name: 'string-bin.json', type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
-  })
-  test('load config with specified `{name}.json`', () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx)
-    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
-  })
-  test('load config with specified `.{name}rc`', () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const cli = builder(ctx)
-    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
-  })
-  test('load config with specified `.${name}rc.json`', () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx)
-    cli.loadConfig({ name: 'string-bin', type: z.object({ a: z.number() }) })
-    expect(cli.config).toEqual({ a: 1 })
-  })
-  test('fail validation will emit warning and exit', () => {
-    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx)
-    cli.loadConfig({
-      type: z.object({
-        a: z.object({ c: z.number() }),
-        b: z.string()
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
       })
-    })
+    const a = await cli.parse(argv('string-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('load config with specified name with file extension', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const a = await builder(ctx, { configName: 'string-bin.json' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('load config with specified `{name}.json`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const a = await builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('load config with specified `.{name}rc`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
+    const a = await builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('load config with specified `.${name}rc.json`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
+    const a = await builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('fail validation will emit warning and exit', async () => {
+    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
+    await builder(ctx, { configName: 'string-bin' })
+      .default({
+        config: z.object({
+          a: z.object({ c: z.number() }),
+          b: z.string()
+        }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
 
     // TODO: error message is weak in `zod`.
     // improve this when switching back to type-plus
@@ -376,8 +379,8 @@ describe('loadConfig()', () => {
   })
   test('default() receives config type', async () => {
     const cli = builder(mockContext('has-config/bin.js', 'has-config'))
-      .loadConfig({ type: z.object({ a: z.number() }) })
       .default({
+        config: z.object({ a: z.number() }),
         run() {
           assertType<{ a: number }>(this.config)
           return this.config
@@ -386,17 +389,22 @@ describe('loadConfig()', () => {
     const a = await cli.parse(argv('has-config'))
     expect(a).toEqual({ a: 1 })
   })
-  test('addCommands() receives config type', async () => {
-    const cli = builder(mockContext('has-config/bin.js'))
-    cli.loadConfig({ type: z.object({ a: z.number() }) })
+  // can't find a way to get this work as of TypeScript 4.1.5
+  test.skip('each command in addCommands() can define their own config type', async () => {
+    builder(mockContext('has-config/bin.js'))
       .addCommands([{
         name: 'cmd-a',
+        config: z.object({ a: z.number() }),
         run() {
+          // const cfg = this.config
+          // isType.false<IsAny<typeof cfg>>()
           assertType<{ a: number }>(this.config)
         }
       }, {
         name: 'cmd-b',
+        config: z.object({ b: z.string() }),
         run() {
+          this.config
           assertType<{ a: number }>(this.config)
         }
       }])
@@ -404,8 +412,8 @@ describe('loadConfig()', () => {
   test(`read config file in parent directory`, async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
     const cli = builder(ctx)
-      .loadConfig({ type: z.object({ a: z.number() }) })
       .default({
+        config: z.object({ a: z.number() }),
         run() {
           return this.config
         }
@@ -416,17 +424,34 @@ describe('loadConfig()', () => {
   // seems to be some issue with `zod` default system
   test.skip(`default config is overridden by value in config file`, async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
-    const cli = builder(ctx)
-      .loadConfig({
-        type: z.object({
+    const a = await builder(ctx)
+      .default({
+        config: z.object({
           a: z.number().default(2),
           b: z.optional(z.number()).default(3)
-        })
+        }),
+        run() { return this.config }
       })
-    expect(cli.config).toEqual({ a: 1, b: 3 })
+    expect(a).toEqual({ a: 1, b: 3 })
   })
 
-  test.skip('load config if any command has config', async () => {
+  test('load config if default command has config', async () => {
+    const ctx = mockContext('has-config/bin.js', 'has-config')
+    const cli = builder(ctx)
+      .default({
+        config: z.object({ a: z.number() }),
+        run() {
+          const cfg = this.config
+          isType.equal<true, { a: number }, typeof cfg>()
+          return cfg
+        }
+      })
+
+    const a = await cli.parse(argv('has-config'))
+    expect(a).toEqual({ a: 1 })
+  })
+
+  test('load config if any command has config', async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const cli = builder(ctx)
       .addCommands([{
@@ -436,7 +461,7 @@ describe('loadConfig()', () => {
           config: z.object({ a: z.number() }),
           run() { return this.config }
         }],
-        // TODO
+        // TODO `run()` is optional for group command
         run() { }
       }])
 
@@ -494,7 +519,7 @@ describe('loadPlugins()', () => {
 //   })
 // })
 
-function getHelpMessage(app: Pick<cli.Builder<any>, 'name' | 'description'>) {
+function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
   return `
 Usage: ${app.name} [options]
 ${app.description ? `

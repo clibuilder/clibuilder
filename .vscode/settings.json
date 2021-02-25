@@ -19,6 +19,7 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "cSpell.words": [
     "USERPROFILE",
+    "clirc",
     "greenkeeper",
     "macos",
     "pnpify",

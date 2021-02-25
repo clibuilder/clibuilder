@@ -1,4 +1,4 @@
-import { HasKey, UnionOfValues } from 'type-plus'
+import { UnionOfValues } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
 import { context } from './context'
@@ -11,7 +11,7 @@ export namespace cli {
   export type Options = {
     /**
      * Name of the cli
-     */
+    */
     name: string,
     version: string,
     description: string,
@@ -26,39 +26,34 @@ export namespace cli {
      * in that order
      */
     configName?: string
+  } | {
+    /**
+     * Specify the config name if differs from the cli name.
+     * e.g. name = `cli`,
+     * configName = `my-cli`,
+     * will load the first config named as:
+     * - `my-cli.json`
+     * - `.my-clirc.json`
+     * - `.my-clirc`
+     * in that order
+     */
+    configName: string
   }
 
-  export type Builder<Config = undefined> = {
+  export type Builder = {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    config: Config,
-    loadConfig<T, C extends z.ZodTypeAny>(this: T, options: {
-      name?: string,
-      type: C
-    }):
-      keyof T & 'default' extends never
-      ? (HasKey<T, 'loadPlugins'> extends false
-        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default' | 'loadPlugins'>
-        : Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'default'>)
-      : (HasKey<T, 'loadPlugins'> extends false
-        ? Omit<Builder<z.infer<C>> & Executable, 'loadConfig' | 'loadPlugins'>
-        : Omit<Builder<z.infer<C>>, 'loadConfig'>),
     loadPlugins<T>(this: T, keyword?: string): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
+      ConfigType extends z.ZodTypeAny,
       AName extends string,
       A extends Command.Argument<AName>[],
       OName extends string,
       O extends Command.Options<OName>
-    >(this: T, command: Command.DefaultCommand<Config, A, O>): Omit<T, 'default'> & Executable,
-    addCommands<
-      T,
-      AName extends string,
-      A extends Command.Argument<AName>[],
-      OName extends string,
-      O extends Command.Options<OName>
-    >(this: T, commands: Command<Config, A, O>[]): T & Executable
+    >(this: T, command: Command.DefaultCommand<ConfigType, A, O>): Omit<T, 'default'> & Executable,
+    addCommands<T>(this: T, commands: Command[]): T & Executable
   }
 
   export type Executable = {
@@ -66,29 +61,29 @@ export namespace cli {
   }
 
   export type Command<
-    Config extends Record<string, any> = Record<string, any>,
+    ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
     A extends Command.Argument[] = Command.Argument[],
     O extends Command.Options = Command.Options
     > = {
       name: string
-    } & Command.DefaultCommand<Config, A, O>
+    } & Command.DefaultCommand<ConfigType, A, O>
 
   export namespace Command {
 
     export type DefaultCommand<
-      Config extends Record<string, any> = Record<string, any>,
+      ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
       A extends Argument[] = Argument[],
       O extends Options = Options,
       > = {
         description?: string,
         alias?: string[],
-        config?: z.ZodType<any>,
+        config?: ConfigType,
         arguments?: A,
         options?: O,
         commands?: Command[],
         run(this: {
           ui: UI,
-          config: Config
+          config: z.infer<ConfigType>
         }, args: RunArgs<A, O>): Promise<any> | any
       }
 
@@ -146,11 +141,11 @@ export namespace cli {
 
   export type PluginActivationContext = {
     addCommand<
-      Config,
+      ConfigType extends z.ZodTypeAny,
       AName extends string,
       A extends Command.Argument<AName>[],
       OName extends string,
       O extends Command.Options<OName>
-    >(command: Command<Config, A, O>): void
+    >(command: Command<ConfigType, A, O>): void
   }
 }

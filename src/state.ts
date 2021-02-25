@@ -10,7 +10,7 @@ export namespace state {
     name: string,
     version?: string,
     description?: string,
-    configFilePath?: string,
+    configName?: string,
     config?: C,
     commands: cli.Command[]
   }
@@ -19,10 +19,10 @@ export namespace state {
 export function state(
   { ui, getAppPath, loadAppInfo, process, log }: Context,
   options?: cli.Options): state.Result<any> {
-  if (options) return {
+  if (options && (options as any).name) return {
     ...options,
     commands: []
-  }
+  } as any
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
   const appInfo = loadAppInfo(appPath)
@@ -36,6 +36,7 @@ export function state(
         name,
         version: appInfo.version,
         description: appInfo.description,
+        configName: options?.configName,
         commands: []
       }
     }
