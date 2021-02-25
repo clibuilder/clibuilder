@@ -2,7 +2,7 @@ import { findByKeywords } from 'find-installed-packages'
 import findUp from 'find-up'
 import path from 'path'
 import { Logger } from 'standard-log'
-import { cli } from './cli'
+import type { cli, PluginActivationContext } from './cli'
 
 export async function loadPlugins({ cwd, log }: { cwd: string, log: Logger }, keyword: string) {
   log.debug(`look up local plugins with keyword '${keyword}' at ${cwd}`)
@@ -43,12 +43,10 @@ function getGlobalPackageFolder(folder: string): string {
 function activatePlugins(cwd: string, log: Logger, pluginNames: string[]) {
   const commands: cli.Command<any, any>[] = []
   pluginNames
-    .map(p => {
-      return {
-        name: p,
-        pluginModule: loadModule(cwd, log, p),
-      }
-    })
+    .map(p => ({
+      name: p,
+      pluginModule: loadModule(cwd, log, p),
+    }))
     .filter(({ name, pluginModule }) => {
       if (!isValidPlugin(pluginModule)) {
         log.debug('not a valid plugin', name)
@@ -82,7 +80,7 @@ function isValidPlugin(m: any) {
   return m && typeof m.activate === 'function'
 }
 
-function activatePlugin(m: { activate: (context: cli.PluginActivationContext) => void }) {
+function activatePlugin(m: { activate: (context: PluginActivationContext) => void }) {
   const commands: cli.Command[] = []
   m.activate({ addCommand: cmd => commands.push(cmd) })
   return commands

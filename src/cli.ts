@@ -138,14 +138,14 @@ export namespace cli {
     showHelp(): void,
     showVersion(): void,
   }
+}
 
-  export type PluginActivationContext = {
-    addCommand<
-      ConfigType extends z.ZodTypeAny,
-      AName extends string,
-      A extends Command.Argument<AName>[],
-      OName extends string,
-      O extends Command.Options<OName>
-    >(command: Command<ConfigType, A, O>): void
-  }
+export type PluginActivationContext = {
+  addCommand<
+    ConfigType extends z.ZodTypeAny,
+    AName extends string,
+    A extends cli.Command.Argument<AName>[],
+    OName extends string,
+    O extends cli.Command.Options<OName>
+  >(command: cli.Command<ConfigType, A, O>): void
 }
