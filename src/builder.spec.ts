@@ -1,8 +1,9 @@
 import a from 'assertron'
-import { assertType, IsExtend, isType } from 'type-plus'
+import { assertType, IsAny, IsExtend, isType } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
 import { cli } from './cli'
+import { command } from './command'
 import { mockContext } from './mockContext'
 import { argv, getFixturePath, getLogMessage } from './test-utils'
 
@@ -392,22 +393,23 @@ describe('loadConfig()', () => {
   // can't find a way to get this work as of TypeScript 4.1.5
   test.skip('each command in addCommands() can define their own config type', async () => {
     builder(mockContext('has-config/bin.js'))
-      .addCommands([{
-        name: 'cmd-a',
-        config: z.object({ a: z.number() }),
-        run() {
-          // const cfg = this.config
-          // isType.false<IsAny<typeof cfg>>()
-          assertType<{ a: number }>(this.config)
-        }
-      }, {
-        name: 'cmd-b',
-        config: z.object({ b: z.string() }),
-        run() {
-          this.config
-          assertType<{ a: number }>(this.config)
-        }
-      }])
+      .addCommands([
+        command({
+          name: 'cmd-a',
+          arguments: [{ name: 'abc', description: '' }],
+          config: z.object({ a: z.number() }),
+          run() {
+            const cfg = this.config
+            isType.false<IsAny<typeof cfg>>()
+            assertType<{ a: number }>(cfg)
+          }
+        }), command({
+          name: 'cmd-b',
+          config: z.object({ b: z.string() }),
+          run() {
+            assertType<{ b: string }>(this.config)
+          }
+        })])
   })
   test(`read config file in parent directory`, async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')

@@ -69,7 +69,6 @@ export namespace cli {
     } & Command.DefaultCommand<ConfigType, A, O>
 
   export namespace Command {
-
     export type DefaultCommand<
       ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
       A extends Argument[] = Argument[],
