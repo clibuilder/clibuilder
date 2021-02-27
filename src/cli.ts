@@ -91,6 +91,13 @@ export namespace cli {
           ui: UI,
           config: z.infer<ConfigType>
         }, args: RunArgs<A, O>): Promise<any> | any
+      } | {
+        description?: string,
+        alias?: string[],
+        config?: ConfigType,
+        arguments?: A,
+        options?: O,
+        commands: Command[],
       }
 
     export type Argument<
