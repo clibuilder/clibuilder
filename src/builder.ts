@@ -46,7 +46,8 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     context.log.debug('argv:', argv.join(' '))
     const r = lookupCommand(s.commands, parseArgv(argv))
     if (!r || r.errors.length > 0) {
-      createCommandInstance(context, s, s.commands[0]).ui.showHelp()
+      // TODO: print errors
+      createCommandInstance(context, s, r?.command || s.commands[0]).ui.showHelp()
       return
     }
     const { args, command } = r
