@@ -1,5 +1,5 @@
-import * as z from 'zod'
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
+import * as z from 'zod'
 import { command } from './command'
 import { getLogMessage } from './test-utils'
 import { ui } from './ui'
@@ -39,6 +39,24 @@ Usage: cli cmd [options]
 
 Options:
   [--long]               description
+`)
+  })
+  test('with sub-commands', () => {
+    const { ui, reporter } = testUI()
+    ui.showHelp('cli', command({
+      name: 'cmd',
+      commands: [command({
+        name: 'sub',
+        run() { }
+      })]
+    }))
+    expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd <command>
+
+Commands:
+  sub
+
+cmd <command> -h         Get help for <command>
 `)
   })
 })

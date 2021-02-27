@@ -3,6 +3,7 @@ import { assertType, IsExtend, isType } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
 import { cli } from './cli'
+import { command } from './command'
 import { mockContext } from './mockContext'
 import { argv, getFixturePath, getLogMessage } from './test-utils'
 
@@ -140,6 +141,34 @@ Options:
   [-V|--verbose]         Turn on verbose logging
   [--silent]             Turn off logging
   [--debug-cli]          Display clibuilder debug messages
+`)
+  })
+  test('with command chain', async () => {
+    const ctx = mockContext('string-bin/bin.js')
+    // const cli = builder(ctx).default({
+    //   commands: [command({
+    //     name: 'sub',
+    //     commands: [command({
+    //       name: 'sub2',
+    //       run() { }
+    //     })]
+    //   })]
+    // })
+    const cli = builder(ctx).command({
+      name: 'sub',
+      commands: [command({
+        name: 'sub2',
+        run() { }
+      })]
+    })
+    await cli.parse(argv('string-bin sub sub2 -h'))
+    expect(getLogMessage(ctx.reporter)).toEqual(`
+Usage: string-bin cmd <command>
+
+Commands:
+  sub
+
+cmd <command> -h         Get help for <command>
 `)
   })
 })

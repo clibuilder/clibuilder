@@ -26,10 +26,6 @@ export function ui(log: Logger = getLogger('clibuilder')) {
         case 'none':
           log.level = logLevels.none
           break
-        case 'info':
-        default:
-          log.level = logLevels.info
-          break
         case 'debug':
           log.level = logLevels.debug
           break
@@ -38,7 +34,6 @@ export function ui(log: Logger = getLogger('clibuilder')) {
           break
       }
     },
-    trace: (...args: any[]) => log.trace(...args),
     debug: (...args: any[]) => log.debug(...args),
     info: (...args: any[]) => log.info(...args),
     warn: (...args: any[]) => log.warn(...args),

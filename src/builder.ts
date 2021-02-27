@@ -9,8 +9,8 @@ import { parseArgv } from './parseArgv'
 import { state } from './state'
 
 export function builder(context: Context, options?: cli.Options): cli.Builder {
-  // turn all `clibuilder-debug` logs manually,
-  // as user will run `config()` to set the log levels
+  // set `clibuilder-debug` logs manually to logLevels.all,
+  // as user can run `config()` to set the log levels
   // and override the log level for this logger.
   context.log.level = logLevels.all
   const s = state(context, options)
@@ -28,28 +28,6 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
         .then(commands => s.commands.push(...commands)))
       return { ...this, parse }
     },
-    // loadConfig(options) {
-    //   const { config, configFilePath } = context.loadConfig(options.name || s.name)
-    //   if (configFilePath) {
-    //     context.log.debug(`load config from: ${configFilePath}`)
-    //     context.log.debug(`config: ${JSON.stringify(config)}`)
-    //   }
-    //   else {
-    //     context.log.debug(`unable to load config from ${configFilePath}`)
-    //   }
-    //   const r = options.type.safeParse(config)
-    //   if (r.success) {
-    //     (this as any).config = config
-    //     s.config = config
-    //     return this as any
-    //   }
-    //   else {
-    //     const errors = r.error.flatten().fieldErrors
-    //     context.ui.error(`config fails validation:`)
-    //     forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
-    //     return this as any
-    //   }
-    // },
     default(command) {
       s.commands[0] = {
         ...s.commands[0], ...command,
@@ -116,8 +94,10 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
 }
 
 function createCommandInstance({ ui }: Context, state: state.Result, command: cli.Command) {
+  const run = (command as any).run ? (command as any).run : function (this: any) { this.ui.showHelp }
   return {
     ...command,
+    run,
     ui: createCommandUI(ui, state, command),
     config: state.config,
   }
