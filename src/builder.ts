@@ -57,8 +57,8 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       }
       return { ...this, parse }
     },
-    addCommands(commands) {
-      s.commands.push(...commands)
+    command(command) {
+      s.commands.push(command)
       return { ...this, parse }
     }
   }

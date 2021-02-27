@@ -1,9 +1,8 @@
 import a from 'assertron'
-import { assertType, IsAny, IsExtend, isType } from 'type-plus'
+import { assertType, IsExtend, isType } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
 import { cli } from './cli'
-import { command } from './command'
 import { mockContext } from './mockContext'
 import { argv, getFixturePath, getLogMessage } from './test-utils'
 
@@ -215,34 +214,30 @@ argv: node string-bin --debug-cli`))
 describe('addCommands()', () => {
   test('single command', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
-      .addCommands([{ name: 'cmd1', run() { return 'cmd1' } }])
+      .command({ name: 'cmd1', run() { return 'cmd1' } })
     const actual = await cli.parse(argv('single-bin cmd1'))
     expect(actual).toEqual('cmd1')
   })
 
   test('multiple commands', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
-      .addCommands([
-        { name: 'cmd1', run() { return 'cmd1' } },
-        { name: 'cmd2', run() { return 'cmd2' } },
-        { name: 'cmd3', run() { return 'cmd3' } },
-        { name: 'cmd4', run() { return 'cmd4' } }
-      ])
+      .command({ name: 'cmd1', run() { return 'cmd1' } })
+      .command({ name: 'cmd2', run() { return 'cmd2' } })
+      .command({ name: 'cmd3', run() { return 'cmd3' } })
+      .command({ name: 'cmd4', run() { return 'cmd4' } })
     const actual = await cli.parse(argv('single-bin cmd3'))
     expect(actual).toEqual('cmd3')
   })
 
   test('nested command', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
-      .addCommands([
-        {
-          name: 'cmd1',
-          commands: [
-            { name: 'cmd2', run() { return 'cmd2' } }
-          ],
-          run() { return 'cmd1' }
-        },
-      ])
+      .command({
+        name: 'cmd1',
+        commands: [
+          { name: 'cmd2', run() { return 'cmd2' } }
+        ],
+        run() { return 'cmd1' }
+      })
     const actual = await cli.parse(argv('single-bin cmd1 cmd2'))
     expect(actual).toEqual('cmd2')
   })
@@ -253,11 +248,6 @@ describe('fluent syntax', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
     const a = cli.default({ run() { } })
     isType.equal<true, never, keyof typeof a & 'default'>()
-  })
-
-  test('addCommands() can be called multiple times', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    cli.addCommands([]).addCommands([])
   })
 
   test('loadPlugins() removes itself', () => {
@@ -272,9 +262,9 @@ describe('fluent syntax', () => {
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
 
-  test('addCommands() adds parse()', () => {
+  test('command() adds parse()', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.addCommands([])
+    const a = cli.command({ name: 'x', run() { } })
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
 
@@ -390,27 +380,6 @@ describe('loadConfig()', () => {
     const a = await cli.parse(argv('has-config'))
     expect(a).toEqual({ a: 1 })
   })
-  // can't find a way to get this work as of TypeScript 4.1.5
-  test.skip('each command in addCommands() can define their own config type', async () => {
-    builder(mockContext('has-config/bin.js'))
-      .addCommands([
-        command({
-          name: 'cmd-a',
-          arguments: [{ name: 'abc', description: '' }],
-          config: z.object({ a: z.number() }),
-          run() {
-            const cfg = this.config
-            isType.false<IsAny<typeof cfg>>()
-            assertType<{ a: number }>(cfg)
-          }
-        }), command({
-          name: 'cmd-b',
-          config: z.object({ b: z.string() }),
-          run() {
-            assertType<{ b: string }>(this.config)
-          }
-        })])
-  })
   test(`read config file in parent directory`, async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
     const cli = builder(ctx)
@@ -456,7 +425,7 @@ describe('loadConfig()', () => {
   test('load config if any command has config', async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const cli = builder(ctx)
-      .addCommands([{
+      .command({
         name: 'group',
         commands: [{
           name: 'config',
@@ -465,7 +434,7 @@ describe('loadConfig()', () => {
         }],
         // TODO `run()` is optional for group command
         run() { }
-      }])
+      })
 
     const a = await cli.parse(argv('has-config group config'))
     expect(a).toEqual({ a: 1 })
@@ -501,10 +470,10 @@ describe('loadPlugins()', () => {
       name: 'defaultCommands',
       version: '1.0.0',
       description: ''
-    }).addCommands([{
+    }).command({
       name: 'local',
       run() { return 'local' }
-    }])
+    })
 
     const actual = await cli.parse(argv('string-bin local'))
     expect(actual).toBe('local')
