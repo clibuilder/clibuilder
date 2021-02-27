@@ -53,7 +53,14 @@ export namespace cli {
       OName extends string,
       O extends Command.Options<OName>
     >(this: T, command: Command.DefaultCommand<ConfigType, A, O>): Omit<T, 'default'> & Executable,
-    addCommands<T>(this: T, commands: Command[]): T & Executable
+    command<
+      T,
+      ConfigType extends z.ZodTypeAny,
+      AName extends string,
+      A extends Command.Argument<AName>[],
+      OName extends string,
+      O extends Command.Options<OName>
+    >(this: T, command: Command<ConfigType, A, O>): T & Executable
   }
 
   export type Executable = {
