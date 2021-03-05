@@ -43,11 +43,11 @@ namespace lookupCommand {
 export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
   : undefined | lookupCommand.Result {
   const m = matchCommand(commands, args)
-  return m[0] ? processCommand(m[0], m[1]) : undefined
+  return m ? processCommand(m[0], m[1]) : undefined
 }
 
 function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
-  : [cli.Command | undefined, parseArgv.Result] {
+  : [cli.Command, parseArgv.Result] | undefined {
   for (let i = commands.length - 1; i >= 0; i--) {
     const command = commands[i]
     if (!command.name) return [command, rawArgs]
@@ -55,14 +55,10 @@ function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
     rawArgs._.shift()
     if (command.commands) {
       const m = matchCommand(command.commands, rawArgs)
-      return m[0] ? m : [command, rawArgs]
+      return m ? m : [command, rawArgs]
     }
     return [command, rawArgs]
   }
-  // will never reach here because there is a base command.
-  // just add for type
-  // istanbul ignore next
-  return [undefined, rawArgs]
 }
 
 namespace processCommand {
