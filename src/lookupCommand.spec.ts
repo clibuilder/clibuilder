@@ -113,6 +113,14 @@ describe('argument', () => {
     expect(errors).toEqual([{ type: 'missing-argument', name: 'arg' }])
   })
 })
+describe('options basic', () => {
+  test('---option is invalid', () => {
+    const { errors } = testLookupCommand(
+      [getBaseCommand('') as any], 'my-cli ---help')!
+    expect(errors).toEqual([{ 'key': '-help', 'type': 'invalid-key' }])
+  })
+})
+
 describe('boolean options', () => {
   test('accepts true/false', () => {
     const { args } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h false -v true')!
@@ -280,6 +288,33 @@ describe('numeric options', () => {
     expect(args).toEqual({ _: [], abc: 3 })
     a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['2', '3'] }])
   })
+  test('number array options', () => {
+    const defaultCommand = command({
+      name: '',
+      options: {
+        abc: { type: z.array(z.number()), description: 'a' }
+      },
+      run() { }
+    })
+    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
+    expect(cmd).toBe(defaultCommand)
+    expect(args).toEqual({ _: [], abc: [2, 3] })
+  })
+  test('number options with invalid value', () => {
+    const defaultCommand = command({
+      name: '',
+      options: { abc: { type: z.number(), description: 'a' } },
+      run() { }
+    })
+    const { cmd, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=xyz')!
+    expect(cmd).toBe(defaultCommand)
+    expect(errors).toEqual([{
+      'key': 'abc',
+      'message': 'expected to be number',
+      'type': 'invalid-value',
+      'value': 'xyz'
+    }])
+  })
 })
 describe('string options', () => {
   test('string options with = syntax', () => {
@@ -325,5 +360,17 @@ describe('string options', () => {
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: '123' })
+  })
+  test('string array options', () => {
+    const defaultCommand = command({
+      name: '',
+      options: {
+        abc: { type: z.array(z.string()), description: 'a' }
+      },
+      run() { }
+    })
+    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
+    expect(cmd).toBe(defaultCommand)
+    expect(args).toEqual({ _: [], abc: ['2', '3'] })
   })
 })

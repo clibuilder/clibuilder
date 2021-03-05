@@ -78,6 +78,16 @@ describe('default()', () => {
     const cli = builder(ctx).default({ run() { return 'hello' } })
     expect(await cli.parse(argv('single-bin'))).toEqual('hello')
   })
+  test('with array argument', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const a = await builder(ctx).default({
+      arguments: [
+        { name: 'a', description: 'd', type: z.array(z.string()) }
+      ],
+      run(args) { return args.a }
+    }).parse(argv('string-bin abc'))
+    expect(a).toEqual(['abc'])
+  })
 })
 
 describe('version', () => {
@@ -239,7 +249,7 @@ argv: node string-bin --debug-cli`))
   })
 })
 
-describe('addCommands()', () => {
+describe('command()', () => {
   test('single command', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
       .command({ name: 'cmd1', run() { return 'cmd1' } })
@@ -507,16 +517,6 @@ describe('loadPlugins()', () => {
     expect(actual).toBe('local')
   })
 })
-
-// describe('loadConfig()', () => {
-//   test.skip('use "{name}-plugin" as keyword to look for plugins', async () => {
-//     const ctx = mockAppContext('one-plugin/bin.js')
-//     const actual = await builder(ctx)
-//       .loadPlugins()
-//       .parse(createCliArgv('one-plugin', 'one', 'echo', 'bird'))
-//     expect(actual).toEqual('bird')
-//   })
-// })
 
 function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
   return `
