@@ -145,15 +145,6 @@ Options:
   })
   test('with command chain', async () => {
     const ctx = mockContext('string-bin/bin.js')
-    // const cli = builder(ctx).default({
-    //   commands: [command({
-    //     name: 'sub',
-    //     commands: [command({
-    //       name: 'sub2',
-    //       run() { }
-    //     })]
-    //   })]
-    // })
     const cli = builder(ctx).command({
       name: 'sub',
       commands: [command({
@@ -163,12 +154,7 @@ Options:
     })
     await cli.parse(argv('string-bin sub sub2 -h'))
     expect(getLogMessage(ctx.reporter)).toEqual(`
-Usage: string-bin cmd <command>
-
-Commands:
-  sub
-
-cmd <command> -h         Get help for <command>
+Usage: string-bin sub sub2
 `)
   })
 })

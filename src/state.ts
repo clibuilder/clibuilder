@@ -4,6 +4,7 @@ import { findKey } from 'type-plus'
 import type { cli } from './cli'
 import { Context } from './context'
 import { AppInfo } from './loadAppInfo'
+import type { Command } from './types'
 
 export namespace state {
   export type Result<C = any> = {
@@ -12,7 +13,7 @@ export namespace state {
     description?: string,
     configName?: string,
     config?: C,
-    commands: cli.Command[]
+    commands: Command[]
   }
 }
 
