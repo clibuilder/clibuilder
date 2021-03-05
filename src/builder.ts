@@ -80,6 +80,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       context.log.debug(`config: ${JSON.stringify(config)}`)
     }
     else {
+      // istanbul ignore next
       context.log.debug(`unable to load config from ${configFilePath}`)
     }
     const r = configType.safeParse(config)
@@ -107,6 +108,7 @@ function createCommandInstance({ ui, process }: Context, state: state.Result, co
 }
 
 function createCommandUI(ui: Context['ui'], state: state.Result, command: cli.Command) {
+  // istanbul ignore next
   return {
     ...ui,
     showVersion: () => ui.showVersion(state.version),

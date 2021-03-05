@@ -11,55 +11,6 @@ function testLookupCommand(commands: cli.Command[], args: string) {
   return r ? { cmd: r.command, args: r.args, errors: r.errors } : r
 }
 
-// describe('with only base command', () => {
-//   test('---x is invalid', () => {
-//     const { errors } = testLookupCommand([], 'my-cli ---x')
-//     expect(errors).toEqual([{ type: 'invalid-key', key: '-x' }])
-//   })
-//   test('--version gets undefined', () => {
-//     const r = testLookupCommand([], 'my-cli --version')
-//     expect(r).toBeUndefined()
-//   })
-//   test('-v gets undefined', () => {
-//     const r = testLookupCommand([], 'my-cli -v')
-//     expect(r).toBeUndefined()
-//   })
-//   test('--help', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli --help')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], help: true })
-//   })
-//   test('-h', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli -h')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], help: true })
-//   })
-//   test('--verbose', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli --verbose')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], verbose: true })
-//   })
-//   test('-V', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli -V')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], verbose: true })
-//   })
-//   test('--silent', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli --silent')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], silent: true })
-//   })
-//   test('--debug-cli', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli --debug-cli')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], 'debug-cli': true })
-//   })
-//   test('no arg receives base command with help options', () => {
-//     const { cmd, args } = testLookupCommand([], 'my-cli')
-//     expect(cmd).toBe(baseCommand)
-//     expect(args).toEqual({ _: [], help: true })
-//   })
-// })
 describe('with default command', () => {
   test('no args gets the default command', () => {
     const defaultCommand = { name: '', run() { } }

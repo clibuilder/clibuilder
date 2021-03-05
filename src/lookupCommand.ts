@@ -42,14 +42,7 @@ namespace lookupCommand {
 
 export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
   : undefined | lookupCommand.Result {
-  const result = processCommands(commands, args)
-  if (result &&
-    !result?.errors.find(e => e.type === 'invalid-key' && e.key === 'version')
-  ) return result
-}
-
-function processCommands(commands: cli.Command[], rawArgs: parseArgv.Result) {
-  const m = matchCommand(commands, rawArgs)
+  const m = matchCommand(commands, args)
   return m[0] ? processCommand(m[0], m[1]) : undefined
 }
 
@@ -222,6 +215,7 @@ function toParsable(
     }
   }
   // not supported zod type
+  // istanbul ignore next
   return [undefined, errors]
 }
 
