@@ -46,8 +46,6 @@ export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
   if (result &&
     !result?.errors.find(e => e.type === 'invalid-key' && e.key === 'version')
   ) return result
-
-  return undefined
 }
 
 function processCommands(commands: cli.Command[], rawArgs: parseArgv.Result) {
@@ -68,6 +66,9 @@ function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
     }
     return [command, rawArgs]
   }
+  // will never reach here because there is a base command.
+  // just add for type
+  // istanbul ignore next
   return [undefined, rawArgs]
 }
 
@@ -240,7 +241,8 @@ function toNumber(
   value: string,
   errors: lookupCommand.Error[]
 ): [number | undefined, lookupCommand.Error[]] {
-  if (!Number.isNaN(value)) return [+value, errors]
+  const num = +value
+  if (typeof num === 'number' && !Number.isNaN(num)) return [num, errors]
 
   errors.push({ type: 'invalid-value', key, value, message: 'expected to be number' })
   return [undefined, errors]
