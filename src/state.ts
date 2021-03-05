@@ -10,9 +10,10 @@ export namespace state {
   export type Result<C = any> = {
     name: string,
     version?: string,
-    description?: string,
-    configName?: string,
+    description: string,
+    configName: string,
     config?: C,
+    keyword: string,
     commands: Command[]
   }
 }
@@ -36,8 +37,9 @@ export function state(
       return {
         name,
         version: appInfo.version,
-        description: appInfo.description,
-        configName: options?.configName,
+        description: appInfo.description || '',
+        configName: options?.configName || '',
+        keyword: '',
         commands: []
       }
     }

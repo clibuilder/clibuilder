@@ -55,12 +55,13 @@ export namespace cli {
     >(this: T, command: Command.DefaultCommand<ConfigType, A, O>): Omit<T, 'default'> & Executable,
     command<
       T,
+      Context extends Record<string, any>,
       ConfigType extends z.ZodTypeAny,
       AName extends string,
       A extends Command.Argument<AName>[],
       OName extends string,
       O extends Command.Options<OName>
-    >(this: T, command: Command<ConfigType, A, O>): T & Executable
+    >(this: T, command: Command<Context, ConfigType, A, O>): T & Executable
   }
 
   export type Executable = {
@@ -68,12 +69,32 @@ export namespace cli {
   }
 
   export type Command<
+    Context extends Record<string, any> = Record<string, any>,
     ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
     A extends Command.Argument[] = Command.Argument[],
-    O extends Command.Options = Command.Options
-    > = {
-      name: string
-    } & Command.DefaultCommand<ConfigType, A, O>
+    O extends Command.Options = Command.Options,
+    > =
+    {
+      name: string,
+      description?: string,
+      alias?: string[],
+      config?: ConfigType,
+      arguments?: A,
+      options?: O,
+    } & ({
+      commands?: Command[],
+      context?: Context,
+      run(this: {
+        ui: UI,
+        config: z.infer<ConfigType>,
+        keyword: string,
+        cwd: string,
+        context: Context
+      }, args: Command.RunArgs<A, O>): Promise<any> | any
+    } | {
+      commands: Command[],
+    })
+  // } & Command.DefaultCommand<ConfigType, A, O>
 
   export namespace Command {
     export type DefaultCommand<
@@ -89,7 +110,9 @@ export namespace cli {
         commands?: Command[],
         run(this: {
           ui: UI,
-          config: z.infer<ConfigType>
+          config: z.infer<ConfigType>,
+          keyword: string,
+          cwd: string,
         }, args: RunArgs<A, O>): Promise<any> | any
       } | {
         description?: string,
@@ -155,10 +178,11 @@ export namespace cli {
 
 export type PluginActivationContext = {
   addCommand<
+    Context extends Record<string, any>,
     ConfigType extends z.ZodTypeAny,
     AName extends string,
     A extends cli.Command.Argument<AName>[],
     OName extends string,
     O extends cli.Command.Options<OName>
-  >(command: cli.Command<ConfigType, A, O>): void
+  >(command: cli.Command<Context, ConfigType, A, O>): void
 }

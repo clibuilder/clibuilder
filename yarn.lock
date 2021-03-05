@@ -8894,6 +8894,11 @@ saxes@^5.0.0:
   dependencies:
     xmlchars "^2.2.0"
 
+search-packages@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/search-packages/-/search-packages-2.1.0.tgz#bb65492416129c1075b8bbe9cb84029ea9f4361e"
+  integrity sha512-UtiuizI/dm68NnKGbV/gN/vAyqggq9RwtNtl1367yWP2YW8IHfYUt7gBQWg7IoeDYjP4PxQSOqni2uc2/0szJg==
+
 semantic-release@^17.3.8:
   version "17.3.9"
   resolved "https://registry.yarnpkg.com/semantic-release/-/semantic-release-17.3.9.tgz#99ebe7ef7c6b79b3bfb44baeaf242c6fc6a31f09"
