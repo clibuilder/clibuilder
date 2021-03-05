@@ -172,7 +172,6 @@ describe('--silent', () => {
     await cli.parse(argv('single-bin --silent'))
     expect(getLogMessage(ctx.reporter)).not.toContain('show not print')
   })
-  test.todo('command.run() will not get args.silent')
 })
 
 describe('--verbose', () => {
@@ -222,8 +221,22 @@ version: 1.0.0
 description: undefined
 argv: node string-bin --debug-cli`))
   })
-  test.todo('log commands added')
-  test.todo('log loading plugins')
+  test('log loading plugins', async () => {
+    const ctx = mockContext('string-bin/bin.js', 'one-plugin')
+    const cli = builder(ctx, {
+      name: 'plugin-cli',
+      version: '1.0.0',
+      description: ''
+    })
+    await cli.loadPlugins().parse(argv('string-bin --debug-cli'))
+    const msg = getLogMessage(ctx.reporter)
+    expect(msg).toContain(`lookup local plugins with keyword 'plugin-cli-plugin'`)
+    expect(msg).toContain(`lookup global plugins with keyword 'plugin-cli-plugin'`)
+    expect(msg).toContain(`found local plugins cli-plugin-one`)
+    expect(msg).toContain(`activating plugin cli-plugin-one`)
+    expect(msg).toContain(`adding command one`)
+    expect(msg).toContain(`activated plugin cli-plugin-one`)
+  })
 })
 
 describe('addCommands()', () => {

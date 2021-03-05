@@ -5,14 +5,14 @@ import { Logger } from 'standard-log'
 import type { cli, PluginActivationContext } from './cli'
 
 export async function loadPlugins({ cwd, log }: { cwd: string, log: Logger }, keyword: string) {
-  log.debug(`look up local plugins with keyword '${keyword}' at ${cwd}`)
+  log.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
     log.debug('found local plugins', pluginNames)
     return pluginNames
   })
 
   const globalFolder = getGlobalPackageFolder(__dirname)
-  log.debug(`look up global plugins with keyword '${keyword}' at ${globalFolder}`)
+  log.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
   const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
     log.debug('found global plugins', globalPluginNames)
     return globalPluginNames
