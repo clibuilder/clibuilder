@@ -2,7 +2,7 @@ import { logLevels, toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli'
-import { getBaseCommand } from './command'
+import { getBaseCommand, pluginsCommand } from './command'
 import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
@@ -24,10 +24,11 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     version: s.version || '',
     description,
     loadPlugins(keyword?: string) {
-      const search = keyword || `${s.name}-plugin`
+      s.keyword = keyword || `${s.name}-plugin`
+      s.commands.push(adjustCommand(baseCommand, pluginsCommand))
       pending.push(context
-        .loadPlugins(search)
-        .then(commands => s.commands.push(...commands)))
+        .loadPlugins(s.keyword)
+        .then(commands => s.commands.push(...commands.map(c => adjustCommand(baseCommand, c)))))
       return { ...this, parse }
     },
     default(command) {
@@ -93,13 +94,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   }
 }
 
-function createCommandInstance({ ui }: Context, state: state.Result, command: cli.Command) {
+function createCommandInstance({ ui, process }: Context, state: state.Result, command: cli.Command) {
   const run = (command as any).run ? (command as any).run : function (this: any) { this.ui.showHelp }
   return {
     ...command,
     run,
     ui: createCommandUI(ui, state, command),
     config: state.config,
+    keyword: state.keyword,
+    cwd: process.cwd()
   }
 }
 

@@ -60,6 +60,7 @@
     "find-up": "^5.0.0",
     "global-store": "^1.0.0-beta.17",
     "pad-right": "^0.2.2",
+    "search-packages": "^2.1.0",
     "standard-log": "^5.1.0",
     "standard-log-color": "^2.1.0",
     "tslib": "^2.1.0",

@@ -21,11 +21,10 @@ A highly customizable command line library.
 It is once again re-written from v6 to improve the usage in a fundamental way.
 Here are some of the highlights:
 
-- single `cli()` for both simple cli and plugin cli
-- config, argument, and option type inference now both basic type and array
+- single `cli()` for both basic cli and plugin cli
+- config, argument, and option type inference now work with both basic type and array
 - using `zod` to define type definition and validation
 - each command can have their own config specification
-- removed `context` as no use case for it
 - support combining short options `-abc 100 => -a -b -c 100`
 
 ## Features
@@ -33,7 +32,7 @@ Here are some of the highlights:
 - plugin support: write commands in separate packages and reuse by multiple cli
 - configuration file support
 - type inference for config, arguments, and options
-- nested commands - `my-cli cmd1 cmd2 cmd3`
+- nested commands `my-cli cmd1 cmd2 cmd3`
 - type validation for config, arguments, and options using [zod](https://github.com/colinhacks/zod)
 
 ## Usage
@@ -54,49 +53,67 @@ The above code will:
 - call your default `run()` method when invoked
 - handle errors so you won't get a ugly NodeJS stacktrace.
 
-Here are all the different things you can do:
-
-- specify different name, version, description
+You can specify name, version, and description directly:
 
 ```ts
 cli({ name: 'foo', version: '1.2.3', description: 'some fool' })
 ```
 
-- add command
+You can add additional commands and sub-commands:
 
 ```ts
-cli().command({ name: 'hello', run() { this.ui.info('hello world') }})
+cli()
+  .command({ name: 'hello', run() { this.ui.info('hello world') }})
+  .command({
+    name: 'repo',
+    commands:[
+      command({ name: 'create', run() { /* ..snip.. */ }})
+    ]
+  })
 ```
 
-- specify arguments (type defaults to string if not specified)
+You can add alias to the command:
+
+```ts
+cli()
+  .command({
+    name: 'search-packages',
+    alias: ['sp'],
+    /* ..snip.. */
+  })
+```
+
+You can specify arguments:
 
 ```ts
 cli().default({
-  arguments: [{ name: 'name', description: 'your name' }],
+  arguments: [
+    // type defaults to string
+    { name: 'name', description: 'your name' }
+  ],
   run(args) { this.ui.info(`hello, ${args.name}`) }
 })
-```
 
-- specify argument type
-
-```ts
-import { cli } from 'clibuilder'
 import * as z from 'zod'
-
 cli().command({
   name: 'sum',
-  arguments: [{ name: 'values', description: 'values to add', type: z.array(z.number()) }]
+  arguments: [
+    // using `zod` to specify string[]
+    { name: 'values', description: 'values to add', type: z.array(z.number()) }
+  ],
   run(args) {
+    // inferred as string[]
     return args.values.reduce((p, v) => p + v, 0)
   }
 })
 ```
 
-- specify options (type defaults to boolean if not specified)
+Of course, you can also specify options:
 
 ```ts
 cli().default({
   options: {
+    // type defaults to boolean
     'no-progress': { description: 'disable progress bar' },
     run(args) {
       if (args['no-progress']) this.ui.info('disable progress bar')
@@ -105,7 +122,19 @@ cli().default({
 })
 ```
 
-- mark argument and/or options as optional
+and you can add option alias too:
+
+```ts
+cli().command({
+  options: {
+    project: {
+      alias: ['p']
+    }
+  }
+})
+```
+
+You can use `zod` to mark argument and/or options as optional
 
 ```ts
 cli().default({
@@ -116,11 +145,13 @@ cli().default({
 })
 ```
 
-- load config (load `${cli}.json`, `.${cli}rc.json`, or `.${cli}rc` in that order ) \
-  when the command defines the config type using `zod`.
+You can load config using `loadConfig()`.
+Each command defines their own config type.
 
 ```ts
-cli().default({
+cli()
+.loadConfig()
+.default({
   config: z.object({ presets: z.string() }),
   run() {
     this.ui.info(`presets: ${this.config.presets}`)
@@ -128,26 +159,25 @@ cli().default({
 })
 ```
 
-- override config name
+By default, the config file can be `${cli}.json`, `.${cli}rc.json`, or `.${cli}rc`.
+You can override the config name too:
 
 ```ts
 cli({ configName: 'another-config' })
 ```
 
-- load plugins (`loadPlugins(keyword?: string)`)
+One important feature of `clibuilder` is support plugins.
+You can load plugins by calling `loadPlugins()`:
 
 ```ts
 cli().loadPlugins()
 ```
 
-- define options alias
+By default, it uses `${cli}-plugin` as the keyword to identify plugins.
+You can change that by:
 
 ```ts
-cli().default({
-  option: {
-    config: { name: 'value', alisa: ['c']}
-  }
-})
+cli().loadPlugins('another-keyword')
 ```
 
 When you create a command from a different files or for plugin,
@@ -159,7 +189,7 @@ import { command } from 'clibuilder'
 export const echo = command({
   name: 'echo',
   config: z.object({ a: z.string() }),
-  run() { this.ui.info(`echoing ${this.config.a}`)}
+  run() { this.ui.info(`echo ${this.config.a}`)}
 })
 ```
 
@@ -170,9 +200,10 @@ i.e. You can build your application in a distributed fashion.
 
 `cli().loadPlugins()` will load plugins when available.
 
-To create a plugins,
-use the `command()` function to create command,
-and `PluginActivationContext` to default your plugin:
+To create a plugins:
+
+- export an `activate(ctx: PluginActivationContext)` function
+- add the plugin keyword in your `package.json`
 
 ```ts
 import { command, PluginActivationContext } from 'clibuilder'
@@ -188,7 +219,7 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
   })
 }
 
-// in plugin package's package.json
+// in plugin's package.json
 {
   "keywords": ['your-app-plugin']
 }
@@ -196,17 +227,10 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 
 The cli will determine that a package is a plugin by looking at the `keywords` in its `package.json`.
 
-By default it is looking for `${name}-plugin`
-You can override this by supplying your own keyword:
-
-```ts
-cli().loadPlugin('another-keyword')
-```
-
 ## shebang
 
 To make your cli easily executable,
-you should add shebang to your script:
+you can add shebang to your script:
 
 ```js
 #!/usr/bin/env node
