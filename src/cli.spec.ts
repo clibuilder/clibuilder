@@ -23,7 +23,13 @@ test('args is typed based on arguments and options, with default options', () =>
       on: { type: z.number(), description: 'a' },
       onm: { type: z.array(z.number()), description: 'a' },
       os: { type: z.string(), description: 'a' },
-      osm: { type: z.array(z.string()), description: 'a' }
+      osm: { type: z.array(z.string()), description: 'a' },
+      oob: { type: z.optional(z.boolean()), description: 'a' },
+      oobm: { type: z.optional(z.array(z.boolean())), description: 'a' },
+      oon: { type: z.optional(z.number()), description: 'a' },
+      oonm: { type: z.optional(z.array(z.number())), description: 'a' },
+      oos: { type: z.optional(z.string()), description: 'a' },
+      oosm: { type: z.optional(z.array(z.string())), description: 'a' }
     },
     run(args) {
       assertType<{
@@ -36,43 +42,14 @@ test('args is typed based on arguments and options, with default options', () =>
         onm: number[],
         os: string,
         osm: string[],
+        oob: boolean | undefined,
+        oobm: boolean[] | undefined,
+        oon: number | undefined,
+        oonm: number[] | undefined,
+        oos: string | undefined,
+        oosm: string[] | undefined,
         help: boolean | undefined
       }>(args)
     }
   })
 })
-
-// function def<
-//   Name extends string,
-//   A extends Arg<Name>[],
-//   >(cmd: Cmd<A>) { return cmd }
-
-// type Cmd<
-//   A extends Arg[]
-//   > = {
-//     arguments: A,
-//     run(
-//       args: RunArgs<A>
-//     ): void
-//   }
-// type Arg<
-//   Name extends string = string,
-//   Type extends ZodType<any, any> = ZodType<any, any>
-//   > = { name: Name, type: Type }
-// type RunArgs<
-//   A extends Arg[],
-//   > =
-//   A extends Arg<infer N>[] ?
-//   { [k in N]: z.infer<Extract<ArrayValue<A>, { name: k }>['type']> } :
-//   never
-
-// def({
-//   arguments: [
-//     { name: 'ab', type: z.array(z.string()) },
-//     { name: 'c', type: z.string() }
-//   ],
-//   run(args) {
-//     args.ab
-//     // assertType.isString(args)
-//   }
-// })

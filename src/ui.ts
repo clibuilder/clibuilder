@@ -139,43 +139,27 @@ function generateArgumentsSection(command: ui.Command) {
 
   const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxWidth + RIGHT_PADDING)
 
-  if (entries.length > 0) {
-    message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
-  }
+  message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`.trimEnd())
+    .join('\n')
   return message
 }
 
 function generateOptionsSection(command: ui.Command) {
-  if (!command.options) {
-    return ''
-  }
+  if (!command.options) return ''
+
   let message = 'Options:\n'
   const entries: string[][] = []
   let maxOptionStrWidth = 0
-  if (command.options) {
-    for (const key in command.options) {
-      const value = command.options[key]
-      const optionStr = formatKeyValue(key, value)
-      const description = formatDescription(value)
-      entries.push([optionStr, description])
-      maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-    }
+  for (const key in command.options) {
+    const value = command.options[key]
+    const optionStr = formatKeyValue(key, value)
+    const description = formatDescription(value)
+    entries.push([optionStr, description])
+    maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
   }
-  // if (command.options.boolean) {
-  //   for (const key in command.options.boolean) {
-  //     const value = command.options.boolean[key]
-  //     const optionStr = `${formatKeyValue(key, value)}`
-  //     maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
-  //     const description = value.default ? `${value.description} (default true)` : value.description
-  //     entries.push([optionStr, description])
-  //   }
-  // }
-
   const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxOptionStrWidth + RIGHT_PADDING)
 
-  if (entries.length > 0) {
-    message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
-  }
+  message += entries.map(e => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
   return message
 }
 
@@ -188,13 +172,31 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
         : a.alias)
       .filter(a => a) as string[]
     : []
-  const values = [...alias, key].sort((a, b) => a.length - b.length)
-  const y = value.type instanceof z.ZodString ? '=value' : ''
-  return `[${values.map(v => v.length === 1 ? '-' + v : '--' + v).join('|')}]${y}`
+  const keyString = [...alias, key].sort((a, b) => a.length - b.length)
+    .map(v => v.length === 1 ? '-' + v : '--' + v).join('|')
+  return formatOptionSignature(value.type, keyString)
 }
+
+function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) {
+  if (!zodType) return `[${keys}]`
+  const optional = zodType instanceof z.ZodOptional
+  const t = optional ? zodType._def.innerType : zodType
+  const isArray = t instanceof z.ZodArray
+  const at = isArray ? t.element : t
+  const valueType = at instanceof z.ZodString
+    ? isArray ? '=string...' : '=string'
+    : at instanceof z.ZodNumber
+      ? isArray ? '=number...' : '=number'
+      : isArray ? '=boolean...' : ''
+
+  return optional
+    ? `[${keys}]${valueType}`
+    : `<${keys}>${valueType}`
+}
+
 function formatDescription(value: cli.Command.Options.Entry) {
   const d = value.type instanceof z.ZodString ? `'${value.default}'` : value.default
-  return value.default ? `${value.description} (default '${d}')` : value.description
+  return value.default ? `${value.description} (default ${d})` : value.description
 }
 function generateAliasSection(command: ui.Command) {
   if (!command.alias)
