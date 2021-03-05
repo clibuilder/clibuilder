@@ -7,6 +7,7 @@ import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
 import { state } from './state'
+import { Command } from './types'
 
 export function builder(context: Context, options?: cli.Options): cli.Builder {
   // set `clibuilder-debug` logs manually to logLevels.all,
@@ -15,7 +16,8 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   context.log.level = logLevels.all
   const s = state(context, options)
   const description = s.description || ''
-  s.commands = [getBaseCommand(description) as any]
+  const baseCommand = getBaseCommand(description)
+  s.commands = [baseCommand]
   const pending: Promise<any>[] = []
   return {
     name: s.name,
@@ -29,14 +31,11 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       return { ...this, parse }
     },
     default(command) {
-      s.commands[0] = {
-        ...s.commands[0], ...command,
-        options: { ...s.commands[0].options, ...command.options }
-      }
+      s.commands[0] = adjustCommand(baseCommand, { ...baseCommand, ...command })
       return { ...this, parse }
     },
     command(command) {
-      s.commands.push(command)
+      s.commands.push(adjustCommand(baseCommand, command))
       return { ...this, parse }
     }
   }
@@ -110,4 +109,14 @@ function createCommandUI(ui: Context['ui'], state: state.Result, command: cli.Co
     showVersion: () => ui.showVersion(state.version),
     showHelp: () => ui.showHelp(state.name, command)
   }
+}
+
+function adjustCommand(base: Command, command: Command): Command {
+  if (command.name) {
+    command.parent = base
+  }
+  if (command.commands) {
+    command.commands = command.commands.map(c => adjustCommand(command, c))
+  }
+  return command
 }
