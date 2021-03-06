@@ -41,9 +41,9 @@ namespace lookupCommand {
 }
 
 export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
-  : undefined | lookupCommand.Result {
-  const m = matchCommand(commands, args)
-  return m ? processCommand(m[0], m[1]) : undefined
+  : lookupCommand.Result {
+  const m = matchCommand(commands, args)!
+  return processCommand(m[0], m[1])
 }
 
 function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
@@ -74,8 +74,7 @@ function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
   return fillDefaultOptions(fillInputOptions(fillArguments(state)))
 }
 
-function fillArguments(state: processCommand.State | undefined) {
-  if (!state) return state
+function fillArguments(state: processCommand.State) {
   const command = state.command
   const args = [...state.rawArgs._]
   const argSpecs = command.arguments || []
@@ -108,8 +107,7 @@ function fillArguments(state: processCommand.State | undefined) {
   }
   return state
 }
-function fillInputOptions(state: processCommand.State | undefined) {
-  if (!state) return state
+function fillInputOptions(state: processCommand.State) {
   return reduceByKey(state.rawArgs, (s, key) => {
     if (key === '_') return s
     if (/^-/.test(key)) {
@@ -130,8 +128,7 @@ function fillInputOptions(state: processCommand.State | undefined) {
   }, state)
 }
 
-function fillDefaultOptions(state: processCommand.State | undefined) {
-  if (!state) return state
+function fillDefaultOptions(state: processCommand.State) {
   const optionsMap = state.command.options || {}
   return reduceByKey(optionsMap, (p, key) => {
     if (p.args[key]) return p

@@ -380,6 +380,42 @@ describe('loadConfig()', () => {
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
   })
+  test('config name with . will search for `${name}`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
+    const a = await builder(ctx, { configName: '.string-binrc' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('config name with . will search for `${name}.json`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
+    const a = await builder(ctx, { configName: '.string-binrc' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('config name with . will search for `${name}rc.json`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
+    const a = await builder(ctx, { configName: '.string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
+  test('config name with . will search for `${name}rc`', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
+    const a = await builder(ctx, { configName: '.string-bin' })
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    expect(a).toEqual({ a: 1 })
+  })
   test('fail validation will emit warning and exit', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-json-config')
     await builder(ctx, { configName: 'string-bin' })
@@ -443,7 +479,6 @@ describe('loadConfig()', () => {
       })
     expect(a).toEqual({ a: 1, b: 3 })
   })
-
   test('load config if default command has config', async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const cli = builder(ctx)
@@ -459,7 +494,6 @@ describe('loadConfig()', () => {
     const a = await cli.parse(argv('has-config'))
     expect(a).toEqual({ a: 1 })
   })
-
   test('load config if any command has config', async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const cli = builder(ctx)
@@ -469,13 +503,22 @@ describe('loadConfig()', () => {
           name: 'config',
           config: z.object({ a: z.number() }),
           run() { return this.config }
-        }],
-        // TODO `run()` is optional for group command
-        run() { }
+        }]
       })
 
     const a = await cli.parse(argv('has-config group config'))
     expect(a).toEqual({ a: 1 })
+  })
+  test('no config', async () => {
+    const ctx = mockContext('single-bin/bin.js', 'no-config')
+    const a = await builder(ctx)
+      .default({
+        config: z.object({ a: z.number() }),
+        run() { return this.config }
+      }).parse(argv('single-bin'))
+    const msg = getLogMessage(ctx.reporter)
+    expect(msg).toContain('no config found for single-cli')
+    expect(a).toEqual(undefined)
   })
 })
 

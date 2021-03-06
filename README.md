@@ -145,12 +145,12 @@ cli().default({
 })
 ```
 
-You can load config using `loadConfig()`.
-Each command defines their own config type.
+If you invoke a command expecting an `config`,
+the config will be loaded.
+Each command defines their own config.
 
 ```ts
 cli()
-.loadConfig()
 .default({
   config: z.object({ presets: z.string() }),
   run() {
