@@ -45,9 +45,9 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     await Promise.all(pending)
     context.log.debug('argv:', argv.join(' '))
     const r = lookupCommand(s.commands, parseArgv(argv))
-    if (!r || r.errors.length > 0) {
+    if (r.errors.length > 0) {
       // TODO: print errors
-      createCommandInstance(context, s, r?.command || s.commands[0]).ui.showHelp()
+      createCommandInstance(context, s, r.command).ui.showHelp()
       return
     }
     const { args, command } = r
@@ -74,14 +74,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   }
 
   function loadConfig(configType: ZodTypeAny) {
-    const { config, configFilePath } = context.loadConfig(s.configName || s.name)
+    const configName = s.configName || s.name
+    const { config, configFilePath } = context.loadConfig(configName)
     if (configFilePath) {
       context.log.debug(`load config from: ${configFilePath}`)
       context.log.debug(`config: ${JSON.stringify(config)}`)
     }
     else {
-      // istanbul ignore next
-      context.log.debug(`unable to load config from ${configFilePath}`)
+      context.ui.warn(`no config found for ${configName}`)
+      return
     }
     const r = configType.safeParse(config)
     if (r.success) {

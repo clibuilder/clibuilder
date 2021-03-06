@@ -14,6 +14,7 @@ import { ui } from './ui'
 export function context() {
   const debugLogs: LogEntry[] = []
   const logger = getLogger('clibuilder')
+  // istanbul ignore next
   const log = {
     ...logger,
     get level(): number | undefined {
@@ -46,9 +47,18 @@ export function context() {
     },
     loadConfig(configFileName: string) {
       const cwd = this.process.cwd()
+      // istanbul ignore next
       const win = this.process.platform === 'win32'
-      const home = win ? process.env.USERPROFILE : process.env.HOME
-      return loadConfig(cwd, home, configFileName)
+      // istanbul ignore next
+      const home = (win ? this.process.env.USERPROFILE : this.process.env.HOME) as string
+      const configFilePath = resolveConfigFilename(cwd, home, configFileName)
+      if (!configFilePath) {
+        return {}
+      }
+      return {
+        configFilePath,
+        config: JSON.parse(readFileSync(configFilePath, 'utf8'))
+      }
     },
     async loadPlugins(keyword: string) {
       const cwd = this.process.cwd()
@@ -63,33 +73,35 @@ export function context() {
 
 export type Context = ReturnType<typeof context>
 
-function loadConfig(cwd: string, home: string | undefined, configFileName: string): { configFilePath?: string, config?: unknown } {
-  const configFilePath = resolveConfigFilename(cwd, home, configFileName)
-  if (!configFilePath) return {}
-  return {
-    configFilePath,
-    config: JSON.parse(readFileSync(configFilePath, 'utf8'))
+function resolveConfigFilename(cwd: string, home: string, configFileName: string) {
+  if (configFileName.startsWith('.')) {
+    return resolveConfigFilenames(cwd, home, [
+      configFileName,
+      `${configFileName}.json`,
+      `${configFileName}rc.json`,
+      `${configFileName}rc`
+    ])
   }
+  if (configFileName.indexOf('.') >= 0) {
+    return resolveConfigFilenames(cwd, home, [
+      configFileName
+    ])
+  }
+
+  return resolveConfigFilenames(cwd, home, [
+    `${configFileName}.json`,
+    `.${configFileName}rc.json`,
+    `.${configFileName}rc`
+  ])
 }
 
-function resolveConfigFilename(cwd: string, home: string | undefined, configFileName: string) {
-  if (configFileName.indexOf('.') >= 0) {
-    return path.join(cwd, configFileName)
-  }
-
-  const filenames = [
-    path.join(`${configFileName}.json`),
-    path.join(`.${configFileName}rc.json`),
-    path.join(`.${configFileName}rc`),
-  ]
+function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
   for (const filename of filenames) {
     let filePath = findUp.sync(filename, { cwd })
     if (filePath) return filePath
 
-    if (home) {
-      filePath = path.join(home, filename)
-      if (existsSync(filePath)) return filePath
-    }
+    filePath = path.join(home, filename)
+    // istanbul ignore next
+    if (existsSync(filePath)) return filePath
   }
-  return undefined
 }
