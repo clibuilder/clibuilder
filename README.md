@@ -98,11 +98,11 @@ import * as z from 'zod'
 cli().command({
   name: 'sum',
   arguments: [
-    // using `zod` to specify string[]
+    // using `zod` to specify number[]
     { name: 'values', description: 'values to add', type: z.array(z.number()) }
   ],
   run(args) {
-    // inferred as string[]
+    // inferred as number[]
     return args.values.reduce((p, v) => p + v, 0)
   }
 })
@@ -145,7 +145,7 @@ cli().default({
 })
 ```
 
-If you invoke a command expecting an `config`,
+If you invoke a command expecting a `config`,
 the config will be loaded.
 Each command defines their own config.
 
@@ -166,7 +166,7 @@ You can override the config name too:
 cli({ configName: 'another-config' })
 ```
 
-One important feature of `clibuilder` is support plugins.
+One important feature of `clibuilder` is supporting plugins.
 You can load plugins by calling `loadPlugins()`:
 
 ```ts
