@@ -97,10 +97,9 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
 }
 
 function createCommandInstance({ ui, process }: Context, state: state.Result, command: cli.Command) {
-  const run = (command as any).run ? (command as any).run : function (this: any) { this.ui.showHelp }
   return {
     ...command,
-    run,
+    run: (command as any).run,
     ui: createCommandUI(ui, state, command),
     config: state.config,
     keyword: state.keyword,

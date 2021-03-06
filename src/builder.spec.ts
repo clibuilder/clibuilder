@@ -279,6 +279,18 @@ describe('command()', () => {
     const actual = await cli.parse(argv('single-bin cmd1 cmd2'))
     expect(actual).toEqual('cmd2')
   })
+  test('not exist nested command show help', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx)
+      .command({
+        name: 'cmd1',
+        commands: [
+          { name: 'cmd2', run() { return 'cmd2' } }
+        ]
+      })
+    await cli.parse(argv('single-bin cmd1 not-exist'))
+    expect(getLogMessage(ctx.reporter)).toContain('Usage: single-cli cmd1 <command>')
+  })
 })
 
 describe('fluent syntax', () => {

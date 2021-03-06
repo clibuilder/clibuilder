@@ -3,6 +3,7 @@ import a from 'assertron'
 import { some } from 'satisfier'
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
 import { loadPlugins } from './loadPlugins'
+import { getLogMessage } from './test-utils'
 
 async function testLoadPlugins(cwd: string, keyword: string) {
   const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
@@ -46,4 +47,9 @@ test('local plugin will prevent global plugin to load', async () => {
 test('plugin using activation context with destructuring', async () => {
   const { plugins } = await testLoadPlugins('fixtures/destructuring', 'clibuilder-plugin')
   a.satisfies(plugins, some({ name: 'one' }))
+})
+
+test('bad plugin', async () => {
+  const { reporter } = await testLoadPlugins('fixtures/bad-plugin', 'clibuilder-plugin')
+  expect(getLogMessage(reporter)).toContain('not a valid plugin cli-plugin-x')
 })

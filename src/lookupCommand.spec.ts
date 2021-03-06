@@ -71,7 +71,6 @@ describe('options basic', () => {
     expect(errors).toEqual([{ 'key': '-help', 'type': 'invalid-key' }])
   })
 })
-
 describe('boolean options', () => {
   test('accepts true/false', () => {
     const { args } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h false -v true')!

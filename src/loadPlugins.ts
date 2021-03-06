@@ -22,14 +22,10 @@ export async function loadPlugins({ cwd, log }: { cwd: string, log: Logger }, ke
 
   return Promise.all([findingLocal, findingGlobal]).then(([localPluginsNames, globalPluginNames]) => {
     const commands = activatePlugins(cwd, log, localPluginsNames)
-
-    globalPluginNames.forEach(p => {
-      if (localPluginsNames.indexOf(p) !== -1)
-        return
-      const m = loadModule(globalFolder, log, p)
-      if (isValidPlugin(m)) commands.push(...activatePlugin(m))
-    })
-
+    commands.push(...activatePlugins(
+      globalFolder,
+      log,
+      globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
     return commands
   })
 }
