@@ -149,19 +149,18 @@ export namespace cli {
         & (string extends OName ? Options.Default : Omit<Options.Default, OName>))
       : never : never
   }
+}
 
+export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
 
-  export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
-
-  export type UI = {
-    displayLevel: DisplayLevel,
-    info(...args: any[]): void,
-    warn(...args: any[]): void,
-    error(...args: any[]): void,
-    debug(...args: any[]): void,
-    showHelp(): void,
-    showVersion(): void,
-  }
+export type UI = {
+  displayLevel: DisplayLevel,
+  info(...args: any[]): void,
+  warn(...args: any[]): void,
+  error(...args: any[]): void,
+  debug(...args: any[]): void,
+  showHelp(): void,
+  showVersion(): void,
 }
 
 export type PluginActivationContext = {
