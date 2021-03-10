@@ -12,9 +12,9 @@ export namespace cli {
     /**
      * Name of the cli
     */
-    name: string,
-    version: string,
-    description: string,
+    name?: string,
+    version?: string,
+    description?: string,
     /**
      * Specify the config name if differs from the cli name.
      * e.g. name = `cli`,
@@ -26,18 +26,6 @@ export namespace cli {
      * in that order
      */
     configName?: string
-  } | {
-    /**
-     * Specify the config name if differs from the cli name.
-     * e.g. name = `cli`,
-     * configName = `my-cli`,
-     * will load the first config named as:
-     * - `my-cli.json`
-     * - `.my-clirc.json`
-     * - `.my-clirc`
-     * in that order
-     */
-    configName: string
   }
 
   export type Builder = {

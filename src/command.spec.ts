@@ -168,7 +168,7 @@ describe('pluginsCommand', () => {
 describe('searchPluginsCommand', () => {
   test('no plugin', async () => {
     const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
+    await builder(ctx, { name: 'plugin-cli' })
       .loadPlugins().command({
         ...searchPluginsCommand,
         context: { searchByKeywords: () => Promise.resolve([]) }
@@ -179,7 +179,7 @@ describe('searchPluginsCommand', () => {
 
   test('one plugin', async () => {
     const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
+    await builder(ctx, { name: 'plugin-cli' })
       .loadPlugins().command({
         ...searchPluginsCommand,
         context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }

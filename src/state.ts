@@ -21,7 +21,7 @@ export namespace state {
 export function state(
   { ui, getAppPath, loadAppInfo, process, log }: Context,
   options?: cli.Options): state.Result<any> {
-  if (options && (options as any).name) return {
+  if (options && options.name && options.version && options.description !== undefined) return {
     ...options,
     commands: []
   } as any
@@ -29,15 +29,17 @@ export function state(
   const appPath = getAppPath(stack)
   const appInfo = loadAppInfo(appPath)
   if (appInfo) {
-    const name = getCliName(appPath, appInfo)
+    const name = options?.name || getCliName(appPath, appInfo)
+    const version = options?.version || appInfo.version
+    const description = options?.description || appInfo.description || ''
     if (name) {
       log.debug(`package name: ${name}`)
-      log.debug(`version: ${appInfo.version}`)
-      log.debug(`description: ${appInfo.description}`)
+      log.debug(`version: ${version}`.trim())
+      log.debug(`description: ${description}`.trim())
       return {
         name,
-        version: appInfo.version,
-        description: appInfo.description || '',
+        version,
+        description,
         configName: options?.configName || '',
         keyword: '',
         commands: []
