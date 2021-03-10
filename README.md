@@ -101,7 +101,8 @@ cli().default({
   run(args) { this.ui.info(`hello, ${args.name}`) }
 })
 
-import * as z from 'zod'
+import { cli, z } from 'clibuilder'
+
 cli().command({
   name: 'sum',
   arguments: [
