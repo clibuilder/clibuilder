@@ -1,7 +1,7 @@
 import a from 'assertron'
 import { assertType } from 'type-plus'
 import * as z from 'zod'
-import { cli } from './cli'
+import { cli } from '.'
 
 describe('create', () => {
   test('with options', () => {
