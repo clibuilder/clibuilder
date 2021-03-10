@@ -1,7 +1,6 @@
 import a from 'assertron'
 import { assertType } from 'type-plus'
-import * as z from 'zod'
-import { cli } from '.'
+import { cli, types } from '.'
 
 describe('create', () => {
   test('with options', () => {
@@ -13,23 +12,23 @@ describe('create', () => {
 test('args is typed based on arguments and options, with default options', () => {
   cli().default({
     arguments: [
-      { name: 'a', description: 'asd', type: z.string() },
-      { name: 'b', description: 'asd', type: z.boolean() },
-      { name: 'c', description: 'asd', type: z.array(z.number()) }
+      { name: 'a', description: 'asd', type: types.string() },
+      { name: 'b', description: 'asd', type: types.boolean() },
+      { name: 'c', description: 'asd', type: types.array(types.number()) }
     ],
     options: {
-      ob: { type: z.boolean(), description: 'a' },
-      obm: { type: z.array(z.boolean()), description: 'a' },
-      on: { type: z.number(), description: 'a' },
-      onm: { type: z.array(z.number()), description: 'a' },
-      os: { type: z.string(), description: 'a' },
-      osm: { type: z.array(z.string()), description: 'a' },
-      oob: { type: z.optional(z.boolean()), description: 'a' },
-      oobm: { type: z.optional(z.array(z.boolean())), description: 'a' },
-      oon: { type: z.optional(z.number()), description: 'a' },
-      oonm: { type: z.optional(z.array(z.number())), description: 'a' },
-      oos: { type: z.optional(z.string()), description: 'a' },
-      oosm: { type: z.optional(z.array(z.string())), description: 'a' }
+      ob: { type: types.boolean(), description: 'a' },
+      obm: { type: types.array(types.boolean()), description: 'a' },
+      on: { type: types.number(), description: 'a' },
+      onm: { type: types.array(types.number()), description: 'a' },
+      os: { type: types.string(), description: 'a' },
+      osm: { type: types.array(types.string()), description: 'a' },
+      oob: { type: types.optional(types.boolean()), description: 'a' },
+      oobm: { type: types.optional(types.array(types.boolean())), description: 'a' },
+      oon: { type: types.optional(types.number()), description: 'a' },
+      oonm: { type: types.optional(types.array(types.number())), description: 'a' },
+      oos: { type: types.optional(types.string()), description: 'a' },
+      oosm: { type: types.optional(types.array(types.string())), description: 'a' }
     },
     run(args) {
       assertType<{

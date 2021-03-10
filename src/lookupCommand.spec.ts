@@ -1,10 +1,7 @@
 import a from 'assertron'
-import * as z from 'zod'
-import { cli } from './cli'
-import { command } from './command'
+import { cli, command, parseArgv, types } from '.'
 import { getBaseCommand } from './commands'
 import { lookupCommand } from './lookupCommand'
-import { parseArgv } from './parseArgv'
 import { argv } from './test-utils'
 
 function testLookupCommand(commands: cli.Command[], args: string) {
@@ -23,7 +20,7 @@ describe('with default command', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        help: { type: z.boolean(), description: 'x' }
+        help: { type: types.boolean(), description: 'x' }
       },
       run() { }
     })
@@ -34,7 +31,7 @@ describe('with default command', () => {
   test('with one argument', () => {
     const defaultCommand = command({
       name: '',
-      arguments: [{ name: 'arg', type: z.string(), description: 'some arg' }],
+      arguments: [{ name: 'arg', type: types.string(), description: 'some arg' }],
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli abc')!
@@ -46,7 +43,7 @@ describe('argument', () => {
   test('argument can be optional', () => {
     const defaultCommand = command({
       name: '',
-      arguments: [{ name: 'arg', type: z.string().optional(), description: 'some arg' }],
+      arguments: [{ name: 'arg', type: types.string().optional(), description: 'some arg' }],
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
@@ -56,7 +53,7 @@ describe('argument', () => {
   test('required argument', () => {
     const defaultCommand = command({
       name: '',
-      arguments: [{ name: 'arg', type: z.string(), description: 'some required arg' }],
+      arguments: [{ name: 'arg', type: types.string(), description: 'some required arg' }],
       run() { }
     })
     const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli')!
@@ -84,7 +81,7 @@ describe('boolean options', () => {
   test('boolean options with space syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { description: 'a', type: z.boolean() } },
+      options: { abc: { description: 'a', type: types.boolean() } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc')!
@@ -94,7 +91,7 @@ describe('boolean options', () => {
   test('boolean options with = syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.boolean(), description: 'a' } },
+      options: { abc: { type: types.boolean(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=true')!
@@ -104,7 +101,7 @@ describe('boolean options', () => {
   test('boolean options with space syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.boolean(), description: 'a' } },
+      options: { abc: { type: types.boolean(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc false')!
@@ -115,7 +112,7 @@ describe('boolean options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.boolean(), description: 'a', alias: ['a'] }
+        abc: { type: types.boolean(), description: 'a', alias: ['a'] }
       },
       run() { }
     })
@@ -127,7 +124,7 @@ describe('boolean options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.boolean(), description: 'a', default: true }
+        abc: { type: types.boolean(), description: 'a', default: true }
       },
       run() { }
     })
@@ -139,7 +136,7 @@ describe('boolean options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.boolean(), description: 'a', default: false }
+        abc: { type: types.boolean(), description: 'a', default: false }
       },
       run() { }
     })
@@ -151,7 +148,7 @@ describe('boolean options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.array(z.boolean()), description: 'a' }
+        abc: { type: types.array(types.boolean()), description: 'a' }
       },
       run() { }
     })
@@ -162,7 +159,7 @@ describe('boolean options', () => {
   test('boolean options pass in multiple values gets the last value and emit warning', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.boolean(), description: 'a' } },
+      options: { abc: { type: types.boolean(), description: 'a' } },
       run() { }
     })
     const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=false --abc=true')!
@@ -174,7 +171,7 @@ describe('boolean options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.array(z.boolean()), description: 'a' }
+        abc: { type: types.array(types.boolean()), description: 'a' }
       },
       run() { }
     })
@@ -187,7 +184,7 @@ describe('numeric options', () => {
   test('number options with = syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.number(), description: 'a' } },
+      options: { abc: { type: types.number(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=123')!
@@ -197,7 +194,7 @@ describe('numeric options', () => {
   test('number options with space syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.number(), description: 'a' } },
+      options: { abc: { type: types.number(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc 123')!
@@ -208,7 +205,7 @@ describe('numeric options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.number(), description: 'a', alias: ['a'] },
+        abc: { type: types.number(), description: 'a', alias: ['a'] },
       },
       run() { }
     })
@@ -220,7 +217,7 @@ describe('numeric options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.number(), default: 123, description: 'a' }
+        abc: { type: types.number(), default: 123, description: 'a' }
       },
       run() { }
     })
@@ -231,7 +228,7 @@ describe('numeric options', () => {
   test('singular options pass in multiple values gets the last value and emit warning', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.number(), description: 'a' } },
+      options: { abc: { type: types.number(), description: 'a' } },
       run() { }
     })
     const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
@@ -243,7 +240,7 @@ describe('numeric options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.array(z.number()), description: 'a' }
+        abc: { type: types.array(types.number()), description: 'a' }
       },
       run() { }
     })
@@ -254,7 +251,7 @@ describe('numeric options', () => {
   test('number options with invalid value', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.number(), description: 'a' } },
+      options: { abc: { type: types.number(), description: 'a' } },
       run() { }
     })
     const { cmd, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=xyz')!
@@ -271,7 +268,7 @@ describe('string options', () => {
   test('string options with = syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.string(), description: 'a' } },
+      options: { abc: { type: types.string(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=123')!
@@ -281,7 +278,7 @@ describe('string options', () => {
   test('string options with space syntax', () => {
     const defaultCommand = command({
       name: '',
-      options: { abc: { type: z.string(), description: 'a' } },
+      options: { abc: { type: types.string(), description: 'a' } },
       run() { }
     })
     const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc 123')!
@@ -292,7 +289,7 @@ describe('string options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.string(), description: 'a', alias: ['a'] },
+        abc: { type: types.string(), description: 'a', alias: ['a'] },
       },
       run() { }
     })
@@ -304,7 +301,7 @@ describe('string options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.string(), default: '123', description: 'a' }
+        abc: { type: types.string(), default: '123', description: 'a' }
       },
       run() { }
     })
@@ -316,7 +313,7 @@ describe('string options', () => {
     const defaultCommand = command({
       name: '',
       options: {
-        abc: { type: z.array(z.string()), description: 'a' }
+        abc: { type: types.array(types.string()), description: 'a' }
       },
       run() { }
     })

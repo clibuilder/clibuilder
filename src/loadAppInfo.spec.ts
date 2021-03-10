@@ -1,7 +1,7 @@
 import a from 'assertron'
-import { getFixturePath } from './test-utils'
-import { loadAppInfo } from './loadAppInfo'
 import { getLogger } from 'standard-log'
+import { loadAppInfo } from './loadAppInfo'
+import { getFixturePath } from './test-utils'
 
 function testLoadAppInfo(fixturePath: string) {
   const log = getLogger('test-loadAppInfo')

@@ -1,5 +1,10 @@
-import type { cli } from './cli'
+import { array, boolean, number, object, optional, string } from 'zod'
 
-export type Command = cli.Command & {
-  parent?: Command
+export const types = {
+  optional,
+  string,
+  array,
+  number,
+  boolean,
+  object
 }

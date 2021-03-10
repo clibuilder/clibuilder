@@ -33,15 +33,13 @@ Here are some of the highlights:
 - configuration file support
 - type inference for config, arguments, and options
 - nested commands `my-cli cmd1 cmd2 cmd3`
-- type validation for config, arguments, and options using [zod](https://github.com/colinhacks/zod)
+- type validation for config, arguments, and options \
+  using [zod](https://github.com/colinhacks/zod) types exposed under `types`
 
 ## Install
 
 ```sh
 yarn add clibuilder
-
-# use zod@next to define type
-yarn add zod@next
 ```
 
 ## Usage
@@ -143,13 +141,15 @@ cli().command({
 })
 ```
 
-You can use `zod` to mark argument and/or options as optional
+You can use `types` to mark argument and/or options as optional
 
 ```ts
+import { cli, types } from 'clibuilder'
+
 cli().default({
-  arguments: [{ name: 'a', description: '', type: z.optional(z.string()) }],
+  arguments: [{ name: 'a', description: '', type: types.optional(types.string()) }],
   options: {
-    y: { type: z.optional(z.number()) }
+    y: { type: types.optional(types.number()) }
   }
 })
 ```
@@ -159,9 +159,11 @@ the config will be loaded.
 Each command defines their own config.
 
 ```ts
+import { cli, types } from 'clibuilder'
+
 cli()
 .default({
-  config: z.object({ presets: z.string() }),
+  config: types.object({ presets: types.string() }),
   run() {
     this.ui.info(`presets: ${this.config.presets}`)
   }
@@ -193,11 +195,11 @@ When you create a command from a different files or for plugin,
 you can use the `command()` function which provides type validation and inference support.
 
 ```ts
-import { command } from 'clibuilder'
+import { command, types } from 'clibuilder'
 
 export const echo = command({
   name: 'echo',
-  config: z.object({ a: z.string() }),
+  config: types.object({ a: types.string() }),
   run() { this.ui.info(`echo ${this.config.a}`)}
 })
 ```

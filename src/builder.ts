@@ -7,7 +7,7 @@ import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
 import { state } from './state'
-import { Command } from './types'
+import { Command } from './typesInternal'
 
 export function builder(context: Context, options?: cli.Options): cli.Builder {
   // set `clibuilder-debug` logs manually to logLevels.all,

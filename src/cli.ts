@@ -143,7 +143,8 @@ export namespace cli {
           ? AT extends z.ZodType<any> ? z.infer<AT> : string
           : never
         }
-        & { [k in OName]: O[k]['type'] extends infer OT
+        & {
+          [k in OName]: O[k]['type'] extends infer OT
           ? OT extends z.ZodType<any> ? z.infer<OT> : boolean | undefined
           : never }
         & (string extends OName ? Options.Default : Omit<Options.Default, OName>))

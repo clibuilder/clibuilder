@@ -2,6 +2,7 @@ import { findKey, reduceByKey } from 'type-plus'
 import * as z from 'zod'
 import type { cli } from './cli'
 import { parseArgv } from './parseArgv'
+import { types } from './types'
 
 namespace lookupCommand {
   export type Result = {
@@ -120,7 +121,7 @@ function fillInputOptions(state: processCommand.State) {
       s.errors.push({ type: 'invalid-key', key })
       return s
     }
-    const [value, errors] = convertValue(optionEntry!.type || z.optional(z.string()), key, state.rawArgs[key])
+    const [value, errors] = convertValue(optionEntry!.type || types.optional(types.string()), key, state.rawArgs[key])
     if (errors) s.errors.push(...errors)
     s.args[name] = value
 
