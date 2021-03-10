@@ -23,7 +23,7 @@ Here are some of the highlights:
 
 - single `cli()` for both basic cli and plugin cli
 - config, argument, and option type inference now work with both basic type and array
-- using `zod` to define type definition and validation
+- using `zod@next` to define type definition and validation
 - each command can have their own config specification
 - support combining short options `-abc 100 => -a -b -c 100`
 
@@ -34,6 +34,15 @@ Here are some of the highlights:
 - type inference for config, arguments, and options
 - nested commands `my-cli cmd1 cmd2 cmd3`
 - type validation for config, arguments, and options using [zod](https://github.com/colinhacks/zod)
+
+## Install
+
+```sh
+yarn add clibuilder
+
+# use zod@next to define type
+yarn add zod@next
+```
 
 ## Usage
 
