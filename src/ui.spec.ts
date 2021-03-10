@@ -1,5 +1,5 @@
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
-import { command, types } from '.'
+import { command, z } from '.'
 import { getLogMessage } from './test-utils'
 import { ui } from './ui'
 
@@ -86,7 +86,7 @@ Arguments:
     const { ui, reporter } = testUI()
     ui.showHelp('cli', command({
       name: 'cmd',
-      arguments: [{ name: 'x', description: '', type: types.optional(types.string()) }],
+      arguments: [{ name: 'x', description: '', type: z.optional(z.string()) }],
       run() { }
     }))
     expect(getLogMessage(reporter)).toEqual(`
@@ -118,7 +118,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.string() }
+          'abc': { description: 'desc', type: z.string() }
         },
         run() { }
       }))
@@ -134,7 +134,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.number() }
+          'abc': { description: 'desc', type: z.number() }
         },
         run() { }
       }))
@@ -150,7 +150,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.boolean() }
+          'abc': { description: 'desc', type: z.boolean() }
         },
         run() { }
       }))
@@ -166,7 +166,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.array(types.string()) }
+          'abc': { description: 'desc', type: z.array(z.string()) }
         },
         run() { }
       }))
@@ -182,7 +182,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.array(types.number()) }
+          'abc': { description: 'desc', type: z.array(z.number()) }
         },
         run() { }
       }))
@@ -198,7 +198,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.array(types.boolean()) }
+          'abc': { description: 'desc', type: z.array(z.boolean()) }
         },
         run() { }
       }))
@@ -214,7 +214,7 @@ Options:
       ui.showHelp('cli', command({
         name: 'cmd',
         options: {
-          'abc': { description: 'desc', type: types.string(), default: 'miku' }
+          'abc': { description: 'desc', type: z.string(), default: 'miku' }
         },
         run() { }
       }))
@@ -247,7 +247,7 @@ Options:
         name: 'cmd',
         options: {
           long: {
-            type: types.optional(types.string()),
+            type: z.optional(z.string()),
             description: 'description',
             alias: [
               { alias: 'l', hidden: true },

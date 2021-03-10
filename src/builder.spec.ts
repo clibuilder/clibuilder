@@ -1,6 +1,6 @@
 import a from 'assertron'
 import { assertType, IsExtend, isType } from 'type-plus'
-import { cli, types } from '.'
+import { cli, z } from '.'
 import { builder } from './builder'
 import { command } from './command'
 import { mockContext } from './mockContext'
@@ -93,7 +93,7 @@ describe('default()', () => {
     const ctx = mockContext('single-bin/bin.js')
     const a = await builder(ctx).default({
       arguments: [
-        { name: 'a', description: 'd', type: types.array(types.string()) }
+        { name: 'a', description: 'd', type: z.array(z.string()) }
       ],
       run(args) { return args.a }
     }).parse(argv('string-bin abc'))
@@ -341,7 +341,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('string-bin/bin.js', 'has-json-config')
     const cli = builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       })
     const a = await cli.parse(argv('string-bin'))
@@ -351,7 +351,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('string-bin/bin.js', 'has-rc-config')
     const cli = builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       })
     const a = await cli.parse(argv('string-bin'))
@@ -361,7 +361,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('string-bin/bin.js', 'has-rc-json-config')
     const cli = builder(ctx)
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       })
     const a = await cli.parse(argv('string-bin'))
@@ -371,7 +371,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
     const a = await builder(ctx, { configName: 'string-bin.json' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -380,7 +380,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
     const a = await builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -389,7 +389,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
     const a = await builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -398,7 +398,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
     const a = await builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -407,7 +407,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
     const a = await builder(ctx, { configName: '.string-binrc' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -416,7 +416,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
     const a = await builder(ctx, { configName: '.string-binrc' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -425,7 +425,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
     const a = await builder(ctx, { configName: '.string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -434,7 +434,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
     const a = await builder(ctx, { configName: '.string-bin' })
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     expect(a).toEqual({ a: 1 })
@@ -443,9 +443,9 @@ describe('loadConfig()', () => {
     const ctx = mockContext('string-bin/bin.js', 'has-json-config')
     await builder(ctx, { configName: 'string-bin' })
       .default({
-        config: types.object({
-          a: types.object({ c: types.number() }),
-          b: types.string()
+        config: z.object({
+          a: z.object({ c: z.number() }),
+          b: z.string()
         }),
         run() { return this.config }
       }).parse(argv('single-bin'))
@@ -468,7 +468,7 @@ describe('loadConfig()', () => {
   test('default() receives config type', async () => {
     const cli = builder(mockContext('has-config/bin.js', 'has-config'))
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() {
           assertType<{ a: number }>(this.config)
           return this.config
@@ -481,7 +481,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
     const cli = builder(ctx)
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() {
           return this.config
         }
@@ -494,9 +494,9 @@ describe('loadConfig()', () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const a = await builder(ctx)
       .default({
-        config: types.object({
-          a: types.number().default(2),
-          b: types.optional(types.number()).default(3)
+        config: z.object({
+          a: z.number().default(2),
+          b: z.optional(z.number()).default(3)
         }),
         run() { return this.config }
       })
@@ -506,7 +506,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
     const cli = builder(ctx)
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() {
           const cfg = this.config
           isType.equal<true, { a: number }, typeof cfg>()
@@ -524,7 +524,7 @@ describe('loadConfig()', () => {
         name: 'group',
         commands: [{
           name: 'config',
-          config: types.object({ a: types.number() }),
+          config: z.object({ a: z.number() }),
           run() { return this.config }
         }]
       })
@@ -536,7 +536,7 @@ describe('loadConfig()', () => {
     const ctx = mockContext('single-bin/bin.js', 'no-config')
     const a = await builder(ctx)
       .default({
-        config: types.object({ a: types.number() }),
+        config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     const msg = getLogMessage(ctx.reporter)

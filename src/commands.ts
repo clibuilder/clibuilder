@@ -1,7 +1,7 @@
 import { findByKeywords } from 'find-installed-packages'
 import { searchByKeywords } from 'search-packages'
 import { command } from './command'
-import { types } from './types'
+import { z } from './zod'
 
 export function getBaseCommand(description: string) {
   return command({
@@ -9,26 +9,26 @@ export function getBaseCommand(description: string) {
     description,
     options: {
       'help': {
-        type: types.optional(types.boolean()),
+        type: z.optional(z.boolean()),
         description: 'Print help message',
         alias: ['h']
       },
       'version': {
-        type: types.optional(types.boolean()),
+        type: z.optional(z.boolean()),
         description: 'Print the CLI version',
         alias: ['v']
       },
       'verbose': {
-        type: types.optional(types.boolean()),
+        type: z.optional(z.boolean()),
         description: 'Turn on verbose logging',
         alias: ['V']
       },
       'silent': {
-        type: types.optional(types.boolean()),
+        type: z.optional(z.boolean()),
         description: 'Turn off logging',
       },
       'debug-cli': {
-        type: types.optional(types.boolean()),
+        type: z.optional(z.boolean()),
         description: 'Display clibuilder debug messages',
       },
     },
