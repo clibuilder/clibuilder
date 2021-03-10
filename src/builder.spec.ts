@@ -8,8 +8,10 @@ import { mockContext } from './mockContext'
 import { argv, getFixturePath, getLogMessage } from './test-utils'
 
 describe('with options', () => {
-  test('need to specify name, version, and description', () => {
-    const cli = builder(mockContext('no-bin/other.js'), {
+  test('specify name, version, and description will skip loading package.json', () => {
+    const ctx = mockContext('no-pjson/bin.js')
+    ctx.getAppPath = () => { fail('should not reach') }
+    const cli = builder(ctx, {
       name: 'app',
       version: '1.0.0',
       description: 'my app'
@@ -18,6 +20,16 @@ describe('with options', () => {
       name: 'app',
       version: '1.0.0',
       description: 'my app'
+    })
+  })
+
+  test('get info from package.json', () => {
+    const ctx = mockContext('string-bin/bin.js')
+    const cli = builder(ctx, {})
+    a.satisfies(cli, {
+      name: 'string-bin',
+      version: '1.0.0',
+      description: ''
     })
   })
 })
@@ -224,12 +236,12 @@ describe('--debug-cli', () => {
     const startPath = getFixturePath('string-bin/bin.js')
     const pjsonPath = getFixturePath('string-bin/package.json')
     const msg = getLogMessage(ctx.reporter)
-    a.true(msg.startsWith(`finding package.json starting from '${startPath}'...
+    expect(msg).toContain(`finding package.json starting from '${startPath}'...
 found package.json at '${pjsonPath}'
 package name: string-bin
 version: 1.0.0
-description: undefined
-argv: node string-bin --debug-cli`))
+description:
+argv: node string-bin --debug-cli`)
   })
   test('log loading plugins', async () => {
     const ctx = mockContext('string-bin/bin.js', 'one-plugin')
