@@ -1,7 +1,8 @@
 import { isType } from 'type-plus'
 import * as z from 'zod'
 import { builder } from './builder'
-import { command, searchPluginsCommand } from './command'
+import { command } from './command'
+import { searchPluginsCommand } from './commands'
 import { mockContext } from './mockContext'
 import { argv, getLogMessage } from './test-utils'
 
