@@ -1838,7 +1838,7 @@
   version "1.0.0"
   resolved "https://codeload.github.com/types/wordwrap/tar.gz/caf776ac962b305476b491499cb8457db9729c1a"
 
-"@types/yargs-parser@*", "@types/yargs-parser@^20.2.0":
+"@types/yargs-parser@*":
   version "20.2.0"
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-20.2.0.tgz#dd3e6699ba3237f0348cd085e4698780204842f9"
   integrity sha512-37RSHht+gzzgYeobbG+KWryeAW8J33Nhr69cjTqSYymXVZEN9NbRYWoYlRtDhHKPVT1FyNKwaTPC1NynKZpzRA==
