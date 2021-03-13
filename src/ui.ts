@@ -69,7 +69,8 @@ ${helpSections.join('\n\n')}
 
 function generateUsageSection(cliName: string, command: ui.Command) {
   const nameChain = getCommandNameChain(cliName, command)
-  let message = `Usage: ${nameChain.join(' ')}${command.commands ? ' <command>' : ''}`
+  const hasCommand = command.commands && command.commands.length > 0
+  let message = `Usage: ${nameChain.join(' ')}${hasCommand ? ' <command>' : ''}`
   if (command.arguments) {
     message += command.arguments.some(a => isRequired(a, true)) ? ' <arguments>' : ' [arguments]'
   }
@@ -107,7 +108,7 @@ function generateCommandsSection(command: ui.Command) {
   return `Commands:
   ${wrap(commandNames.join(', '))}
 
-${padRight(command.name + ' <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
+${padRight(command.name ? command.name + ' <command> -h' : '  <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
 }
 
 function getCommandsNamesAndAlias(commands: cli.Command[] | undefined) {

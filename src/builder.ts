@@ -17,7 +17,6 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   const s = state(context, options)
   const description = s.description || ''
   const baseCommand = getBaseCommand(description)
-  s.commands = [baseCommand]
   const pending: Promise<any>[] = []
   return {
     name: s.name,
@@ -25,18 +24,21 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     description,
     loadPlugins(keyword?: string) {
       s.keyword = keyword || `${s.name}-plugin`
-      s.commands.push(adjustCommand(baseCommand, pluginsCommand))
+      s.command.commands!.push(adjustCommand(baseCommand, pluginsCommand))
       pending.push(context
         .loadPlugins(s.keyword)
-        .then(commands => s.commands.push(...commands.map(c => adjustCommand(baseCommand, c)))))
+        .then(commands => s.command.commands!.push(...commands.map(c => adjustCommand(baseCommand, c)))))
       return { ...this, parse }
     },
     default(command) {
-      s.commands[0] = adjustCommand(baseCommand, { ...baseCommand, ...command })
+      s.command = adjustCommand(baseCommand, { ...baseCommand, ...command })
       return { ...this, parse }
     },
     command(command) {
-      s.commands.push(adjustCommand(baseCommand, command))
+      if (!s.command.commands) {
+        s.command.commands = []
+      }
+      s.command.commands.push(adjustCommand(baseCommand, command))
       return { ...this, parse }
     }
   }
@@ -44,7 +46,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   async function parse(argv: string[]) {
     await Promise.all(pending)
     context.log.debug('argv:', argv.join(' '))
-    const r = lookupCommand(s.commands, parseArgv(argv))
+    const r = lookupCommand(s.command, parseArgv(argv))
     if (r.errors.length > 0) {
       // TODO: print errors
       createCommandInstance(context, s, r.command).ui.showHelp()

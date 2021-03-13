@@ -4,15 +4,15 @@ import { getBaseCommand } from './commands'
 import { lookupCommand } from './lookupCommand'
 import { argv } from './test-utils'
 
-function testLookupCommand(commands: cli.Command[], args: string) {
-  const r = lookupCommand(commands, parseArgv(argv(args)))
+function testLookupCommand(command: cli.Command, args: string) {
+  const r = lookupCommand(command, parseArgv(argv(args)))
   return r ? { cmd: r.command, args: r.args, errors: r.errors } : r
 }
 
 describe('with default command', () => {
   test('no args gets the default command', () => {
     const defaultCommand = { name: '', run() { } }
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [] })
   })
@@ -24,7 +24,7 @@ describe('with default command', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --help')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --help')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], help: true })
   })
@@ -34,7 +34,7 @@ describe('with default command', () => {
       arguments: [{ name: 'arg', type: z.string(), description: 'some arg' }],
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli abc')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli abc')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], arg: 'abc' })
   })
@@ -46,7 +46,7 @@ describe('argument', () => {
       arguments: [{ name: 'arg', type: z.string().optional(), description: 'some arg' }],
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [] })
   })
@@ -56,7 +56,7 @@ describe('argument', () => {
       arguments: [{ name: 'arg', type: z.string(), description: 'some required arg' }],
       run() { }
     })
-    const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [] })
     expect(errors).toEqual([{ type: 'missing-argument', name: 'arg' }])
@@ -64,18 +64,17 @@ describe('argument', () => {
 })
 describe('options basic', () => {
   test('---option is invalid', () => {
-    const { errors } = testLookupCommand(
-      [getBaseCommand('') as any], 'my-cli ---help')!
+    const { errors } = testLookupCommand(getBaseCommand(''), 'my-cli ---help')!
     expect(errors).toEqual([{ 'key': '-help', 'type': 'invalid-key' }])
   })
 })
 describe('boolean options', () => {
   test('accepts true/false', () => {
-    const { args } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h false -v true')!
+    const { args } = testLookupCommand(getBaseCommand(''), 'my-cli -h false -v true')!
     expect(args).toEqual({ _: [], help: false, version: true })
   })
   test('other strings are invalid', () => {
-    const { errors } = testLookupCommand([getBaseCommand('') as any], 'my-cli -h x')!
+    const { errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h x')!
     a.satisfies(errors, [{ type: 'invalid-value', key: 'h', value: 'x' }])
   })
   test('boolean options with space syntax', () => {
@@ -84,7 +83,7 @@ describe('boolean options', () => {
       options: { abc: { description: 'a', type: z.boolean() } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: true })
   })
@@ -94,7 +93,7 @@ describe('boolean options', () => {
       options: { abc: { type: z.boolean(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=true')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=true')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: true })
   })
@@ -104,7 +103,7 @@ describe('boolean options', () => {
       options: { abc: { type: z.boolean(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc false')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc false')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: false })
   })
@@ -116,7 +115,7 @@ describe('boolean options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli -a')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli -a')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: true })
   })
@@ -128,7 +127,7 @@ describe('boolean options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: true })
   })
@@ -140,7 +139,7 @@ describe('boolean options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: false })
   })
@@ -152,7 +151,7 @@ describe('boolean options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=true --abc=true')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=true --abc=true')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: [true, true] })
   })
@@ -162,7 +161,7 @@ describe('boolean options', () => {
       options: { abc: { type: z.boolean(), description: 'a' } },
       run() { }
     })
-    const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=false --abc=true')!
+    const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=false --abc=true')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: true })
     a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['false', 'true'] }])
@@ -175,7 +174,7 @@ describe('boolean options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=true')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=true')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: [true] })
   })
@@ -187,7 +186,7 @@ describe('numeric options', () => {
       options: { abc: { type: z.number(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 123 })
   })
@@ -197,7 +196,7 @@ describe('numeric options', () => {
       options: { abc: { type: z.number(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc 123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc 123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 123 })
   })
@@ -209,7 +208,7 @@ describe('numeric options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli -a=123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli -a=123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 123 })
   })
@@ -221,7 +220,7 @@ describe('numeric options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 123 })
   })
@@ -231,7 +230,7 @@ describe('numeric options', () => {
       options: { abc: { type: z.number(), description: 'a' } },
       run() { }
     })
-    const { cmd, args, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
+    const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=2 --abc=3')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: 3 })
     a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['2', '3'] }])
@@ -244,7 +243,7 @@ describe('numeric options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=2 --abc=3')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: [2, 3] })
   })
@@ -254,7 +253,7 @@ describe('numeric options', () => {
       options: { abc: { type: z.number(), description: 'a' } },
       run() { }
     })
-    const { cmd, errors } = testLookupCommand([defaultCommand], 'my-cli --abc=xyz')!
+    const { cmd, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=xyz')!
     expect(cmd).toBe(defaultCommand)
     expect(errors).toEqual([{
       'key': 'abc',
@@ -271,7 +270,7 @@ describe('string options', () => {
       options: { abc: { type: z.string(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: '123' })
   })
@@ -281,7 +280,7 @@ describe('string options', () => {
       options: { abc: { type: z.string(), description: 'a' } },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc 123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc 123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: '123' })
   })
@@ -293,7 +292,7 @@ describe('string options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli -a=123')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli -a=123')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: '123' })
   })
@@ -305,7 +304,7 @@ describe('string options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: '123' })
   })
@@ -317,7 +316,7 @@ describe('string options', () => {
       },
       run() { }
     })
-    const { cmd, args } = testLookupCommand([defaultCommand], 'my-cli --abc=2 --abc=3')!
+    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=2 --abc=3')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [], abc: ['2', '3'] })
   })

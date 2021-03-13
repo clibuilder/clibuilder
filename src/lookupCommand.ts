@@ -40,25 +40,29 @@ namespace lookupCommand {
   }
 }
 
-export function lookupCommand(commands: cli.Command[], args: parseArgv.Result)
+export function lookupCommand(command: cli.Command, args: parseArgv.Result)
   : lookupCommand.Result {
-  const m = matchCommand(commands, args)!
+  const m = matchCommand(command, args)!
   return processCommand(m[0], m[1])
 }
 
-function matchCommand(commands: cli.Command[], rawArgs: parseArgv.Result)
+function matchCommand(command: cli.Command, rawArgs: parseArgv.Result)
   : [cli.Command, parseArgv.Result] | undefined {
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const command = commands[i]
-    if (!command.name) return [command, rawArgs]
-    if (rawArgs._[0] !== command.name) continue
-    rawArgs._.shift()
-    if (command.commands) {
-      const m = matchCommand(command.commands, rawArgs)
-      return m ? m : [command, rawArgs]
+  if (command.commands) {
+    const commands = command.commands
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const command = commands[i]
+      if (!command.name) return [command, rawArgs]
+      if (rawArgs._[0] !== command.name) continue
+      rawArgs._.shift()
+      if (command.commands) {
+        const m = matchCommand(command, rawArgs)
+        return m ? m : [command, rawArgs]
+      }
+      return [command, rawArgs]
     }
-    return [command, rawArgs]
   }
+  return [command, rawArgs]
 }
 
 namespace processCommand {
