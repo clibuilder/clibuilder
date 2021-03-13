@@ -227,7 +227,7 @@ const dance = command({ ... })
 export function activate({ addCommand }: PluginCli.ActivationContext) {
   addCommand({
     name: 'miku',
-    commands: [sing, cmd2]
+    commands: [sing, dance]
   })
 }
 
