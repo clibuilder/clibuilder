@@ -2,7 +2,7 @@ import { logLevels, toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli'
-import { getBaseCommand, pluginsCommand } from './commands'
+import { pluginsCommand } from './commands'
 import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
@@ -16,7 +16,6 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   context.log.level = logLevels.all
   const s = state(context, options)
   const description = s.description || ''
-  const baseCommand = getBaseCommand(description)
   const pending: Promise<any>[] = []
   return {
     name: s.name,
@@ -24,21 +23,18 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     description,
     loadPlugins(keyword?: string) {
       s.keyword = keyword || `${s.name}-plugin`
-      s.command.commands!.push(adjustCommand(baseCommand, pluginsCommand))
+      s.command.commands.push(adjustCommand(s.command, pluginsCommand))
       pending.push(context
         .loadPlugins(s.keyword)
-        .then(commands => s.command.commands!.push(...commands.map(c => adjustCommand(baseCommand, c)))))
+        .then(commands => s.command.commands.push(...commands.map(c => adjustCommand(s.command, c)))))
       return { ...this, parse }
     },
     default(command) {
-      s.command = adjustCommand(baseCommand, { ...baseCommand, ...command })
+      s.command = adjustCommand(s.command, { ...s.command, ...command })
       return { ...this, parse }
     },
     command(command) {
-      if (!s.command.commands) {
-        s.command.commands = []
-      }
-      s.command.commands.push(adjustCommand(baseCommand, command))
+      s.command.commands.push(adjustCommand(s.command, command))
       return { ...this, parse }
     }
   }
@@ -118,7 +114,7 @@ function createCommandUI(ui: Context['ui'], state: state.Result, command: cli.Co
   }
 }
 
-function adjustCommand(base: Command, command: Command): Command {
+function adjustCommand<C extends Command>(base: Command, command: C): C {
   if (command.name) {
     command.parent = base
   }
