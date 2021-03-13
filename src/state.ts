@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { basename } from 'path'
-import { findKey } from 'type-plus'
+import { findKey, RequiredPick } from 'type-plus'
 import type { cli } from './cli'
 import { getBaseCommand } from './commands'
 import { Context } from './context'
@@ -15,7 +15,7 @@ export namespace state {
     configName: string,
     config?: C,
     keyword: string,
-    command: Command
+    command: RequiredPick<Command, 'commands'>
   }
 }
 
@@ -43,7 +43,7 @@ export function state(
         description,
         configName: options?.configName || '',
         keyword: '',
-        command: getBaseCommand(description)
+        command: getBaseCommand(description) as any
       }
     }
   }
