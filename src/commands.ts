@@ -32,6 +32,7 @@ export function getBaseCommand(description: string) {
         description: 'Display clibuilder debug messages',
       },
     },
+    commands: [],
     run() {
       this.ui.showHelp()
     }

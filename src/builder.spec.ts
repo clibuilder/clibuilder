@@ -178,6 +178,29 @@ Options:
 Usage: string-bin sub sub2
 `)
   })
+  test('with sub-commands', async () => {
+    const ctx = mockContext('string-bin/bin.js')
+    const cli = builder(ctx).command({
+      name: 'sub',
+      run() { }
+    })
+    await cli.parse(argv('string-bin'))
+    expect(getLogMessage(ctx.reporter)).toEqual(`
+Usage: string-bin <command> [options]
+
+Commands:
+  sub
+
+  <command> -h           Get help for <command>
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`)
+  })
 })
 
 describe('--silent', () => {

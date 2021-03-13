@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import { basename } from 'path'
 import { findKey } from 'type-plus'
 import type { cli } from './cli'
+import { getBaseCommand } from './commands'
 import { Context } from './context'
 import { AppInfo } from './loadAppInfo'
 import type { Command } from './typesInternal'
@@ -14,7 +15,7 @@ export namespace state {
     configName: string,
     config?: C,
     keyword: string,
-    commands: Command[]
+    command: Command
   }
 }
 
@@ -23,7 +24,7 @@ export function state(
   options?: cli.Options): state.Result<any> {
   if (options && options.name && options.version && options.description !== undefined) return {
     ...options,
-    commands: []
+    command: getBaseCommand(options.description)
   } as any
   const stack = new Error().stack!
   const appPath = getAppPath(stack)
@@ -42,7 +43,7 @@ export function state(
         description,
         configName: options?.configName || '',
         keyword: '',
-        commands: []
+        command: getBaseCommand(description)
       }
     }
   }
