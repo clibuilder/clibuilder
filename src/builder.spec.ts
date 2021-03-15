@@ -1,4 +1,5 @@
 import a from 'assertron'
+import { has } from 'satisfier'
 import { assertType, IsExtend, isType } from 'type-plus'
 import { cli, z } from '.'
 import { builder } from './builder'
@@ -72,14 +73,15 @@ describe('without options', () => {
   test('exit if call path is not listed in bin', () => {
     const ctx = mockContext('single-bin/other.js')
     builder(ctx)
-    a.satisfies(ctx.reporter.logs, [{
+    a.satisfies(ctx.debugLogs, has({
+      id: 'clibuilder',
       level: 400,
       args: [/Unable to locate/]
     }, {
-      id: 'mock-ui',
+      id: 'clibuilder',
       level: 400,
       args: ['exit with 1']
-    }])
+    }))
   })
 })
 
@@ -98,6 +100,12 @@ describe('default()', () => {
       run(args) { return args.a }
     }).parse(argv('string-bin abc'))
     expect(a).toEqual(['abc'])
+  })
+  test('ui uses cli name', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run() { this.ui.info('hello') } })
+    await cli.parse(argv('single-bin'))
+    a.satisfies(ctx.reporter.logs[0], { id: 'single-cli' })
   })
 })
 
@@ -290,7 +298,6 @@ describe('command()', () => {
     const actual = await cli.parse(argv('single-bin cmd1'))
     expect(actual).toEqual('cmd1')
   })
-
   test('multiple commands', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
       .command({ name: 'cmd1', run() { return 'cmd1' } })
@@ -300,7 +307,6 @@ describe('command()', () => {
     const actual = await cli.parse(argv('single-bin cmd3'))
     expect(actual).toEqual('cmd3')
   })
-
   test('nested command', async () => {
     const cli = builder(mockContext('single-bin/bin.js'))
       .command({
@@ -324,6 +330,13 @@ describe('command()', () => {
       })
     await cli.parse(argv('single-bin cmd1 not-exist'))
     expect(getLogMessage(ctx.reporter)).toContain('Usage: single-cli cmd1 <command>')
+  })
+  test('ui uses command name', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx)
+      .command({ name: 'cmd1', run() { this.ui.info('hello') } })
+    await cli.parse(argv('single-bin cmd1'))
+    a.satisfies(ctx.reporter.logs[0], { id: 'cmd1' })
   })
 })
 
@@ -557,14 +570,14 @@ describe('loadConfig()', () => {
   })
   test('no config', async () => {
     const ctx = mockContext('single-bin/bin.js', 'no-config')
-    const a = await builder(ctx)
+    const actual = await builder(ctx)
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
     const msg = getLogMessage(ctx.reporter)
     expect(msg).toContain('no config found for single-cli')
-    expect(a).toEqual(undefined)
+    expect(actual).toEqual(undefined)
   })
 })
 

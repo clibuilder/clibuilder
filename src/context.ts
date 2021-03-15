@@ -62,11 +62,12 @@ export function context() {
     },
     async loadPlugins(keyword: string) {
       const cwd = this.process.cwd()
-      return loadPlugins({ cwd, log: logger }, keyword)
+      return loadPlugins({ cwd, log }, keyword)
     },
     log,
     debugLogs,
-    ui: ui(),
+    createUI: ui,
+    // ui: ui(log),
     process
   }
 }

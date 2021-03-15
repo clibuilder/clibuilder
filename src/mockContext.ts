@@ -13,8 +13,8 @@ export function mockContext(binFixturePath: string, cwdFixturePath = process.cwd
   return compose(
     context,
     mockUI,
-    (ctx) => mockProcess(ctx, cwdFixturePath),
-    (ctx) => mockGetAppPath(ctx, binFixturePath)
+    ctx => mockProcess(ctx, cwdFixturePath),
+    ctx => mockGetAppPath(ctx, binFixturePath)
   )
 }
 
@@ -25,9 +25,12 @@ export function mockUI(context: Context) {
     reporters: [reporter],
     mode: 'test'
   })
-  const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  context.ui = ui(log)
-
+  // const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
+  // context.ui = ui(log)
+  context.createUI = (log) => {
+    const mockLog = getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' })
+    return ui(mockLog)
+  }
   return { ...context, reporter }
 }
 
@@ -37,7 +40,7 @@ export function mockProcess(context: Context, cwdFixturePath: string) {
     ...process,
     cwd: () => cwd,
     exit: ((code?: number) => {
-      context.ui.error(code === undefined ? `exit` : `exit with ${code}`)
+      context.log.error(code === undefined ? `exit` : `exit with ${code}`)
     }) as any
   }
   return context

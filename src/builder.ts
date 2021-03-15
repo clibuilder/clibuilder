@@ -1,7 +1,7 @@
-import { logLevels, toLogLevelName } from 'standard-log'
+import { getLogger, logLevels, toLogLevelName } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
-import type { cli } from './cli'
+import type { cli, UI } from './cli'
 import { pluginsCommand } from './commands'
 import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
@@ -15,7 +15,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   // and override the log level for this logger.
   context.log.level = logLevels.all
   const s = state(context, options)
-  const description = s.description || ''
+  const description = s.description
   const pending: Promise<any>[] = []
   return {
     name: s.name,
@@ -49,19 +49,24 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       return
     }
     const { args, command } = r
-    if (args.silent) context.ui.displayLevel = 'none'
-    if (args.verbose) context.ui.displayLevel = 'debug'
-    if (args['debug-cli']) {
-      context.ui.displayLevel = 'trace'
-      context.debugLogs.map(entry => (context.ui as any)[toLogLevelName(entry.level)](...entry.args))
+    if (args.silent) s.displayLevel = 'none'
+    if (args.verbose) s.displayLevel = 'debug'
+    if (args['debug-cli']) s.displayLevel = 'trace'
+
+    const ui = context.createUI(getLogger('clibuilder'))
+    const logLevel = s.getLogLevel()
+    const logs = context.debugLogs.filter(l => l.level <= logLevel)
+    if (logs.length > 0) {
+      ui.displayLevel = s.displayLevel
+      logs.map(entry => (ui as any)[toLogLevelName(entry.level)](...entry.args))
     }
     if (args.version) {
-      context.ui.showVersion(s.version)
+      createCommandInstance(context, s, r.command).ui.showVersion()
       return
     }
 
     if (command.config) {
-      loadConfig(command.config)
+      loadConfig(ui, command.config)
     }
     const commandInstance = createCommandInstance(context, s, command)
     if (args.help) {
@@ -71,15 +76,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     return commandInstance.run(args as any)
   }
 
-  function loadConfig(configType: ZodTypeAny) {
+  function loadConfig(ui: Pick<UI, 'debug' | 'error' | 'warn'>, configType: ZodTypeAny) {
     const configName = s.configName || s.name
     const { config, configFilePath } = context.loadConfig(configName)
     if (configFilePath) {
-      context.log.debug(`load config from: ${configFilePath}`)
-      context.log.debug(`config: ${JSON.stringify(config)}`)
+      ui.debug(`load config from: ${configFilePath}`)
+      ui.debug(`config: ${JSON.stringify(config)}`)
     }
     else {
-      context.ui.warn(`no config found for ${configName}`)
+      ui.warn(`no config found for ${configName}`)
       return
     }
     const r = configType.safeParse(config)
@@ -88,24 +93,26 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     }
     else {
       const errors = r.error.flatten().fieldErrors
-      context.ui.error(`config fails validation:`)
-      forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+      ui.error(`config fails validation:`)
+      forEachKey(errors, k => ui.error(`  ${k}: ${errors[k]}`))
     }
   }
 }
 
-function createCommandInstance({ ui, process }: Context, state: state.Result, command: cli.Command) {
+function createCommandInstance(ctx: Context, state: state.Result, command: cli.Command) {
   return {
     ...command,
     run: (command as any).run,
-    ui: createCommandUI(ui, state, command),
+    ui: createCommandUI(ctx, state, command),
     config: state.config,
     keyword: state.keyword,
-    cwd: process.cwd()
+    cwd: ctx.process.cwd()
   }
 }
 
-function createCommandUI(ui: Context['ui'], state: state.Result, command: cli.Command) {
+function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
+  const ui = ctx.createUI(getLogger(command.name || state.name))
+  ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {
     ...ui,
