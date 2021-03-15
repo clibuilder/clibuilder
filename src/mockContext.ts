@@ -25,12 +25,7 @@ export function mockUI(context: Context) {
     reporters: [reporter],
     mode: 'test'
   })
-  // const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  // context.ui = ui(log)
-  context.createUI = (log) => {
-    const mockLog = getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' })
-    return ui(mockLog)
-  }
+  context.ui = log => ui(getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' }))
   return { ...context, reporter }
 }
 

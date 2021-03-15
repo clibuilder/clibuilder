@@ -12,7 +12,7 @@ import { ui } from './ui'
  * This
  */
 export function context() {
-  const debugLogs: LogEntry[] = []
+  const logEntries: LogEntry[] = []
   const logger = getLogger('clibuilder')
   // istanbul ignore next
   const log = {
@@ -25,19 +25,19 @@ export function context() {
     },
     debug(...args: any[]) {
       const [, logs] = captureLogs(logger, () => logger.debug(...args))
-      debugLogs.push(...logs)
+      logEntries.push(...logs)
     },
     info(...args: any[]) {
       const [, logs] = captureLogs(logger, () => logger.info(...args))
-      debugLogs.push(...logs)
+      logEntries.push(...logs)
     },
     warn(...args: any[]) {
       const [, logs] = captureLogs(logger, () => logger.warn(...args))
-      debugLogs.push(...logs)
+      logEntries.push(...logs)
     },
     error(...args: any[]) {
       const [, logs] = captureLogs(logger, () => logger.error(...args))
-      debugLogs.push(...logs)
+      logEntries.push(...logs)
     },
   }
   return {
@@ -65,9 +65,8 @@ export function context() {
       return loadPlugins({ cwd, log }, keyword)
     },
     log,
-    debugLogs,
-    createUI: ui,
-    // ui: ui(log),
+    logEntries,
+    ui,
     process
   }
 }

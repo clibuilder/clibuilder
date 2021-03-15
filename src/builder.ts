@@ -53,9 +53,9 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     if (args.verbose) s.displayLevel = 'debug'
     if (args['debug-cli']) s.displayLevel = 'trace'
 
-    const ui = context.createUI(getLogger('clibuilder'))
+    const ui = context.ui(getLogger('clibuilder'))
     const logLevel = s.getLogLevel()
-    const logs = context.debugLogs.filter(l => l.level <= logLevel)
+    const logs = context.logEntries.filter(l => l.level <= logLevel)
     if (logs.length > 0) {
       ui.displayLevel = s.displayLevel
       logs.map(entry => (ui as any)[toLogLevelName(entry.level)](...entry.args))
@@ -111,7 +111,7 @@ function createCommandInstance(ctx: Context, state: state.Result, command: cli.C
 }
 
 function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
-  const ui = ctx.createUI(getLogger(command.name || state.name))
+  const ui = ctx.ui(getLogger(command.name || state.name))
   ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {

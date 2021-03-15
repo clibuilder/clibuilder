@@ -73,7 +73,7 @@ describe('without options', () => {
   test('exit if call path is not listed in bin', () => {
     const ctx = mockContext('single-bin/other.js')
     builder(ctx)
-    a.satisfies(ctx.debugLogs, has({
+    a.satisfies(ctx.logEntries, has({
       id: 'clibuilder',
       level: 400,
       args: [/Unable to locate/]
