@@ -1,5 +1,5 @@
 import padRight from 'pad-right'
-import { getLogger, Logger, logLevels } from 'standard-log'
+import { Logger, logLevels } from 'standard-log'
 import { someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import * as z from 'zod'
@@ -10,7 +10,7 @@ const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
-export function ui(log: Logger = getLogger('clibuilder')) {
+export function ui(log: Logger) {
   log.level = logLevels.info
   return {
     get displayLevel() {
