@@ -1,11 +1,9 @@
 import a from 'assertron'
 import { has } from 'satisfier'
 import { assertType, IsExtend, isType } from 'type-plus'
-import { cli, z } from '.'
+import { cli, command, z } from '.'
 import { builder } from './builder'
-import { command } from './command'
-import { mockContext } from './mockContext'
-import { argv, getFixturePath, getLogMessage } from './test-utils'
+import { argv, getFixturePath, getLogMessage, mockContext } from './test-utils'
 
 describe('with options', () => {
   test('specify name, version, and description will skip loading package.json', () => {
