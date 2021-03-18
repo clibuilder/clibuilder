@@ -1,9 +1,9 @@
-import { config, createMemoryLogReporter, getLogger, logLevels, MemoryLogReporter } from 'standard-log'
+import { config, createMemoryLogReporter, getLogger, Logger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
-import { Context, context } from './context'
-import { getAppPath } from './getAppPath'
-import { getFixturePath } from './test-utils'
-import { ui } from './ui'
+import { Context, context } from '../context'
+import { getAppPath } from '../getAppPath'
+import { getFixturePath } from '.'
+import { ui } from '../ui'
 
 export type MockAppContext = Context & {
   reporter: MemoryLogReporter
@@ -25,7 +25,7 @@ export function mockUI(context: Context) {
     reporters: [reporter],
     mode: 'test'
   })
-  context.ui = log => ui(getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' }))
+  context.ui = (log: Logger) => ui(getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' }))
   return { ...context, reporter }
 }
 

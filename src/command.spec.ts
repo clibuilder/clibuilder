@@ -2,8 +2,7 @@ import { isType } from 'type-plus'
 import { command, z } from '.'
 import { builder } from './builder'
 import { searchPluginsCommand } from './commands'
-import { mockContext } from './mockContext'
-import { argv, getLogMessage } from './test-utils'
+import { argv, getLogMessage, mockContext } from './test-utils'
 
 test('when no argument and options, args will have help', () => {
   command({
