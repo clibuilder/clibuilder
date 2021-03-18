@@ -69,6 +69,12 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       loadConfig(ui, command.config)
     }
     const commandInstance = createCommandInstance(context, s, command)
+    // TODO: create a reporter that can switch on or off for logs
+    const lateLogs = context.logEntries.filter(l => l.level <= logLevel)
+    if (lateLogs.length > 0) {
+      ui.displayLevel = s.displayLevel
+      lateLogs.map(entry => (ui as any)[toLogLevelName(entry.level)](...entry.args))
+    }
     if (args.help) {
       commandInstance.ui.showHelp()
       return
@@ -78,15 +84,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
 
   function loadConfig(ui: Pick<UI, 'debug' | 'error' | 'warn'>, configType: ZodTypeAny) {
     const configName = s.configName || s.name
-    const { config, configFilePath } = context.loadConfig(configName)
-    if (configFilePath) {
-      ui.debug(`load config from: ${configFilePath}`)
-      ui.debug(`config: ${JSON.stringify(config)}`)
-    }
-    else {
-      ui.warn(`no config found for ${configName}`)
-      return
-    }
+    const config = context.loadConfig(configName)
     const r = configType.safeParse(config)
     if (r.success) {
       s.config = config
