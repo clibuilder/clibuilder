@@ -239,6 +239,26 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 
 The cli will determine that a package is a plugin by looking at the `keywords` in its `package.json`.
 
+## testing
+
+`testCommand()` can be used to test your command:
+
+```ts
+import { command, testCommand } from 'clibuilder'
+
+test('some test', async () => {
+  const { result, messages } = testCommand(command({
+    name: 'cmd-a',
+    run() {
+      this.ui.info('miku')
+      return 'x'
+    }
+  }), 'cmd-a')
+  expect(result).toBe('x')
+  expect(messages).toBe('miku')
+})
+```
+
 ## shebang
 
 To make your cli easily executable,

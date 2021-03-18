@@ -52,12 +52,14 @@ export function context() {
       // istanbul ignore next
       const home = (win ? this.process.env.USERPROFILE : this.process.env.HOME) as string
       const configFilePath = resolveConfigFilename(cwd, home, configFileName)
-      if (!configFilePath) {
-        return {}
+      if (configFilePath) {
+        const cfg = readFileSync(configFilePath, 'utf8')
+        this.log.debug(`load config from: ${configFilePath}`)
+        this.log.debug(`config: ${cfg}`)
+        return JSON.parse(cfg)
       }
-      return {
-        configFilePath,
-        config: JSON.parse(readFileSync(configFilePath, 'utf8'))
+      else {
+        this.log.warn(`no config found for ${configFileName}`)
       }
     },
     async loadPlugins(keyword: string) {
