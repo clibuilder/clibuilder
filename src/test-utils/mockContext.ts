@@ -1,9 +1,9 @@
 import { config, createMemoryLogReporter, getLogger, Logger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
+import { getFixturePath } from '.'
 import { Context, context } from '../context'
 import { getAppPath } from '../getAppPath'
-import { getFixturePath } from '.'
-import { ui } from '../ui'
+import { createUI } from '../ui'
 
 export type MockAppContext = Context & {
   reporter: MemoryLogReporter
@@ -36,7 +36,8 @@ export function mockUI(context: Context) {
     reporters: [reporter],
     mode: 'test'
   })
-  context.ui = (log: Logger) => ui(getLogger(log.id, { level: log.level, writeTo: 'mock-reporter' }))
+  context.createUI = (log: Logger) => createUI(getLogger(log.id, { level: log.level, writeTo: reporter }))
+  // const ui = createBuilderUI(createUI(getLogger('clibuilder', { level: logLevels.all, writeTo: reporter })))
   return { ...context, reporter }
 }
 
@@ -44,9 +45,10 @@ function mockProcess(context: Context, cwd: string) {
   context.process = {
     ...process,
     cwd: () => cwd,
-    exit: ((code?: number) => {
-      context.log.error(code === undefined ? `exit` : `exit with ${code}`)
-    }) as any
+    exit: ((code?: number) => context.ui.error(code === undefined
+      // istanbul ignore next
+      ? `exit`
+      : `exit with ${code}`)) as any
   }
   return context
 }

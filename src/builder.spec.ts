@@ -1,5 +1,4 @@
 import a from 'assertron'
-import { has } from 'satisfier'
 import { assertType, IsExtend, isType } from 'type-plus'
 import { cli, command, z } from '.'
 import { builder } from './builder'
@@ -68,18 +67,12 @@ describe('without options', () => {
     const app = builder(ctx)
     expect(app.description).toBe('')
   })
-  test('exit if call path is not listed in bin', () => {
+  test('exit if call path is not listed in bin', async () => {
     const ctx = mockContext('single-bin/other.js')
-    builder(ctx)
-    a.satisfies(ctx.logEntries, has({
-      id: 'clibuilder',
-      level: 400,
-      args: [/Unable to locate/]
-    }, {
-      id: 'clibuilder',
-      level: 400,
-      args: ['exit with 1']
-    }))
+    await builder(ctx).default({ run() { } }).parse(argv(''))
+    const message = getLogMessage(ctx.reporter)
+    expect(message).toContain('Unable to locate')
+    expect(message).toContain('exit with 1')
   })
 })
 
@@ -249,8 +242,8 @@ describe('--verbose', () => {
     const ctx = mockContext('single-bin/bin.js')
     builder(ctx).default({
       run(args) {
-        isType.false<IsExtend<typeof args, { silent: any }>>()
-        isType.false<IsExtend<typeof args, { verbose: any }>>()
+        isType.f<IsExtend<typeof args, { silent: any }>>()
+        isType.f<IsExtend<typeof args, { verbose: any }>>()
       }
     })
   })
@@ -334,7 +327,8 @@ describe('command()', () => {
     const cli = builder(ctx)
       .command({ name: 'cmd1', run() { this.ui.info('hello') } })
     await cli.parse(argv('single-bin cmd1'))
-    a.satisfies(ctx.reporter.logs[0], { id: 'cmd1' })
+    const log = ctx.reporter.logs.find(l => l.args.indexOf('hello') >= 0)
+    a.satisfies(log, { id: 'cmd1' })
   })
 })
 
@@ -481,7 +475,7 @@ describe('loadConfig()', () => {
           a: z.object({ c: z.number() }),
           b: z.string()
         }),
-        run() { return this.config }
+        run() { fail('should not reach') }
       }).parse(argv('single-bin'))
 
     // TODO: error message is weak in `zod`.

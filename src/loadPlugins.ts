@@ -1,30 +1,30 @@
 import { findByKeywords } from 'find-installed-packages'
 import findUp from 'find-up'
 import path from 'path'
-import { Logger } from 'standard-log'
 import type { cli, PluginActivationContext } from './cli'
+import { createUI } from './ui'
 
-export async function loadPlugins({ cwd, log }: { cwd: string, log: Logger }, keyword: string) {
-  log.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
+export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, keyword: string) {
+  ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
-    if (pluginNames.length > 0) log.debug('found local plugins', pluginNames)
-    else log.debug(`no local plugin with keyword: ${keyword}`)
+    if (pluginNames.length > 0) ui.debug('found local plugins', pluginNames)
+    else ui.debug(`no local plugin with keyword: ${keyword}`)
     return pluginNames
   })
 
   const globalFolder = getGlobalPackageFolder(__dirname)
-  log.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
+  ui.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
   const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
-    if (globalPluginNames.length > 0) log.debug('found global plugins', globalPluginNames)
-    else log.debug(`no global plugin with keyword: ${keyword}`)
+    if (globalPluginNames.length > 0) ui.debug('found global plugins', globalPluginNames)
+    else ui.debug(`no global plugin with keyword: ${keyword}`)
     return globalPluginNames
   })
 
   return Promise.all([findingLocal, findingGlobal]).then(([localPluginsNames, globalPluginNames]) => {
-    const commands = activatePlugins(cwd, log, localPluginsNames)
+    const commands = activatePlugins(cwd, ui, localPluginsNames)
     commands.push(...activatePlugins(
       globalFolder,
-      log,
+      ui,
       globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
     return commands
   })
@@ -32,44 +32,45 @@ export async function loadPlugins({ cwd, log }: { cwd: string, log: Logger }, ke
 
 function getGlobalPackageFolder(folder: string): string {
   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
+  // istanbul ignore next
   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
   // in NodeJS@6 the following fails tsc due to null is not assignable to string.
   // in this context the `findUp()` call should not fail and will not return null.
   return path.resolve(findUp.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
 }
 
-function activatePlugins(cwd: string, log: Logger, pluginNames: string[]) {
+function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
   const commands: cli.Command<any, any>[] = []
   pluginNames
     .map(p => ({
       name: p,
-      pluginModule: loadModule(cwd, log, p),
+      pluginModule: loadModule(cwd, ui, p),
     }))
     .filter(({ name, pluginModule }) => {
       if (!isValidPlugin(pluginModule)) {
-        log.debug('not a valid plugin', name)
+        ui.warn('not a valid plugin', name)
         return false
       }
       return true
     })
     .forEach(({ name, pluginModule }) => {
-      log.debug('activating plugin', name)
+      ui.debug('activating plugin', name)
       activatePlugin(pluginModule).forEach(cmd => {
-        log.debug('adding command', cmd.name)
+        ui.debug('adding command', cmd.name)
         commands.push(cmd)
       })
-      log.debug('activated plugin', name)
+      ui.debug('activated plugin', name)
     })
   return commands
 }
 
-function loadModule(cwd: string, log: Logger, name: string) {
+function loadModule(cwd: string, ui: createUI.UI, name: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
     return require(pluginPath)
   }
   catch (e) {
-    log.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
+    ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
     return undefined
   }
 }

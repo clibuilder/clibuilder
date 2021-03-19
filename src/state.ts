@@ -1,6 +1,5 @@
 import chalk from 'chalk'
 import { basename } from 'path'
-import { LogLevel, logLevels } from 'standard-log'
 import { findKey, RequiredPick } from 'type-plus'
 import type { cli, DisplayLevel } from './cli'
 import { getBaseCommand } from './commands'
@@ -17,7 +16,6 @@ export namespace state {
     config?: C,
     keyword: string,
     displayLevel: DisplayLevel,
-    getLogLevel(): LogLevel,
     command: RequiredPick<Command, 'commands'>
   }
 }
@@ -35,13 +33,13 @@ function fillOption(ctx: Context, options?: cli.Options): Required<cli.Options> 
     const description = options?.description || appInfo.description || ''
     const configName = options?.configName || ''
     if (name) {
-      ctx.log.debug(`package name: ${name}`)
-      ctx.log.debug(`version: ${version}`.trim())
-      ctx.log.debug(`description: ${description}`.trim())
+      ctx.ui.debug(`package name: ${name}`)
+      ctx.ui.debug(`version: ${version}`.trim())
+      ctx.ui.debug(`description: ${description}`.trim())
       return { name, version, description, configName }
     }
   }
-  ctx.log.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
+  ctx.ui.error(`Unable to locate a ${chalk.yellow('package.json')} for application:
     ${chalk.cyan(appPath)}
 
     please specify the name of the application manually.`)
@@ -55,14 +53,6 @@ export function state(ctx: Context, options?: cli.Options): state.Result<any> {
     ...opt,
     keyword: '',
     displayLevel: 'info',
-    getLogLevel() {
-      switch (this.displayLevel) {
-        case 'none': return logLevels.none
-        case 'debug': return logLevels.debug
-        case 'trace': return logLevels.trace
-        default: return logLevels.info
-      }
-    },
     command: getBaseCommand(opt?.description) as any
   }
 }

@@ -1,12 +1,13 @@
 import findUp from 'find-up'
 import { dirname } from 'path'
-import { Logger } from 'standard-log'
+import { createUI } from './ui'
 
-export function loadAppInfo(log: Logger, appPkgPath: string) {
-  log.debug(`finding package.json starting from '${appPkgPath}'...`)
+export function loadAppInfo(ui: createUI.UI, appPkgPath: string) {
+  ui.debug(`finding package.json starting from '${appPkgPath}'...`)
   const pjsonPath = findUp.sync('package.json', { cwd: appPkgPath })
+  // istanbul ignore next
   if (pjsonPath) {
-    log.debug(`found package.json at '${pjsonPath}'`)
+    ui.debug(`found package.json at '${pjsonPath}'`)
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const pjson = require(pjsonPath)

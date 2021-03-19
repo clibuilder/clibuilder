@@ -1,7 +1,7 @@
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
 import { command, z } from '.'
 import { getLogMessage } from './test-utils'
-import { ui } from './ui'
+import { createUI } from './ui'
 
 describe('showVersion', () => {
   test('undefined version shows "not versioned"', () => {
@@ -275,6 +275,6 @@ function testUI() {
     mode: 'test'
   })
   const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  return { ui: ui(log), reporter }
+  return { ui: createUI(log), reporter }
 }
 
