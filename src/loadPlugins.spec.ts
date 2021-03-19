@@ -4,6 +4,7 @@ import { some } from 'satisfier'
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
 import { loadPlugins } from './loadPlugins'
 import { getLogMessage } from './test-utils'
+import { createUI } from './ui'
 
 async function testLoadPlugins(cwd: string, keyword: string) {
   const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
@@ -12,9 +13,9 @@ async function testLoadPlugins(cwd: string, keyword: string) {
     reporters: [reporter],
     mode: 'test'
   })
-  const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
+  const ui = createUI(getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' }))
 
-  const plugins = await loadPlugins({ cwd, log }, keyword)
+  const plugins = await loadPlugins({ cwd, ui }, keyword)
   return { reporter, plugins }
 }
 

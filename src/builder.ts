@@ -1,7 +1,7 @@
-import { getLogger, logLevels, toLogLevelName } from 'standard-log'
+import { getLogger } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
-import type { cli, UI } from './cli'
+import type { cli } from './cli'
 import { pluginsCommand } from './commands'
 import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
@@ -13,7 +13,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   // set `clibuilder-debug` logs manually to logLevels.all,
   // as user can run `config()` to set the log levels
   // and override the log level for this logger.
-  context.log.level = logLevels.all
+  // context.ui.displayLevel = 'trace'
   const s = state(context, options)
   const description = s.description
   const pending: Promise<any>[] = []
@@ -41,24 +41,19 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
 
   async function parse(argv: string[]) {
     await Promise.all(pending)
-    context.log.debug('argv:', argv.join(' '))
+    context.ui.debug('argv:', argv.join(' '))
+
     const r = lookupCommand(s.command, parseArgv(argv))
-    if (r.errors.length > 0) {
-      // TODO: print errors
-      createCommandInstance(context, s, r.command).ui.showHelp()
-      return
-    }
     const { args, command } = r
     if (args.silent) s.displayLevel = 'none'
     if (args.verbose) s.displayLevel = 'debug'
     if (args['debug-cli']) s.displayLevel = 'trace'
+    context.ui.displayLevel = s.displayLevel
+    context.ui.dump()
 
-    const ui = context.ui(getLogger('clibuilder'))
-    const logLevel = s.getLogLevel()
-    const logs = context.logEntries.filter(l => l.level <= logLevel)
-    if (logs.length > 0) {
-      ui.displayLevel = s.displayLevel
-      logs.map(entry => (ui as any)[toLogLevelName(entry.level)](...entry.args))
+    if (r.errors.length > 0) {
+      createCommandInstance(context, s, r.command).ui.showHelp()
+      return
     }
     if (args.version) {
       createCommandInstance(context, s, r.command).ui.showVersion()
@@ -66,15 +61,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     }
 
     if (command.config) {
-      loadConfig(ui, command.config)
+      const { config, errors } = loadConfig(context, s.configName || s.name, command.config)
+      if (errors) {
+        context.ui.error(`config fails validation:`)
+        forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+        return
+      }
+      s.config = config
     }
     const commandInstance = createCommandInstance(context, s, command)
-    // TODO: create a reporter that can switch on or off for logs
-    const lateLogs = context.logEntries.filter(l => l.level <= logLevel)
-    if (lateLogs.length > 0) {
-      ui.displayLevel = s.displayLevel
-      lateLogs.map(entry => (ui as any)[toLogLevelName(entry.level)](...entry.args))
-    }
     if (args.help) {
       commandInstance.ui.showHelp()
       return
@@ -82,17 +77,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     return commandInstance.run(args as any)
   }
 
-  function loadConfig(ui: Pick<UI, 'debug' | 'error' | 'warn'>, configType: ZodTypeAny) {
-    const configName = s.configName || s.name
+  function loadConfig(context: Context, configName: string, configType: ZodTypeAny) {
     const config = context.loadConfig(configName)
     const r = configType.safeParse(config)
     if (r.success) {
-      s.config = config
+      return { config }
     }
     else {
       const errors = r.error.flatten().fieldErrors
-      ui.error(`config fails validation:`)
-      forEachKey(errors, k => ui.error(`  ${k}: ${errors[k]}`))
+      return { errors }
     }
   }
 }
@@ -109,7 +102,7 @@ function createCommandInstance(ctx: Context, state: state.Result, command: cli.C
 }
 
 function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
-  const ui = ctx.ui(getLogger(command.name || state.name))
+  const ui = ctx.createUI(getLogger(command.name || state.name))
   ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {

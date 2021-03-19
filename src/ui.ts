@@ -10,7 +10,30 @@ const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 const wrap = wordwrap(80)
 
-export function ui(log: Logger) {
+export function createBuilderUI(ui: createUI.UI) {
+  let pending = true
+  const entries: Array<['debug' | 'info' | 'warn' | 'error', any[]]> = []
+  // istanbul ignore next
+  return {
+    ...ui,
+    get displayLevel() {
+      return ui.displayLevel
+    },
+    set displayLevel(level) {
+      ui.displayLevel = level
+    },
+    debug: (...args: any[]) => pending ? entries.push(['debug', args]) : ui.debug(...args),
+    info: (...args: any[]) => pending ? entries.push(['info', args]) : ui.info(...args),
+    warn: (...args: any[]) => pending ? entries.push(['warn', args]) : ui.warn(...args),
+    error: (...args: any[]) => pending ? entries.push(['error', args]) : ui.error(...args),
+    dump: () => {
+      pending = false
+      entries.forEach(([m, args]) => ui[m](...args))
+    }
+  }
+}
+
+export function createUI(log: Logger) {
   log.level = logLevels.info
   return {
     get displayLevel() {
@@ -38,7 +61,7 @@ export function ui(log: Logger) {
     info: (...args: any[]) => log.info(...args),
     warn: (...args: any[]) => log.warn(...args),
     error: (...args: any[]) => log.error(...args),
-    showHelp: (cliName: string, command: ui.Command) => {
+    showHelp: (cliName: string, command: createUI.Command) => {
       const msg = generateHelpMessage(cliName, command)
       log.info(msg)
     },
@@ -48,12 +71,13 @@ export function ui(log: Logger) {
   }
 }
 
-export namespace ui {
+export namespace createUI {
   export type Command = cli.Command & {
     parent?: cli.Command
   }
+  export type UI = ReturnType<typeof createUI>
 }
-function generateHelpMessage(cliName: string, command: ui.Command) {
+function generateHelpMessage(cliName: string, command: createUI.Command) {
   const helpSections = [
     generateUsageSection(cliName, command),
     generateDescriptionSection(command),
@@ -67,7 +91,7 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(cliName: string, command: ui.Command) {
+function generateUsageSection(cliName: string, command: createUI.Command) {
   const nameChain = getCommandNameChain(cliName, command)
   const hasCommand = command.commands && command.commands.length > 0
   let message = `Usage: ${nameChain.join(' ')}${hasCommand ? ' <command>' : ''}`
@@ -87,11 +111,11 @@ function isRequired({ type }: { type?: z.ZodType<any> }, defaultValue: boolean) 
   return !type.isOptional()
 }
 
-function generateDescriptionSection(command: ui.Command) {
+function generateDescriptionSection(command: createUI.Command) {
   return command.description ? '  ' + command.description : ''
 }
 
-function getCommandNameChain(cliName: string, command: ui.Command) {
+function getCommandNameChain(cliName: string, command: createUI.Command) {
   const commands = [command]
   while (command.parent) {
     commands.unshift(command.parent)
@@ -100,7 +124,7 @@ function getCommandNameChain(cliName: string, command: ui.Command) {
   return [cliName, ...commands.map(c => c.name).filter(x => x)]
 }
 
-function generateCommandsSection(command: ui.Command) {
+function generateCommandsSection(command: createUI.Command) {
   const commandNames = getCommandsNamesAndAlias(command.commands)
   if (commandNames.length === 0)
     return ''
@@ -124,7 +148,7 @@ function getCommandsNamesAndAlias(commands: cli.Command[] | undefined) {
   return result
 }
 
-function generateArgumentsSection(command: ui.Command) {
+function generateArgumentsSection(command: createUI.Command) {
   if (!command.arguments) {
     return ''
   }
@@ -145,7 +169,7 @@ function generateArgumentsSection(command: ui.Command) {
   return message
 }
 
-function generateOptionsSection(command: ui.Command) {
+function generateOptionsSection(command: createUI.Command) {
   if (!command.options) return ''
 
   let message = 'Options:\n'
@@ -199,7 +223,7 @@ function formatDescription(value: cli.Command.Options.Entry) {
   const d = value.type instanceof z.ZodString ? `'${value.default}'` : value.default
   return value.default ? `${value.description} (default ${d})` : value.description
 }
-function generateAliasSection(command: ui.Command) {
+function generateAliasSection(command: createUI.Command) {
   if (!command.alias)
     return ''
   return `Alias:
