@@ -247,7 +247,7 @@ The cli will determine that a package is a plugin by looking at the `keywords` i
 import { command, testCommand } from 'clibuilder'
 
 test('some test', async () => {
-  const { result, messages } = testCommand(command({
+  const { result, messages } = await testCommand(command({
     name: 'cmd-a',
     run() {
       this.ui.info('miku')
