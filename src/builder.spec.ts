@@ -203,7 +203,7 @@ Options:
 })
 
 describe('--silent', () => {
-  test('--silent disables ui', async () => {
+  test(' disables ui', async () => {
     const ctx = mockContext('single-bin/bin.js')
     const cli = builder(ctx).default({
       run() {
@@ -214,6 +214,13 @@ describe('--silent', () => {
     })
     await cli.parse(argv('single-bin --silent'))
     expect(getLogMessage(ctx.reporter)).not.toContain('show not print')
+  })
+
+  test('command will not get the option', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run(args) { return args } })
+    const args = await cli.parse(argv('single-bin --silent'))
+    expect(args.silent).toBeUndefined()
   })
 })
 
@@ -247,6 +254,18 @@ describe('--verbose', () => {
       }
     })
   })
+  test('command will not get the option "verbose"', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run(args) { return args } })
+    const args = await cli.parse(argv('single-bin --verbose'))
+    expect(args.verbose).toBeUndefined()
+  })
+  test('command will not get the option "V"', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run(args) { return args } })
+    const args = await cli.parse(argv('single-bin -V'))
+    expect(args.V).toBeUndefined()
+  })
 })
 
 describe('--debug-cli', () => {
@@ -279,6 +298,12 @@ argv: node string-bin --debug-cli`)
     expect(msg).toContain(`activating plugin cli-plugin-one`)
     expect(msg).toContain(`adding command one`)
     expect(msg).toContain(`activated plugin cli-plugin-one`)
+  })
+  test('command will not get the option', async () => {
+    const ctx = mockContext('single-bin/bin.js')
+    const cli = builder(ctx).default({ run(args) { return args } })
+    const args = await cli.parse(argv('single-bin --debug-cli'))
+    expect(args['debug-cli']).toBeUndefined()
   })
 })
 
