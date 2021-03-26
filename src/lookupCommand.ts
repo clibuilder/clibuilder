@@ -1,7 +1,7 @@
 import { findKey, reduceByKey } from 'type-plus'
 import type { cli } from './cli'
 import { parseArgv } from './parseArgv'
-import { z } from './zod'
+import { isZodArray, isZodBoolean, isZodNumber, isZodOptional, isZodString, z } from './zod'
 
 namespace lookupCommand {
   export type Result = {
@@ -84,11 +84,10 @@ function fillArguments(state: processCommand.State) {
   const argSpecs = command.arguments || []
   state.args = argSpecs.reduce((p, s) => {
     if (args.length === 0) {
-      if (!(s.type instanceof z.ZodOptional))
-        state.errors.push({ type: 'missing-argument', name: s.name })
+      if (!isZodOptional(s.type)) state.errors.push({ type: 'missing-argument', name: s.name })
       return p
     }
-    if (s.type instanceof z.ZodArray) {
+    if (isZodArray(s.type)) {
       const e = s.type.element
       let r = e.safeParse(args[0])
       p.args[s.name] = p.args[s.name] || []
@@ -137,7 +136,7 @@ function fillDefaultOptions(state: processCommand.State) {
     const options = optionsMap[key]
     if (typeof options === 'string' || options.default === undefined) return p
 
-    p.args[key] = options.type instanceof z.ZodArray ? [options.default] : options.default
+    p.args[key] = isZodArray(options.type) ? [options.default] : options.default
     return p
   }, state)
 }
@@ -173,38 +172,38 @@ function toParsable(
   values: string[],
   errors: lookupCommand.Error[]
 ): [any, lookupCommand.Error[]] {
-  if (t instanceof z.ZodOptional) {
+  if (isZodOptional(t)) {
     return toParsable(t._def.innerType, key, values, errors)
   }
-  if (t instanceof z.ZodBoolean) {
+  if (isZodBoolean(t)) {
     if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
     return toBoolean(key, values[values.length - 1], errors)
   }
-  if (t instanceof z.ZodNumber) {
+  if (isZodNumber(t)) {
     if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
     return toNumber(key, values[values.length - 1], errors)
   }
-  if (t instanceof z.ZodString) {
+  if (isZodString(t)) {
     if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
     return [values[values.length - 1], errors]
   }
-  if (t instanceof z.ZodArray) {
+  if (isZodArray(t)) {
     const e = t.element
-    if (e instanceof z.ZodBoolean) {
+    if (isZodBoolean(e)) {
       return values.reduce(([i, e], v) => {
         const [r, errors] = toBoolean(key, v, e)
         i.push(r)
         return [i, errors]
       }, [[] as Array<boolean | undefined>, errors])
     }
-    if (e instanceof z.ZodNumber) {
+    if (isZodNumber(e)) {
       return values.reduce(([i, e], v) => {
         const [r, errors] = toNumber(key, v, e)
         i.push(r)
         return [i, errors]
       }, [[] as Array<number | undefined>, errors])
     }
-    if (e instanceof z.ZodString) {
+    if (isZodString(e)) {
       return [values, errors]
     }
   }
@@ -235,3 +234,4 @@ function toNumber(
   errors.push({ type: 'invalid-value', key, value, message: 'expected to be number' })
   return [undefined, errors]
 }
+

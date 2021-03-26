@@ -4,6 +4,7 @@ import { someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import * as z from 'zod'
 import type { cli } from './cli'
+import { isZodArray, isZodNumber, isZodOptional, isZodString } from './zod'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -204,13 +205,13 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
 
 function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) {
   if (!zodType) return `[${keys}]`
-  const optional = zodType instanceof z.ZodOptional
+  const optional = isZodOptional(zodType)
   const t = optional ? zodType._def.innerType : zodType
-  const isArray = t instanceof z.ZodArray
+  const isArray = isZodArray(t)
   const at = isArray ? t.element : t
-  const valueType = at instanceof z.ZodString
+  const valueType = isZodString(at)
     ? isArray ? '=string...' : '=string'
-    : at instanceof z.ZodNumber
+    : isZodNumber(at)
       ? isArray ? '=number...' : '=number'
       : isArray ? '=boolean...' : ''
 
@@ -220,7 +221,7 @@ function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) 
 }
 
 function formatDescription(value: cli.Command.Options.Entry) {
-  const d = value.type instanceof z.ZodString ? `'${value.default}'` : value.default
+  const d = value.type && isZodString(value.type) ? `'${value.default}'` : value.default
   return value.default ? `${value.description} (default ${d})` : value.description
 }
 function generateAliasSection(command: createUI.Command) {
