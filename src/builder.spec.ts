@@ -593,7 +593,10 @@ describe('loadConfig()', () => {
         run() { return this.config }
       }).parse(argv('single-bin'))
     const msg = getLogMessage(ctx.reporter)
-    expect(msg).toContain('no config found for single-cli')
+    expect(msg).toContain(`no config found:
+  single-cli.json
+  .single-clirc.json
+  .single-clirc`)
     expect(actual).toEqual(undefined)
   })
 })

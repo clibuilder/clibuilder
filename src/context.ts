@@ -24,7 +24,8 @@ export function context() {
       const win = this.process.platform === 'win32'
       // istanbul ignore next
       const home = (win ? this.process.env.USERPROFILE : this.process.env.HOME) as string
-      const configFilePath = resolveConfigFilename(cwd, home, configFileName)
+      const configFileNames = getConfigFilenames(configFileName)
+      const configFilePath = resolveConfigFilenames(cwd, home, configFileNames)
       if (configFilePath) {
         const cfg = readFileSync(configFilePath, 'utf8')
         this.ui.debug(`load config from: ${configFilePath}`)
@@ -32,7 +33,7 @@ export function context() {
         return JSON.parse(cfg)
       }
       else {
-        this.ui.warn(`no config found for ${configFileName}`)
+        this.ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
       }
     },
     async loadPlugins(keyword: string) {
@@ -49,26 +50,24 @@ export function context() {
 
 export type Context = ReturnType<typeof context>
 
-function resolveConfigFilename(cwd: string, home: string, configFileName: string) {
+function getConfigFilenames(configFileName: string) {
   if (configFileName.startsWith('.')) {
-    return resolveConfigFilenames(cwd, home, [
+    return [
       configFileName,
       `${configFileName}.json`,
       `${configFileName}rc.json`,
       `${configFileName}rc`
-    ])
+    ]
   }
   if (configFileName.indexOf('.') >= 0) {
-    return resolveConfigFilenames(cwd, home, [
-      configFileName
-    ])
+    return [configFileName]
   }
 
-  return resolveConfigFilenames(cwd, home, [
+  return [
     `${configFileName}.json`,
     `.${configFileName}rc.json`,
     `.${configFileName}rc`
-  ])
+  ]
 }
 
 function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
