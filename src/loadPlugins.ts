@@ -71,6 +71,8 @@ function loadModule(cwd: string, ui: createUI.UI, name: string) {
   }
   catch (e) {
     ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
+    ui.warn(`plugin path: ${pluginPath}`)
+    ui.warn(`error: `, e.message || e)
     return undefined
   }
 }
