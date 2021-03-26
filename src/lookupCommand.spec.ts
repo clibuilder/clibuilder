@@ -46,9 +46,10 @@ describe('argument', () => {
       arguments: [{ name: 'arg', type: z.string().optional(), description: 'some arg' }],
       run() { }
     })
-    const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli')!
+    const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli')!
     expect(cmd).toBe(defaultCommand)
     expect(args).toEqual({ _: [] })
+    expect(errors).toEqual([])
   })
   test('required argument', () => {
     const defaultCommand = command({

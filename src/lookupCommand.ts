@@ -84,7 +84,8 @@ function fillArguments(state: processCommand.State) {
   const argSpecs = command.arguments || []
   state.args = argSpecs.reduce((p, s) => {
     if (args.length === 0) {
-      state.errors.push({ type: 'missing-argument', name: s.name })
+      if (!(s.type instanceof z.ZodOptional))
+        state.errors.push({ type: 'missing-argument', name: s.name })
       return p
     }
     if (s.type instanceof z.ZodArray) {
@@ -101,11 +102,7 @@ function fillArguments(state: processCommand.State) {
       p.args[s.name] = args.pop()!
     }
     return p
-  }, {
-    args: { _: [] } as {
-      _: string[]
-    } & Record<any, any>, multiple: false
-  }).args
+  }, { args: { _: [] } as { _: string[] } & Record<any, any> }).args
   if (args.length > 0) {
     state.errors.push({ type: 'extra-arguments', name: command.name, values: args })
   }

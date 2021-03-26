@@ -2,7 +2,7 @@ import { getLogger } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli'
-import { pluginsCommand } from './commands'
+import { getBaseCommand, pluginsCommand } from './commands'
 import { Context } from './context'
 import { lookupCommand } from './lookupCommand'
 import { parseArgv } from './parseArgv'
@@ -42,23 +42,28 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
   async function parse(argv: string[]) {
     await Promise.all(pending)
     context.ui.debug('argv:', argv.join(' '))
-
-    const r = lookupCommand(s.command, parseArgv(argv))
-    const { args, command } = r
-    if (args.silent) s.displayLevel = 'none'
-    if (args.verbose) s.displayLevel = 'debug'
-    if (args['debug-cli']) s.displayLevel = 'trace'
+    const rawArgs = parseArgv(argv)
+    const { args: baseArgs } = lookupCommand(getBaseCommand(s.description), rawArgs)
+    if (baseArgs.silent) {
+      delete rawArgs.silent
+      s.displayLevel = 'none'
+    }
+    if (baseArgs.verbose) {
+      delete rawArgs.verbose
+      s.displayLevel = 'debug'
+    }
+    if (baseArgs['debug-cli']) {
+      delete rawArgs['debug-cli']
+      s.displayLevel = 'trace'
+    }
     context.ui.displayLevel = s.displayLevel
     context.ui.dump()
 
-    if (r.errors.length > 0) {
-      createCommandInstance(context, s, r.command).ui.showHelp()
-      return
-    }
-    if (args.version) {
-      createCommandInstance(context, s, r.command).ui.showVersion()
-      return
-    }
+    const r = lookupCommand(s.command, rawArgs)
+    const { args, command } = r
+
+    if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
+    if (args.version) return createCommandInstance(context, s, r.command).ui.showVersion()
 
     if (command.config) {
       const { config, errors } = loadConfig(context, s.configName || s.name, command.config)
@@ -70,10 +75,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       s.config = config
     }
     const commandInstance = createCommandInstance(context, s, command)
-    if (args.help) {
-      commandInstance.ui.showHelp()
-      return
-    }
+    if (args.help) return commandInstance.ui.showHelp()
     return commandInstance.run(args as any)
   }
 
