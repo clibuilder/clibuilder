@@ -239,7 +239,7 @@ ${toPrettyType(command.config)}`
 }
 
 function toPrettyType(t: z.ZodAny): string {
-  return tersify(toTypeObject(t)).replace(/'/g, '')
+  return tersify(toTypeObject(t), { maxLength: Infinity }).replace(/'/g, '')
 }
 function toTypeObject(t: z.ZodAny): any {
   if (isZodObject(t)) {
