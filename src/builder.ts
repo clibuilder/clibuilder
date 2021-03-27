@@ -62,14 +62,15 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     const r = lookupCommand(s.command, rawArgs)
     const { args, command } = r
 
-    if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
     if (args.version) return createCommandInstance(context, s, r.command).ui.showVersion()
+    if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
 
     if (command.config) {
       const { config, errors } = loadConfig(context, s.configName || s.name, command.config)
       if (errors) {
         context.ui.error(`config fails validation:`)
         forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+        createCommandInstance(context, s, r.command).ui.showHelp()
         return
       }
       s.config = config
