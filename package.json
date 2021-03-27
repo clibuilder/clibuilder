@@ -40,7 +40,7 @@
     "clean": "rimraf .nyc_output .ts coverage lib libm",
     "coverage": "jest --coverage --maxWorkers=60%",
     "depcheck": "yarn dependency-check",
-    "dependency-check": "dependency-check . --unused --no-dev -i global-store -i @types/node -i standard-log-color && dependency-check . --missing --no-dev",
+    "dependency-check": "dependency-check . --unused --no-dev -i global-store -i @types/node -i standard-log-color && dependency-check . --missing --no-dev -i tersify",
     "lint": "eslint --ext=js,ts .",
     "nuke": "yarn clean && rimraf node_modules",
     "test": "jest --maxWorkers=60%",
