@@ -505,9 +505,12 @@ describe('loadConfig()', () => {
 
     // TODO: error message is weak in `zod`.
     // improve this when switching back to type-plus
-    expect(getLogMessage(ctx.reporter)).toContain(`config fails validation:
+    const msg = getLogMessage(ctx.reporter)
+    expect(msg).toContain(`config fails validation:
   a: Expected object, received number
   b: Required`)
+    // should also print help
+    expect(msg).toContain(`Usage: string-bin [options]`)
     // a.satisfies(ctx.reporter.logs, [{
     //   id: 'mock-ui',
     //   level: 400,
