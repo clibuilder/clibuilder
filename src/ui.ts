@@ -1,10 +1,11 @@
 import padRight from 'pad-right'
 import { Logger, logLevels } from 'standard-log'
-import { someKey } from 'type-plus'
+import { tersify } from 'tersify'
+import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import * as z from 'zod'
 import type { cli } from './cli'
-import { isZodArray, isZodNumber, isZodOptional, isZodString } from './zod'
+import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString } from './zod'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -86,6 +87,7 @@ function generateHelpMessage(cliName: string, command: createUI.Command) {
     generateArgumentsSection(command),
     generateOptionsSection(command),
     generateAliasSection(command),
+    generateConfigSection(command)
   ].filter(m => !!m)
   return `
 ${helpSections.join('\n\n')}
@@ -225,8 +227,36 @@ function formatDescription(value: cli.Command.Options.Entry) {
   return value.default ? `${value.description} (default ${d})` : value.description
 }
 function generateAliasSection(command: createUI.Command) {
-  if (!command.alias)
-    return ''
+  if (!command.alias) return ''
   return `Alias:
   ${wrap(command.alias.join(', '))}`
+}
+
+function generateConfigSection(command: createUI.Command) {
+  if (!command.config) return ''
+  return `Config:
+${toPrettyType(command.config)}`
+}
+
+function toPrettyType(t: z.ZodAny): string {
+  return tersify(toTypeObject(t)).replace(/'/g, '')
+}
+function toTypeObject(t: z.ZodAny): any {
+  if (isZodObject(t)) {
+    const shape = t._def.shape() as Record<string, any>
+    return reduceByKey(shape, (p, k) => {
+      const t = shape[k]
+      if (isZodOptional(t)) p[`${k}?`] = toTypeObject(t._def.innerType)
+      else p[k] = toTypeObject(t)
+      return p
+    }, {} as Record<string, any>)
+  }
+  if (isZodString(t)) return 'string'
+  if (isZodBoolean(t)) return 'boolean'
+  if (isZodNumber(t)) return 'number'
+  if (isZodArray(t)) {
+    if (isZodObject(t.element)) return `Array<${toPrettyType(t.element)}>`
+    return `${toPrettyType(t.element)}[]`
+  }
+  return ''
 }

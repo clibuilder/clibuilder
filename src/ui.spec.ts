@@ -265,6 +265,97 @@ Options:
 `)
     })
   })
+
+  describe('config', () => {
+    test('{ a: string }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({ a: z.string() }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ a: string }
+`)
+    })
+    test('{ a: string, b: boolean }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({ a: z.string(), b: z.boolean() }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ a: string, b: boolean }
+`)
+    })
+    test('{ c: number }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({ c: z.number() }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ c: number }
+`)
+    })
+    test('{ c?: string[] }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({ c: z.optional(z.array(z.string())) }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ c?: string[] }
+`)
+    })
+    test('{ a: Array<{ d: string }> }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({ a: z.array(z.object({ d: z.string() })) }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ a: Array<{ d: string }> }
+`)
+    })
+    test('{ a?: Array<{ d?: string }> }', () => {
+      const { ui, reporter } = testUI()
+      ui.showHelp('cli', command({
+        name: 'cmd',
+        config: z.object({
+          a: z.array(z.object({
+            d: z.string().optional()
+          })).optional()
+        }),
+        run() { }
+      }))
+      expect(getLogMessage(reporter)).toEqual(`
+Usage: cli cmd
+
+Config:
+{ a?: Array<{ d?: string }> }
+`)
+    })
+  })
 })
 
 function testUI() {
