@@ -258,5 +258,6 @@ function toTypeObject(t: z.ZodAny): any {
     if (isZodObject(t.element)) return `Array<${toPrettyType(t.element)}>`
     return `${toPrettyType(t.element)}[]`
   }
+  // istanbul ignore next
   return ''
 }
