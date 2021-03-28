@@ -51,14 +51,13 @@ The most basic way looks like this:
 cli()
   .default({ run() { /* ...snip... */ }})
   .parse(process.argv)
-  .catch(e => process.exit(e?.code || 1))
+  .catch(e => /* handle error */process.exit(e?.code || 1))
 ```
 
 The above code will:
 
 - get your application name, version, and description from your `package.json`
 - call your default `run()` method when invoked
-- handle errors so you won't get a ugly NodeJS stacktrace.
 
 You can specify name, version, and description directly:
 
