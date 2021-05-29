@@ -9719,19 +9719,10 @@ terminal-link@^2.0.0:
     ansi-escapes "^4.2.1"
     supports-hyperlinks "^2.0.0"
 
-tersify@^3.0.6, tersify@^3.7.0, tersify@^3.7.7:
+tersify@^3.0.6, tersify@^3.7.0, tersify@^3.7.7, tersify@^3.7.8:
   version "3.7.8"
   resolved "https://registry.yarnpkg.com/tersify/-/tersify-3.7.8.tgz#4ea998262b4c1a701d23a73b01fa8a3bb276fc86"
   integrity sha512-fa5WwVR5HDOLb/j1KIl/bw1OijyWTiOPotWLdlzn0HUCDey28Og8i7+e90gM68I167bKIhCkpjHL2+l3j4J7Pg==
-  dependencies:
-    acorn "^8.0.5"
-    is-buffer "^2.0.5"
-    unpartial "^0.6.3"
-
-tersify@^3.7.8:
-  version "3.7.8"
-  resolved "https://af.paloaltonetworks.local:443/artifactory/api/npm/npm-panvirt/tersify/-/tersify-3.7.8.tgz#4ea998262b4c1a701d23a73b01fa8a3bb276fc86"
-  integrity sha1-TqmYJitMGnAdI6c7AfqKO7J2/IY=
   dependencies:
     acorn "^8.0.5"
     is-buffer "^2.0.5"
@@ -10496,9 +10487,9 @@ write-file-atomic@^3.0.0:
     typedarray-to-buffer "^3.1.5"
 
 ws@^7.4.4:
-  version "7.4.4"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.4.tgz#383bc9742cb202292c9077ceab6f6047b17f2d59"
-  integrity sha512-Qm8k8ojNQIMx7S+Zp8u/uHOx7Qazv3Yv4q68MiWWWOJhiwG5W3x7iqmRtJo8xxrciZUY4vRxUTJCKuRnF28ZZw==
+  version "7.4.6"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
+  integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
 xdg-basedir@^3.0.0:
   version "3.0.0"
