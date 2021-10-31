@@ -33,9 +33,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### BREAKING CHANGES
 
-* setupCliCommandTest signagure changed
+* setupCliCommandTest signature changed
 
-There are also a few more type related changes.
+There are also a few more type-related changes.
 Mostly config and context are now an explicit property on the `Cli` and the commands.
 
 Before this, the context was merged to the command itself.
@@ -47,6 +47,6 @@ Before this, the context was merged to the command itself.
 Also, rename the folders to follow package conventions.
 
 Check folder is treated as a sub-package.
-It tests its own code and gets the code from '.' when possible.
+It tests its code and gets the code from '.' when possible.
 
-The top level should do acceptance tests.
+The top-level should do acceptance tests.
