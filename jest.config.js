@@ -6,14 +6,12 @@ module.exports = {
   'reporters': [
     'default',
     'jest-progress-tracker',
-    // ['jest-audio-reporter', { volume: 0.3 }],
   ],
   'roots': [
     '<rootDir>/src',
   ],
   'testEnvironment': 'node',
   'testMatch': [
-    // 'src/cli/(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)',
     '**/src/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'
   ],
   'watchPlugins': [
