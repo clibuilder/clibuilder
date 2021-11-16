@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   'collectCoverageFrom': [
     '<rootDir>/src/**/*.[jt]s',
     '!<rootDir>/src/bin.[jt]s',
@@ -27,3 +27,5 @@ module.exports = {
     ],
   ],
 }
+
+export default config

@@ -24,8 +24,13 @@
   },
   "sideEffects": false,
   "main": "lib/index.js",
-  "module": "libm/index.js",
-  "jsnext:main": "libm/index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./libm/index.js",
+      "require": "./lib/index.js"
+    }
+  },
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
