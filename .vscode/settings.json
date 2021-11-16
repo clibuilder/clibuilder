@@ -18,16 +18,17 @@
   "eslint.enable": true,
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "cSpell.words": [
-    "USERPROFILE",
     "binrc",
     "clirc",
     "greenkeeper",
+    "libm",
     "macos",
     "oobm",
     "oonm",
     "oosm",
     "pnpify",
     "tersify",
+    "USERPROFILE",
     "yarnpkg"
   ]
 }
