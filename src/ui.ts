@@ -238,12 +238,12 @@ function generateConfigSection(command: createUI.Command) {
 ${toPrettyType(command.config)}`
 }
 
-function toPrettyType(t: z.ZodAny): string {
+function toPrettyType(t: any): string {
   return tersify(toTypeObject(t), { maxLength: Infinity }).replace(/'/g, '')
 }
 function toTypeObject(t: z.ZodAny): any {
   if (isZodObject(t)) {
-    const shape = t._def.shape() as Record<string, any>
+    const shape = t.shape as Record<string, any>
     return reduceByKey(shape, (p, k) => {
       const t = shape[k]
       if (isZodOptional(t)) p[`${k}?`] = toTypeObject(t._def.innerType)

@@ -24,7 +24,7 @@
   },
   "sideEffects": false,
   "main": "lib/index.js",
-  "type": "module",
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": "./libm/index.js",
@@ -71,7 +71,7 @@
     "tslib": "^2.1.0",
     "type-plus": "^3.10.2",
     "wordwrap": "^1.0.0",
-    "zod": "^3.0.0-alpha.4"
+    "zod": "^3.11.6"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.16",
