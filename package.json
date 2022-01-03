@@ -59,7 +59,7 @@
     }
   },
   "dependencies": {
-    "@types/node": "^14",
+    "@types/node": "^14.18.0",
     "chalk": "^4.1.0",
     "find-installed-packages": "^2.1.6",
     "find-up": "^5.0.0",
