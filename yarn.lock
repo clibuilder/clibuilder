@@ -9358,10 +9358,10 @@ standard-log-color@^2.1.0:
     tslib "^2.0.3"
     unpartial "^0.6.3"
 
-standard-log@^5.1.0:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-5.2.2.tgz#c8e19ba84197d7d802dc3701bfa00b4c8186ce53"
-  integrity sha512-g5D2E9Sbhqch+Y4+Jfm3ozCNh5XsI6EjLlzVcxOeaD11/uDuwRXXuGoqZTNnrWI1zT0pPvAJIBXz+XLxdXkgbw==
+standard-log@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/standard-log/-/standard-log-5.4.0.tgz#e8ef1955677666d879174d4bdb13449ac022fd9b"
+  integrity sha512-6n3MjMslm3jCYqdNytOjm5WIXdNJ335TZXjzWtNQaJExI6u2FZ8FauR/d4q8zEuH6zKq7/vWGZMIyPG6flCN4g==
   dependencies:
     global-store "^1.0.0-beta.17"
     is-node "^1.0.2"
