@@ -2089,6 +2089,11 @@ acorn@^8.0.5:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.1.0.tgz#52311fd7037ae119cbb134309e901aa46295b3fe"
   integrity sha512-LWCF/Wn0nfHOmJ9rzQApGnxnvgfROzGilS8936rqN/lfcYkY9MYZzdMqN+2NJ4SlTc+m5HiSa+kNfDtI64dwUA==
 
+acorn@^8.6.0:
+  version "8.7.0"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.7.0.tgz#90951fde0f8f09df93549481e5fc141445b791cf"
+  integrity sha512-V/LGr1APy+PXIwKebEWrkZPwoeoF+w1jiOBUmuxuiUIaOHtob8Qc9BTrYo7VuI5fR8tqsy+buA2WFooR5olqvQ==
+
 agent-base@4, agent-base@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-4.3.0.tgz#8165f01c436009bccad0b1d122f05ed770efc6ee"
@@ -9716,6 +9721,15 @@ tersify@^3.0.6, tersify@^3.7.0, tersify@^3.7.7, tersify@^3.7.8:
     is-buffer "^2.0.5"
     unpartial "^0.6.3"
 
+tersify@^3.8.0:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/tersify/-/tersify-3.8.2.tgz#6f05659036a7b1822eada1637918212f97a5cb6d"
+  integrity sha512-VtcyrO7pb/tQAPZNMkNzRtmkz3smQpUQiOQXuoxLoAfN7W+ag9YxVlfs6c9hOEGotCD1HZQ1D4eoSeOQxI8mJA==
+  dependencies:
+    acorn "^8.6.0"
+    is-buffer "^2.0.5"
+    unpartial "^0.6.4"
+
 test-exclude@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/test-exclude/-/test-exclude-6.0.0.tgz#04a8698661d805ea6fa293b6cb9e63ac044ef15e"
@@ -9955,13 +9969,13 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-plus@^3.13.1:
-  version "3.14.0"
-  resolved "https://registry.yarnpkg.com/type-plus/-/type-plus-3.14.0.tgz#49ab0716e0b627c702e7909d3109e1a856171519"
-  integrity sha512-i0dR8kVNeVF9CECxuAhWJgjljsJGvf67iqAkW0bocbXddrNbODqKXCl+YJnw11Dq9asfbOWKbm4WdCb3PXWOtQ==
+type-plus@^3.15.0:
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/type-plus/-/type-plus-3.15.0.tgz#478bf73739e323a7c0b5b78e2b83c06849f1f9ff"
+  integrity sha512-iUiJgXQW2dsAmtJITdLDqBnzwh/M0l/fVBUL07B9z9wQQ08pMNGbEWoJH5udBBGt7bnS3aMxAGoZQYai9Eu6bA==
   dependencies:
-    tersify "^3.7.8"
-    unpartial "^0.6.3"
+    tersify "^3.8.0"
+    unpartial "^0.6.4"
 
 type-plus@^3.3.0:
   version "3.10.4"
@@ -10105,6 +10119,11 @@ unpartial@^0.6.1, unpartial@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/unpartial/-/unpartial-0.6.3.tgz#75557ac68fce3e9fcc983cd76e3d505b3a5ce4a3"
   integrity sha512-U4pMxDxAyV7n5Hp6q9OMjCHLkTU6JwTxzignyXv60u44HlhUmaT+u18AAKM87+EtPkdkOlsSRmzJL4OoHROxbw==
+
+unpartial@^0.6.4:
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/unpartial/-/unpartial-0.6.4.tgz#9cf878d3c8335919b250cfb3393751ca12cc26a4"
+  integrity sha512-t/aGg/x8vW0KCjPB8A6TBB1hd0wnWMze8WD83uUpqSDm99jmhY2ZcHpivlvvSGmPCJ/S5ASZzxeQHga4JTW/4A==
 
 unpipe@~1.0.0:
   version "1.0.0"
