@@ -1,8 +1,8 @@
 import { findByKeywords } from 'find-installed-packages'
 import findUp from 'find-up'
 import path from 'path'
-import type { cli, PluginActivationContext } from './cli'
-import { createUI } from './ui'
+import type { cli, PluginActivationContext } from './cli.js'
+import { createUI } from './ui.js'
 
 export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, keyword: string) {
   ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)

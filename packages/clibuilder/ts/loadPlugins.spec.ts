@@ -2,9 +2,9 @@ import t from 'assert'
 import a from 'assertron'
 import { some } from 'satisfier'
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
-import { loadPlugins } from './loadPlugins'
-import { getLogMessage } from './test-utils'
-import { createUI } from './ui'
+import { loadPlugins } from './loadPlugins.js'
+import { getLogMessage } from './test-utils/index.js'
+import { createUI } from './ui.js'
 
 async function testLoadPlugins(cwd: string, keyword: string) {
   const reporter = createMemoryLogReporter({ id: 'mock-reporter' })

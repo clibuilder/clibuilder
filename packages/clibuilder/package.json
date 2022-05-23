@@ -23,19 +23,15 @@
     "url": "https://github.com/unional"
   },
   "sideEffects": false,
-  "type": "commonjs",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./libm/index.js",
-      "require": "./lib/index.js"
+      "import": "./lib/index.js",
+      "type": "./lib/index.d.ts"
     }
   },
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
   "files": [
-    "lib",
-    "libm",
-    "src"
+    "lib"
   ],
   "scripts": {
     "build": "yarn build:libm && yarn build:lib",
@@ -78,7 +74,6 @@
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "assertron": "^9.0.9",
-    "babel-jest": "^28.1.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "depcheck": "^1.4.3",
     "eslint": "^8.16.0",
@@ -92,7 +87,8 @@
     "rimraf": "^3.0.2",
     "satisfier": "^5.1.4",
     "tersify": "^3.8.3",
-    "typescript": "^4.6.4"
+    "ts-jest": "^28.0.2",
+    "typescript": "rc"
   },
   "engines": {
     "node": ">= 8"

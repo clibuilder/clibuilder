@@ -1,9 +1,9 @@
 import { config, createMemoryLogReporter, getLogger, Logger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
-import { getFixturePath } from '.'
-import { Context, context } from '../context'
-import { getAppPath } from '../getAppPath'
-import { createUI } from '../ui'
+import { getFixturePath } from './getFixturePath.js'
+import { Context, context } from '../context.js'
+import { getAppPath } from '../getAppPath.js'
+import { createUI } from '../ui.js'
 
 export type MockAppContext = Context & {
   reporter: MemoryLogReporter

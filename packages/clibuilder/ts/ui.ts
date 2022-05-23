@@ -4,8 +4,8 @@ import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import * as z from 'zod'
-import type { cli } from './cli'
-import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString } from './zod'
+import type { cli } from './cli.js'
+import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString } from './zod.js'
 
 const INDENT = 2
 const RIGHT_PADDING = 2

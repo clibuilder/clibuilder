@@ -1,6 +1,6 @@
 import a from 'assertron'
 import { assertType } from 'type-plus'
-import { cli, z } from '.'
+import { cli, z } from './index.js'
 
 describe('create', () => {
   test('with options', () => {

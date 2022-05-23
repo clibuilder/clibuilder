@@ -1,6 +1,6 @@
 import findUp from 'find-up'
 import { dirname } from 'path'
-import { createUI } from './ui'
+import { createUI } from './ui.js'
 
 export function loadAppInfo(ui: createUI.UI, appPkgPath: string) {
   ui.debug(`finding package.json starting from '${appPkgPath}'...`)

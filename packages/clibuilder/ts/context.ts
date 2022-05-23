@@ -2,10 +2,10 @@ import findUp from 'find-up'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { getLogger, logLevels } from 'standard-log'
-import { getAppPath } from './getAppPath'
-import { loadAppInfo } from './loadAppInfo'
-import { loadPlugins } from './loadPlugins'
-import { createBuilderUI, createUI } from './ui'
+import { getAppPath } from './getAppPath.js'
+import { loadAppInfo } from './loadAppInfo.js'
+import { loadPlugins } from './loadPlugins.js'
+import { createBuilderUI, createUI } from './ui.js'
 
 /**
  * Creates an app context that provides interactions to external system

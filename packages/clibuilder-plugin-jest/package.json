@@ -1,0 +1,9 @@
+{
+  "name": "clibuilder-plugin-jest",
+  "devDependencies": {
+    "clibuilder": "workspace:*"
+  },
+  "peerDependencies": {
+    "clibuilder": ">= 8"
+  }
+}

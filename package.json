@@ -6,12 +6,12 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
+    "clibuilder": "yarn workspace clibuilder",
     "coverage": "turbo run coverage",
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev --parallel",
     "postinstall": "husky install",
-    "just-func": "yarn workspace just-func",
     "lint": "turbo run lint",
     "nuke": "turbo run nuke",
     "nuke:local": "rimraf node_modules || true",
@@ -37,7 +37,8 @@
     "jest-watch-toggle-config": "^2.0.1",
     "jest-watch-typeahead": "^1.1.0",
     "pinst": "^3.0.0",
-    "turbo": "^1.2.11"
+    "turbo": "^1.2.11",
+    "typescript": "rc"
   },
   "packageManager": "yarn@3.2.1"
 }

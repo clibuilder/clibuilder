@@ -3,7 +3,8 @@ ignores:
   - "@size-limit/preset-small-lib"
   - "@types/jest"
   - "@typescript-eslint/parser"
-  - babel-jest
   - clibuilder-plugin-dummy
+  - jest*
   - standard-log-color
+  - ts-jest
   - tslib
