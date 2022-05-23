@@ -69,7 +69,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
       const { config, errors } = loadConfig(context, s.configName || s.name, command.config)
       if (errors) {
         context.ui.error(`config fails validation:`)
-        forEachKey(errors, k => context.ui.error(`  ${k}: ${errors[k]}`))
+        forEachKey(errors, k => context.ui.error(`  ${String(k)}: ${errors[k]}`))
         createCommandInstance(context, s, r.command).ui.showHelp()
         return
       }

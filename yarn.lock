@@ -2577,7 +2577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^14":
+"@types/node@npm:*":
   version: 14.14.35
   resolution: "@types/node@npm:14.14.35"
   checksum: 6d6e428b6c504ede62e63dddf83439d3f10b3b283132172f7c3b1ef49b4f499afcfd2e4601e3019074b2dd140ee109a9b63bbd6a18a089c89e45108fa8d5b1ee
@@ -2595,6 +2595,13 @@ __metadata:
   version: 12.20.52
   resolution: "@types/node@npm:12.20.52"
   checksum: b720ee939a43f1427baf1606deee97e50892ff482bf3d64ab8a1eda3a50802a80866a232aeab337621f6ea4fdc4515147d7829337653e9e99d97c3aaeec3615d
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^14.18.18":
+  version: 14.18.18
+  resolution: "@types/node@npm:14.18.18"
+  checksum: a165225cd2603f6e62af8407449e4a4407305e03b41c1adf6b186fdf546e1a03c8214217659b5b36c556947c0c06234993ac880d4db6378136a7a810d47e0742
   languageName: node
   linkType: hard
 
@@ -3453,6 +3460,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "chalk@npm:4.1.2"
+  dependencies:
+    ansi-styles: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: fe75c9d5c76a7a98d45495b91b2172fa3b7a09e0cc9370e5c8feb1c567b85c4288e2b3fded7cfdd7359ac28d6b3844feb8b82b8686842e93d23c827c417e83fc
+  languageName: node
+  linkType: hard
+
 "char-regex@npm:^1.0.2":
   version: 1.0.2
   resolution: "char-regex@npm:1.0.2"
@@ -3541,13 +3558,13 @@ __metadata:
     "@commitlint/cli": ^17.0.0
     "@commitlint/config-conventional": ^17.0.0
     "@types/jest": ^27.5.1
-    "@types/node": ^14
+    "@types/node": ^14.18.18
     "@types/wordwrap": "github:types/wordwrap"
     "@typescript-eslint/eslint-plugin": ^5.25.0
     "@typescript-eslint/parser": ^5.25.0
     assertron: ^9.0.9
     babel-jest: ^28.1.0
-    chalk: ^4.1.0
+    chalk: ^4.1.2
     clibuilder-plugin-dummy: ^1.0.1
     depcheck: ^1.4.3
     eslint: ^8.16.0
@@ -3574,7 +3591,7 @@ __metadata:
     type-plus: ^4.9.1
     typescript: ^4.6.4
     wordwrap: ^1.0.0
-    zod: ^3.11.6
+    zod: ^3.17.2
   languageName: unknown
   linkType: soft
 
@@ -8946,9 +8963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.11.6":
-  version: 3.11.6
-  resolution: "zod@npm:3.11.6"
-  checksum: 044ac416450f179a0c88240f27849d2886c777cebade42df10e5f04125b0265cec82d9bd741a7dcb11796b2ea88b32c86be7d36932a4bed6af57002560359db1
+"zod@npm:^3.17.2":
+  version: 3.17.2
+  resolution: "zod@npm:3.17.2"
+  checksum: 25e89f180ce9811682b1a894e3014cbd57c473fd46880d1787c90bf4ef7eb0b9109acb230f5b663ff0cfdfa4cc6b0bca60ae8efcb45ae7ae66cc37e72b894ded
   languageName: node
   linkType: hard
