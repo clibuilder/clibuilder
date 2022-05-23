@@ -33,6 +33,7 @@
     "pnpify",
     "snyk",
     "tersify",
+    "tsbuildinfo",
     "USERPROFILE",
     "yarnpkg"
   ]
