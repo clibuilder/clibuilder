@@ -1,0 +1,9 @@
+ignores:
+  - "@commitlint/*"
+  - "@size-limit/preset-small-lib"
+  - "@types/jest"
+  - "@typescript-eslint/parser"
+  - babel-jest
+  - clibuilder-plugin-dummy
+  - standard-log-color
+  - tslib
