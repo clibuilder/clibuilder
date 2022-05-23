@@ -19,14 +19,18 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "cSpell.words": [
     "binrc",
+    "clibuilder",
     "clirc",
+    "codeql",
     "greenkeeper",
     "libm",
     "macos",
     "oobm",
     "oonm",
     "oosm",
+    "pinst",
     "pnpify",
+    "snyk",
     "tersify",
     "USERPROFILE",
     "yarnpkg"

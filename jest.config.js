@@ -3,10 +3,6 @@ const config = {
     '<rootDir>/src/**/*.[jt]s',
     '!<rootDir>/src/bin.[jt]s',
   ],
-  'reporters': [
-    'default',
-    'jest-progress-tracker',
-  ],
   'roots': [
     '<rootDir>/src',
   ],
@@ -16,7 +12,6 @@ const config = {
   ],
   'watchPlugins': [
     'jest-watch-suspend',
-    'jest-watch-repeat',
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
     [
