@@ -5,9 +5,9 @@ on:
 
 jobs:
   code:
-    uses: justland/.github/.github/workflows/yarn2-library-verify-cross-platform.yml@main
+    uses: unional/.github/.github/workflows/yarn2-library-verify-cross-platform.yml@main
 
   release:
-    uses: justland/.github/.github/workflows/yarn2-library-release.yml@main
+    uses: unional/.github/.github/workflows/yarn2-library-release.yml@main
     needs: code
     secrets: inherit

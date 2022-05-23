@@ -5,4 +5,4 @@ on:
 
 jobs:
   code:
-    uses: justland/.github/.github/workflows/yarn2-library-verify-cross-platform.yml@main
+    uses: unional/.github/.github/workflows/yarn2-library-verify-cross-platform.yml@main
