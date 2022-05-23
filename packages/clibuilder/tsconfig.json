@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.libm.json",
   "include": [
-    "src",
+    "ts",
     "typings"
   ]
 }

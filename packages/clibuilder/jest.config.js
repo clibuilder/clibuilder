@@ -1,15 +1,15 @@
 const config = {
   'collectCoverageFrom': [
-    '<rootDir>/src/**/*.[jt]s',
-    '!<rootDir>/src/bin.[jt]s',
-    '!<rootDir>/src/test-utils/**',
+    '<rootDir>/ts/**/*.[jt]s',
+    '!<rootDir>/ts/bin.[jt]s',
+    '!<rootDir>/ts/test-utils/**',
   ],
   'roots': [
-    '<rootDir>/src',
+    '<rootDir>/ts',
   ],
   'testEnvironment': 'node',
   'testMatch': [
-    '**/src/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'
+    '**/ts/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'
   ],
   'watchPlugins': [
     'jest-watch-suspend',

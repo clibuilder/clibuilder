@@ -1,0 +1,100 @@
+{
+  "name": "clibuilder",
+  "version": "7.2.1",
+  "description": "A CLI building library",
+  "keywords": [
+    "builder",
+    "cli",
+    "command",
+    "parser"
+  ],
+  "homepage": "https://github.com/unional/clibuilder",
+  "bugs": {
+    "url": "https://github.com/unional/clibuilder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unional/clibuilder.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Homa Wong (unional)",
+    "email": "homawong@gmail.com",
+    "url": "https://github.com/unional"
+  },
+  "sideEffects": false,
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./libm/index.js",
+      "require": "./lib/index.js"
+    }
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "libm",
+    "src"
+  ],
+  "scripts": {
+    "build": "yarn build:libm && yarn build:lib",
+    "build:lib": "tsc -p tsconfig.lib.json",
+    "build:libm": "tsc -p tsconfig.libm.json",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf .nyc_output .ts coverage lib libm",
+    "coverage": "jest --coverage --maxWorkers=60%",
+    "depcheck": "depcheck",
+    "lint": "eslint --ext=js,ts .",
+    "nuke": "yarn clean && rimraf node_modules",
+    "test": "jest --maxWorkers=60%",
+    "test:watch": "jest --watch --maxWorkers=60%",
+    "verify": "npm-run-all clean -p build lint coverage depcheck",
+    "watch": "yarn test:watch"
+  },
+  "dependencies": {
+    "@types/node": "^16.0.0",
+    "chalk": "^4.1.2",
+    "find-installed-packages": "^2.1.6",
+    "find-up": "^5.0.0",
+    "global-store": "1.0.0-beta.21",
+    "pad-right": "^0.2.2",
+    "search-packages": "^2.1.0",
+    "standard-log": "^7.1.0",
+    "standard-log-color": "^4.0.0",
+    "tslib": "^2.4.0",
+    "type-plus": "^4.9.1",
+    "wordwrap": "^1.0.0",
+    "zod": "^3.17.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.0",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.17.12",
+    "@babel/plugin-proposal-optional-chaining": "^7.17.12",
+    "@babel/preset-env": "^7.18.0",
+    "@babel/preset-typescript": "^7.17.12",
+    "@types/jest": "^27.5.1",
+    "@types/wordwrap": "github:types/wordwrap",
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "@typescript-eslint/parser": "^5.25.0",
+    "assertron": "^9.0.9",
+    "babel-jest": "^28.1.0",
+    "clibuilder-plugin-dummy": "^1.0.1",
+    "depcheck": "^1.4.3",
+    "eslint": "^8.16.0",
+    "eslint-plugin-harmony": "^7.1.0",
+    "jest": "^28.1.0",
+    "jest-validate": "^28.1.0",
+    "jest-watch-suspend": "^1.1.2",
+    "jest-watch-toggle-config": "^2.0.1",
+    "jest-watch-typeahead": "^1.1.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "satisfier": "^5.1.4",
+    "tersify": "^3.8.3",
+    "typescript": "^4.6.4"
+  },
+  "engines": {
+    "node": ">= 8"
+  }
+}
