@@ -50,7 +50,7 @@
     "nuke": "yarn clean && rimraf node_modules",
     "postinstall": "husky install",
     "prepack": "pinst --disable",
-    "postpack": "pinst --endable",
+    "postpack": "pinst --enable",
     "test": "jest --maxWorkers=60%",
     "test:watch": "jest --watch --maxWorkers=60%",
     "verify": "npm-run-all clean -p build lint coverage depcheck",
