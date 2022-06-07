@@ -3580,7 +3580,7 @@ __metadata:
     satisfier: ^5.1.4
     search-packages: ^2.1.0
     standard-log: ^7.1.0
-    standard-log-color: ^4.0.0
+    standard-log-color: ^5.0.0
     tersify: ^3.8.3
     tslib: ^2.4.0
     type-plus: ^4.9.1
@@ -3651,10 +3651,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-map@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "color-map@npm:1.1.0"
-  checksum: 00080763be74b14396911fd2805f8530691c0c1878a6e7d76648eef6790f0756a3007960c5e3859a6d0a6ebbc46c356a030b3e5bd83358e6c898ca983c4af456
+"color-map@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "color-map@npm:1.1.4"
+  checksum: f02187d0504ad178131964fa83ea8e99ed7ff93301a15a2a6f865cb6e99c2b2e65d99b1a394ddb77ac9c83f9d236283d83b68106b6fc4f6ad8b580fac8035489
   languageName: node
   linkType: hard
 
@@ -8005,16 +8005,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"standard-log-color@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "standard-log-color@npm:4.0.0"
+"standard-log-color@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "standard-log-color@npm:5.0.0"
   dependencies:
-    color-map: ^1.1.0
-    tslib: ^2.2.0
-    unpartial: ^0.6.3
+    color-map: ^1.1.4
+    unpartial: ^0.7.4
   peerDependencies:
-    standard-log: ">=4.0.2"
-  checksum: 95e0b09b0fa23ad205552ebcd96e6063f3c83cf65b639ef526510fd8b9223777326c614040c91cbdcceed59b71eb016eebc3ae80aca76f92f0f290859559c2bd
+    standard-log: ">=8.0.0"
+  checksum: f7ee5911946a0e778fcec2a458fef510b67a5f7dc2cfba00cd0ca5de4dfec2feb85f9161e9c6701b67d8994a47108b1f5eec9e54ee5963bace85ec55fd0f431e
   languageName: node
   linkType: hard
 
@@ -8420,7 +8419,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.2.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
+"tslib@npm:^2.3.1, tslib@npm:^2.4.0":
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
@@ -8800,6 +8799,13 @@ __metadata:
   version: 0.6.4
   resolution: "unpartial@npm:0.6.4"
   checksum: 34a9d765d97f54ec36036c8d0bd8087874e2b7c4ff2b71a3168687b867d4db2f3a7dd7bc15b50371df9488d280723a1ba8f726b1fdfb5537d293785eee647ec2
+  languageName: node
+  linkType: hard
+
+"unpartial@npm:^0.7.4":
+  version: 0.7.4
+  resolution: "unpartial@npm:0.7.4"
+  checksum: 28c57b77b7d64135a22a50b57ef5388da7eece85efab0f117d323000866df6ab4fde1c1fdef55f2a56f52f566d711e86b0b4dc28e375debfb7288924efc86f57
   languageName: node
   linkType: hard
 
