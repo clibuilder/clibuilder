@@ -3579,7 +3579,7 @@ __metadata:
     rimraf: ^3.0.2
     satisfier: ^5.1.4
     search-packages: ^2.1.0
-    standard-log: ^7.1.0
+    standard-log: ^8.0.0
     standard-log-color: ^5.0.0
     tersify: ^3.8.3
     tslib: ^2.4.0
@@ -4837,13 +4837,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"global-store@npm:1.0.0-beta.19":
-  version: 1.0.0-beta.19
-  resolution: "global-store@npm:1.0.0-beta.19"
-  checksum: 89d163dc5314e32111fbc02d07fafcd8b6454d89029a420b72cb2a511fa096b8433756a9dfd430853d96f86806510479b16d2d138fa0f9537ef5a1adad45b4e2
-  languageName: node
-  linkType: hard
-
 "global-store@npm:1.0.0-beta.21":
   version: 1.0.0-beta.21
   resolution: "global-store@npm:1.0.0-beta.21"
@@ -5484,10 +5477,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iso-error@npm:^4.1.0, iso-error@npm:^4.1.2":
+"iso-error@npm:^4.1.2":
   version: 4.2.0
   resolution: "iso-error@npm:4.2.0"
   checksum: 15b92caeb7e13b945512b20e7365a5dafb3882dc91863708e5fa433e659e33ce68dce187c213b8c095ff0cd6fb0566e08c1cef20534bc44e4f4fec5719f5376a
+  languageName: node
+  linkType: hard
+
+"iso-error@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "iso-error@npm:4.3.3"
+  checksum: 439d89379693bec7305dfec2e6aa8cef688de8bcacd6bbce2109310166a038eb47abb5edb2cdb2966757fc913b6fc7bf3bdc4daedf6636bd6a128b14e85ede3d
   languageName: node
   linkType: hard
 
@@ -7276,6 +7276,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ramda@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "ramda@npm:0.28.0"
+  checksum: 44ea6e5010bba70151b6a92d8114a91915e8b5a16105cce65fae58c9d7386b812c429645e35f21141d7087568550ce383bc10ee1a65cdec951f4b69ea457e6a4
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^17.0.1":
   version: 17.0.1
   resolution: "react-is@npm:17.0.1"
@@ -8017,20 +8024,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"standard-log@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "standard-log@npm:7.1.0"
+"standard-log@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "standard-log@npm:8.0.0"
   dependencies:
-    global-store: 1.0.0-beta.19
     is-node: ^1.0.2
-    iso-error: ^4.1.0
+    iso-error: ^4.3.3
     ms: ^2.1.3
-    tslib: ^2.3.1
-    type-plus: ^4.0.0
+    ramda: ^0.28.0
+    tslib: ^2.4.0
+    type-plus: ^4.10.0
     upper-case: ^2.0.2
   peerDependencies:
-    global-store: 1.0.0-beta.19
-  checksum: 1b12e9eb86308b22a05cb0c4dddd01d3e37f9a6c280f6523741b4ff119b1b39e5494da905c4648333b5884299f8f1ddbdac01a307fa4df9c8aca6797e9720ca4
+    global-store: "*"
+  dependenciesMeta:
+    ramda:
+      optional: true
+  checksum: 09a56331285e09913a6e2b51f4ae680fed4dbb82ab82a83d7ef12e2c2ef39b127e7957acd77154540ace40fc18bd0177938b73f621a764ece131d50dcd5a7f11
   languageName: node
   linkType: hard
 
@@ -8266,6 +8276,17 @@ __metadata:
     ansi-escapes: ^4.2.1
     supports-hyperlinks: ^2.0.0
   checksum: ce3d2cd3a438c4a9453947aa664581519173ea40e77e2534d08c088ee6dda449eabdbe0a76d2a516b8b73c33262fedd10d5270ccf7576ae316e3db170ce6562f
+  languageName: node
+  linkType: hard
+
+"tersify@npm:^3.10.0":
+  version: 3.10.0
+  resolution: "tersify@npm:3.10.0"
+  dependencies:
+    acorn: ^8.7.0
+    is-buffer: ^2.0.5
+    unpartial: ^0.7.3
+  checksum: a7e545b83ccac8636db56ff9bc912ba3382064158f6d12ccd1fceb51fe17166da917032c4a98d2960a708a0a9622a8b8b508a758ab4bd929471ad77ca6da6f6d
   languageName: node
   linkType: hard
 
@@ -8652,7 +8673,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-plus@npm:^4.0.0, type-plus@npm:^4.8.0, type-plus@npm:^4.9.1":
+"type-plus@npm:^4.10.0":
+  version: 4.10.0
+  resolution: "type-plus@npm:4.10.0"
+  dependencies:
+    tersify: ^3.10.0
+    unpartial: ^0.7.4
+  checksum: 6807f58459c76a51ff4ab5580a5964dad540a5c21e9db94eb3bdcdea009988a896a40d581384663c7a2cf82d839fc24260c290181f087a70389d3533a04ffe3d
+  languageName: node
+  linkType: hard
+
+"type-plus@npm:^4.8.0, type-plus@npm:^4.9.1":
   version: 4.9.1
   resolution: "type-plus@npm:4.9.1"
   dependencies:
@@ -8802,7 +8833,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unpartial@npm:^0.7.4":
+"unpartial@npm:^0.7.3, unpartial@npm:^0.7.4":
   version: 0.7.4
   resolution: "unpartial@npm:0.7.4"
   checksum: 28c57b77b7d64135a22a50b57ef5388da7eece85efab0f117d323000866df6ab4fde1c1fdef55f2a56f52f566d711e86b0b4dc28e375debfb7288924efc86f57
