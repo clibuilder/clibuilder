@@ -3580,7 +3580,7 @@ __metadata:
     satisfier: ^5.1.4
     search-packages: ^2.1.0
     standard-log: ^7.1.0
-    standard-log-color: ^6.0.0
+    standard-log-color: ^7.0.0
     tersify: ^3.8.3
     tslib: ^2.4.0
     type-plus: ^4.9.1
@@ -8005,15 +8005,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"standard-log-color@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "standard-log-color@npm:6.0.0"
+"standard-log-color@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "standard-log-color@npm:7.0.0"
   dependencies:
     color-map: ^1.1.4
     unpartial: ^0.7.4
   peerDependencies:
-    standard-log: ">=9.0.0"
-  checksum: 1760ed2c66ae5f062d80f723bae4d32b637f0e390c6244df0111c6cb06bbfb9b8f65e0d35755a8e235a2008501fdf767a582561e7ddcb27dd063e923149e2538
+    standard-log: ">=9.1.0"
+  checksum: 81bfade775afd9dc895efc839120d52a483d31d46fe9c6cdfbfdfd6424ebcc7cfe94f42ffe41142f1945a13db1a5c9d20edaf26090d4c77c8382ca446942a73f
   languageName: node
   linkType: hard
 
