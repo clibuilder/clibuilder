@@ -2954,12 +2954,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-escapes@npm:^4.2.1, ansi-escapes@npm:^4.3.1":
+"ansi-escapes@npm:^4.2.1":
   version: 4.3.1
   resolution: "ansi-escapes@npm:4.3.1"
   dependencies:
     type-fest: ^0.11.0
   checksum: c4962c1791cc4e29efb9976680bad7b23f322ca039e588406680fffc8b6bc6e223721193eb481dab076309d9a7371bbfc4e835efe5fe267e3395ffa047da239d
+  languageName: node
+  linkType: hard
+
+"ansi-escapes@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "ansi-escapes@npm:5.0.0"
+  dependencies:
+    type-fest: ^1.0.2
+  checksum: d4b5eb8207df38367945f5dd2ef41e08c28edc192dc766ef18af6b53736682f49d8bfcfa4e4d6ecbc2e2f97c258fda084fb29a9e43b69170b71090f771afccac
   languageName: node
   linkType: hard
 
@@ -3573,7 +3582,7 @@ __metadata:
     jest-validate: ^28.1.0
     jest-watch-suspend: ^1.1.2
     jest-watch-toggle-config: ^2.0.1
-    jest-watch-typeahead: ^1.1.0
+    jest-watch-typeahead: ^2.0.0
     npm-run-all: ^4.1.5
     pad-right: ^0.2.2
     rimraf: ^3.0.2
@@ -5998,11 +6007,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-watch-typeahead@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "jest-watch-typeahead@npm:1.1.0"
+"jest-watch-typeahead@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "jest-watch-typeahead@npm:2.0.0"
   dependencies:
-    ansi-escapes: ^4.3.1
+    ansi-escapes: ^5.0.0
     chalk: ^4.0.0
     jest-regex-util: ^28.0.0
     jest-watcher: ^28.0.0
@@ -6011,7 +6020,7 @@ __metadata:
     strip-ansi: ^7.0.1
   peerDependencies:
     jest: ^27.0.0 || ^28.0.0
-  checksum: 59b0a494ac01e3801c9ec586de3209153eedb024b981e25443111c5703711d23b67ebc71b072986c1758307e0bfb5bf1c92bd323f73f58602d6f4f609dce6a0c
+  checksum: c25fa793e56e0a316642a714c960b29359ddc1ce3f621ffb8a42a3ccfffb67c57223597e2fb387d5f49e2b93a22fc1f4b54e900e4fa80eca6602f70a30c22ffb
   languageName: node
   linkType: hard
 
@@ -7624,7 +7633,7 @@ __metadata:
     jest-validate: ^28.1.0
     jest-watch-suspend: ^1.1.2
     jest-watch-toggle-config: ^2.0.1
-    jest-watch-typeahead: ^1.1.0
+    jest-watch-typeahead: ^2.0.0
     pinst: ^3.0.0
     turbo: ^1.2.11
   languageName: unknown
@@ -8649,6 +8658,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: d61c4b2eba24009033ae4500d7d818a94fd6d1b481a8111612ee141400d5f1db46f199c014766b9fa9b31a6a7374d96fc748c6d688a78a3ce5a33123839becb7
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^1.0.2":
+  version: 1.4.0
+  resolution: "type-fest@npm:1.4.0"
+  checksum: b011c3388665b097ae6a109a437a04d6f61d81b7357f74cbcb02246f2f5bd72b888ae33631b99871388122ba0a87f4ff1c94078e7119ff22c70e52c0ff828201
   languageName: node
   linkType: hard
 
