@@ -78,7 +78,7 @@
     "@types/wordwrap": "github:types/wordwrap",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
-    "assertron": "^9.0.9",
+    "assertron": "^10.0.0",
     "babel-jest": "^28.1.0",
     "clibuilder-plugin-dummy": "^1.0.1",
     "depcheck": "^1.4.3",
