@@ -1,5 +1,5 @@
-import { argv } from './test-utils'
-import { parseArgv } from '.'
+import { argv } from './test-utils/index.js'
+import { parseArgv } from './index.js'
 
 test('empty', () => {
   testParse('cli', { _: [] })

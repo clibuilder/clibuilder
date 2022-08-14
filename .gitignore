@@ -53,3 +53,4 @@ build/Release
 # project folders
 .ts
 lib*
+esm

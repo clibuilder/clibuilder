@@ -1,22 +1,17 @@
 import t from 'assert'
 import a from 'assertron'
 import { some } from 'satisfier'
-import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
-import { loadPlugins } from './loadPlugins'
-import { getLogMessage } from './test-utils'
-import { createUI } from './ui'
+import { createStandardLogForTest, getLogger, logLevels } from 'standard-log'
+import { loadPlugins } from './loadPlugins.js'
+import { getLogMessage } from './test-utils/index.js'
+import { createUI } from './ui.js'
 
 async function testLoadPlugins(cwd: string, keyword: string) {
-  const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
-  config({
-    logLevel: logLevels.all,
-    reporters: [reporter],
-    mode: 'test'
-  })
-  const ui = createUI(getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' }))
+  const sl = createStandardLogForTest(logLevels.all)
+  const ui = createUI(getLogger('mock-ui', { level: logLevels.all, writeTo: sl.reporter }))
 
   const plugins = await loadPlugins({ cwd, ui }, keyword)
-  return { reporter, plugins }
+  return { reporter: sl.reporter, plugins }
 }
 
 test('empty folder will still load global plugins', async () => {

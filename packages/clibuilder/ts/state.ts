@@ -1,11 +1,11 @@
 import chalk from 'chalk'
 import { basename } from 'path'
 import { findKey, RequiredPick } from 'type-plus'
-import type { cli, DisplayLevel } from './cli'
-import { getBaseCommand } from './commands'
-import { Context } from './context'
-import { AppInfo } from './loadAppInfo'
-import type { Command } from './typesInternal'
+import type { cli, DisplayLevel } from './cli.js'
+import { getBaseCommand } from './commands.js'
+import { Context } from './context.js'
+import { AppInfo } from './loadAppInfo.js'
+import type { Command } from './typesInternal.js'
 
 export namespace state {
   export type Result<C = any> = {

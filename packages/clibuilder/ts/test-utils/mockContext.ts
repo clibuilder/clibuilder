@@ -1,9 +1,9 @@
-import { config, createMemoryLogReporter, getLogger, Logger, logLevels, MemoryLogReporter } from 'standard-log'
+import { createStandardLogForTest, Logger, logLevels, MemoryLogReporter } from 'standard-log'
 import { AnyFunction } from 'type-plus'
-import { getFixturePath } from '.'
-import { Context, context } from '../context'
-import { getAppPath } from '../getAppPath'
-import { createUI } from '../ui'
+import { Context, context } from '../context.js'
+import { getAppPath } from '../getAppPath.js'
+import { createUI } from '../ui.js'
+import { getFixturePath } from './index.js'
 
 export type MockAppContext = Context & {
   reporter: MemoryLogReporter
@@ -30,15 +30,11 @@ export function mockContext(binFixturePath: string, cwdFixturePath = process.cwd
 }
 
 export function mockUI(context: Context) {
-  const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
-  config({
-    logLevel: logLevels.all,
-    reporters: [reporter],
-    mode: 'test'
-  })
-  context.createUI = (log: Logger) => createUI(getLogger(log.id, { level: log.level, writeTo: reporter }))
+  const sl = createStandardLogForTest(logLevels.all)
+
+  context.createUI = (log: Logger) => createUI(sl.getLogger(log.id, { level: log.level, writeTo: sl.reporter }))
   // const ui = createBuilderUI(createUI(getLogger('clibuilder', { level: logLevels.all, writeTo: reporter })))
-  return { ...context, reporter }
+  return { ...context, reporter: sl.reporter }
 }
 
 function mockProcess(context: Context, cwd: string) {

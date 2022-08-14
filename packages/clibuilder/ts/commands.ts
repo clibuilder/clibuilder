@@ -1,7 +1,7 @@
 import { findByKeywords } from 'find-installed-packages'
 import { searchByKeywords } from 'search-packages'
-import { command } from './command'
-import { z } from './zod'
+import { command } from './command.js'
+import { z } from './zod.js'
 
 export function getBaseCommand(description: string) {
   return command({

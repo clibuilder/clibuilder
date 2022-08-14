@@ -1,7 +1,7 @@
 import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
-import { command, z } from '.'
-import { getLogMessage } from './test-utils'
-import { createUI } from './ui'
+import { command, z } from './index.js'
+import { getLogMessage } from './test-utils/index.js'
+import { createUI } from './ui.js'
 
 describe('showVersion', () => {
   test('undefined version shows "not versioned"', () => {

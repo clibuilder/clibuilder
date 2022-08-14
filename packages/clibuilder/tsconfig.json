@@ -1,7 +1,25 @@
 {
-  "extends": "./tsconfig.libm.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "incremental": true,
+    "inlineSourceMap": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "newLine": "LF",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "esm",
+    "removeComments": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2020"
+  },
   "include": [
-    "ts",
     "typings"
+  ],
+  "files": [
+    "ts/index.ts"
   ]
 }

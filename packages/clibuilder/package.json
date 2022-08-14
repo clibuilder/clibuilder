@@ -23,46 +23,36 @@
     "url": "https://github.com/unional"
   },
   "sideEffects": false,
-  "type": "commonjs",
-  "exports": {
-    ".": {
-      "import": "./libm/index.js",
-      "require": "./lib/index.js",
-      "types": "./lib/index.d.ts"
-    }
-  },
-  "main": "./lib/index.js",
-  "typings": "./lib/index.d.ts",
+  "type": "module",
+  "exports": "./esm/index.js",
+  "types": "./esm/index.d.ts",
   "files": [
-    "lib",
-    "libm",
-    "ts"
+    "esm",
+    "ts",
+    "!*.spec.*"
   ],
   "scripts": {
-    "build": "yarn build:libm && yarn build:lib",
-    "build:lib": "tsc -p tsconfig.lib.json",
-    "build:libm": "tsc -p tsconfig.libm.json",
+    "build": "tsc",
     "build:watch": "tsc --watch",
-    "clean": "rimraf .nyc_output .ts coverage lib libm",
+    "clean": "rimraf .nyc_output .ts coverage lib libm esm",
     "coverage": "jest --coverage --maxWorkers=60%",
     "depcheck": "depcheck",
     "lint": "eslint --ext=js,ts .",
     "nuke": "yarn clean && rimraf node_modules",
-    "test": "jest --maxWorkers=60%",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest -c jest.config.cjs --maxWorkers=60%",
     "test:watch": "jest --watch --maxWorkers=60%",
     "verify": "npm-run-all clean -p build lint coverage depcheck",
     "watch": "yarn test:watch"
   },
   "dependencies": {
-    "@types/node": "^16.0.0",
-    "chalk": "^4.1.2",
+    "@types/node": "^16.11.48",
+    "chalk": "^5.0.1",
     "find-installed-packages": "^2.1.6",
     "find-up": "^5.0.0",
-    "global-store": "1.0.0-beta.21",
     "pad-right": "^0.2.2",
     "search-packages": "^2.1.0",
-    "standard-log": "^7.1.0",
-    "standard-log-color": "^8.0.0",
+    "standard-log": "^9.1.7",
+    "standard-log-color": "^7.0.2",
     "tslib": "^2.4.0",
     "type-plus": "^4.11.1",
     "wordwrap": "^1.0.0",
@@ -81,6 +71,7 @@
     "assertron": "^10.0.0",
     "babel-jest": "^29.0.0",
     "clibuilder-plugin-dummy": "^1.0.1",
+    "cross-env": "^7.0.3",
     "depcheck": "^1.4.3",
     "eslint": "^8.22.0",
     "eslint-plugin-harmony": "^7.1.0",
@@ -93,6 +84,7 @@
     "rimraf": "^3.0.2",
     "satisfier": "^5.2.2",
     "tersify": "^3.10.2",
+    "ts-jest": "^28.0.7",
     "typescript": "^4.7.4"
   },
   "engines": {

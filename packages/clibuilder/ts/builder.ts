@@ -1,13 +1,13 @@
 import { getLogger } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
-import type { cli } from './cli'
-import { getBaseCommand, pluginsCommand } from './commands'
-import { Context } from './context'
-import { lookupCommand } from './lookupCommand'
-import { parseArgv } from './parseArgv'
-import { state } from './state'
-import { Command } from './typesInternal'
+import type { cli } from './cli.js'
+import { getBaseCommand, pluginsCommand } from './commands.js'
+import { Context } from './context.js'
+import { lookupCommand } from './lookupCommand.js'
+import { parseArgv } from './parseArgv.js'
+import { state } from './state.js'
+import { Command } from './typesInternal.js'
 
 export function builder(context: Context, options?: cli.Options): cli.Builder {
   // set `clibuilder-debug` logs manually to logLevels.all,
