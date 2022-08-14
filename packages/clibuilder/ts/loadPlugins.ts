@@ -4,6 +4,7 @@ import path from 'path'
 import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
 
+
 export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, keyword: string) {
   ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
   const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
@@ -12,7 +13,7 @@ export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI },
     return pluginNames
   })
 
-  const globalFolder = getGlobalPackageFolder(/file:\/\/(.+)\/[^/]/.exec(import.meta.url)![1])
+  const globalFolder = getGlobalPackageFolder(/file:\/\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1])
   ui.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
   const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
     if (globalPluginNames.length > 0) ui.debug('found global plugins', globalPluginNames)
