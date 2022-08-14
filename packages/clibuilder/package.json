@@ -27,15 +27,16 @@
   "exports": {
     ".": {
       "import": "./libm/index.js",
-      "require": "./lib/index.js"
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
     }
   },
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
   "files": [
     "lib",
     "libm",
-    "src"
+    "ts"
   ],
   "scripts": {
     "build": "yarn build:libm && yarn build:lib",

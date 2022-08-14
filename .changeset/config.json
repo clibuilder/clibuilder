@@ -1,7 +1,12 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@2.0.0/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@2.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
-  "commit": false,
+  "commit": [
+    "./commit.cjs",
+    {
+      "skipCI": "version"
+    }
+  ],
   "fixed": [],
   "linked": [],
   "access": "public",
