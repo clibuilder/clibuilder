@@ -6,12 +6,12 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
+    "clibuilder": "yarn workspace clibuilder",
     "coverage": "turbo run coverage",
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev --parallel",
     "postinstall": "husky install",
-    "just-func": "yarn workspace just-func",
     "lint": "turbo run lint",
     "nuke": "turbo run nuke",
     "nuke:local": "rimraf node_modules || true",

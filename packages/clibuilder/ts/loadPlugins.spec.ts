@@ -1,14 +1,14 @@
 import t from 'assert'
 import a from 'assertron'
 import { some } from 'satisfier'
-import { createStandardLogForTest, getLogger, logLevels } from 'standard-log'
+import { createStandardLogForTest, logLevels } from 'standard-log'
 import { loadPlugins } from './loadPlugins.js'
 import { getLogMessage } from './test-utils/index.js'
 import { createUI } from './ui.js'
 
 async function testLoadPlugins(cwd: string, keyword: string) {
   const sl = createStandardLogForTest(logLevels.all)
-  const ui = createUI(getLogger('mock-ui', { level: logLevels.all, writeTo: sl.reporter }))
+  const ui = createUI(sl.getLogger('mock-ui', { level: logLevels.all }))
 
   const plugins = await loadPlugins({ cwd, ui }, keyword)
   return { reporter: sl.reporter, plugins }

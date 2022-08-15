@@ -1,4 +1,4 @@
-import a from 'assertron'
+import { a } from 'assertron'
 import { getLogger } from 'standard-log'
 import { loadAppInfo } from './loadAppInfo.js'
 import { getFixturePath } from './test-utils/index.js'

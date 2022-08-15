@@ -2,7 +2,6 @@ const config = {
   preset: 'ts-jest/presets/default-esm',
   globals: {
     'ts-jest': {
-      isolatedModules: true,
       useESM: true
     }
   },
@@ -27,7 +26,7 @@ const config = {
   // },
   transformIgnorePatterns: [
     // Need to MANUALLY identify each ESM package, one by one
-    'node_modules/(?!(chalk)/)'
+    'node_modules/(?!(assertron|chalk|\#ansi-styles)/)'
   ], watchPlugins: [
     'jest-watch-suspend',
     'jest-watch-typeahead/filename',

@@ -1,4 +1,4 @@
-import { config, createMemoryLogReporter, getLogger, logLevels } from 'standard-log'
+import { createStandardLogForTest, logLevels } from 'standard-log'
 import { command, z } from './index.js'
 import { getLogMessage } from './test-utils/index.js'
 import { createUI } from './ui.js'
@@ -359,13 +359,9 @@ Config:
 })
 
 function testUI() {
-  const reporter = createMemoryLogReporter({ id: 'mock-reporter' })
-  config({
-    logLevel: logLevels.all,
-    reporters: [reporter],
-    mode: 'test'
-  })
-  const log = getLogger('mock-ui', { level: logLevels.all, writeTo: 'mock-reporter' })
-  return { ui: createUI(log), reporter }
+  const sl = createStandardLogForTest(logLevels.all)
+
+  const log = sl.getLogger('mock-ui', { level: logLevels.all })
+  return { ui: createUI(log), reporter: sl.reporter }
 }
 

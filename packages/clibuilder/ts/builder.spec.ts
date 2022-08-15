@@ -616,7 +616,7 @@ describe('loadPlugins()', () => {
     const actual = await cli.parse(argv('string-bin one echo bird'))
     expect(actual).toEqual('bird')
   })
-  test('use custom keyword to look for plugins', async () => {
+  test.only('use custom keyword to look for plugins', async () => {
     const ctx = mockContext('string-bin/bin.js', 'alt-keyword-plugin')
     const cli = builder(ctx, {
       name: 'clibuilder',

@@ -21,14 +21,14 @@ export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI },
     return globalPluginNames
   })
 
-  return Promise.all([findingLocal, findingGlobal]).then(([localPluginsNames, globalPluginNames]) => {
-    const commands = activatePlugins(cwd, ui, localPluginsNames)
-    commands.push(...activatePlugins(
-      globalFolder,
-      ui,
-      globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
-    return commands
-  })
+  const [localPluginsNames, globalPluginNames] = await Promise.all([findingLocal, findingGlobal])
+  const commands = await activatePlugins(cwd, ui, localPluginsNames)
+
+  commands.push(...await activatePlugins(
+    globalFolder,
+    ui,
+    globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
+  return commands
 }
 
 function getGlobalPackageFolder(folder: string): string {
@@ -40,35 +40,34 @@ function getGlobalPackageFolder(folder: string): string {
   return path.resolve(findUp.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
 }
 
-function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
+async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
+  const entries = await Promise.all(pluginNames.map(async name => {
+    const pluginModule = await loadModule(cwd, ui, name)
+    return { name, pluginModule }
+  }))
+
   const commands: cli.Command<any, any>[] = []
-  pluginNames
-    .map(p => ({
-      name: p,
-      pluginModule: loadModule(cwd, ui, p),
-    }))
-    .filter(({ name, pluginModule }) => {
-      if (!isValidPlugin(pluginModule)) {
-        ui.warn('not a valid plugin', name)
-        return false
-      }
-      return true
+  entries.filter(({ name, pluginModule }) => {
+    if (!isValidPlugin(pluginModule)) {
+      ui.warn('not a valid plugin', name)
+      return false
+    }
+    return true
+  }).forEach(({ name, pluginModule }) => {
+    ui.debug('activating plugin', name)
+    activatePlugin(pluginModule).forEach(cmd => {
+      ui.debug('adding command', cmd.name)
+      commands.push(cmd)
     })
-    .forEach(({ name, pluginModule }) => {
-      ui.debug('activating plugin', name)
-      activatePlugin(pluginModule).forEach(cmd => {
-        ui.debug('adding command', cmd.name)
-        commands.push(cmd)
-      })
-      ui.debug('activated plugin', name)
-    })
+    ui.debug('activated plugin', name)
+  })
   return commands
 }
 
-function loadModule(cwd: string, ui: createUI.UI, name: string) {
+async function loadModule(cwd: string, ui: createUI.UI, name: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
-    return require(pluginPath)
+    return await import(pluginPath)
   }
   catch (e: any) {
     ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)

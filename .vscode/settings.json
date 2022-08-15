@@ -36,5 +36,6 @@
     "tsbuildinfo",
     "USERPROFILE",
     "yarnpkg"
-  ]
+  ],
+  "jestrunner.jestCommand": "yarn clibuilder test"
 }
