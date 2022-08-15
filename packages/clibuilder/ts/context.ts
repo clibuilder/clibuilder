@@ -1,7 +1,7 @@
 import findUp from 'find-up'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
-import { getLogger, logLevels } from 'standard-log'
+import { createStandardLog, logLevels } from 'standard-log'
 import { getAppPath } from './getAppPath.js'
 import { loadAppInfo } from './loadAppInfo.js'
 import { loadPlugins } from './loadPlugins.js'
@@ -12,7 +12,7 @@ import { createBuilderUI, createUI } from './ui.js'
  * This
  */
 export function context() {
-  const ui = createBuilderUI(createUI(getLogger('clibuilder', { level: logLevels.all })))
+  const sl = createStandardLog({ logLevel: logLevels.all })
   return {
     getAppPath,
     loadAppInfo(appPkgPath: string) {
@@ -44,7 +44,8 @@ export function context() {
     process,
     // cliReporter,
     createUI,
-    ui
+    ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
+    sl
   }
 }
 

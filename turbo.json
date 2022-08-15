@@ -28,7 +28,7 @@
     },
     "coverage": {
       "dependsOn": [
-        "^build"
+        "build"
       ],
       "inputs": [
         "ts/*.ts",

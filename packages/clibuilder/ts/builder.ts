@@ -1,4 +1,3 @@
-import { getLogger } from 'standard-log'
 import { forEachKey } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli.js'
@@ -105,7 +104,7 @@ function createCommandInstance(ctx: Context, state: state.Result, command: cli.C
 }
 
 function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
-  const ui = ctx.createUI(getLogger(command.name || state.name))
+  const ui = ctx.createUI(ctx.sl.getLogger(command.name || state.name))
   ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {

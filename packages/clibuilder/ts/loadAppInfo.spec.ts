@@ -1,10 +1,11 @@
 import { a } from 'assertron'
-import { getLogger } from 'standard-log'
+import { createStandardLog } from 'standard-log'
 import { loadAppInfo } from './loadAppInfo.js'
 import { getFixturePath } from './test-utils/index.js'
 
 function testLoadAppInfo(fixturePath: string) {
-  const log = getLogger('test-loadAppInfo')
+  const sl = createStandardLog()
+  const log = sl.getLogger('test-loadAppInfo')
   return loadAppInfo(log, getFixturePath(fixturePath))
 }
 
