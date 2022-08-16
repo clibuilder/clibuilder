@@ -146,4 +146,9 @@ describe('loadConfig()', () => {
     const [actual] = await testLoadConfig('string-bin.json', { fixturePath: 'has-json-config' })
     expect(actual).toEqual({ a: 1 })
   })
+
+  it('load config from package.json at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-pjson-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
 })

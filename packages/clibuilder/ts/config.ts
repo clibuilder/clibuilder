@@ -2,13 +2,15 @@ import findUp from 'find-up'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { UI } from './cli'
-import { getHomePath } from './platform'
+import { findPackageJson, getHomePath, getPackageJson } from './platform'
 import importFresh from 'import-fresh'
 import yaml from 'js-yaml'
 
 export const ctx = {
   cwd: process.cwd,
-  getHomePath
+  getHomePath,
+  findPackageJson,
+  getPackageJson
 }
 
 export namespace loadConfig {
@@ -31,6 +33,11 @@ export async function loadConfig({ ui }: { ui: Pick<UI, 'info' | 'debug' | 'warn
     return cfg
   }
   else {
+    const pjsonPath = ctx.findPackageJson(cwd)
+    if (pjsonPath) {
+      const pjson = ctx.getPackageJson(pjsonPath)
+      if (pjson[configName]) return pjson[configName]
+    }
     ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
   }
 }
