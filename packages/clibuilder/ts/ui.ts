@@ -36,7 +36,6 @@ export function createBuilderUI(ui: createUI.UI) {
 }
 
 export function createUI(log: Logger) {
-  log.level = logLevels.info
   return {
     get displayLevel() {
       if (log.level! <= logLevels.none) return 'none'
