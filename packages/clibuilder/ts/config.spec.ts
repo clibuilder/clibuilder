@@ -32,6 +32,16 @@ describe('loadConfig()', () => {
     expect(actual).toEqual({ a: 1 })
   })
 
+  it('loads config from `{configName}.js` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-js-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `.{configName}.js` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-dot-js-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
   it('loads config from `{configName}.json` at cwd', async () => {
     const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-json-config' })
     expect(actual).toEqual({ a: 1 })
@@ -59,6 +69,36 @@ describe('loadConfig()', () => {
 
   it('loads config from `.{configName}.yaml` at cwd', async () => {
     const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-dot-yaml-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `{configName}rc.mjs` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-rc-mjs-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `.{configName}rc.mjs` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-dot-rc-mjs-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `{configName}rc.cjs` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-rc-cjs-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `.{configName}rc.cjs` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-dot-rc-cjs-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `{configName}rc.js` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-rc-js-config' })
+    expect(actual).toEqual({ a: 1 })
+  })
+
+  it('loads config from `.{configName}rc.js` at cwd', async () => {
+    const [actual] = await testLoadConfig('string-bin', { fixturePath: 'has-dot-rc-js-config' })
     expect(actual).toEqual({ a: 1 })
   })
 

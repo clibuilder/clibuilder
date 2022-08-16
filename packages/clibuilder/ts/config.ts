@@ -61,6 +61,10 @@ function getConfigFilenames(configFileName: string) {
     `.${configFileName}.yml`,
     `${configFileName}.yaml`,
     `.${configFileName}.yaml`,
+    `${configFileName}rc.cjs`,
+    `.${configFileName}rc.cjs`,
+    `${configFileName}rc.mjs`,
+    `.${configFileName}rc.mjs`,
     `${configFileName}rc.js`,
     `.${configFileName}rc.js`,
     `${configFileName}rc.json`,
@@ -76,17 +80,18 @@ function getConfigFilenames(configFileName: string) {
 
 function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
   for (const filename of filenames) {
-    let filePath = findUp.sync(filename, { cwd })
+    const filePath = findUp.sync(filename, { cwd })
     if (filePath) return filePath
-
-    filePath = path.join(home, filename)
+  }
+  for (const filename of filenames) {
+    const filePath = path.join(home, filename)
     // istanbul ignore next
     if (existsSync(filePath)) return filePath
   }
 }
 
 async function readConfig(configFilePath: string) {
-  const content = readFileSync(configFilePath, 'utf8')
+  const content = readFileSync(configFilePath, 'utf-8')
   try {
     return JSON.parse(content)
   } catch {
