@@ -2,7 +2,7 @@ import { a } from 'assertron'
 import { loadAppInfo } from './loadAppInfo.js'
 import { ctx as platform } from './platform.js'
 import { getFixturePath } from './test-utils/index.js'
-import { mockUI } from './ui_mock.js'
+import { mockUI } from './ui.mock.js'
 
 function testLoadAppInfo(fixturePath: string) {
   const [ui, reporter] = mockUI()

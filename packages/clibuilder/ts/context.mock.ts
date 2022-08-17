@@ -22,7 +22,6 @@ export function mockContext(binFixturePath: string = process.cwd(), cwdFixturePa
     async loadPlugins(pluginNames: string[]) {
       return loadPlugins({ cwd, ui: this.ui }, pluginNames)
     },
-    // log,
     cwd,
     exit: (function (this: any, code?: number) {
       this.ui.error(code === undefined
@@ -30,7 +29,6 @@ export function mockContext(binFixturePath: string = process.cwd(), cwdFixturePa
         ? `exit`
         : `exit with ${code}`)
     }) as any,
-    // cliReporter,
     createUI(id: string) { return createUI(sl.getLogger(id)) },
     ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
     sl

@@ -37,35 +37,23 @@ export async function loadConfig({ cwd, ui }: {
 }
 
 function getConfigFilenames(configFileName: string) {
-  return [
+  const names = [
     configFileName,
     `${configFileName}.cjs`,
-    `.${configFileName}.cjs`,
     `${configFileName}.mjs`,
-    `.${configFileName}.mjs`,
     `${configFileName}.js`,
-    `.${configFileName}.js`,
     `${configFileName}.json`,
-    `.${configFileName}.json`,
     `${configFileName}.yml`,
-    `.${configFileName}.yml`,
     `${configFileName}.yaml`,
-    `.${configFileName}.yaml`,
     `${configFileName}rc.cjs`,
-    `.${configFileName}rc.cjs`,
     `${configFileName}rc.mjs`,
-    `.${configFileName}rc.mjs`,
     `${configFileName}rc.js`,
-    `.${configFileName}rc.js`,
     `${configFileName}rc.json`,
-    `.${configFileName}rc.json`,
     `${configFileName}rc.yml`,
-    `.${configFileName}rc.yml`,
     `${configFileName}rc.yaml`,
-    `.${configFileName}rc.yaml`,
     `${configFileName}rc`,
-    `.${configFileName}rc`,
   ]
+  return configFileName.startsWith('.') ? names : names.flatMap(n => [n, `.${n}`])
 }
 
 function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {

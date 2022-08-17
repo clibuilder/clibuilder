@@ -3,7 +3,7 @@ import a from 'assertron'
 import { some } from 'satisfier'
 import { loadPlugins } from './loadPlugins.js'
 import { getLogMessage } from './test-utils/index.js'
-import { mockUI } from './ui_mock'
+import { mockUI } from './ui.mock.js'
 
 async function testLoadPlugins(cwd: string, pluginNames: string[]) {
   const [ui, reporter] = mockUI()

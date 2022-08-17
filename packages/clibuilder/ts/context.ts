@@ -1,4 +1,4 @@
-import { createStandardLog, logLevels } from 'standard-log'
+import { createStandardLog } from 'standard-log'
 import { loadConfig } from './config.js'
 import { getAppPath } from './getAppPath.js'
 import { loadAppInfo } from './loadAppInfo.js'
@@ -12,7 +12,7 @@ import { createBuilderUI, createUI } from './ui.js'
  */
 export function context() {
   const cwd = process.cwd()
-  const sl = createStandardLog({ logLevel: logLevels.all })
+  const sl = createStandardLog()
   let config: any
   let loadingCommands: Promise<Command[]>
   return {
