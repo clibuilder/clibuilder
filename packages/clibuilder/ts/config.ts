@@ -27,7 +27,7 @@ export async function loadConfig({ cwd, ui }: {
   }
   else {
     const pjsonPath = ctx.findPackageJson(cwd)
-    ui.debug(`load config from: ${pjsonPath}`)
+    ui.debug(`load config from package.json: ${pjsonPath}`)
     if (pjsonPath) {
       const pjson = ctx.getPackageJson(pjsonPath)
       if (pjson[configName]) return pjson[configName]
