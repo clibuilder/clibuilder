@@ -23,8 +23,7 @@
     "size": "turbo run size",
     "test": "turbo run test",
     "verify": "turbo run lint build coverage depcheck size",
-    "version": "yarn cs version",
-    "watch": "jest --watch"
+    "version": "yarn cs version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.24.3",

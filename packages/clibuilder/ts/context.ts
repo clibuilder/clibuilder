@@ -1,10 +1,9 @@
-import findUp from 'find-up'
-import { existsSync, readFileSync } from 'fs'
-import path from 'path'
 import { createStandardLog, logLevels } from 'standard-log'
+import { loadConfig } from './config.js'
 import { getAppPath } from './getAppPath.js'
 import { loadAppInfo } from './loadAppInfo.js'
 import { loadPlugins } from './loadPlugins.js'
+import type { Command } from './typesInternal.js'
 import { createBuilderUI, createUI } from './ui.js'
 
 /**
@@ -12,72 +11,28 @@ import { createBuilderUI, createUI } from './ui.js'
  * This
  */
 export function context() {
+  const cwd = process.cwd()
   const sl = createStandardLog({ logLevel: logLevels.all })
+  let config: any
+  let loadingCommands: Promise<Command[]>
   return {
     getAppPath,
     loadAppInfo(appPkgPath: string) {
-      return loadAppInfo(this.ui, appPkgPath)
+      return loadAppInfo(this, appPkgPath)
     },
-    loadConfig(configFileName: string) {
-      const cwd = this.process.cwd()
-      // istanbul ignore next
-      const win = this.process.platform === 'win32'
-      // istanbul ignore next
-      const home = (win ? this.process.env.USERPROFILE : this.process.env.HOME) as string
-      const configFileNames = getConfigFilenames(configFileName)
-      const configFilePath = resolveConfigFilenames(cwd, home, configFileNames)
-      if (configFilePath) {
-        const cfg = readFileSync(configFilePath, 'utf8')
-        this.ui.debug(`load config from: ${configFilePath}`)
-        this.ui.debug(`config: ${cfg}`)
-        return JSON.parse(cfg)
-      }
-      else {
-        this.ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
-      }
+    async loadConfig(configName: string) {
+      if (config) return config
+      return config = await loadConfig({ cwd, ui: this.ui }, configName)
     },
-    async loadPlugins(keyword: string) {
-      const cwd = this.process.cwd()
-      return loadPlugins({ cwd, ui: this.ui }, keyword)
+    async loadPlugins(pluginNames: string[]) {
+      if (loadingCommands) return loadingCommands
+      return loadingCommands = loadPlugins({ cwd, ui: this.ui }, pluginNames)
     },
-    // log,
-    process,
-    // cliReporter,
-    createUI,
+    cwd,
+    exit: process.exit,
+    createUI(id: string) { return createUI(sl.getLogger(id)) },
     ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
-    sl
   }
 }
 
 export type Context = ReturnType<typeof context>
-
-function getConfigFilenames(configFileName: string) {
-  if (configFileName.startsWith('.')) {
-    return [
-      configFileName,
-      `${configFileName}.json`,
-      `${configFileName}rc.json`,
-      `${configFileName}rc`
-    ]
-  }
-  if (configFileName.indexOf('.') >= 0) {
-    return [configFileName]
-  }
-
-  return [
-    `${configFileName}.json`,
-    `.${configFileName}rc.json`,
-    `.${configFileName}rc`
-  ]
-}
-
-function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
-  for (const filename of filenames) {
-    let filePath = findUp.sync(filename, { cwd })
-    if (filePath) return filePath
-
-    filePath = path.join(home, filename)
-    // istanbul ignore next
-    if (existsSync(filePath)) return filePath
-  }
-}

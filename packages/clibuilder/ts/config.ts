@@ -1,61 +1,44 @@
 import findUp from 'find-up'
-import { existsSync, readFileSync } from 'fs'
-import path from 'path'
-import { UI } from './cli'
-import { findPackageJson, getHomePath, getPackageJson } from './platform'
+import { existsSync, readFileSync, statSync } from 'fs'
 import importFresh from 'import-fresh'
 import yaml from 'js-yaml'
+import path from 'path'
+import { UI } from './cli.js'
+import { findPackageJson, getHomePath, getPackageJson } from './platform.js'
 
 export const ctx = {
-  cwd: process.cwd,
   getHomePath,
   findPackageJson,
   getPackageJson
 }
 
-export namespace loadConfig {
-  export type Params = {
-    name: string,
-    configName?: string | boolean
-  }
-}
-
-export async function loadConfig({ ui }: { ui: Pick<UI, 'info' | 'debug' | 'warn'> }, configName: string) {
-  const cwd = ctx.cwd()
+export async function loadConfig({ cwd, ui }: {
+  cwd: string,
+  ui: Pick<UI, 'info' | 'debug' | 'warn'>
+}, configName: string) {
   const home = ctx.getHomePath()
-
   const configFileNames = getConfigFilenames(configName)
   const configFilePath = resolveConfigFilenames(cwd, home, configFileNames)
   if (configFilePath) {
     ui.debug(`load config from: ${configFilePath}`)
-    const cfg = readConfig(configFilePath)
-    ui.debug(`config: ${cfg}`)
+    const cfg = await readConfig(configFilePath)
+    ui.debug(`config: ${JSON.stringify(cfg, undefined, 2)}`)
     return cfg
   }
   else {
     const pjsonPath = ctx.findPackageJson(cwd)
+    ui.debug(`load config from: ${pjsonPath}`)
     if (pjsonPath) {
       const pjson = ctx.getPackageJson(pjsonPath)
       if (pjson[configName]) return pjson[configName]
     }
-    ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
   }
+  ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
 }
 
 function getConfigFilenames(configFileName: string) {
-  if (configFileName.startsWith('.')) {
-    return [
-      configFileName,
-      `${configFileName}.json`,
-      `${configFileName}rc.json`,
-      `${configFileName}rc`
-    ]
-  }
-  if (configFileName.indexOf('.') >= 0) {
-    return [configFileName]
-  }
-
   return [
+    configFileName,
     `${configFileName}.cjs`,
     `.${configFileName}.cjs`,
     `${configFileName}.mjs`,
@@ -93,7 +76,7 @@ function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) 
   for (const filename of filenames) {
     const filePath = path.join(home, filename)
     // istanbul ignore next
-    if (existsSync(filePath)) return filePath
+    if (existsSync(filePath) && statSync(filePath).isFile()) return filePath
   }
 }
 

@@ -1,5 +1,5 @@
 import { logLevels } from 'standard-log'
-import { ctx, loadConfig } from './config'
+import { loadConfig } from './config'
 import { getFixturePath } from './test-utils'
 import { mockUI } from './ui_mock'
 
@@ -7,9 +7,9 @@ describe('loadConfig()', () => {
   async function testLoadConfig(configName: string, { fixturePath }: {
     fixturePath: string,
   }) {
-    ctx.cwd = () => getFixturePath(fixturePath)
+    const cwd = getFixturePath(fixturePath)
     const [ui, reporter] = mockUI('loadConfig', logLevels.all)
-    return [await loadConfig({ ui }, configName), reporter] as const
+    return [await loadConfig({ cwd, ui }, configName), reporter] as const
   }
 
   it('loads config from `{configName}.mjs` at cwd', async () => {

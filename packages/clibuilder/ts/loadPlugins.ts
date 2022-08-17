@@ -1,44 +1,43 @@
-import { findByKeywords } from 'find-installed-packages'
-import findUp from 'find-up'
 import path from 'path'
 import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
 
 
-export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, keyword: string) {
-  ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
-  const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
-    if (pluginNames.length > 0) ui.debug('found local plugins', pluginNames)
-    else ui.debug(`no local plugin with keyword: ${keyword}`)
-    return pluginNames
-  })
+export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, pluginNames: string[]) {
+  return await activatePlugins(cwd, ui, pluginNames)
+  // ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
+  // const findingLocal = findByKeywords([keyword], { cwd }).then(pluginNames => {
+  //   if (pluginNames.length > 0) ui.debug('found local plugins', pluginNames)
+  //   else ui.debug(`no local plugin with keyword: ${keyword}`)
+  //   return pluginNames
+  // })
 
-  const globalFolder = getGlobalPackageFolder(/file:\/\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1])
-  ui.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
-  const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
-    if (globalPluginNames.length > 0) ui.debug('found global plugins', globalPluginNames)
-    else ui.debug(`no global plugin with keyword: ${keyword}`)
-    return globalPluginNames
-  })
+  // const globalFolder = getGlobalPackageFolder(/file:\/\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1])
+  // ui.debug(`lookup global plugins with keyword '${keyword}' at ${globalFolder}`)
+  // const findingGlobal = findByKeywords([keyword], { cwd: globalFolder }).then(globalPluginNames => {
+  //   if (globalPluginNames.length > 0) ui.debug('found global plugins', globalPluginNames)
+  //   else ui.debug(`no global plugin with keyword: ${keyword}`)
+  //   return globalPluginNames
+  // })
 
-  const [localPluginsNames, globalPluginNames] = await Promise.all([findingLocal, findingGlobal])
-  const commands = await activatePlugins(cwd, ui, localPluginsNames)
+  // const [localPluginsNames, globalPluginNames] = await Promise.all([findingLocal, findingGlobal])
+  // const commands = await activatePlugins(cwd, ui, localPluginsNames)
 
-  commands.push(...await activatePlugins(
-    globalFolder,
-    ui,
-    globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
-  return commands
+  // commands.push(...await activatePlugins(
+  //   globalFolder,
+  //   ui,
+  //   globalPluginNames.filter(p => localPluginsNames.indexOf(p) === -1)))
+  // return commands
 }
 
-function getGlobalPackageFolder(folder: string): string {
-  const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
-  // istanbul ignore next
-  const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
-  // in NodeJS@6 the following fails tsc due to null is not assignable to string.
-  // in this context the `findUp()` call should not fail and will not return null.
-  return path.resolve(findUp.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
-}
+// function getGlobalPackageFolder(folder: string): string {
+//   const indexToFirstNodeModulesFolder = folder.indexOf('node_modules')
+//   // istanbul ignore next
+//   const basePath = indexToFirstNodeModulesFolder === -1 ? folder : folder.slice(0, indexToFirstNodeModulesFolder)
+//   // in NodeJS@6 the following fails tsc due to null is not assignable to string.
+//   // in this context the `findUp()` call should not fail and will not return null.
+//   return path.resolve(findUp.sync('node_modules', { cwd: basePath, type: 'directory' })!, '..')
+// }
 
 async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
   const entries = await Promise.all(pluginNames.map(async name => {

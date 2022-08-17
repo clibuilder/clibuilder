@@ -16,23 +16,18 @@ export namespace cli {
     version?: string,
     description?: string,
     /**
-     * Specify the config name if differs from the cli name.
-     * e.g. name = `cli`,
-     * configName = `my-cli`,
-     * will load the first config named as:
-     * - `my-cli.json`
-     * - `.my-clirc.json`
-     * - `.my-clirc`
-     * in that order
+     * Indicate the cli accepts configuration.
+     * Set it to true to read config based on the cli name,
+     * or specify a different config name.
      */
-    configName?: string
+    config?: string | boolean,
+    keywords?: string[]
   }
 
   export type Builder = {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadPlugins<T>(this: T, keyword?: string): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
       ConfigType extends z.ZodTypeAny,
@@ -75,7 +70,7 @@ export namespace cli {
       run(this: {
         ui: UI,
         config: z.infer<ConfigType>,
-        keyword: string,
+        keywords: string[],
         cwd: string,
         context: Context
       }, args: Command.RunArgs<A, O>): Promise<any> | any
@@ -99,7 +94,7 @@ export namespace cli {
         run(this: {
           ui: UI,
           config: z.infer<ConfigType>,
-          keyword: string,
+          keywords: string[],
           cwd: string,
         }, args: RunArgs<A, O>): Promise<any> | any
       } | {

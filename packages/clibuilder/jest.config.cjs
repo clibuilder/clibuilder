@@ -2,9 +2,11 @@ const config = {
   preset: 'ts-jest/presets/default-esm',
   globals: {
     'ts-jest': {
+      // isolatedModules: true,
       useESM: true
     }
   },
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '#(.*)': '$1'
@@ -21,9 +23,9 @@ const config = {
   testMatch: [
     '**/ts/?(*.)+(spec|test|integrate|accept|system|unit).[jt]s?(x)'
   ],
-  // transform: {
-  //   '^.+\\.(js|jsx|mjs)$': 'babel-jest'
-  // },
+  transform: {
+    // 'node_modules/.+\\.(js|jsx|mjs)$': 'babel-jest'
+  },
   transformIgnorePatterns: [
     // Need to MANUALLY identify each ESM package, one by one
     'node_modules/(?!(assertron|chalk|\#ansi-styles)/)'
