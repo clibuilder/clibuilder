@@ -3,7 +3,7 @@ import * as z from 'zod'
 import { builder } from './builder.js'
 import { context } from './context.js'
 
-export function cli(options?: cli.Options): cli.Builder {
+export function cli(options: cli.Options): cli.Builder {
   return builder(context(), options)
 }
 
@@ -12,8 +12,15 @@ export namespace cli {
     /**
      * Name of the cli
     */
-    name?: string,
-    version?: string,
+    name: string,
+    /**
+     * Version of the cli.
+     * This is typically the same as your package version.
+     */
+    version: string,
+    /**
+     * A short description of the cli.
+     */
     description?: string,
     /**
      * Indicate the cli accepts configuration.
@@ -21,6 +28,10 @@ export namespace cli {
      * or specify a different config name.
      */
     config?: string | boolean,
+    /**
+     * Keywords associated with this cli.
+     * When specified, plugin commands will be available to search for available plugins.
+     */
     keywords?: string[]
   }
 

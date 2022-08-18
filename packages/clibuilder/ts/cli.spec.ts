@@ -1,20 +1,43 @@
 import a from 'assertron'
-import { assertType } from 'type-plus'
+import { assertType, isType } from 'type-plus'
 import { cli, z } from './index.js'
 
-describe('create', () => {
-  test('with options', () => {
-    const app = cli({ name: 'app', version: '1.0.0', description: 'my app' })
-    a.satisfies(app, { name: 'app', version: '1.0.0', description: 'my app' })
-  })
+it('needs name and version', () => {
+  const app = cli({ name: 'app', version: '1.0.0' })
+  a.satisfies(app, { name: 'app', version: '1.0.0' })
 })
 
-test('args is typed based on arguments and options, with default options', () => {
-  cli().default({
+it('can have a short description', () => {
+  const app = cli({ name: 'app', version: '1.0.0', description: 'some short description' })
+  a.satisfies(app, { name: 'app', version: '1.0.0', description: 'some short description' })
+})
+
+it('can set config to true which will try to read config', () => {
+  const app = cli({ name: 'app', version: '1.0.0', config: true })
+  a.satisfies(app, { name: 'app', version: '1.0.0' })
+})
+
+it('can specify a different name for config', () => {
+  const app = cli({ name: 'app', version: '1.0.0', config: 'another-name' })
+  a.satisfies(app, { name: 'app', version: '1.0.0' })
+})
+
+it('can specify a specific config file', () => {
+  const app = cli({ name: 'app', version: '1.0.0', config: 'my-app.json' })
+  a.satisfies(app, { name: 'app', version: '1.0.0' })
+})
+
+it('can specify keywords for plugin discovery', () => {
+  const app = cli({ name: 'app', version: '1.0.0', keywords: ['my-app', 'linting'] })
+  a.satisfies(app, { name: 'app', version: '1.0.0' })
+})
+
+it('can specify type of the arguments and options. The command will receive the typed `args`', () => {
+  cli({ name: 'app', version: '1.0.0' }).default({
     arguments: [
-      { name: 'a', description: 'asd', type: z.string() },
-      { name: 'b', description: 'asd', type: z.boolean() },
-      { name: 'c', description: 'asd', type: z.array(z.number()) }
+      { name: 'a', description: 'what does it do?', type: z.string() },
+      { name: 'b', description: 'what does it do?', type: z.boolean() },
+      { name: 'c', description: 'what does it do?', type: z.array(z.number()) }
     ],
     options: {
       ob: { type: z.boolean(), description: 'a' },
@@ -49,6 +72,29 @@ test('args is typed based on arguments and options, with default options', () =>
         oosm: string[] | undefined,
         help: boolean | undefined
       }>(args)
+    }
+  })
+})
+
+it(`can also leave arguments and options not typed,
+which will default to string and boolean respectively`, () => {
+  cli({ name: 'app', version: '1.0.0' }).default({
+    arguments: [{ name: 'a', description: 'some a' }],
+    options: { b: { description: 'some b' } },
+    run(args) {
+      isType.equal<true, string, typeof args.a>()
+      isType.equal<true, boolean | undefined, typeof args.b>()
+    }
+  })
+})
+
+it('can specify the config used by the command', () => {
+  cli({ name: 'app', version: '1.0.0' }).default({
+    config: z.object({
+      c: z.boolean()
+    }),
+    run() {
+      isType.equal<true, boolean, typeof this.config.c>()
     }
   })
 })

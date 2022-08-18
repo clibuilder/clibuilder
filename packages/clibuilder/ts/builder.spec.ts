@@ -5,6 +5,13 @@ import { mockContext } from './context.mock.js'
 import { cli, command, z } from './index.js'
 import { argv, getFixturePath, getLogMessage } from './test-utils/index.js'
 
+// function setupBuilderTest(options: cli.Options, fixtureDir: string) {
+//   const cwd = getFixturePath(fixtureDir)
+
+//   const context = mockContext(options.name)
+//   builder(context, options)
+// }
+
 describe('with options', () => {
   test('specify name, version, and description will skip loading package.json', () => {
     const ctx = mockContext('no-pjson/bin.js')
@@ -23,7 +30,7 @@ describe('with options', () => {
 
   test('get info from package.json', () => {
     const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx, {})
+    const cli = builder(ctx, { name: 'string-bin', version: '1.0.0' })
     a.satisfies(cli, {
       name: 'string-bin',
       version: '1.0.0',
@@ -382,7 +389,7 @@ describe('fluent syntax', () => {
 describe('loadConfig()', () => {
   test('load config with specified name with file extension', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { config: 'string-bin.json' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: 'string-bin.json' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -391,7 +398,7 @@ describe('loadConfig()', () => {
   })
   test('load config with specified `{name}.json`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { config: 'string-bin' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: 'string-bin' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -400,7 +407,7 @@ describe('loadConfig()', () => {
   })
   test('load config with specified `.{name}rc`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const a = await builder(ctx, { config: 'string-bin' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: 'string-bin' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -409,7 +416,7 @@ describe('loadConfig()', () => {
   })
   test('load config with specified `.${name}rc.json`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { config: 'string-bin' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: 'string-bin' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -418,7 +425,7 @@ describe('loadConfig()', () => {
   })
   test('config name with . will search for `${name}`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const a = await builder(ctx, { config: '.string-binrc' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: '.string-binrc' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -427,7 +434,7 @@ describe('loadConfig()', () => {
   })
   test('config name with . will search for `${name}.json`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
-    const a = await builder(ctx, { config: '.string-binrc' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: '.string-binrc' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -436,7 +443,7 @@ describe('loadConfig()', () => {
   })
   test('config name with . will search for `${name}rc.json`', async () => {
     const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
-    const a = await builder(ctx, { name: 'single-bin' })
+    const a = await builder(ctx, { name: 'single-bin', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
@@ -459,7 +466,7 @@ describe('loadConfig()', () => {
   })
   test('fail validation will emit warning and exit', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-json-config')
-    await builder(ctx, { name: 'string-bin' })
+    await builder(ctx, { name: 'string-bin', version: '1.0.0' })
       .default({
         config: z.object({
           a: z.object({ c: z.number() }),
@@ -478,7 +485,8 @@ describe('loadConfig()', () => {
     expect(msg).toContain(`Usage: string-bin`)
   })
   test('default() receives config type', async () => {
-    const cli = builder(mockContext('has-config/bin.js', 'has-config'), { name: 'has-config' })
+    const cli = builder(mockContext('has-config/bin.js', 'has-config'),
+      { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() {
@@ -491,7 +499,7 @@ describe('loadConfig()', () => {
   })
   test(`read config file in parent directory`, async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
-    const cli = builder(ctx, { name: 'has-config' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() {
@@ -516,7 +524,7 @@ describe('loadConfig()', () => {
   })
   test('load config if default command has config', async () => {
     const ctx = mockContext('has-config/bin.js', 'has-config')
-    const cli = builder(ctx, { name: 'has-config' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() {
@@ -532,7 +540,7 @@ describe('loadConfig()', () => {
   })
   test('load config if any command has config', async () => {
     const ctx = mockContext('string-bin/bin.js', 'has-config')
-    const cli = builder(ctx, { name: 'has-config' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .command({
         name: 'group',
         commands: [{
@@ -590,7 +598,7 @@ describe('loadPlugins()', () => {
 
 function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
   return `
-Usage: ${app.name} [options]
+Usage: ${app.name} <command> [options]
 ${app.description ? `
   ${app.description}
 `: ''}
