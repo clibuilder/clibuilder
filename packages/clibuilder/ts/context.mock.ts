@@ -1,13 +1,18 @@
-import { createStandardLogForTest, LogLevel, StandardLogForTest } from 'standard-log'
+import { createStandardLogForTest, LogLevel, logLevels, StandardLogForTest } from 'standard-log'
 import { loadConfig } from './config.js'
 import { Context } from './context.js'
 import { loadPlugins } from './loadPlugins.js'
 import { getFixturePath } from './test-utils/index.js'
 import { createBuilderUI, createUI } from './ui.js'
 import tmp from 'tmp'
+import { required } from 'type-plus'
 
-export function mockContext(params?: { fixtureDir?: string, logLevel?: LogLevel }): Context & { sl: StandardLogForTest } {
-  const { fixtureDir, logLevel } = params ?? {}
+export namespace mockContext {
+  export type Params = { fixtureDir?: string, logLevel?: LogLevel }
+}
+
+export function mockContext(params?: mockContext.Params): Context & { sl: StandardLogForTest } {
+  const { fixtureDir, logLevel } = required({ logLevel: logLevels.info }, params)
   const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
   const sl = createStandardLogForTest(logLevel)
   return {

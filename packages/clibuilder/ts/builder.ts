@@ -19,8 +19,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
   const pending: Promise<any>[] = []
   const configName = s.configName ? (typeof s.configName === 'string' ? s.configName : s.name) : undefined
   const loadingConfig = configName ? context.loadConfig(configName) : undefined
-
-  if (s.keywords)
+  const mayAcceptPlugins = s.configName || s.keywords.length > 0
+  if (mayAcceptPlugins)
     s.command.commands.push(adjustCommand(s.command, pluginsCommand))
 
   if (loadingConfig) {
@@ -38,7 +38,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
     name: s.name,
     version: s.version,
     description: s.description,
-    parse: ((s.configName || s.keywords.length > 0) ? parse : undefined) as any,
+    parse: (mayAcceptPlugins ? parse : undefined) as any,
     default(command) {
       s.command = adjustCommand(s.command, { ...s.command, ...command })
       return { ...this, parse }

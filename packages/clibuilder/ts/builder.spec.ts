@@ -1,12 +1,13 @@
-import { isType, required } from 'type-plus'
+import { a } from 'assertron'
+import { IsExtend, isType, required } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
-import { cli, z } from './index.js'
+import { cli, command, z } from './index.js'
 import { argv } from './test-utils/index.js'
 
-function setupBuilderTest(fixtureDir?: string, options?: Partial<cli.Options>) {
+function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
   const opt = required({ name: 'app', version: '1.0.0' }, options)
-  const context = mockContext({ fixtureDir })
+  const context = mockContext(contextParams)
   return [builder(context, opt), context] as const
 }
 
@@ -32,184 +33,199 @@ describe('default()', () => {
     }).parse(argv('app abc def'))
     expect(a).toEqual(['abc', 'def'])
   })
+
+  it('uses the app name in the ui', async () => {
+    const [builder, ctx] = setupBuilderTest(undefined, { name: 'some-cli' })
+    const cli = builder.default({ run() { this.ui.info('hello') } })
+    await cli.parse(argv('single-bin'))
+    a.satisfies(ctx.sl.reporter.logs[0], { id: 'some-cli' })
+  })
 })
 
-// describe('default()', () => {
-//   test('ui uses cli name', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { this.ui.info('hello') } })
-//     await cli.parse(argv('single-bin'))
-//     a.satisfies(ctx.sl.reporter.logs[0], { id: 'single-cli' })
-//   })
-// })
+describe('version', () => {
+  it('accepts -v to show version', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app -v'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+  })
+  it('accepts --version to show version', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app --version'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+  })
+})
 
-// describe('version', () => {
-//   test('-v shows version', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin -v'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual('1.0.0')
-//   })
-//   test('--version shows version', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin --version'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual('1.0.0')
-//   })
-// })
+describe('help', () => {
+  it('accepts -h to show help', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+  })
+  it('accepts --help to show help', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app --help'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+  })
+  it('shows help with description', async () => {
+    const [builder, ctx] = setupBuilderTest(undefined, { description: 'some description' })
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessageWithDescription(cli))
+  })
+  it('shows help if no command matches', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('app not-exist'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+  })
+  it('shows help if missing argument', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      arguments: [{ name: 'abc', description: 'arg abc' }],
+      run() { }
+    })
+    await cli.parse(argv('app'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: app <arguments> [options]
 
-// describe('help', () => {
-//   test('-h shows help', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin -h'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('--help shows version', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('string-bin --help'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('help with cli.description', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('single-bin -h'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('show help if no command matches', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run() { } })
-//     await cli.parse(argv('single-bin not-exist'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(getHelpMessage(cli))
-//   })
-//   test('show help if missing argument', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({
-//       arguments: [{ name: 'abc', description: 'arg abc' }],
-//       run() { }
-//     })
-//     await cli.parse(argv('single-bin'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(`
-// Usage: single-cli <arguments> [options]
+Arguments:
+  <abc>                  arg abc
 
-//   a single bin app
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`)
+  })
+  it('shows help for command', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'cmd',
+      arguments: [{ name: 'abc', description: 'arg abc' }],
+      run() { }
+    })
+    await cli.parse(argv('app cmd -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: app cmd <arguments>
 
-// Arguments:
-//   <abc>                  arg abc
+Arguments:
+  <abc>                  arg abc
+`)
+  })
+  it('shows base help with sub command', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'cmd',
+      arguments: [{ name: 'abc', description: 'arg abc' }],
+      run() { }
+    })
+    await cli.parse(argv('app'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: app <command> [options]
 
-// Options:
-//   [-h|--help]            Print help message
-//   [-v|--version]         Print the CLI version
-//   [-V|--verbose]         Turn on verbose logging
-//   [--silent]             Turn off logging
-//   [--debug-cli]          Display clibuilder debug messages
-// `)
-//   })
-//   test('with command chain', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).command({
-//       name: 'sub',
-//       commands: [command({
-//         name: 'sub2',
-//         run() { }
-//       })]
-//     })
-//     await cli.parse(argv('string-bin sub sub2 -h'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(`
-// Usage: string-bin sub sub2
-// `)
-//   })
-//   test('with sub-commands', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const cli = builder(ctx).command({
-//       name: 'sub',
-//       run() { }
-//     })
-//     await cli.parse(argv('string-bin'))
-//     expect(getLogMessage(ctx.sl.reporter)).toEqual(`
-// Usage: string-bin <command> [options]
+Commands:
+  cmd
 
-// Commands:
-//   sub
+  <command> -h           Get help for <command>
 
-//   <command> -h           Get help for <command>
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`)
+  })
+  it('shows help for command chain', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'sub',
+      commands: [command({
+        name: 'sub2',
+        run() { }
+      })]
+    })
+    await cli.parse(argv('app sub sub2 -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: app sub sub2
+`)
+  })
+})
 
-// Options:
-//   [-h|--help]            Print help message
-//   [-v|--version]         Print the CLI version
-//   [-V|--verbose]         Turn on verbose logging
-//   [--silent]             Turn off logging
-//   [--debug-cli]          Display clibuilder debug messages
-// `)
-//   })
-// })
+describe('--silent', () => {
+  it('disables UI', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      run() {
+        this.ui.info('should not print')
+        this.ui.warn('should not print')
+        this.ui.error('should not print')
+      }
+    })
+    await cli.parse(argv('app --silent'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('')
+  })
 
-// describe('--silent', () => {
-//   test(' disables ui', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({
-//       run() {
-//         this.ui.info('should not print')
-//         this.ui.warn('should not print')
-//         this.ui.error('should not print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin --silent'))
-//     expect(getLogMessage(ctx.sl.reporter)).not.toContain('show not print')
-//   })
+  it('will not be passed down to command args', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
+      run(args) {
+        isType.f<IsExtend<typeof args, { silent: any }>>()
+        return args
+      }
+    })
+    const args = await cli.parse(argv('app --silent'))
+    expect(args.silent).toBeUndefined()
 
-//   test('command will not get the option', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run(args) { return args } })
-//     const args = await cli.parse(argv('single-bin --silent'))
-//     expect(args.silent).toBeUndefined()
-//   })
-// })
+  })
+})
 
-// describe('--verbose', () => {
-//   test('--verbose enables debug messages', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({
-//       run() {
-//         this.ui.debug('should print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin --verbose'))
-//     expect(getLogMessage(ctx.sl.reporter)).toContain('should print')
-//   })
-//   test('-V enables debug messages', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({
-//       run() {
-//         this.ui.debug('should print')
-//       }
-//     })
-//     await cli.parse(argv('single-bin -V'))
-//     expect(getLogMessage(ctx.sl.reporter)).toContain('should print')
-//   })
-//   test('command.run() will not get args.silent or verbose', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     builder(ctx).default({
-//       run(args) {
-//         isType.f<IsExtend<typeof args, { silent: any }>>()
-//         isType.f<IsExtend<typeof args, { verbose: any }>>()
-//       }
-//     })
-//   })
-//   test('command will not get the option "verbose"', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run(args) { return args } })
-//     const args = await cli.parse(argv('single-bin --verbose'))
-//     expect(args.verbose).toBeUndefined()
-//   })
-//   test('command will not get the option "V"', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const cli = builder(ctx).default({ run(args) { return args } })
-//     const args = await cli.parse(argv('single-bin -V'))
-//     expect(args.V).toBeUndefined()
-//   })
-// })
+describe('--verbose', () => {
+  it('enables debug messages', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      run() { this.ui.debug('should print') }
+    })
+    await cli.parse(argv('app --verbose'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
+  })
+  it('can be enabled with -V', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      run() { this.ui.debug('should print') }
+    })
+    await cli.parse(argv('app -V'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
+  })
+  it('will not be passed down to command args', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
+      run(args) {
+        isType.f<IsExtend<typeof args, { verbose: any }>>()
+        return args
+      }
+    })
+    const args = await cli.parse(argv('app --verbose'))
+    expect(args.verbose).toBeUndefined()
+  })
+  it('will not be passed down to command args for -V', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
+      run(args) {
+        isType.f<IsExtend<typeof args, { V: any }>>()
+        return args
+      }
+    })
+    const args = await cli.parse(argv('app -V'))
+    expect(args.V).toBeUndefined()
+  })
+})
 
 // describe('--debug-cli', () => {
 //   test('turns on cli-level debug messages', async () => {
@@ -531,17 +547,30 @@ describe('default()', () => {
 //   })
 // })
 
-// function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
-//   return `
-// Usage: ${app.name} <command> [options]
-// ${app.description ? `
-//   ${app.description}
-// `: ''}
-// Options:
-//   [-h|--help]            Print help message
-//   [-v|--version]         Print the CLI version
-//   [-V|--verbose]         Turn on verbose logging
-//   [--silent]             Turn off logging
-//   [--debug-cli]          Display clibuilder debug messages
-// `
-// }
+function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
+  return `
+Usage: ${app.name} [options]
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+}
+
+function getHelpMessageWithDescription(app: Pick<cli.Builder, 'name' | 'description'>) {
+  return `
+Usage: ${app.name} [options]
+
+  ${app.description}
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+}

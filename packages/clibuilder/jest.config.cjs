@@ -2,7 +2,7 @@ const config = {
   preset: 'ts-jest/presets/default-esm',
   globals: {
     'ts-jest': {
-      // isolatedModules: true,
+      isolatedModules: true,
       useESM: true
     }
   },
