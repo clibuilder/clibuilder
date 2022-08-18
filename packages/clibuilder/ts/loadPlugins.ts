@@ -3,11 +3,11 @@ import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
 
 
-export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, pluginNames: string[]) {
+export async function loadPlugins({ cwd, ui }: { cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'> }, pluginNames: string[]) {
   return await activatePlugins(cwd, ui, pluginNames)
 }
 
-async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
+async function activatePlugins(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'>, pluginNames: string[]) {
   const entries = await Promise.all(pluginNames.map(async name => {
     const pluginModule = await loadModule(cwd, ui, name)
     return { name, pluginModule }
@@ -31,7 +31,7 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
   return commands
 }
 
-async function loadModule(cwd: string, ui: createUI.UI, name: string) {
+async function loadModule(cwd: string, ui: Pick<createUI.UI, 'warn'>, name: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
     return await import(pluginPath)

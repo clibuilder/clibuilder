@@ -15,14 +15,15 @@ const wrap = wordwrap(80)
 export function createBuilderUI(ui: createUI.UI) {
   let pending = true
   const entries: Array<['debug' | 'info' | 'warn' | 'error', any[]]> = []
+  let displayLevel = ui.displayLevel
   // istanbul ignore next
   return {
     ...ui,
     get displayLevel() {
-      return ui.displayLevel
+      return displayLevel
     },
     set displayLevel(level) {
-      ui.displayLevel = level
+      displayLevel = level
     },
     debug: (...args: any[]) => pending ? entries.push(['debug', args]) : ui.debug(...args),
     info: (...args: any[]) => pending ? entries.push(['info', args]) : ui.info(...args),
@@ -30,7 +31,9 @@ export function createBuilderUI(ui: createUI.UI) {
     error: (...args: any[]) => pending ? entries.push(['error', args]) : ui.error(...args),
     dump: () => {
       pending = false
-      entries.forEach(([m, args]) => ui[m](...args))
+      // filter out cli level debug logs if not under trace (--debug-cli)
+      const filtered = displayLevel !== 'trace' ? entries.filter(e => e[0] !== 'debug') : entries
+      filtered.forEach(([m, args]) => ui[m](...args))
     }
   }
 }

@@ -1,4 +1,4 @@
-import { createStandardLog } from 'standard-log'
+import { createStandardLog, logLevels } from 'standard-log'
 import { loadConfig } from './config.js'
 import { loadPlugins } from './loadPlugins.js'
 import type { Command } from './typesInternal.js'
@@ -10,7 +10,9 @@ import { createBuilderUI, createUI } from './ui.js'
  */
 export function context() {
   const cwd = process.cwd()
-  const sl = createStandardLog()
+  // default log level to debug to capture debug cli logs.
+  // When `--debug-cli` is supplied, the logs will be made to UI.
+  const sl = createStandardLog({ logLevel: logLevels.debug })
   let config: any
   let loadingCommands: Promise<Command[]>
   return {

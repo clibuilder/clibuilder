@@ -186,8 +186,8 @@ describe('--silent', () => {
   })
 })
 
-describe('--verbose', () => {
-  it('enables debug messages', async () => {
+describe('verbose', () => {
+  it('enables debug messages with --verbose', async () => {
     const [builder, ctx] = setupBuilderTest()
     const cli = builder.default({
       run() { this.ui.debug('should print') }
@@ -227,21 +227,28 @@ describe('--verbose', () => {
   })
 })
 
+describe('debug cli', () => {
+  it('turns on cli level debug message with --debug-cli', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const app = builder.default({ run() { } })
+    await app.parse(argv('app --debug-cli'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain(`argv: node app --debug-cli`)
+  })
+  it('logs when loading plugins', async () => {
+    const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin' }, { config: true })
+    const app = builder.default({ run() { } })
+    await app.parse(argv('app --debug-cli'))
+    const msg = ctx.sl.reporter.getLogMessage()
+    expect(msg).toContain('load config from:')
+    expect(msg).toContain('app.json')
+    expect(msg).toContain(`activating plugin cli-plugin-one`)
+    expect(msg).toContain(`adding command one`)
+    expect(msg).toContain(`activated plugin cli-plugin-one`)
+    expect(msg).toContain(`argv: node app --debug-cli`)
+  })
+})
+
 // describe('--debug-cli', () => {
-//   test('turns on cli-level debug messages', async () => {
-//     const ctx = mockContext('string-bin/bin.js')
-//     const app = builder(ctx).default({ run() { } })
-//     await app.parse(argv('string-bin --debug-cli'))
-//     const startPath = getFixturePath('string-bin/bin.js')
-//     const pjsonPath = getFixturePath('string-bin/package.json')
-//     const msg = getLogMessage(ctx.sl.reporter)
-//     expect(msg).toContain(`finding package.json starting from '${startPath}'...
-// found package.json at '${pjsonPath}'
-// package name: string-bin
-// version: 1.0.0
-// description:
-// argv: node string-bin --debug-cli`)
-//   })
 //   test('log loading plugins', async () => {
 //     const ctx = mockContext('string-bin/bin.js', 'one-plugin')
 //     const cli = builder(ctx, {

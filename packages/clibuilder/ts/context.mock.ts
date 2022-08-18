@@ -12,7 +12,7 @@ export namespace mockContext {
 }
 
 export function mockContext(params?: mockContext.Params): Context & { sl: StandardLogForTest } {
-  const { fixtureDir, logLevel } = required({ logLevel: logLevels.info }, params)
+  const { fixtureDir, logLevel } = required({ logLevel: logLevels.debug }, params)
   const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
   const sl = createStandardLogForTest(logLevel)
   return {
