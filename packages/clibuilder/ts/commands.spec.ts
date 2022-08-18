@@ -1,18 +1,18 @@
 import { builder } from './builder.js'
 import { searchPluginsCommand } from './commands.js'
-import { mockContext } from './context.mock'
+import { mockContext } from './context.mock.js'
 import { argv, getLogMessage } from './test-utils/index.js'
 
 describe('pluginsCommand', () => {
   describe('list', () => {
     test('no plugin', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-      await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
+      const ctx = mockContext({ fixtureDir: 'no-plugin' })
+      await builder(ctx, { name: 'plugin-cli', description: '', version: '', keywords: ['plugin-cli-plugin'] })
         .parse(argv('string-bin plugins list'))
       expect(getLogMessage(ctx.sl.reporter)).toContain('no plugin with keywords: plugin-cli-plugin')
     })
     test('one plugin', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'one-plugin')
+      const ctx = mockContext({ fixtureDir: 'one-plugin' })
       await builder(ctx, { name: 'plugin-cli', description: '', version: '', config: true })
         .parse(argv('string-bin plugins list'))
 
@@ -20,7 +20,7 @@ describe('pluginsCommand', () => {
     })
 
     test('two plugins', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'two-plugins')
+      const ctx = mockContext({ fixtureDir: 'two-plugins' })
       await builder(ctx, { name: 'plugin-cli', description: '', version: '', config: true })
         .parse(argv('string-bin plugins list'))
 
@@ -34,8 +34,8 @@ describe('pluginsCommand', () => {
 
 describe('searchPluginsCommand', () => {
   test('no plugin', async () => {
-    const ctx = mockContext('no-plugin', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli', config: true })
+    const ctx = mockContext()
+    await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
       .command({
         ...searchPluginsCommand,
         context: { searchByKeywords: () => Promise.resolve([]) }
@@ -45,8 +45,8 @@ describe('searchPluginsCommand', () => {
   })
 
   test('one plugin', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli', config: true })
+    const ctx = mockContext({ fixtureDir: 'one-plugin' })
+    await builder(ctx, { name: 'plugin-cli', version: '1.0.0', config: true })
       .command({
         ...searchPluginsCommand,
         context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
@@ -56,7 +56,7 @@ describe('searchPluginsCommand', () => {
   })
 
   test('two plugins', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'no-plugin')
+    const ctx = mockContext({ fixtureDir: 'two-plugin' })
     await builder(ctx, { name: 'plugin-cli', description: '', version: '', config: true })
       .command({
         ...searchPluginsCommand,

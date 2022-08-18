@@ -20,10 +20,10 @@ test(`---x is captured as '-x'`, () => {
 
 describe('options without value', () => {
   test('spaces are trimmed', () => {
-    testParse('cli  --abc  ', { _: [], 'abc': ['true'] })
+    testParse('cli --abc  ', { _: [], 'abc': ['true'] })
   })
   test('version', () => {
-    testParse('cli  --version', { _: [], 'version': ['true'] })
+    testParse('cli --version', { _: [], 'version': ['true'] })
   })
   test(`single option gets ['true']`, () => {
     testParse('cli --abc', { _: [], 'abc': ['true'] })

@@ -1,4 +1,4 @@
-import { forEachKey } from 'type-plus'
+import { forEachKey, RequiredPick } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli.js'
 import { getBaseCommand, pluginsCommand } from './commands.js'
@@ -8,13 +8,14 @@ import { parseArgv } from './parseArgv.js'
 import { state } from './state.js'
 import { Command } from './typesInternal.js'
 
-export function builder(context: Context, options?: cli.Options): cli.Builder & cli.Executable {
+export function builder(context: Context, options: RequiredPick<cli.Options, 'config'> | RequiredPick<cli.Options, 'keywords'>): cli.Builder & cli.Executable
+export function builder(context: Context, options: cli.Options): cli.Builder
+export function builder(context: Context, options: cli.Options): cli.Builder & cli.Executable {
   // set `clibuilder-debug` logs manually to logLevels.all,
   // as user can run `config()` to set the log levels
   // and override the log level for this logger.
   // context.ui.displayLevel = 'trace'
-  const s = state(context, options)
-  const description = s.description
+  const s = state(options)
   const pending: Promise<any>[] = []
   const configName = s.configName ? (typeof s.configName === 'string' ? s.configName : s.name) : undefined
   const loadingConfig = configName ? context.loadConfig(configName) : undefined
@@ -35,9 +36,9 @@ export function builder(context: Context, options?: cli.Options): cli.Builder & 
   }
   return {
     name: s.name,
-    version: s.version || '',
-    description,
-    parse,
+    version: s.version,
+    description: s.description,
+    parse: ((s.configName || s.keywords.length > 0) ? parse : undefined) as any,
     default(command) {
       s.command = adjustCommand(s.command, { ...s.command, ...command })
       return { ...this, parse }

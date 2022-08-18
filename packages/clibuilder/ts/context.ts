@@ -1,7 +1,5 @@
 import { createStandardLog } from 'standard-log'
 import { loadConfig } from './config.js'
-import { getAppPath } from './getAppPath.js'
-import { loadAppInfo } from './loadAppInfo.js'
 import { loadPlugins } from './loadPlugins.js'
 import type { Command } from './typesInternal.js'
 import { createBuilderUI, createUI } from './ui.js'
@@ -16,10 +14,6 @@ export function context() {
   let config: any
   let loadingCommands: Promise<Command[]>
   return {
-    getAppPath,
-    loadAppInfo(appPkgPath: string) {
-      return loadAppInfo(this, appPkgPath)
-    },
     async loadConfig(configName: string) {
       if (config) return config
       return config = await loadConfig({ cwd, ui: this.ui }, configName)

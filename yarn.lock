@@ -2946,6 +2946,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/tmp@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@types/tmp@npm:0.2.3"
+  checksum: 0ca45e99b3b3c6959d5c4f4555f73c8007db540cfb0fbbb9373217f9ab85e67eef75193f51a1d6564b0ee6c6f5ffa259d1034d7f7530a5b7ce80acb94cfc4daa
+  languageName: node
+  linkType: hard
+
 "@types/wordwrap@github:types/wordwrap":
   version: 1.0.0
   resolution: "@types/wordwrap@https://github.com/types/wordwrap.git#commit=caf776ac962b305476b491499cb8457db9729c1a"
@@ -3982,6 +3989,7 @@ __metadata:
     "@types/jest": ^28.1.7
     "@types/js-yaml": ^4.0.5
     "@types/node": ^16.11.49
+    "@types/tmp": ^0.2.3
     "@types/wordwrap": "github:types/wordwrap"
     "@typescript-eslint/eslint-plugin": ^5.33.1
     "@typescript-eslint/parser": ^5.33.1
@@ -4011,6 +4019,7 @@ __metadata:
     standard-log: ^9.1.7
     standard-log-color: ^7.0.2
     tersify: ^3.10.2
+    tmp: ^0.2.1
     ts-jest: ^28.0.8
     tslib: ^2.4.0
     type-plus: ^4.11.1
@@ -8840,6 +8849,15 @@ __metadata:
   dependencies:
     os-tmpdir: ~1.0.2
   checksum: 902d7aceb74453ea02abbf58c203f4a8fc1cead89b60b31e354f74ed5b3fb09ea817f94fb310f884a5d16987dd9fa5a735412a7c2dd088dd3d415aa819ae3a28
+  languageName: node
+  linkType: hard
+
+"tmp@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "tmp@npm:0.2.1"
+  dependencies:
+    rimraf: ^3.0.0
+  checksum: 8b1214654182575124498c87ca986ac53dc76ff36e8f0e0b67139a8d221eaecfdec108c0e6ec54d76f49f1f72ab9325500b246f562b926f85bcdfca8bf35df9e
   languageName: node
   linkType: hard
 

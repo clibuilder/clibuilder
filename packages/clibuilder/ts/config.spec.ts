@@ -1,7 +1,7 @@
 import { logLevels } from 'standard-log'
-import { loadConfig } from './config'
-import { getFixturePath } from './test-utils'
-import { mockUI } from './ui.mock'
+import { loadConfig } from './config.js'
+import { getFixturePath } from './test-utils/index.js'
+import { mockUI } from './ui.mock.js'
 
 describe('loadConfig()', () => {
   async function testLoadConfig(configName: string, { fixturePath }: {
