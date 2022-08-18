@@ -71,7 +71,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
     const r = lookupCommand(s.command, rawArgs)
     const { args, command } = r
-
     if (args.version) return createCommandInstance(context, s, r.command).ui.showVersion()
     if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
 

@@ -22,32 +22,19 @@ describe('default()', () => {
     const cli = builder.default({ run() { return 'hello' } })
     expect(await cli.parse(argv('app'))).toEqual('hello')
   })
-  it.skip('accepts arguments', async () => {
+  it('accepts array arguments', async () => {
     const [builder] = setupBuilderTest()
     const a = await builder.default({
       arguments: [
         { name: 'a', description: 'd', type: z.array(z.string()) }
       ],
-      run(args) {
-        console.log(args)
-        return args.a
-      }
+      run(args) { return args.a }
     }).parse(argv('app abc def'))
     expect(a).toEqual(['abc', 'def'])
   })
 })
 
 // describe('default()', () => {
-//   test('with array argument', async () => {
-//     const ctx = mockContext('single-bin/bin.js')
-//     const a = await builder(ctx).default({
-//       arguments: [
-//         { name: 'a', description: 'd', type: z.array(z.string()) }
-//       ],
-//       run(args) { return args.a }
-//     }).parse(argv('string-bin abc'))
-//     expect(a).toEqual(['abc'])
-//   })
 //   test('ui uses cli name', async () => {
 //     const ctx = mockContext('single-bin/bin.js')
 //     const cli = builder(ctx).default({ run() { this.ui.info('hello') } })

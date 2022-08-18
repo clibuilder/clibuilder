@@ -89,16 +89,16 @@ function fillArguments(state: processCommand.State) {
     }
     if (isZodArray(s.type)) {
       const e = s.type.element
-      let r = e.safeParse(args[0])
+      let r = e.safeParse(args.shift())
       p.args[s.name] = p.args[s.name] || []
       while (r.success) {
         p.args[s.name].push(r.data)
-        args.pop()
-        r = e.safeParse(args[0])
+        const arg = args.shift()
+        r = e.safeParse(arg)
       }
     }
     else {
-      p.args[s.name] = args.pop()!
+      p.args[s.name] = args.shift()!
     }
     return p
   }, { args: { _: [] } as { _: string[] } & Record<any, any> }).args
