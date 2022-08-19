@@ -246,6 +246,18 @@ describe('debug cli', () => {
     expect(msg).toContain(`activated plugin cli-plugin-one`)
     expect(msg).toContain(`argv: node app --debug-cli`)
   })
+  // it('logs when loading ESM plugin', async () => {
+  //   const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin-esm' }, { config: true })
+  //   const app = builder.default({ run() { } })
+  //   await app.parse(argv('app --debug-cli'))
+  //   const msg = ctx.sl.reporter.getLogMessage()
+  //   expect(msg).toContain('load config from:')
+  //   expect(msg).toContain('app.json')
+  //   expect(msg).toContain(`activating plugin cli-plugin-one`)
+  //   expect(msg).toContain(`adding command one`)
+  //   expect(msg).toContain(`activated plugin cli-plugin-one`)
+  //   expect(msg).toContain(`argv: node app --debug-cli`)
+  // })
 })
 
 // describe('--debug-cli', () => {

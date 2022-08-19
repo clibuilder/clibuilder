@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@types/node": "^16.11.49",
-    "chalk": "^4.1.2",
     "find-installed-packages": "^2.1.6",
     "find-up": "^5.0.0",
     "import-fresh": "^3.3.0",

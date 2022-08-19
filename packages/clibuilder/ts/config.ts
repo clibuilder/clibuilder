@@ -72,13 +72,16 @@ async function readConfig(configFilePath: string) {
   const content = readFileSync(configFilePath, 'utf-8')
   try {
     return JSON.parse(content)
-  } catch {
+  }
+  catch {
     try {
       return yaml.load(content)
-    } catch {
+    }
+    catch {
       try {
         return importFresh(configFilePath)
-      } catch {
+      }
+      catch {
         return (await import(configFilePath)).default
       }
     }

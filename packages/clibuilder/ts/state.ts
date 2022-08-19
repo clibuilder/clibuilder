@@ -9,14 +9,14 @@ export namespace state {
     version: string,
     description: string,
     configName?: string | boolean,
-    config?: any
+    config?: any,
     keywords: string[],
     displayLevel: DisplayLevel,
     command: RequiredPick<Command, 'commands'>
   }
 }
 
-export function state( options: cli.Options): state.Result {
+export function state(options: cli.Options): state.Result {
   const { name, description = '', version, config, keywords = [] } = options
   return {
     name,

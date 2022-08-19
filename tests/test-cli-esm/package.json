@@ -1,0 +1,8 @@
+{
+  "name": "test-cli-esm",
+  "version": "1.0.0",
+  "bin": "./bin.mjs",
+  "dependencies": {
+    "clibuilder": "workspace:*"
+  }
+}
