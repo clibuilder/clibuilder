@@ -1,6 +1,11 @@
 {
   "recommendations": [
     "arcanis.vscode-zipfs",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig",
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "unional.vscode-sort-package-json",
+    "aaron-bond.better-comments"
   ]
 }
