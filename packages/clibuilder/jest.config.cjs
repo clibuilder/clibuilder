@@ -28,7 +28,7 @@ const config = {
   },
   transformIgnorePatterns: [
     // Need to MANUALLY identify each ESM package, one by one
-    'node_modules/(?!(assertron|chalk|\#ansi-styles)/)'
+    'node_modules/(?!(assertron|chalk|#ansi-styles)/)'
   ], watchPlugins: [
     'jest-watch-suspend',
     'jest-watch-typeahead/filename',

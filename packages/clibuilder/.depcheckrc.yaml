@@ -1,6 +1,5 @@
 ignores:
   - '@babel/core'
-  - "@commitlint/*"
   - "@size-limit/preset-small-lib"
   - "@types/jest"
   - "@typescript-eslint/parser"
