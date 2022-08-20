@@ -14,7 +14,7 @@ Repository to packages building CLI tools.
 [![NPM downloads][clibuilder-downloads-image]][clibuilder-downloads-url]
 
 Create CLI with config and plugin supports.
-### Install
+### Install clibuilder
 
 ```sh
 # npm
@@ -37,7 +37,7 @@ rush add -p clibuilder
 
 Test CLI application output against baselines.
 
-### Install
+### Install clitester
 
 ```sh
 # npm
