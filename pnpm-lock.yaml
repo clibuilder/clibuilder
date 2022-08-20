@@ -115,6 +115,48 @@ importers:
       ts-jest: 28.0.8_ta2dmbt2qiyd6mcpkta7cldhsy
       typescript: 4.7.4
 
+  packages/clitester:
+    specifiers:
+      '@babel/core': ^7.18.10
+      '@types/jest': ^28.1.7
+      '@typescript-eslint/eslint-plugin': ^5.33.1
+      '@typescript-eslint/parser': ^5.33.1
+      babel-jest: ^28.1.3
+      cross-env: ^7.0.3
+      depcheck: ^1.4.3
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-harmony: ^7.1.0
+      jest: ^28.1.3
+      jest-validate: ^28.1.3
+      jest-watch-suspend: ^1.1.2
+      jest-watch-toggle-config: ^2.0.1
+      jest-watch-typeahead: ^2.0.0
+      npm-run-all: ^4.1.5
+      rimraf: ^3.0.2
+      ts-jest: ^28.0.8
+      typescript: ^4.7.4
+    devDependencies:
+      '@babel/core': 7.18.10
+      '@types/jest': 28.1.7
+      '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
+      '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
+      babel-jest: 28.1.3_@babel+core@7.18.10
+      cross-env: 7.0.3
+      depcheck: 1.4.3
+      eslint: 8.22.0
+      eslint-config-prettier: 8.5.0_eslint@8.22.0
+      eslint-plugin-harmony: 7.1.0_tf6b3cihvnnd2noieo7j7vt4si
+      jest: 28.1.3
+      jest-validate: 28.1.3
+      jest-watch-suspend: 1.1.2_jest@28.1.3
+      jest-watch-toggle-config: 2.0.1_tn6adg3s7io5jsxm7sj7uk5x6e
+      jest-watch-typeahead: 2.0.0_jest@28.1.3
+      npm-run-all: 4.1.5
+      rimraf: 3.0.2
+      ts-jest: 28.0.8_ta2dmbt2qiyd6mcpkta7cldhsy
+      typescript: 4.7.4
+
   test-apps/test-app-cjs:
     specifiers:
       test-cli-esm: workspace:*

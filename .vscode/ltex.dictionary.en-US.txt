@@ -22,3 +22,5 @@ clibuilder-npm-url
 clibuilder-downloads-url
 clitester-npm-url
 clitester-downloads-url
+clitester
+clibuilder
