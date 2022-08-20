@@ -1,0 +1,14 @@
+{
+  "name": "test-app-cjs",
+  "scripts": {
+    "diff-out": "git diff --no-index out.baseline out.result",
+    "diff-err": "git diff --no-index err.baseline err.result",
+    "start": "test-cli",
+    "test": "test-cli 1> out.result 2> err.result && yarn diff-out && yarn diff-err"
+  },
+  "dependencies": {
+    "test-cli-esm": "workspace:*",
+    "test-cli-plugin-cjs": "workspace:*",
+    "test-cli-plugin-esm": "workspace:*"
+  }
+}

@@ -8809,9 +8809,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"test-app-cjs@workspace:tests/test-app-cjs":
+"test-app-cjs@workspace:test-apps/test-app-cjs":
   version: 0.0.0-use.local
-  resolution: "test-app-cjs@workspace:tests/test-app-cjs"
+  resolution: "test-app-cjs@workspace:test-apps/test-app-cjs"
   dependencies:
     test-cli-esm: "workspace:*"
     test-cli-plugin-cjs: "workspace:*"
@@ -8819,9 +8819,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"test-app-esm@workspace:tests/test-app-esm":
+"test-app-esm@workspace:test-apps/test-app-esm":
   version: 0.0.0-use.local
-  resolution: "test-app-esm@workspace:tests/test-app-esm"
+  resolution: "test-app-esm@workspace:test-apps/test-app-esm"
   dependencies:
     test-cli-esm: "workspace:*"
     test-cli-plugin-cjs: "workspace:*"
@@ -8829,35 +8829,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"test-cli-cjs@workspace:tests/test-cli-cjs":
+"test-cli-cjs@workspace:test-clis/test-cli-cjs":
   version: 0.0.0-use.local
-  resolution: "test-cli-cjs@workspace:tests/test-cli-cjs"
+  resolution: "test-cli-cjs@workspace:test-clis/test-cli-cjs"
   dependencies:
     clibuilder: "workspace:*"
   bin:
-    test-cli-cjs: ./bin.js
+    test-cli: ./bin.js
   languageName: unknown
   linkType: soft
 
-"test-cli-esm@workspace:*, test-cli-esm@workspace:tests/test-cli-esm":
+"test-cli-esm@workspace:*, test-cli-esm@workspace:test-clis/test-cli-esm":
   version: 0.0.0-use.local
-  resolution: "test-cli-esm@workspace:tests/test-cli-esm"
+  resolution: "test-cli-esm@workspace:test-clis/test-cli-esm"
   dependencies:
     clibuilder: "workspace:*"
   bin:
-    test-cli-esm: ./bin.mjs
+    test-cli: ./bin.mjs
   languageName: unknown
   linkType: soft
 
-"test-cli-plugin-cjs@workspace:*, test-cli-plugin-cjs@workspace:tests/test-cli-plugin-cjs":
+"test-cli-plugin-cjs@workspace:*, test-cli-plugin-cjs@workspace:test-plugins/test-cli-plugin-cjs":
   version: 0.0.0-use.local
-  resolution: "test-cli-plugin-cjs@workspace:tests/test-cli-plugin-cjs"
+  resolution: "test-cli-plugin-cjs@workspace:test-plugins/test-cli-plugin-cjs"
   languageName: unknown
   linkType: soft
 
-"test-cli-plugin-esm@workspace:*, test-cli-plugin-esm@workspace:tests/test-cli-plugin-esm":
+"test-cli-plugin-esm@workspace:*, test-cli-plugin-esm@workspace:test-plugins/test-cli-plugin-esm":
   version: 0.0.0-use.local
-  resolution: "test-cli-plugin-esm@workspace:tests/test-cli-plugin-esm"
+  resolution: "test-cli-plugin-esm@workspace:test-plugins/test-cli-plugin-esm"
   languageName: unknown
   linkType: soft
 
