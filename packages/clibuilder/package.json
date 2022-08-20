@@ -8,7 +8,7 @@
     "command",
     "parser"
   ],
-  "homepage": "https://github.com/unional/clibuilder",
+  "homepage": "https://github.com/unional/clibuilder/tree/main/packages/clibuilder",
   "bugs": {
     "url": "https://github.com/unional/clibuilder/issues"
   },
@@ -29,7 +29,8 @@
   "files": [
     "esm",
     "ts",
-    "!*.spec.*"
+    "!*.spec.*",
+    "!*.tsbuildinfo"
   ],
   "scripts": {
     "build": "tsc",
