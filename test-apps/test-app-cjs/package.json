@@ -4,7 +4,7 @@
     "diff-out": "git diff --no-index out.baseline out.result",
     "diff-err": "git diff --no-index err.baseline err.result",
     "start": "test-cli",
-    "test": "test-cli 1> out.result 2> err.result && yarn diff-out && yarn diff-err"
+    "test": "test-cli 1> out.result 2> err.result && pnpm diff-out && pnpm diff-err"
   },
   "dependencies": {
     "test-cli-esm": "workspace:*",

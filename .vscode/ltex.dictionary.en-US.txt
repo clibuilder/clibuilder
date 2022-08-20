@@ -3,3 +3,17 @@ changeset
 Homa
 unional
 NONINFRINGEMENT
+
+npm-url
+downloads-url
+github-action-url
+codecov-url
+codacy-url
+semantic-release-url
+vscode-url
+wallaby-url
+Codecov
+Codacy
+pnpm
+turborepo
+corepack

@@ -1,15 +1,9 @@
 {
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "test-apps/*",
-    "test-clis/*",
-    "test-plugins/*"
-  ],
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "clibuilder": "yarn workspace clibuilder",
+    "clibuilder": "pnpm run --filter clibuilder",
     "coverage": "turbo run coverage",
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
@@ -21,12 +15,12 @@
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "prepare": "husky install",
-    "publish": "yarn cs publish",
+    "publish": "pnpm cs publish",
     "release": "turbo run build",
     "size": "turbo run size",
     "test": "turbo run test",
     "verify": "turbo run lint build coverage depcheck size",
-    "version": "yarn cs version"
+    "version": "pnpm cs version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.24.3",
@@ -42,8 +36,5 @@
     "turbo": "^1.4.3",
     "typescript": "^4.7.4"
   },
-  "packageManager": "yarn@3.2.2",
-  "dependencies": {
-    "import-meta-resolve": "^2.1.0"
-  }
+  "packageManager": "pnpm@7.9.3"
 }

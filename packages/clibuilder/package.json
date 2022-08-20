@@ -38,11 +38,11 @@
     "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --maxWorkers=60%",
     "depcheck": "depcheck",
     "lint": "eslint --ext=js,ts .",
-    "nuke": "yarn clean && rimraf node_modules",
+    "nuke": "pnpm clean && rimraf node_modules",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --maxWorkers=60%",
     "test:watch": "jest --watch --maxWorkers=60%",
     "verify": "npm-run-all clean -p build lint coverage depcheck",
-    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules yarn test:watch"
+    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules pnpm test:watch"
   },
   "dependencies": {
     "@types/node": "^16.11.49",

@@ -38,8 +38,8 @@ coverage
 build/Release
 
 # Dependency directory
-/jspm_packages
-/node_modules
+jspm_packages
+node_modules
 
 # Optional npm cache directory
 .npm
@@ -54,3 +54,4 @@ build/Release
 .ts
 lib*
 esm
+!**/fixtures/**

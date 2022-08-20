@@ -21,7 +21,7 @@ A highly customizable command line library.
 It is once again re-written from v6 to improve the usage in a fundamental way.
 Here are some of the highlights:
 
-- single `cli()` for both basic cli and plugin cli
+- single `cli()` for both basic CLI and plugin-based CLI
 - config, argument, and option type inference now work with both basic type and array
 - using `zod@next` to define type definition and validation
 - each command can have their own config specification
@@ -29,22 +29,32 @@ Here are some of the highlights:
 
 ## Features
 
-- plugin support: write commands in separate packages and reuse by multiple cli
+- plugin support: write commands in separate packages and reuse by multiple CLI
 - configuration file support
 - type inference for config, arguments, and options
 - nested commands `my-cli cmd1 cmd2 cmd3`
-- type validation for config, arguments, and options \
+- type validation for config, arguments, and options\
   using [zod@next](https://github.com/colinhacks/zod) (exported as `z`)
 
 ## Install
 
 ```sh
+# npm
+npm install clibuilder
+
+# yarn
 yarn add clibuilder
+
+# pnpm
+pnpm install clibuilder
+
+#rush
+rush add -p clibuilder
 ```
 
 ## Usage
 
-You can use `clibuilder` to create your command line application in many different ways.
+You can use `clibuilder` to create your command line application in many ways.
 The most basic way looks like this:
 
 ```ts
@@ -191,7 +201,7 @@ You can change that by:
 cli().loadPlugins('another-keyword')
 ```
 
-When you create a command from a different files or for plugin,
+When you create a command from a different file or for plugin,
 you can use the `command()` function which provides type validation and inference support.
 
 ```ts
@@ -211,9 +221,9 @@ i.e. You can build your application in a distributed fashion.
 
 `cli().loadPlugins()` will load plugins when available.
 
-To create a plugins:
+To create a plugin:
 
-- export an `activate(ctx: PluginActivationContext)` function
+- export a `activate(ctx: PluginActivationContext)` function
 - add the plugin keyword in your `package.json`
 
 ```ts
@@ -236,9 +246,9 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 }
 ```
 
-The cli will determine that a package is a plugin by looking at the `keywords` in its `package.json`.
+The CLI will determine that a package is a plugin by looking at the `keywords` in its `package.json`.
 
-## testing
+## Testing
 
 `testCommand()` can be used to test your command:
 
@@ -260,7 +270,7 @@ test('some test', async () => {
 
 ## shebang
 
-To make your cli easily executable,
+To make your CLI easily executable,
 you can add shebang to your script:
 
 ```js
