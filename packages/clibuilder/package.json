@@ -61,7 +61,7 @@
     "global-store": "1.0.0-beta.21",
     "pad-right": "^0.2.2",
     "search-packages": "^2.1.0",
-    "standard-log": "^7.1.0",
+    "standard-log": "^9.0.0",
     "standard-log-color": "^7.0.0",
     "tslib": "^2.4.0",
     "type-plus": "^4.9.1",
