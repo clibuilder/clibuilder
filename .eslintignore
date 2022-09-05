@@ -1,1 +1,2 @@
-tests/test-cli-plugin-cjs/index.js
+**/cjs/
+**/esm/

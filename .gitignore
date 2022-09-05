@@ -54,4 +54,5 @@ node_modules
 .ts
 lib*
 esm
-!**/fixtures/**
+*.tsbuildinfo
+**/fixtures/**/results

@@ -8,9 +8,7 @@
       "inputs": [
         "package.json",
         "tsconfig.*",
-        ":(glob)ts/**/*.tsx?",
-        ":(glob)!ts/**/*.spec.tsx?",
-        ":(glob)!ts/**/*.stories.tsx?"
+        "ts/**/*.tsx?"
       ],
       "outputs": [
         "esm/**"
@@ -26,7 +24,7 @@
       "inputs": [
         "package.json",
         "tsconfig.*",
-        ":(glob)ts/**/*.tsx?"
+        "ts/**/*.tsx?"
       ],
       "outputs": [
         "coverage/**"
@@ -35,7 +33,7 @@
     "depcheck": {
       "inputs": [
         "package.json",
-        ":(glob)ts/**/*.tsx?"
+        "ts/**/*.tsx?"
       ]
     },
     "dev": {
@@ -43,7 +41,7 @@
     },
     "lint": {
       "inputs": [
-        ":(glob)ts/**/*.tsx?"
+        "ts/**/*.tsx?"
       ]
     },
     "size": {
@@ -58,7 +56,7 @@
       "inputs": [
         "package.json",
         "tsconfig.*",
-        ":(glob)ts/**/*.tsx?"
+        "ts/**/*.tsx?"
       ]
     },
     "verify": {
@@ -71,7 +69,7 @@
       "inputs": [
         "package.json",
         "tsconfig.*",
-        ":(glob)ts/**/*.tsx?"
+        "ts/**/*.tsx?"
       ]
     }
   }
