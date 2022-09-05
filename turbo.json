@@ -60,6 +60,9 @@
       ]
     },
     "verify": {
+      "dependsOn": [
+        "build"
+      ],
       "cache": false
     },
     "watch": {
