@@ -9,7 +9,8 @@ describe('loadConfig()', () => {
   }) {
     const cwd = getFixturePath(fixturePath)
     const [ui, reporter] = mockUI('loadConfig', logLevels.all)
-    return [await loadConfig({ cwd, ui }, configName), reporter] as const
+    const config = await loadConfig({ cwd, ui }, configName)
+    return [config, reporter] as const
   }
 
   it('loads config from `{configName}.mjs` at cwd', async () => {
