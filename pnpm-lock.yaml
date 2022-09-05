@@ -182,11 +182,11 @@ importers:
 
   test-apps/test-app-cjs:
     specifiers:
-      test-cli-esm: workspace:*
+      test-cli-cjs: workspace:*
       test-cli-plugin-cjs: workspace:*
       test-cli-plugin-esm: workspace:*
     dependencies:
-      test-cli-esm: link:../../test-clis/test-cli-esm
+      test-cli-cjs: link:../../test-clis/test-cli-cjs
       test-cli-plugin-cjs: link:../../test-plugins/test-cli-plugin-cjs
       test-cli-plugin-esm: link:../../test-plugins/test-cli-plugin-esm
 

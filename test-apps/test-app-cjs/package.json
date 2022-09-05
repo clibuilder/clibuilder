@@ -4,11 +4,11 @@
   "scripts": {
     "diff-out": "git diff --no-index out.baseline out.result",
     "diff-err": "git diff --no-index err.baseline err.result",
-    "start": "test-cli",
-    "test": "test-cli 1> out.result 2> err.result && pnpm diff-out && pnpm diff-err"
+    "start": "test-cli-cjs",
+    "test": "test-cli-cjs 1> out.result 2> err.result && pnpm diff-out && pnpm diff-err"
   },
   "dependencies": {
-    "test-cli-esm": "workspace:*",
+    "test-cli-cjs": "workspace:*",
     "test-cli-plugin-cjs": "workspace:*",
     "test-cli-plugin-esm": "workspace:*"
   }
