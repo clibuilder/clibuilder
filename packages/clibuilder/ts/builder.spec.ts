@@ -11,10 +11,11 @@ function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<
   return [builder(context, opt), context] as const
 }
 
-it('will not have parse() if there is no `config`, `keywords` and have not define any command', () => {
+it('will not have parse() if there is no `config`, `keywords` and have not define any command', async () => {
   const [builder] = setupBuilderTest()
   isType.equal<true, never, (keyof typeof builder) & 'parse'>()
   expect((builder as any).parse).toBeUndefined()
+  await builder.default({ run() { } }).parse([])
 })
 
 describe('default()', () => {

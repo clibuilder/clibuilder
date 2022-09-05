@@ -4,7 +4,7 @@ import { createUI } from './ui.js'
 
 
 export async function loadPlugins({ cwd, ui }: { cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'> }, pluginNames: string[]) {
-  return await activatePlugins(cwd, ui, pluginNames)
+  return activatePlugins(cwd, ui, pluginNames)
 }
 
 async function activatePlugins(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'>, pluginNames: string[]) {
