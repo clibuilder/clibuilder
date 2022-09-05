@@ -1,0 +1,8 @@
+ignores:
+  - '@babel/core'
+  - "@types/jest"
+  - "@types/node"
+  - "@typescript-eslint/parser"
+  - babel-jest
+  - jest-*
+  - ts-jest

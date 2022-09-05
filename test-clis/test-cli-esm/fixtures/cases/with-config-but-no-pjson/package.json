@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "test-cli-esm": "workspace:*"
+  }
+}

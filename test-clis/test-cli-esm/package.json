@@ -1,10 +1,47 @@
 {
   "name": "test-cli-esm",
   "version": "1.0.0",
-  "bin": {
-    "test-cli": "./bin.mjs"
+  "private": true,
+  "bin": "./esm/bin.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf cjs coverage",
+    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "depcheck": "depcheck",
+    "lint": "eslint --ext=js,ts .",
+    "nuke": "pnpm clean && rimraf node_modules",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "verify": "npm-run-all clean -p build lint coverage depcheck",
+    "watch": "pnpm test:watch"
   },
   "dependencies": {
-    "clibuilder": "workspace:*"
+    "clibuilder": "workspace:*",
+    "dirname-filename-esm": "^1.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.10",
+    "@types/jest": "^28.1.7",
+    "@types/node": "^16.11.49",
+    "@typescript-eslint/eslint-plugin": "^5.33.1",
+    "@typescript-eslint/parser": "^5.33.1",
+    "@unional/fixture": "^3.1.4",
+    "babel-jest": "^28.1.3",
+    "cross-env": "^7.0.3",
+    "depcheck": "^1.4.3",
+    "eslint": "^8.22.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-harmony": "^7.1.0",
+    "jest": "^28.1.3",
+    "jest-validate": "^28.1.3",
+    "jest-watch-suspend": "^1.1.2",
+    "jest-watch-toggle-config": "^2.0.1",
+    "jest-watch-typeahead": "^2.0.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^28.0.8",
+    "typescript": "^4.7.4"
   }
 }

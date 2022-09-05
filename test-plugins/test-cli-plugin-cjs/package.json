@@ -1,6 +1,7 @@
 {
   "name": "test-cli-plugin-cjs",
   "version": "1.0.0",
+  "private": true,
   "keywords": [
     "test-cli-plugin"
   ]

@@ -1,0 +1,4 @@
+{
+  "command": "test-cli-esm",
+  "args": ["config-value", "some-value"]
+}

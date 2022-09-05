@@ -1,0 +1,24 @@
+{
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "extends": "plugin:harmony/latest",
+  "overrides": [
+    {
+      "extends": "plugin:harmony/ts-recommended",
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "rules": {
+        "no-use-before-define": "off"
+      }
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "root": true
+}

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "newLine": "LF",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "cjs",
+    "rootDir": "ts",
+    "strict": true,
+    "target": "ES2020"
+  },
+  "include": [
+    "ts",
+    "typings"
+  ],
+  "references": [
+    {
+      "path": "../../packages/clibuilder"
+    }
+  ]
+}
