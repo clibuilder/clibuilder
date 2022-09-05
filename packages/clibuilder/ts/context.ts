@@ -1,4 +1,5 @@
 import { createConsoleLogReporter, createStandardLog, logLevels } from 'standard-log'
+import { createColorLogReporter } from 'standard-log-color'
 import { loadConfig } from './config.js'
 import { loadPlugins } from './loadPlugins.js'
 import type { Command } from './typesInternal.js'
@@ -30,7 +31,7 @@ export function context() {
     cwd,
     exit: process.exit,
     createCommandUI(id: string) { return createUI(sl.getLogger(id)) },
-    ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
+    ui: createBuilderUI(createUI(sl.getLogger('clibuilder', { writeTo: createColorLogReporter() }))),
   }
 }
 
