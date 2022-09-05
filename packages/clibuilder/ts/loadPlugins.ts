@@ -10,6 +10,7 @@ export async function loadPlugins({ cwd, ui }: { cwd: string, ui: Pick<createUI.
 
 async function activatePlugins(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'>, pluginNames: string[]) {
   const entries = await Promise.all(pluginNames.map(async name => {
+    ui.debug('loading plugin', name)
     const pluginModule = await loadModule(cwd, ui, name)
     return { name, pluginModule }
   }))
@@ -32,10 +33,10 @@ async function activatePlugins(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debu
   return commands
 }
 
-async function loadModule(cwd: string, ui: Pick<createUI.UI, 'warn'>, name: string) {
+async function loadModule(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debug'>, name: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
-    return await importModule(pluginPath)
+    return await importModule(ui, pluginPath)
   }
   catch (e: any) {
     ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
@@ -55,10 +56,12 @@ function activatePlugin(m: { activate: (context: PluginActivationContext) => voi
   return commands
 }
 
-async function importModule(m: string) {
+async function importModule(ui:  Pick<createUI.UI,  'debug'>, m: string) {
   try {
     return await import(m)
-  } catch {
+  }
+  catch (e: any) {
+    ui.debug(`unable to load ${m} as ESM, trying CJS`, e)
     return importFresh(m)
   }
 }
