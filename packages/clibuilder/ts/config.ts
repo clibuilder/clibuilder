@@ -33,7 +33,7 @@ export async function loadConfig({ cwd, ui }: {
       if (pjson[configName]) return pjson[configName]
     }
   }
-  ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
+  ui.warn(`no config found under '${cwd}':\n  ${configFileNames.join('\n  ')}`)
 }
 
 function getConfigFilenames(configFileName: string) {
