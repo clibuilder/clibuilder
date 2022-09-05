@@ -1,5 +1,6 @@
 {
   "name": "test-app-esm",
+  "private": true,
   "type": "module",
   "scripts": {
     "diff-out": "git diff --no-index out.baseline out.result",

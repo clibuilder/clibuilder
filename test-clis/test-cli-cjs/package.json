@@ -1,6 +1,7 @@
 {
   "name": "test-cli-cjs",
   "version": "1.0.0",
+  "private": true,
   "bin": {
     "test-cli-cjs": "./cjs/bin.js"
   },

@@ -1,5 +1,6 @@
 {
   "name": "test-app-cjs",
+  "private": true,
   "scripts": {
     "diff-out": "git diff --no-index out.baseline out.result",
     "diff-err": "git diff --no-index err.baseline err.result",
