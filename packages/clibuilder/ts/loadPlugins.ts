@@ -1,3 +1,4 @@
+import importFresh from 'import-fresh'
 import path from 'path'
 import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
@@ -34,7 +35,7 @@ async function activatePlugins(cwd: string, ui: Pick<createUI.UI, 'warn' | 'debu
 async function loadModule(cwd: string, ui: Pick<createUI.UI, 'warn'>, name: string) {
   const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
-    return await import(pluginPath)
+    return await importModule(pluginPath)
   }
   catch (e: any) {
     ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
@@ -52,4 +53,12 @@ function activatePlugin(m: { activate: (context: PluginActivationContext) => voi
   const commands: cli.Command[] = []
   m.activate({ addCommand: cmd => commands.push(cmd) })
   return commands
+}
+
+async function importModule(m: string) {
+  try {
+    return await import(m)
+  } catch {
+    return importFresh(m)
+  }
 }
