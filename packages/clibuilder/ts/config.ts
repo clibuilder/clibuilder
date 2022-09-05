@@ -79,11 +79,10 @@ async function readConfig(configFilePath: string) {
     }
     catch {
       try {
-        return importFresh(configFilePath)
-      }
-      catch (e: any) {
-        console.error('readConfig error:', e)
         return (await import(configFilePath)).default
+      }
+      catch {
+        return importFresh(configFilePath)
       }
     }
   }
