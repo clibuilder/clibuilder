@@ -14,7 +14,7 @@
     "nuke": "pnpm clean && rimraf node_modules",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "verify": "npm-run-all clean -p build lint coverage depcheck",
+    "verify": "npm-run-all -s clean build -p lint coverage depcheck",
     "watch": "pnpm test:watch"
   },
   "dependencies": {

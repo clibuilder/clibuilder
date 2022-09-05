@@ -16,7 +16,7 @@
     "nuke": "pnpm clean && rimraf node_modules",
     "test": "jest",
     "test:watch": "jest --watch",
-    "verify": "npm-run-all clean -p build lint coverage depcheck",
+    "verify": "npm-run-all -s clean build -p lint coverage depcheck",
     "watch": "pnpm test:watch"
   },
   "dependencies": {
