@@ -1,6 +1,7 @@
 {
   "name": "clitester",
   "version": "0.0.0",
+  "private": true,
   "description": "Test CLI application output against baselines.",
   "homepage": "https://github.com/unional/clibuilder/tree/main/packages/clitester",
   "bugs": {
@@ -38,9 +39,13 @@
     "verify": "npm-run-all clean -p build lint coverage depcheck",
     "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules pnpm test:watch"
   },
+  "dependencies": {
+    "clibuilder": "workspace:*"
+  },
   "devDependencies": {
     "@babel/core": "^7.18.10",
     "@types/jest": "^28.1.7",
+    "@types/node": "^16.11.49",
     "@typescript-eslint/eslint-plugin": "^5.33.1",
     "@typescript-eslint/parser": "^5.33.1",
     "babel-jest": "^28.1.3",
