@@ -150,7 +150,6 @@ function lookupOptions(command: cli.Command, key: string)
   const optKey = findKey(opts, (k) => {
     const opt = opts[k]
     if (!opt.alias) return false
-    // console.log(key, k, opt)
     return opt.alias.some(a => a === key || (a as { alias: string }).alias === key)
   })
   return optKey ? [optKey, opts[optKey]] : []
