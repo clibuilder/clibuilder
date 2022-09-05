@@ -29,7 +29,7 @@ export function context() {
     },
     cwd,
     exit: process.exit,
-    createUI(id: string) { return createUI(sl.getLogger(id)) },
+    createCommandUI(id: string) { return createUI(sl.getLogger(id)) },
     ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
   }
 }

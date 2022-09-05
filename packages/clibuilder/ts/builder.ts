@@ -71,8 +71,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
     const r = lookupCommand(s.command, rawArgs)
     const { args, command } = r
-    if (args.version) return createCommandInstance(context, s, r.command).ui.showVersion()
-    if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
+    if (args.version) return void createCommandInstance(context, s, r.command).ui.showVersion()
+    if (r.errors.length > 0) return void createCommandInstance(context, s, r.command).ui.showHelp()
 
     if (command.config) {
       const configName = typeof s.configName === 'string' ? s.configName : s.name
@@ -86,7 +86,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
       }
     }
     const commandInstance = createCommandInstance(context, s, command)
-    if (args.help) return commandInstance.ui.showHelp()
+    if (args.help) return void commandInstance.ui.showHelp()
     return commandInstance.run(args as any)
   }
 
@@ -114,7 +114,7 @@ function createCommandInstance(ctx: Context, state: state.Result, command: cli.C
 }
 
 function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
-  const ui = ctx.createUI(command.name || state.name)
+  const ui = ctx.createCommandUI(command.name || state.name)
   ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {
