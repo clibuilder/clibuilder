@@ -19,6 +19,8 @@ importers:
       jest-watch-toggle-config: ^2.0.1
       jest-watch-typeahead: ^2.0.0
       pinst: ^3.0.0
+      test-cli-cjs: workspace:*
+      test-cli-esm: workspace:*
       turbo: ^1.4.5
       typescript: ^4.8.2
     devDependencies:
@@ -37,6 +39,8 @@ importers:
       jest-watch-toggle-config: 2.0.1_x7iiopq422miy6llk6y7bvhnpm
       jest-watch-typeahead: 2.0.0_jest@29.0.2
       pinst: 3.0.0
+      test-cli-cjs: link:test-clis/test-cli-cjs
+      test-cli-esm: link:test-clis/test-cli-esm
       turbo: 1.4.5
       typescript: 4.8.2
 
