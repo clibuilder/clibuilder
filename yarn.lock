@@ -3672,7 +3672,7 @@ __metadata:
     satisfier: ^5.1.4
     search-packages: ^2.1.0
     standard-log: ^7.1.0
-    standard-log-color: ^7.0.0
+    standard-log-color: ^8.0.0
     tersify: ^3.8.3
     tslib: ^2.4.0
     type-plus: ^4.9.1
@@ -3743,10 +3743,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-map@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "color-map@npm:1.1.4"
-  checksum: f02187d0504ad178131964fa83ea8e99ed7ff93301a15a2a6f865cb6e99c2b2e65d99b1a394ddb77ac9c83f9d236283d83b68106b6fc4f6ad8b580fac8035489
+"color-map@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "color-map@npm:2.0.3"
+  checksum: 17a8de7b3f05a2cbe8c53bc220346a3866bce952a70bd078616e71bb07307021ce73ceed15c6b731d47ce4d9cef6bf8399a516d4717eeac6c3395ef27418648e
   languageName: node
   linkType: hard
 
@@ -8124,15 +8124,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"standard-log-color@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "standard-log-color@npm:7.0.0"
+"standard-log-color@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "standard-log-color@npm:8.0.0"
   dependencies:
-    color-map: ^1.1.4
-    unpartial: ^0.7.4
+    color-map: ^2.0.3
+    supports-color: ^9.2.2
+    unpartial: ^1.0.2
   peerDependencies:
-    standard-log: ">=9.1.0"
-  checksum: 81bfade775afd9dc895efc839120d52a483d31d46fe9c6cdfbfdfd6424ebcc7cfe94f42ffe41142f1945a13db1a5c9d20edaf26090d4c77c8382ca446942a73f
+    standard-log: ">=10.0.0"
+  checksum: 598bd23a215201071484495182ee02e9363f046e5e6732bfd22d11b87fb0058df94a1a4fe35d91d7f41d8ecf541e9bbcefa1f7662cb34e0952e67dcd82e33548
   languageName: node
   linkType: hard
 
@@ -8334,6 +8335,13 @@ __metadata:
   dependencies:
     has-flag: ^4.0.0
   checksum: c052193a7e43c6cdc741eb7f378df605636e01ad434badf7324f17fb60c69a880d8d8fcdcb562cf94c2350e57b937d7425ab5b8326c67c2adc48f7c87c1db406
+  languageName: node
+  linkType: hard
+
+"supports-color@npm:^9.2.2":
+  version: 9.2.2
+  resolution: "supports-color@npm:9.2.2"
+  checksum: 976d84877402fc38c1d43b1fde20b0a8dc0283273f21cfebe4ff7507d27543cdfbeec7db108a96b82d694465f06d64e8577562b05d0520b41710088e0a33cc50
   languageName: node
   linkType: hard
 
@@ -8953,6 +8961,13 @@ __metadata:
   version: 0.7.5
   resolution: "unpartial@npm:0.7.5"
   checksum: d38b2ba134ad94c7cd2148001865948541da93b51560aa63056940924c3f4cc9eb52da196e7f45df369aa414e5202ddc9483352e663245b4c3b28503573e0ec9
+  languageName: node
+  linkType: hard
+
+"unpartial@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "unpartial@npm:1.0.2"
+  checksum: 17ccbcf29f0ea00f5d897b2e387f4b168d68525d8242eab60e2c5959ceca9f473c1f063966e74c926b9b51656efb5ef046b8a77e427926f8fd1b8601c4c81a92
   languageName: node
   linkType: hard
 
