@@ -28,6 +28,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
       loadingConfig.then(config => {
         s.config = config
         if (config?.plugins) {
+          console.info('plugins', config.plugins)
           return context
             .loadPlugins(config.plugins)
             .then(commands => s.command.commands.push(...commands.map(c => adjustCommand(s.command, c))))

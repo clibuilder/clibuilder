@@ -15,6 +15,7 @@ it('will not have parse() if there is no `config`, `keywords` and have not defin
   const [builder] = setupBuilderTest()
   isType.equal<true, never, (keyof typeof builder) & 'parse'>()
   expect((builder as any).parse).toBeUndefined()
+  // call parse to wait for `loadingConfig` to complete
   await builder.default({ run() { } }).parse([])
 })
 
