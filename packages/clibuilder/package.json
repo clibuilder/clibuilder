@@ -24,7 +24,10 @@
   },
   "sideEffects": false,
   "type": "module",
-  "exports": "./esm/index.js",
+  "exports": {
+    "import": "./esm/index.js",
+    "require": "./cjs/index.js"
+  },
   "types": "./esm/index.d.ts",
   "files": [
     "esm",
@@ -33,7 +36,9 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "run-p build:cjs build:esm",
+    "build:cjs": "esbuild ts/index.ts --bundle --platform=node --outfile=cjs/index.js && ncp package.cjs.json cjs/package.json",
+    "build:esm": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf .nyc_output .ts coverage lib libm esm",
     "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --maxWorkers=60%",
@@ -53,8 +58,8 @@
     "js-yaml": "^4.1.0",
     "pad-right": "^0.2.2",
     "search-packages": "^2.1.0",
-    "standard-log": "^9.1.7",
-    "standard-log-color": "^7.0.2",
+    "standard-log": "^10.0.0",
+    "standard-log-color": "^8.0.0",
     "tslib": "^2.4.0",
     "type-plus": "^4.11.1",
     "wordwrap": "^1.0.0",
@@ -73,6 +78,7 @@
     "clibuilder-plugin-dummy": "^1.0.1",
     "cross-env": "^7.0.3",
     "depcheck": "^1.4.3",
+    "esbuild": "^0.15.7",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-harmony": "^7.1.0",
@@ -81,6 +87,7 @@
     "jest-watch-suspend": "^1.1.2",
     "jest-watch-toggle-config": "^2.0.1",
     "jest-watch-typeahead": "^2.0.0",
+    "ncp": "^2.0.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
     "satisfier": "^5.2.2",

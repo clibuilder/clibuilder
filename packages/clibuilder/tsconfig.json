@@ -1,18 +1,16 @@
 {
   "compilerOptions": {
+    "composite": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "incremental": true,
-    "inlineSourceMap": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "newLine": "LF",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "esm",
-    "removeComments": false,
-    "skipLibCheck": true,
+    "rootDir": "ts",
     "strict": true,
     "target": "ES2020"
   },
