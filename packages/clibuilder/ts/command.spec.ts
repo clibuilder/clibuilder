@@ -1,8 +1,8 @@
 import { isType } from 'type-plus'
-import { command, z } from '.'
-import { builder } from './builder'
-import { searchPluginsCommand } from './commands'
-import { argv, getLogMessage, mockContext } from './test-utils'
+import { command, z } from './index.js'
+import { builder } from './builder.js'
+import { searchPluginsCommand } from './commands.js'
+import { argv, getLogMessage, mockContext } from './test-utils/index.js'
 
 test('when no argument and options, args will have help', () => {
   command({

@@ -1,7 +1,7 @@
-import { builder } from './builder'
-import { cli } from './cli'
-import * as tu from './test-utils'
-import { getLogMessage, testCommandContext } from './test-utils'
+import { builder } from './builder.js'
+import { cli } from './cli.js'
+import * as tu from './test-utils/index.js'
+import { getLogMessage, testCommandContext } from './test-utils/index.js'
 
 export async function testCommand(command: cli.Command, argv: string, config?: Record<string, any>) {
   const ctx = testCommandContext(config)

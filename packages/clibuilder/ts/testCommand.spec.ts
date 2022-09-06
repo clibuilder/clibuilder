@@ -1,4 +1,4 @@
-import { command, testCommand } from '.'
+import { command, testCommand } from './index.js'
 
 test('get result', async () => {
   const { result } = await testCommand(command({

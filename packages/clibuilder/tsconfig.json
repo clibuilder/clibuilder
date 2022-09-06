@@ -1,5 +1,19 @@
 {
-  "extends": "./tsconfig.libm.json",
+  "compilerOptions": {
+    "composite": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "newLine": "LF",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "esm",
+    "rootDir": "ts",
+    "strict": true,
+    "target": "ES2020"
+  },
   "include": [
     "ts",
     "typings"
