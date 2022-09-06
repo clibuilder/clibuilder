@@ -39,7 +39,7 @@
     "ts"
   ],
   "scripts": {
-    "build": "yarn build:libm && yarn build:lib",
+    "build": "run-p build:libm build:lib",
     "build:lib": "tsc -p tsconfig.lib.json",
     "build:libm": "tsc -p tsconfig.libm.json",
     "build:watch": "tsc --watch",
@@ -47,11 +47,11 @@
     "coverage": "jest --coverage --maxWorkers=60%",
     "depcheck": "depcheck",
     "lint": "eslint --ext=js,ts .",
-    "nuke": "yarn clean && rimraf node_modules",
+    "nuke": "run-s clean && rimraf node_modules",
     "test": "jest --maxWorkers=60%",
     "test:watch": "jest --watch --maxWorkers=60%",
     "verify": "npm-run-all clean -p build lint coverage depcheck",
-    "watch": "yarn test:watch"
+    "watch": "jest --watch --maxWorkers=60%"
   },
   "dependencies": {
     "@types/node": "^16.0.0",
@@ -83,6 +83,7 @@
     "clibuilder-plugin-dummy": "^1.0.1",
     "depcheck": "^1.4.3",
     "eslint": "^8.16.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-harmony": "^7.1.0",
     "jest": "^29.0.0",
     "jest-validate": "^29.0.0",

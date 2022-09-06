@@ -1,0 +1,6 @@
+packages:
+  - packages/*
+  - test-apps/*
+  - test-clis/*
+  - test-clis/*/fixtures/**
+  - test-plugins/*
