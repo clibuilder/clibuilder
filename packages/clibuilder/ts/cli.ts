@@ -1,7 +1,7 @@
 import { UnionOfValues } from 'type-plus'
 import * as z from 'zod'
-import { builder } from './builder'
-import { context } from './context'
+import { builder } from './builder.js'
+import { context } from './context.js'
 
 export function cli(options?: cli.Options): cli.Builder {
   return builder(context(), options)

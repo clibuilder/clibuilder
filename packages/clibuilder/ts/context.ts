@@ -1,18 +1,19 @@
-import findUp from 'find-up'
+import { findUpSync } from 'find-up'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
-import { getLogger, logLevels } from 'standard-log'
-import { getAppPath } from './getAppPath'
-import { loadAppInfo } from './loadAppInfo'
-import { loadPlugins } from './loadPlugins'
-import { createBuilderUI, createUI } from './ui'
+import { createStandardLog, logLevels } from 'standard-log'
+import { getAppPath } from './getAppPath.js'
+import { loadAppInfo } from './loadAppInfo.js'
+import { loadPlugins } from './loadPlugins.js'
+import { createBuilderUI, createUI } from './ui.js'
 
 /**
  * Creates an app context that provides interactions to external system
  * This
  */
 export function context() {
-  const ui = createBuilderUI(createUI(getLogger('clibuilder', { level: logLevels.all })))
+  const sl = createStandardLog({ logLevel: logLevels.all })
+  const ui = createBuilderUI(createUI(sl.getLogger('clibuilder')))
   return {
     getAppPath,
     loadAppInfo(appPkgPath: string) {
@@ -72,7 +73,7 @@ function getConfigFilenames(configFileName: string) {
 
 function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
   for (const filename of filenames) {
-    let filePath = findUp.sync(filename, { cwd })
+    let filePath = findUpSync(filename, { cwd })
     if (filePath) return filePath
 
     filePath = path.join(home, filename)

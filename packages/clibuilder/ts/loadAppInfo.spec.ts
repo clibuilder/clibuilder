@@ -1,11 +1,12 @@
-import a from 'assertron'
+import { a } from 'assertron'
 import { getLogger } from 'standard-log'
-import { loadAppInfo } from './loadAppInfo'
-import { getFixturePath } from './test-utils'
+import { loadAppInfo } from './loadAppInfo.js'
+import { getFixturePath } from './test-utils/index.js'
+import { createUI } from './ui.js'
 
 function testLoadAppInfo(fixturePath: string) {
   const log = getLogger('test-loadAppInfo')
-  return loadAppInfo(log, getFixturePath(fixturePath))
+  return loadAppInfo(createUI(log), getFixturePath(fixturePath))
 }
 
 test('no package.json', () => {

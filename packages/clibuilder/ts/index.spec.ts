@@ -1,6 +1,6 @@
 // import t from 'assert'
 // import a from 'assertron'
-// import { argCommand, booleanOptionsCommand, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, noopCommand, verboseCommand } from '.'
+// import { argCommand, booleanOptionsCommand, echoCommand, echoNameOptionCommand, errorCommand, generateDisplayedMessage, groupOptionsCommand, noopCommand, verboseCommand } from './index.js'
 // import { createCliTest, echoCommandHelpMessage, echoDebugCommand } from './test-util'
 // import { MissingArguments } from './errors'
 

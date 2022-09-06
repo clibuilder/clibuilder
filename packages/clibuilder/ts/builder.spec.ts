@@ -1,8 +1,8 @@
-import a from 'assertron'
+import { a } from 'assertron'
 import { assertType, IsExtend, isType } from 'type-plus'
-import { cli, command, z } from '.'
-import { builder } from './builder'
-import { argv, getFixturePath, getLogMessage, mockContext } from './test-utils'
+import { cli, command, z } from './index.js'
+import { builder } from './builder.js'
+import { argv, getFixturePath, getLogMessage, mockContext } from './test-utils/index.js'
 
 describe('with options', () => {
   test('specify name, version, and description will skip loading package.json', () => {
@@ -293,7 +293,6 @@ argv: node string-bin --debug-cli`)
     await cli.loadPlugins().parse(argv('string-bin --debug-cli'))
     const msg = getLogMessage(ctx.reporter)
     expect(msg).toContain(`lookup local plugins with keyword 'plugin-cli-plugin'`)
-    expect(msg).toContain(`lookup global plugins with keyword 'plugin-cli-plugin'`)
     expect(msg).toContain(`found local plugins cli-plugin-one`)
     expect(msg).toContain(`activating plugin cli-plugin-one`)
     expect(msg).toContain(`adding command one`)
