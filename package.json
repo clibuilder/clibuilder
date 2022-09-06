@@ -6,25 +6,23 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
+    "clibuilder": "pnpm run --filter clibuilder",
     "coverage": "turbo run coverage",
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev --parallel",
     "postinstall": "husky install",
-    "just-func": "yarn workspace just-func",
     "lint": "turbo run lint",
     "nuke": "turbo run nuke",
     "nuke:local": "rimraf node_modules || true",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "prepare": "husky install",
-    "publish": "yarn cs publish",
-    "release": "turbo run build",
+    "release": "pnpm cs publish",
     "size": "turbo run size",
     "test": "turbo run test",
     "verify": "turbo run lint build coverage depcheck size",
-    "version": "yarn cs version",
-    "watch": "jest --watch"
+    "version": "yarn cs version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.22.0",
@@ -39,5 +37,5 @@
     "pinst": "^3.0.0",
     "turbo": "^1.2.11"
   },
-  "packageManager": "yarn@3.2.3"
+  "packageManager": "pnpm@7.11.0"
 }
