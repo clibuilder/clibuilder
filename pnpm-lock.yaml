@@ -30,6 +30,7 @@ importers:
       assertron: ^10.0.0
       babel-jest: ^28.1.3
       bad-plugin: workspace:*
+      bad-plugin-no-index: workspace:*
       chalk: ^5.0.1
       cjs-plugin: workspace:*
       clibuilder-plugin-dummy: ^1.0.1
@@ -50,7 +51,6 @@ importers:
       npm-run-all: ^4.1.5
       pad-right: ^0.2.2
       rimraf: ^3.0.2
-      satisfier: ^5.2.2
       search-packages: ^2.1.0
       standard-log: ^10.0.0
       standard-log-color: ^8.0.0
@@ -84,6 +84,7 @@ importers:
       assertron: 10.0.0
       babel-jest: 28.1.3_@babel+core@7.19.0
       bad-plugin: link:../../test-plugins/bad-plugin
+      bad-plugin-no-index: link:../../test-plugins/bad-plugin-no-index
       cjs-plugin: link:../../test-plugins/cjs-plugin
       clibuilder-plugin-dummy: 1.0.1
       cross-env: 7.0.3
@@ -100,7 +101,6 @@ importers:
       ncp: 2.0.0
       npm-run-all: 4.1.5
       rimraf: 3.0.2
-      satisfier: 5.2.2
       tersify: 3.10.2
       ts-jest: 28.0.8_zxu4g4yzf72luhfyo3dvxnefyq
       typescript: 4.8.2
@@ -111,6 +111,14 @@ importers:
       clibuilder: workspace:*
     dependencies:
       bad-plugin: link:../../../../test-plugins/bad-plugin
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/bad-plugin-no-index:
+    specifiers:
+      bad-plugin-no-index: workspace:*
+      clibuilder: workspace:*
+    dependencies:
+      bad-plugin-no-index: link:../../../../test-plugins/bad-plugin-no-index
       clibuilder: link:../..
 
   packages/clibuilder/fixtures/cli-no-plugin:
@@ -167,6 +175,9 @@ importers:
       clibuilder: link:../../packages/clibuilder
 
   test-plugins/bad-plugin:
+    specifiers: {}
+
+  test-plugins/bad-plugin-no-index:
     specifiers: {}
 
   test-plugins/cjs-plugin:

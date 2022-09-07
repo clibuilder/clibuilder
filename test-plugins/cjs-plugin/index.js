@@ -6,7 +6,7 @@ module.exports = {
         name: 'echo',
         arguments: [{ name: 'arg1' }],
         run: function (args) {
-          this.ui.info('echo')
+          this.ui.info('echo', args.arg1)
           return args.arg1
         }
       }]
