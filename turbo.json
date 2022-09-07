@@ -1,27 +1,17 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "baseBranch": "origin/main",
   "pipeline": {
     "build": {
       "dependsOn": [
         "^build"
       ],
       "inputs": [
-        "ts/*.ts",
-        "ts/*.tsx",
-        "ts/**/*.ts",
-        "ts/**/*.tsx",
-        "!ts/*.spec.ts",
-        "!ts/*.spec.tsx",
-        "!ts/**/*.spec.ts",
-        "!ts/**/*.spec.tsx",
-        "!ts/*.stories.ts",
-        "!ts/*.stories.tsx",
-        "!ts/**/*.stories.ts",
-        "!ts/**/*.stories.tsx"
+        "package.json",
+        "tsconfig.*",
+        "ts/**/*.tsx?"
       ],
       "outputs": [
-        "lib/**"
+        "esm/**"
       ]
     },
     "clean": {
@@ -29,23 +19,31 @@
     },
     "coverage": {
       "dependsOn": [
-        "^build"
+        "build"
       ],
       "inputs": [
-        "ts/*.ts",
-        "ts/*.tsx",
-        "ts/**/*.ts",
-        "ts/**/*.tsx"
+        "package.json",
+        "tsconfig.*",
+        "ts/**/*.tsx?"
       ],
       "outputs": [
         "coverage/**"
       ]
     },
-    "depcheck": {},
+    "depcheck": {
+      "inputs": [
+        "package.json",
+        "ts/**/*.tsx?"
+      ]
+    },
     "dev": {
       "cache": false
     },
-    "lint": {},
+    "lint": {
+      "inputs": [
+        "ts/**/*.tsx?"
+      ]
+    },
     "size": {
       "dependsOn": [
         "build"
@@ -53,36 +51,28 @@
     },
     "test": {
       "dependsOn": [
-        "^build"
+        "build"
       ],
       "inputs": [
-        "ts/*.ts",
-        "ts/*.tsx",
-        "ts/**/*.ts",
-        "ts/**/*.tsx"
+        "package.json",
+        "tsconfig.*",
+        "ts/**/*.tsx?"
       ]
     },
     "verify": {
-      "inputs": [
-        "ts/*.ts",
-        "ts/*.tsx",
-        "ts/**/*.ts",
-        "ts/**/*.tsx"
+      "dependsOn": [
+        "build"
       ],
-      "outputs": [
-        "coverage/**",
-        "lib/**"
-      ]
+      "cache": false
     },
     "watch": {
       "dependsOn": [
-        "^build"
+        "build"
       ],
       "inputs": [
-        "ts/*.ts",
-        "ts/*.tsx",
-        "ts/**/*.ts",
-        "ts/**/*.tsx"
+        "package.json",
+        "tsconfig.*",
+        "ts/**/*.tsx?"
       ]
     }
   }
