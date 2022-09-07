@@ -284,19 +284,21 @@ description:
 argv: node string-bin --debug-cli`)
   })
   test('log loading plugins', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'one-plugin')
+    const ctx = mockContext('cli-with-one-plugin/bin.js')
     const cli = builder(ctx, {
-      name: 'plugin-cli',
+      name: 'test-cli',
       version: '1.0.0',
       description: ''
-    })
-    await cli.loadPlugins().parse(argv('string-bin --debug-cli'))
+    }).command({
+      name: 'local',
+      run() { return 'local' }
+    }).loadPlugins(['cjs-plugin'])
+
+      await cli.parse(argv('test-cli --debug-cli'))
     const msg = getLogMessage(ctx.reporter)
-    expect(msg).toContain(`lookup local plugins with keyword 'plugin-cli-plugin'`)
-    expect(msg).toContain(`found local plugins cli-plugin-one`)
-    expect(msg).toContain(`activating plugin cli-plugin-one`)
+    expect(msg).toContain(`activating plugin cjs-plugin`)
     expect(msg).toContain(`adding command one`)
-    expect(msg).toContain(`activated plugin cli-plugin-one`)
+    expect(msg).toContain(`activated plugin cjs-plugin`)
   })
   test('command will not get the option', async () => {
     const ctx = mockContext('single-bin/bin.js')
@@ -365,7 +367,7 @@ describe('fluent syntax', () => {
 
   test('loadPlugins() removes itself', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadPlugins()
+    const a = cli.loadPlugins([])
     isType.equal<true, never, keyof typeof a & 'loadPlugins'>()
   })
 
@@ -383,7 +385,7 @@ describe('fluent syntax', () => {
 
   test('loadPlugins() adds parse()', () => {
     const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadPlugins()
+    const a = cli.loadPlugins([])
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
 })
@@ -603,43 +605,19 @@ describe('loadConfig()', () => {
   })
 })
 
-describe('loadPlugins()', () => {
-  test('use "{name}-plugin" as keyword to look for plugins', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'one-plugin')
-    const cli = builder(ctx, {
-      name: 'plugin-cli',
-      version: '1.0.0',
-      description: ''
-    }).loadPlugins()
+it('can have its own command while loading plugins', async () => {
+  const ctx = mockContext('cli-with-one-plugin/bin.js')
+  const cli = builder(ctx, {
+    name: 'test-cli',
+    version: '1.0.0',
+    description: ''
+  }).command({
+    name: 'local',
+    run() { return 'local' }
+  }).loadPlugins(['cjs-plugin'])
 
-    const actual = await cli.parse(argv('string-bin one echo bird'))
-    expect(actual).toEqual('bird')
-  })
-  test('use custom keyword to look for plugins', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'alt-keyword-plugin')
-    const cli = builder(ctx, {
-      name: 'clibuilder',
-      version: '1.0.0',
-      description: ''
-    }).loadPlugins('x-file')
-    const actual = await cli.parse(argv('string-bin x echo'))
-    expect(actual).toEqual('echo invoked')
-  })
-
-  test('pluginCli can specify its own commands', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx, {
-      name: 'defaultCommands',
-      version: '1.0.0',
-      description: ''
-    }).command({
-      name: 'local',
-      run() { return 'local' }
-    })
-
-    const actual = await cli.parse(argv('string-bin local'))
-    expect(actual).toBe('local')
-  })
+  const actual = await cli.parse(argv('test-cli local'))
+  expect(actual).toBe('local')
 })
 
 function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {

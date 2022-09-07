@@ -1,0 +1,6 @@
+**/cjs/
+**/esm/
+**/fixtures/
+**/fixtures2/
+**/node_modules
+**/*.tsbuildinfo

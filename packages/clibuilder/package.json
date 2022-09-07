@@ -44,13 +44,13 @@
     "build:esm": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
-    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --maxWorkers=60%",
+    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "depcheck": "depcheck",
     "lint": "eslint --ext=js,ts .",
     "nuke": "run-s clean && rimraf node_modules",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --maxWorkers=60%",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "verify": "npm-run-all clean -p build lint coverage depcheck",
-    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules pnpm test:watch"
+    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch"
   },
   "dependencies": {
     "@types/node": "^14.18.27",
@@ -72,8 +72,11 @@
     "@types/wordwrap": "github:types/wordwrap",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
+    "@unional/fixture": "^3.1.4",
     "assertron": "^10.0.0",
     "babel-jest": "^28.1.3",
+    "bad-plugin": "workspace:*",
+    "cjs-plugin": "workspace:*",
     "clibuilder-plugin-dummy": "^1.0.1",
     "cross-env": "^7.0.3",
     "depcheck": "^1.4.3",

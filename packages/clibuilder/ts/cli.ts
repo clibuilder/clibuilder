@@ -32,7 +32,7 @@ export namespace cli {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadPlugins<T>(this: T, keyword?: string): Omit<T, 'loadPlugins'> & Executable,
+    loadPlugins<T>(this: T, pluginNames: string[]): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
       ConfigType extends z.ZodTypeAny,

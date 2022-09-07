@@ -9,3 +9,6 @@ ignores:
   - standard-log-color
   - ts-jest
   - tslib
+  - bad-plugin
+  - cjs-plugin
+  - esm-plugin

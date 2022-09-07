@@ -1,6 +1,8 @@
 cjs
 dist*
 esm
+fixtures/**
+fixtures2/**
 lib*
 node_modules
 out*
