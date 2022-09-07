@@ -10,5 +10,6 @@ ignores:
   - ts-jest
   - tslib
   - bad-plugin
+  - bad-plugin-no-index
   - cjs-plugin
   - esm-plugin
