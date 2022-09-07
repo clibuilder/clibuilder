@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "bad-plugin": "workspace:*",
+    "clibuilder": "workspace:*"
+  }
+}

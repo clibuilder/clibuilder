@@ -1,28 +1,20 @@
-import { findByKeywords } from 'find-installed-packages'
-import path from 'path'
 import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
 
-export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, keyword: string) {
-  ui.debug(`lookup local plugins with keyword '${keyword}' at ${cwd}`)
-  return findByKeywords([keyword], { cwd }).then(pluginNames => {
-    if (pluginNames.length > 0) ui.debug('found local plugins', pluginNames)
-    else ui.debug(`no local plugin with keyword: ${keyword}`)
-    return pluginNames
-  }).then(pluginNames => activatePlugins(cwd, ui, pluginNames))
+export async function loadPlugins({ cwd, ui }: { cwd: string, ui: createUI.UI }, pluginNames: string[]) {
+  return activatePlugins(cwd, ui, pluginNames)
 }
 
 async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
-  const entries = await Promise.all(pluginNames.map(async name => {
+  const entries = await Promise.all(pluginNames.map(name => {
     ui.debug('loading plugin', name)
-    const pluginModule = await loadModule(cwd, ui, name)
-    return { name, pluginModule }
+    return loadModule(cwd, ui, name).then(pluginModule => ({ name, pluginModule }))
   }))
 
   const commands: cli.Command<any, any>[] = []
   entries.filter(({ name, pluginModule }) => {
     if (!isValidPlugin(pluginModule)) {
-      ui.warn('not a valid plugin', name)
+      ui.warn('not a valid plugin:', name)
       return false
     }
     return true
@@ -38,13 +30,12 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
 }
 
 async function loadModule(cwd: string, ui: createUI.UI, name: string) {
-  const pluginPath = path.resolve(cwd, 'node_modules', name)
   try {
-    return await import(pluginPath)
+    return await import(name)
   }
   catch (e: any) {
     ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
-    ui.warn(`plugin path: ${pluginPath}`)
+    ui.warn(`cwd: ${cwd}`)
     ui.warn(`error: `, e.message || e)
     return undefined
   }

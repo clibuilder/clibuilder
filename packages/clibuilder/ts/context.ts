@@ -37,9 +37,9 @@ export function context() {
         this.ui.warn(`no config found:\n  ${configFileNames.join('\n  ')}`)
       }
     },
-    async loadPlugins(keyword: string) {
+    async loadPlugins(pluginNames: string[]) {
       const cwd = this.process.cwd()
-      return loadPlugins({ cwd, ui: this.ui }, keyword)
+      return loadPlugins({ cwd, ui: this.ui }, pluginNames)
     },
     // log,
     process,

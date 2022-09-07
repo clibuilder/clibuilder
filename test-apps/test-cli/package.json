@@ -1,0 +1,7 @@
+{
+  "name": "test-cli",
+  "bin": "./bin.js",
+  "dependencies": {
+    "clibuilder": "workspace:*"
+  }
+}

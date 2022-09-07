@@ -21,11 +21,10 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     name: s.name,
     version: s.version || '',
     description,
-    loadPlugins(keyword?: string) {
-      s.keyword = keyword || `${s.name}-plugin`
+    loadPlugins(pluginNames: string[]) {
       s.command.commands.push(adjustCommand(s.command, pluginsCommand))
       pending.push(context
-        .loadPlugins(s.keyword)
+        .loadPlugins(pluginNames)
         .then(commands => s.command.commands.push(...commands.map(c => adjustCommand(s.command, c)))))
       return { ...this, parse }
     },

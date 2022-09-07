@@ -1,0 +1,6 @@
+{
+  "type":"commonjs",
+  "devDependencies": {
+    "clibuilder": "workspace:*"
+  }
+}
