@@ -1,4 +1,7 @@
-node_modules
+cjs
 dist*
+esm
 lib*
+node_modules
 out*
+*.tsbuildinfo
