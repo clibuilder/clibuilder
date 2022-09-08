@@ -1,6 +1,7 @@
 import { findUpSync } from 'find-up'
 import { existsSync, readFileSync, statSync } from 'fs'
 import yaml from 'js-yaml'
+import { pathToFileURL } from 'node:url'
 import path from 'path'
 import { UI } from './cli.js'
 import { findPackageJson, getHomePath, getPackageJson } from './platform.js'
@@ -77,7 +78,7 @@ async function readConfig(configFilePath: string) {
       return yaml.load(content)
     }
     catch {
-      const m = await import(configFilePath)
+      const m = await import(pathToFileURL(configFilePath).href)
       if (m.activate) return m
       return m.default
     }

@@ -1,5 +1,9 @@
 {
   "name": "has-config",
   "version": "1.0.0",
-  "description": ""
+  "description": "",
+  "type": "commonjs",
+  "dependencies": {
+    "clibuilder": "workspace:*"
+  }
 }
