@@ -68,6 +68,8 @@ function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) 
   }
 }
 
+// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
+// istanbul ignore next
 async function readConfig(configFilePath: string) {
   const content = readFileSync(configFilePath, 'utf-8')
   try {

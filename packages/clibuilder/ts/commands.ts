@@ -39,6 +39,8 @@ export function getBaseCommand(description: string) {
   })
 }
 
+// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
+// istanbul ignore next
 export const listPluginsCommand = command({
   name: 'list',
   alias: ['ls'],

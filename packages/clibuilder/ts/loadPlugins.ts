@@ -13,6 +13,8 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
 
   const commands: cli.Command<any, any>[] = []
   entries.filter(({ name, pluginModule }) => {
+    // ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
+    // istanbul ignore next
     if (!isValidPlugin(pluginModule)) {
       ui.warn(`not a valid plugin`, name)
       return false
@@ -29,6 +31,8 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
   return commands
 }
 
+// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
+// istanbul ignore next
 async function loadModule(cwd: string, ui: createUI.UI, name: string) {
   try {
     return await import(name)
