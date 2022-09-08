@@ -393,6 +393,12 @@ importers:
     dependencies:
       clibuilder: link:../../packages/clibuilder
 
+  test-apps/test-cli-esm:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../../packages/clibuilder
+
   test-plugins/bad-plugin:
     specifiers: {}
 
