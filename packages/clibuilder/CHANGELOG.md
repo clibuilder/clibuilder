@@ -1,5 +1,50 @@
 # Change Log
 
+## 8.0.0
+
+### Major Changes
+
+- 10d018e: `name` and `version` is now required, will not load from the CLI's `package.json` anymore.
+  This allows the CLI to be used as standalone app.
+
+  Change `configName` to `config`.
+  If not specified, config will not be loaded.
+  You can set it to `true` or to a specific config file name.
+
+  Config is now used to control which plugin to load,
+  similar to other tools such as `eslint` and `jest`.
+  It accepts `json`, `yaml`, or `js` file.
+
+  To specify plugins, add them under the `plugins` property:
+
+  ```json
+  {
+    "plugins": ["your-plugin"]
+  }
+  ```
+
+  As such, `loadPlugins()` is removed.
+
+  Change `keyword` to `keywords`. It is now used for searching and listing of plugins,
+  instead of controlling whether to load config.
+
+- e121c23: Load plugins explicitly.
+  This will be removed complete later on when adding config file support.
+
+  Remove `findByKeywords()` in `loadPlugins()` as a result (for loading local plugins automatically).
+
+- d14a215: Remove global plugin searches.
+  In 8.0, we are dropping keyword-based plugin loading.
+  Instead, we will support loading plugins based on config file.
+
+  Updated dependencies.
+
+### Patch Changes
+
+- bccc80f: fix(clibuilder): export types
+
+  The top-level `typings` field is not picked up by ESM use case.
+
 ## 7.2.1
 
 ### Patch Changes
