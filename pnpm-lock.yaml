@@ -23,7 +23,7 @@ importers:
       '@babel/core': ^7.19.0
       '@types/jest': ^29.0.0
       '@types/js-yaml': ^4.0.5
-      '@types/node': ^14.18.27
+      '@types/node': ^16.0.0
       '@types/tmp': ^0.2.3
       '@types/wordwrap': github:types/wordwrap
       '@typescript-eslint/eslint-plugin': ^5.36.2
@@ -68,7 +68,7 @@ importers:
       wordwrap: ^1.0.0
       zod: ^3.19.0
     dependencies:
-      '@types/node': 14.18.27
+      '@types/node': 16.11.58
       find-installed-packages: 3.0.1
       find-up: 6.3.0
       js-yaml: 4.1.0
@@ -102,7 +102,7 @@ importers:
       eslint-config-prettier: 8.5.0_eslint@8.23.0
       eslint-plugin-harmony: 7.1.0_bsdkc7v2bs3qkwrcmfjxye37ma
       esm-plugin: link:../../test-plugins/esm-plugin
-      jest: 29.0.2_@types+node@14.18.27
+      jest: 29.0.2_@types+node@16.11.58
       jest-validate: 29.0.2
       jest-watch-suspend: 1.1.2_jest@29.0.2
       jest-watch-toggle-config: 2.0.1_x7iiopq422miy6llk6y7bvhnpm
@@ -1685,6 +1685,10 @@ packages:
 
   /@types/node/14.18.27:
     resolution: {integrity: sha512-DcTUcwT9xEcf4rp2UHyGAcmlqG4Mhe7acozl5vY2xzSrwP1z19ZVyjzQ6DsNUrvIadpiyZoQCTHFt4t2omYIZQ==}
+    dev: true
+
+  /@types/node/16.11.58:
+    resolution: {integrity: sha512-uMVxJ111wpHzkx/vshZFb6Qni3BOMnlWLq7q9jrwej7Yw/KvjsEbpxCCxw+hLKxexFMc8YmpG8J9tnEe/rKsIg==}
 
   /@types/node/18.7.8:
     resolution: {integrity: sha512-/YP55EMK2341JkODUb8DM9O0x1SIz2aBvyF33Uf1c76St3VpsMXEIW0nxuKkq/5cxnbz0RD9cfwNZHEAZQD3ag==}
@@ -3953,7 +3957,7 @@ packages:
       - supports-color
     dev: true
 
-  /jest-cli/29.0.2_@types+node@14.18.27:
+  /jest-cli/29.0.2_@types+node@16.11.58:
     resolution: {integrity: sha512-tlf8b+4KcUbBGr25cywIi3+rbZ4+G+SiG8SvY552m9sRZbXPafdmQRyeVE/C/R8K+TiBAMrTIUmV2SlStRJ40g==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     hasBin: true
@@ -3970,7 +3974,7 @@ packages:
       exit: 0.1.2
       graceful-fs: 4.2.10
       import-local: 3.1.0
-      jest-config: 29.0.2_@types+node@14.18.27
+      jest-config: 29.0.2_@types+node@16.11.58
       jest-util: 29.0.2
       jest-validate: 29.0.2
       prompts: 2.4.2
@@ -3981,7 +3985,7 @@ packages:
       - ts-node
     dev: true
 
-  /jest-config/29.0.2_@types+node@14.18.27:
+  /jest-config/29.0.2_@types+node@16.11.58:
     resolution: {integrity: sha512-RU4gzeUNZAFktYVzDGimDxeYoaiTnH100jkYYZgldqFamaZukF0IqmFx8+QrzVeEWccYg10EEJT3ox1Dq5b74w==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
@@ -3996,7 +4000,7 @@ packages:
       '@babel/core': 7.19.0
       '@jest/test-sequencer': 29.0.2
       '@jest/types': 29.0.2
-      '@types/node': 14.18.27
+      '@types/node': 16.11.58
       babel-jest: 29.0.2_@babel+core@7.19.0
       chalk: 4.1.2
       ci-info: 3.3.2
@@ -4359,7 +4363,7 @@ packages:
       jest: '>=23'
     dependencies:
       chalk: 2.4.2
-      jest: 29.0.2_@types+node@14.18.27
+      jest: 29.0.2_@types+node@16.11.58
       unpartial: 0.6.4
     dev: true
 
@@ -4371,7 +4375,7 @@ packages:
       jest-validate: '>= 23.4.0'
     dependencies:
       chalk: 4.1.2
-      jest: 29.0.2_@types+node@14.18.27
+      jest: 29.0.2_@types+node@16.11.58
       jest-validate: 29.0.2
     dev: true
 
@@ -4383,7 +4387,7 @@ packages:
     dependencies:
       ansi-escapes: 5.0.0
       chalk: 4.1.2
-      jest: 29.0.2_@types+node@14.18.27
+      jest: 29.0.2_@types+node@16.11.58
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -4428,7 +4432,7 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /jest/29.0.2_@types+node@14.18.27:
+  /jest/29.0.2_@types+node@16.11.58:
     resolution: {integrity: sha512-enziNbNUmXTcTaTP/Uq5rV91r0Yqy2UKzLUIabxMpGm9YHz8qpbJhiRnNVNvm6vzWfzt/0o97NEHH8/3udoClA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     hasBin: true
@@ -4441,7 +4445,7 @@ packages:
       '@jest/core': 29.0.2
       '@jest/types': 29.0.2
       import-local: 3.1.0
-      jest-cli: 29.0.2_@types+node@14.18.27
+      jest-cli: 29.0.2_@types+node@16.11.58
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
@@ -5881,7 +5885,7 @@ packages:
       bs-logger: 0.2.6
       esbuild: 0.15.7
       fast-json-stable-stringify: 2.1.0
-      jest: 29.0.2_@types+node@14.18.27
+      jest: 29.0.2_@types+node@16.11.58
       jest-util: 28.1.3
       json5: 2.2.1
       lodash.memoize: 4.1.2
