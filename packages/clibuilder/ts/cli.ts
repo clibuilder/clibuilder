@@ -3,7 +3,7 @@ import * as z from 'zod'
 import { builder } from './builder.js'
 import { context } from './context.js'
 
-export function cli(options?: cli.Options): cli.Builder {
+export function cli(options: cli.Options): cli.Builder {
   return builder(context(), options)
 }
 
@@ -12,27 +12,33 @@ export namespace cli {
     /**
      * Name of the cli
     */
-    name?: string,
-    version?: string,
+    name: string,
+    /**
+     * Version of the cli.
+     * This is typically the same as your package version.
+     */
+    version: string,
+    /**
+     * A short description of the cli.
+     */
     description?: string,
     /**
-     * Specify the config name if differs from the cli name.
-     * e.g. name = `cli`,
-     * configName = `my-cli`,
-     * will load the first config named as:
-     * - `my-cli.json`
-     * - `.my-clirc.json`
-     * - `.my-clirc`
-     * in that order
+     * Indicate the cli accepts configuration.
+     * Set it to true to read config based on the cli name,
+     * or specify a different config name.
      */
-    configName?: string
+    config?: string | boolean,
+    /**
+     * Keywords associated with this cli.
+     * When specified, plugin commands will be available to search for available plugins.
+     */
+    keywords?: string[]
   }
 
   export type Builder = {
     readonly name: string,
     readonly version: string,
     readonly description: string,
-    loadPlugins<T>(this: T, pluginNames: string[]): Omit<T, 'loadPlugins'> & Executable,
     default<
       T,
       ConfigType extends z.ZodTypeAny,
@@ -75,7 +81,7 @@ export namespace cli {
       run(this: {
         ui: UI,
         config: z.infer<ConfigType>,
-        keyword: string,
+        keywords: string[],
         cwd: string,
         context: Context
       }, args: Command.RunArgs<A, O>): Promise<any> | any
@@ -99,7 +105,7 @@ export namespace cli {
         run(this: {
           ui: UI,
           config: z.infer<ConfigType>,
-          keyword: string,
+          keywords: string[],
           cwd: string,
         }, args: RunArgs<A, O>): Promise<any> | any
       } | {

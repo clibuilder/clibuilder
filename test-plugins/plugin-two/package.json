@@ -1,0 +1,5 @@
+{
+  "name": "plugin-two",
+  "keywords": ["test-cli"],
+  "type": "module"
+}

@@ -45,9 +45,13 @@ export const listPluginsCommand = command({
   description: 'List installed plugins',
   context: { findByKeywords },
   async run() {
-    const plugins = await this.context.findByKeywords([this.keyword], this)
+    if (this.keywords.length === 0) {
+      this.ui.warn('unable to list plugins because this CLI has no keywords specified')
+      return []
+    }
+    const plugins = await this.context.findByKeywords(this.keywords, this)
     if (plugins.length === 0) {
-      this.ui.info(`no plugin with keyword: ${this.keyword}`)
+      this.ui.info(`no plugin with keywords: ${this.keywords.join(', ')}`)
       return []
     }
     else if (plugins.length === 1) {
@@ -68,9 +72,9 @@ export const searchPluginsCommand = command({
   description: 'Search only for available plugins',
   context: { searchByKeywords },
   async run() {
-    const packages = await this.context.searchByKeywords([this.keyword])
+    const packages = await this.context.searchByKeywords(this.keywords)
     if (packages.length === 0) {
-      this.ui.info(`no package with keyword: ${this.keyword}`)
+      this.ui.info(`no package with keywords: ${this.keywords.join(', ')}`)
     }
     else if (packages.length === 1) {
       this.ui.info(`found one package: ${packages[0]}`)

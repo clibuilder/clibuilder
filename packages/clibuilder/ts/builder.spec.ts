@@ -1,156 +1,98 @@
 import { a } from 'assertron'
-import { assertType, IsExtend, isType } from 'type-plus'
-import { cli, command, z } from './index.js'
+import { assertType, IsExtend, isType, required } from 'type-plus'
 import { builder } from './builder.js'
-import { argv, getFixturePath, getLogMessage, mockContext } from './test-utils/index.js'
+import { mockContext } from './context.mock.js'
+import { cli, command, z } from './index.js'
+import { argv, getLogMessage } from './test-utils/index.js'
 
-describe('with options', () => {
-  test('specify name, version, and description will skip loading package.json', () => {
-    const ctx = mockContext('no-pjson/bin.js')
-    ctx.getAppPath = () => { fail('should not reach') }
-    const cli = builder(ctx, {
-      name: 'app',
-      version: '1.0.0',
-      description: 'my app'
-    })
-    a.satisfies(cli, {
-      name: 'app',
-      version: '1.0.0',
-      description: 'my app'
-    })
-  })
+function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
+  const opt = required({ name: 'test-cli', version: '1.0.0' }, options)
+  const context = mockContext(contextParams)
+  return [builder(context, opt), context] as const
+}
 
-  test('get info from package.json', () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx, {})
-    a.satisfies(cli, {
-      name: 'string-bin',
-      version: '1.0.0',
-      description: ''
-    })
-  })
-})
-
-describe('without options', () => {
-  test('no bin in package.json receive folder as name', () => {
-    const ctx = mockContext('no-bin/index.js')
-    const app = builder(ctx)
-    expect(app.name).toBe('no-bin')
-  })
-  test('get name from package.json/bin string', () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const app = builder(ctx)
-    expect(app.name).toBe('single-cli')
-  })
-  test('get name from package.json/bin object', () => {
-    const ctx = mockContext('multi-bin/bin-a.js')
-    const app = builder(ctx)
-    expect(app.name).toBe('cli-a')
-  })
-  test('no version in package.json receive empty version string', () => {
-    const ctx = mockContext('no-nothing/index.js')
-    const app = builder(ctx)
-    expect(app.version).toBe('')
-  })
-  test('get version', () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const app = builder(ctx)
-    expect(app.version).toBe('1.2.3')
-  })
-  test('get description', () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const app = builder(ctx)
-    expect(app.description).toBe('a single bin app')
-  })
-  test('no description in package.json receive empty description string', () => {
-    const ctx = mockContext('no-nothing/index.js')
-    const app = builder(ctx)
-    expect(app.description).toBe('')
-  })
-  test('exit if call path is not listed in bin', async () => {
-    const ctx = mockContext('single-bin/other.js')
-    await builder(ctx).default({ run() { } }).parse(argv(''))
-    const message = getLogMessage(ctx.reporter)
-    expect(message).toContain('Unable to locate')
-    expect(message).toContain('exit with 1')
-  })
+it('will not have parse() if there is no `config`, `keywords` and have not define any command', async () => {
+  const [builder] = setupBuilderTest()
+  isType.equal<true, never, (keyof typeof builder) & 'parse'>()
+  expect((builder as any).parse).toBeUndefined()
+  // call parse to wait for `loadingConfig` to complete
+  await builder.default({ run() { } }).parse([])
 })
 
 describe('default()', () => {
-  test('adds default command for cli to run', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run() { return 'hello' } })
-    expect(await cli.parse(argv('single-bin'))).toEqual('hello')
+  it('adds default command for cli to run', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({ run() { return 'hello' } })
+    expect(await cli.parse(argv('test-cli'))).toEqual('hello')
   })
-  test('with array argument', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const a = await builder(ctx).default({
+  it('accepts array arguments', async () => {
+    const [builder] = setupBuilderTest()
+    const a = await builder.default({
       arguments: [
         { name: 'a', description: 'd', type: z.array(z.string()) }
       ],
       run(args) { return args.a }
-    }).parse(argv('string-bin abc'))
-    expect(a).toEqual(['abc'])
+    }).parse(argv('test-cli abc def'))
+    expect(a).toEqual(['abc', 'def'])
   })
-  test('ui uses cli name', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run() { this.ui.info('hello') } })
+
+  it('uses the app name in the ui', async () => {
+    const [builder, ctx] = setupBuilderTest(undefined, { name: 'some-cli' })
+    const cli = builder.default({ run() { this.ui.info('hello') } })
     await cli.parse(argv('single-bin'))
-    a.satisfies(ctx.reporter.logs[0], { id: 'single-cli' })
+    a.satisfies(ctx.sl.reporter.logs[0], { id: 'some-cli' })
   })
 })
 
 describe('version', () => {
-  test('-v shows version', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('string-bin -v'))
-    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  it('accepts -v to show version', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli -v'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
   })
-  test('--version shows version', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('string-bin --version'))
-    expect(getLogMessage(ctx.reporter)).toEqual('1.0.0')
+  it('accepts --version to show version', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli --version'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
   })
 })
 
 describe('help', () => {
-  test('-h shows help', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('string-bin -h'))
-    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  it('accepts -h to show help', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
   })
-  test('--help shows version', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('string-bin --help'))
-    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  it('accepts --help to show help', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli --help'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
   })
-  test('help with cli.description', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('single-bin -h'))
-    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  it('shows help with description', async () => {
+    const [builder, ctx] = setupBuilderTest(undefined, { description: 'some description' })
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessageWithDescription(cli))
   })
-  test('show help if no command matches', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run() { } })
-    await cli.parse(argv('single-bin not-exist'))
-    expect(getLogMessage(ctx.reporter)).toEqual(getHelpMessage(cli))
+  it('shows help if no command matches', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({ run() { } })
+    await cli.parse(argv('test-cli not-exist'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
   })
-  test('show help if missing argument', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
+  it('shows help if missing argument', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
       arguments: [{ name: 'abc', description: 'arg abc' }],
       run() { }
     })
-    await cli.parse(argv('single-bin'))
-    expect(getLogMessage(ctx.reporter)).toEqual(`
-Usage: single-cli <arguments> [options]
-
-  a single bin app
+    await cli.parse(argv('test-cli'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: test-cli <arguments> [options]
 
 Arguments:
   <abc>                  arg abc
@@ -163,32 +105,34 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `)
   })
-  test('with command chain', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).command({
-      name: 'sub',
-      commands: [command({
-        name: 'sub2',
-        run() { }
-      })]
-    })
-    await cli.parse(argv('string-bin sub sub2 -h'))
-    expect(getLogMessage(ctx.reporter)).toEqual(`
-Usage: string-bin sub sub2
-`)
-  })
-  test('with sub-commands', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const cli = builder(ctx).command({
-      name: 'sub',
+  it('shows help for command', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'cmd',
+      arguments: [{ name: 'abc', description: 'arg abc' }],
       run() { }
     })
-    await cli.parse(argv('string-bin'))
-    expect(getLogMessage(ctx.reporter)).toEqual(`
-Usage: string-bin <command> [options]
+    await cli.parse(argv('test-cli cmd -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: test-cli cmd <arguments>
+
+Arguments:
+  <abc>                  arg abc
+`)
+  })
+  it('shows base help with sub command', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'cmd',
+      arguments: [{ name: 'abc', description: 'arg abc' }],
+      run() { }
+    })
+    await cli.parse(argv('test-cli'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: test-cli <command> [options]
 
 Commands:
-  sub
+  cmd
 
   <command> -h           Get help for <command>
 
@@ -200,123 +144,141 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `)
   })
+  it('shows help for command chain', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.command({
+      name: 'sub',
+      commands: [command({
+        name: 'sub2',
+        run() { }
+      })]
+    })
+    await cli.parse(argv('test-cli sub sub2 -h'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+Usage: test-cli sub sub2
+`)
+  })
 })
 
 describe('--silent', () => {
-  test(' disables ui', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
+  it('disables UI', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
       run() {
         this.ui.info('should not print')
         this.ui.warn('should not print')
         this.ui.error('should not print')
       }
     })
-    await cli.parse(argv('single-bin --silent'))
-    expect(getLogMessage(ctx.reporter)).not.toContain('show not print')
+    await cli.parse(argv('test-cli --silent'))
+    expect(ctx.sl.reporter.getLogMessage()).toEqual('')
   })
 
-  test('command will not get the option', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run(args) { return args } })
-    const args = await cli.parse(argv('single-bin --silent'))
+  it('will not be passed down to command args', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
+      run(args) {
+        isType.f<IsExtend<typeof args, { silent: any }>>()
+        return args
+      }
+    })
+    const args = await cli.parse(argv('test-cli --silent'))
     expect(args.silent).toBeUndefined()
+
   })
 })
 
-describe('--verbose', () => {
-  test('--verbose enables debug messages', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
-      run() {
-        this.ui.debug('should print')
-      }
+describe('verbose', () => {
+  it('enables debug messages with --verbose', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      run() { this.ui.debug('should print') }
     })
-    await cli.parse(argv('single-bin --verbose'))
-    expect(getLogMessage(ctx.reporter)).toContain('should print')
+    await cli.parse(argv('test-cli --verbose'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
   })
-  test('-V enables debug messages', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({
-      run() {
-        this.ui.debug('should print')
-      }
+  it('can be enabled with -V', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder.default({
+      run() { this.ui.debug('should print') }
     })
-    await cli.parse(argv('single-bin -V'))
-    expect(getLogMessage(ctx.reporter)).toContain('should print')
+    await cli.parse(argv('test-cli -V'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
   })
-  test('command.run() will not get args.silent or verbose', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    builder(ctx).default({
+  it('will not be passed down to command args', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
       run(args) {
-        isType.f<IsExtend<typeof args, { silent: any }>>()
         isType.f<IsExtend<typeof args, { verbose: any }>>()
+        return args
       }
     })
-  })
-  test('command will not get the option "verbose"', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run(args) { return args } })
-    const args = await cli.parse(argv('single-bin --verbose'))
+    const args = await cli.parse(argv('test-cli --verbose'))
     expect(args.verbose).toBeUndefined()
   })
-  test('command will not get the option "V"', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run(args) { return args } })
-    const args = await cli.parse(argv('single-bin -V'))
+  it('will not be passed down to command args for -V', async () => {
+    const [builder] = setupBuilderTest()
+    const cli = builder.default({
+      run(args) {
+        isType.f<IsExtend<typeof args, { V: any }>>()
+        return args
+      }
+    })
+    const args = await cli.parse(argv('test-cli -V'))
     expect(args.V).toBeUndefined()
   })
 })
 
-describe('--debug-cli', () => {
-  test('turns on cli-level debug messages', async () => {
-    const ctx = mockContext('string-bin/bin.js')
-    const app = builder(ctx).default({ run() { } })
-    await app.parse(argv('string-bin --debug-cli'))
-    const startPath = getFixturePath('string-bin/bin.js')
-    const pjsonPath = getFixturePath('string-bin/package.json')
-    const msg = getLogMessage(ctx.reporter)
-    expect(msg).toContain(`finding package.json starting from '${startPath}'...
-found package.json at '${pjsonPath}'
-package name: string-bin
-version: 1.0.0
-description:
-argv: node string-bin --debug-cli`)
+describe('debug cli', () => {
+  it('turns on cli level debug message with --debug-cli', async () => {
+    const [builder, ctx] = setupBuilderTest()
+    const app = builder.default({ run() { } })
+    await app.parse(argv('test-cli --debug-cli'))
+    expect(ctx.sl.reporter.getLogMessage()).toContain(`argv: node test-cli --debug-cli`)
   })
-  test('log loading plugins', async () => {
-    const ctx = mockContext('cli-with-one-plugin/bin.js')
-    const cli = builder(ctx, {
-      name: 'test-cli',
-      version: '1.0.0',
-      description: ''
-    }).command({
-      name: 'local',
-      run() { return 'local' }
-    }).loadPlugins(['cjs-plugin'])
-
-      await cli.parse(argv('test-cli --debug-cli'))
-    const msg = getLogMessage(ctx.reporter)
+  it('logs when loading plugins', async () => {
+    const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin' }, { config: true })
+    const app = builder.default({ run() { } })
+    await app.parse(argv('test-cli --debug-cli'))
+    const msg = ctx.sl.reporter.getLogMessage()
+    expect(msg).toContain('load config from:')
+    expect(msg).toContain('test-clirc.json')
     expect(msg).toContain(`activating plugin cjs-plugin`)
     expect(msg).toContain(`adding command one`)
     expect(msg).toContain(`activated plugin cjs-plugin`)
+    expect(msg).toContain(`argv: node test-cli --debug-cli`)
   })
-  test('command will not get the option', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx).default({ run(args) { return args } })
-    const args = await cli.parse(argv('single-bin --debug-cli'))
+  it('logs when loading ESM plugin', async () => {
+    const [builder, ctx] = setupBuilderTest({ fixtureDir: 'cli-with-one-esm-plugin' }, { config: true })
+    const app = builder.default({ run() { } })
+    await app.parse(argv('test-cli --debug-cli'))
+    const msg = ctx.sl.reporter.getLogMessage()
+    expect(msg).toContain('load config from:')
+    expect(msg).toContain('test-clirc.json')
+    expect(msg).toContain(`activating plugin esm-plugin`)
+    expect(msg).toContain(`adding command one`)
+    expect(msg).toContain(`activated plugin esm-plugin`)
+    expect(msg).toContain(`argv: node test-cli --debug-cli`)
+  })
+  it('will not pass this flag to the command', async () => {
+    const [builder] = setupBuilderTest()
+    const app = builder.default({ run(args) { return args } })
+    const args = await app.parse(argv('test-cli --debug-cli'))
     expect(args['debug-cli']).toBeUndefined()
   })
 })
 
+
 describe('command()', () => {
   test('single command', async () => {
-    const cli = builder(mockContext('single-bin/bin.js'))
-      .command({ name: 'cmd1', run() { return 'cmd1' } })
+    const [builder] = setupBuilderTest()
+    const cli = builder.command({ name: 'cmd1', run() { return 'cmd1' } })
     const actual = await cli.parse(argv('single-bin cmd1'))
     expect(actual).toEqual('cmd1')
   })
   test('multiple commands', async () => {
-    const cli = builder(mockContext('single-bin/bin.js'))
+    const [builder] = setupBuilderTest()
+    const cli = builder
       .command({ name: 'cmd1', run() { return 'cmd1' } })
       .command({ name: 'cmd2', run() { return 'cmd2' } })
       .command({ name: 'cmd3', run() { return 'cmd3' } })
@@ -325,7 +287,8 @@ describe('command()', () => {
     expect(actual).toEqual('cmd3')
   })
   test('nested command', async () => {
-    const cli = builder(mockContext('single-bin/bin.js'))
+    const [builder] = setupBuilderTest()
+    const cli = builder
       .command({
         name: 'cmd1',
         commands: [
@@ -337,8 +300,8 @@ describe('command()', () => {
     expect(actual).toEqual('cmd2')
   })
   test('not exist nested command show help', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx)
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder
       .command({
         name: 'cmd1',
         commands: [
@@ -346,156 +309,102 @@ describe('command()', () => {
         ]
       })
     await cli.parse(argv('single-bin cmd1 not-exist'))
-    expect(getLogMessage(ctx.reporter)).toContain('Usage: single-cli cmd1 <command>')
+    expect(getLogMessage(ctx.sl.reporter)).toContain('Usage: test-cli cmd1 <command>')
   })
   test('ui uses command name', async () => {
-    const ctx = mockContext('single-bin/bin.js')
-    const cli = builder(ctx)
+    const [builder, ctx] = setupBuilderTest()
+    const cli = builder
       .command({ name: 'cmd1', run() { this.ui.info('hello') } })
     await cli.parse(argv('single-bin cmd1'))
-    const log = ctx.reporter.logs.find(l => l.args.indexOf('hello') >= 0)
+    const log = ctx.sl.reporter.logs.find(l => l.args.indexOf('hello') >= 0)
     a.satisfies(log, { id: 'cmd1' })
   })
 })
 
 describe('fluent syntax', () => {
   test('default() removes itself', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const [builder] = setupBuilderTest()
+    const cli = builder
     const a = cli.default({ run() { } })
     isType.equal<true, never, keyof typeof a & 'default'>()
   })
 
-  test('loadPlugins() removes itself', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadPlugins([])
-    isType.equal<true, never, keyof typeof a & 'loadPlugins'>()
-  })
-
   test('default() adds parse()', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const [builder] = setupBuilderTest()
+    const cli = builder
     const a = cli.default({ run() { } })
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
 
   test('command() adds parse()', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
+    const [builder] = setupBuilderTest()
+    const cli = builder
     const a = cli.command({ name: 'x', run() { } })
-    isType.equal<true, 'parse', keyof typeof a & 'parse'>()
-  })
-
-  test('loadPlugins() adds parse()', () => {
-    const cli = builder(mockContext('string-bin/bin.js', 'has-json-config'))
-    const a = cli.loadPlugins([])
     isType.equal<true, 'parse', keyof typeof a & 'parse'>()
   })
 })
 
 describe('loadConfig()', () => {
-  test('load config from `{name}.json` at cwd', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
-    const cli = builder(ctx, { configName: 'string-bin' })
+  it('loads `{config}` including file extension', async () => {
+    const ctx = mockContext({ fixtureDir: 'cli-with-extra-plugin' })
+    const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt.json' })
+    const a = await cli.parse(argv('test-cli two echo hello2'))
+    expect(a).toEqual('hello2')
+  })
+  it('loads `{config}.json`', async () => {
+    const ctx = mockContext({ fixtureDir: 'cli-with-extra-plugin' })
+    const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt' })
+    const a = await cli.parse(argv('test-cli two echo hello2'))
+    expect(a).toEqual('hello2')
+  })
+  it('loads `${name}`', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-dot-rc-config' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
-      })
-    const a = await cli.parse(argv('string-bin'))
+      }).parse(argv('string-bin'))
     expect(a).toEqual({ a: 1 })
   })
-  test('load config from `.{name}rc` at cwd', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'has-rc-config')
-    const cli = builder(ctx, { configName: 'string-bin' })
+  it('loads `.{name}rc`', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-rc-config' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
-      })
-    const a = await cli.parse(argv('string-bin'))
+      }).parse(argv('string-bin'))
     expect(a).toEqual({ a: 1 })
   })
-  test('load config from `.{name}rc.json` at cwd', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'has-rc-json-config')
-    const cli = builder(ctx)
+  it('loads `.{name}rc.json`', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-dot-rc-json-config' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
-      })
-    const a = await cli.parse(argv('string-bin'))
+      }).parse(argv('string-bin'))
     expect(a).toEqual({ a: 1 })
   })
-  test('load config with specified name with file extension', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { configName: 'string-bin.json' })
+  it('loads `{name}rc.json`', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-rc-json-config' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
-      }).parse(argv('single-bin'))
+      }).parse(argv('string-bin'))
     expect(a).toEqual({ a: 1 })
   })
-  test('load config with specified `{name}.json`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { configName: 'string-bin' })
+  it('loads `{name}rc.json`', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-rc-json-config' })
+    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
-      }).parse(argv('single-bin'))
+      }).parse(argv('string-bin'))
     expect(a).toEqual({ a: 1 })
   })
-  test('load config with specified `.{name}rc`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const a = await builder(ctx, { configName: 'string-bin' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('load config with specified `.${name}rc.json`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-json-config')
-    const a = await builder(ctx, { configName: 'string-bin' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('config name with . will search for `${name}`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const a = await builder(ctx, { configName: '.string-binrc' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('config name with . will search for `${name}.json`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
-    const a = await builder(ctx, { configName: '.string-binrc' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('config name with . will search for `${name}rc.json`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-json-config')
-    const a = await builder(ctx, { configName: '.string-bin' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('config name with . will search for `${name}rc`', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'has-rc-config')
-    const a = await builder(ctx, { configName: '.string-bin' })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('single-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  test('fail validation will emit warning and exit', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'has-json-config')
-    await builder(ctx, { configName: 'string-bin' })
+  it('emits warning and exit when config fails validation', async () => {
+    const ctx = mockContext({ fixtureDir: 'has-json-config' })
+    await builder(ctx, { name: 'string-bin', version: '1.0.0' })
       .default({
         config: z.object({
           a: z.object({ c: z.number() }),
@@ -506,24 +415,16 @@ describe('loadConfig()', () => {
 
     // TODO: error message is weak in `zod`.
     // improve this when switching back to type-plus
-    const msg = getLogMessage(ctx.reporter)
+    const msg = getLogMessage(ctx.sl.reporter)
     expect(msg).toContain(`config fails validation:
   a: Expected object, received number
   b: Required`)
     // should also print help
-    expect(msg).toContain(`Usage: string-bin [options]`)
-    // a.satisfies(ctx.reporter.logs, [{
-    //   id: 'mock-ui',
-    //   level: 400,
-    //   args: [`subject expects to be { a: string } but is actually { a: 1 }\nsubject.a expects to be string but is actually 1`]
-    // }, {
-    //   id: 'mock-ui',
-    //   level: 400,
-    //   args: ['exit with 1']
-    // }])
+    expect(msg).toContain(`Usage: string-bin`)
   })
   test('default() receives config type', async () => {
-    const cli = builder(mockContext('has-config/bin.js', 'has-config'))
+    const cli = builder(mockContext({ fixtureDir: 'has-config' }),
+      { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() {
@@ -535,33 +436,31 @@ describe('loadConfig()', () => {
     expect(a).toEqual({ a: 1 })
   })
   test(`read config file in parent directory`, async () => {
-    const ctx = mockContext('has-config/bin.js', 'has-config/sub-folder')
-    const cli = builder(ctx)
+    const ctx = mockContext({ fixtureDir: 'has-config/sub-folder' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
-        run() {
-          return this.config
-        }
+        run() { return this.config }
       })
     const a = await cli.parse(argv('has-config'))
     expect(a).toEqual({ a: 1 })
   })
-  // seems to be some issue with `zod` default system
+  //   // seems to be some issue with `zod` default system
   test.skip(`default config is overridden by value in config file`, async () => {
-    const ctx = mockContext('has-config/bin.js', 'has-config')
-    const a = await builder(ctx)
+    const ctx = mockContext({ fixtureDir: 'has-config' })
+    const a = await builder(ctx, { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({
           a: z.number().default(2),
           b: z.optional(z.number()).default(3)
         }),
         run() { return this.config }
-      })
+      }).parse(argv('has-config'))
     expect(a).toEqual({ a: 1, b: 3 })
   })
   test('load config if default command has config', async () => {
-    const ctx = mockContext('has-config/bin.js', 'has-config')
-    const cli = builder(ctx)
+    const ctx = mockContext({ fixtureDir: 'has-config' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() {
@@ -575,8 +474,8 @@ describe('loadConfig()', () => {
     expect(a).toEqual({ a: 1 })
   })
   test('load config if any command has config', async () => {
-    const ctx = mockContext('has-config/bin.js', 'has-config')
-    const cli = builder(ctx)
+    const ctx = mockContext({ fixtureDir: 'has-config' })
+    const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
       .command({
         name: 'group',
         commands: [{
@@ -585,47 +484,42 @@ describe('loadConfig()', () => {
           run() { return this.config }
         }]
       })
-
     const a = await cli.parse(argv('has-config group config'))
     expect(a).toEqual({ a: 1 })
   })
   test('no config', async () => {
-    const ctx = mockContext('single-bin/bin.js', 'no-config')
-    const actual = await builder(ctx)
+    const ctx = mockContext({ fixtureDir: 'no-config' })
+    ctx.ui.displayLevel = 'debug'
+    const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
       .default({
         config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
-    const msg = getLogMessage(ctx.reporter)
-    expect(msg).toContain(`no config found:
-  single-cli.json
-  .single-clirc.json
-  .single-clirc`)
+    const msg = getLogMessage(ctx.sl.reporter)
+    expect(msg).toContain(`no config found`)
     expect(actual).toEqual(undefined)
   })
-})
-
-it('can have its own command while loading plugins', async () => {
-  const ctx = mockContext('cli-with-one-plugin/bin.js')
-  const cli = builder(ctx, {
-    name: 'test-cli',
-    version: '1.0.0',
-    description: ''
-  }).command({
-    name: 'local',
-    run() { return 'local' }
-  }).loadPlugins(['cjs-plugin'])
-
-  const actual = await cli.parse(argv('test-cli local'))
-  expect(actual).toBe('local')
 })
 
 function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
   return `
 Usage: ${app.name} [options]
-${app.description ? `
+
+Options:
+  [-h|--help]            Print help message
+  [-v|--version]         Print the CLI version
+  [-V|--verbose]         Turn on verbose logging
+  [--silent]             Turn off logging
+  [--debug-cli]          Display clibuilder debug messages
+`
+}
+
+function getHelpMessageWithDescription(app: Pick<cli.Builder, 'name' | 'description'>) {
+  return `
+Usage: ${app.name} [options]
+
   ${app.description}
-`: ''}
+
 Options:
   [-h|--help]            Print help message
   [-v|--version]         Print the CLI version

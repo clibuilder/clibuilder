@@ -1,4 +1,5 @@
 {
   "name": "esm-plugin",
+  "keywords": ["test-cli"],
   "type": "module"
 }

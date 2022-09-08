@@ -13,3 +13,4 @@ ignores:
   - bad-plugin-no-index
   - cjs-plugin
   - esm-plugin
+  - plugin-two

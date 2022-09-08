@@ -1,0 +1,3 @@
+{
+  "plugins": ["bad-plugin-no-index"]
+}

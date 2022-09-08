@@ -1,5 +1,4 @@
-import { getLogger } from 'standard-log'
-import { forEachKey } from 'type-plus'
+import { forEachKey, RequiredPick } from 'type-plus'
 import { ZodTypeAny } from 'zod'
 import type { cli } from './cli.js'
 import { getBaseCommand, pluginsCommand } from './commands.js'
@@ -9,25 +8,38 @@ import { parseArgv } from './parseArgv.js'
 import { state } from './state.js'
 import { Command } from './typesInternal.js'
 
-export function builder(context: Context, options?: cli.Options): cli.Builder {
+export function builder(context: Context, options: RequiredPick<cli.Options, 'config'> | RequiredPick<cli.Options, 'keywords'>): cli.Builder & cli.Executable
+export function builder(context: Context, options: cli.Options): cli.Builder
+export function builder(context: Context, options: cli.Options): cli.Builder & cli.Executable {
   // set `clibuilder-debug` logs manually to logLevels.all,
   // as user can run `config()` to set the log levels
   // and override the log level for this logger.
   // context.ui.displayLevel = 'trace'
-  const s = state(context, options)
+  const s = state(options)
   const description = s.description
   const pending: Promise<any>[] = []
+  const configName = s.configName ? (typeof s.configName === 'string' ? s.configName : s.name) : undefined
+  const loadingConfig = configName ? context.loadConfig(configName) : undefined
+  const mayAcceptPlugins = s.configName || s.keywords.length > 0
+  if (mayAcceptPlugins)
+    s.command.commands.push(adjustCommand(s.command, pluginsCommand))
+
+  if (loadingConfig) {
+    pending.push(
+      loadingConfig.then(config => {
+        s.config = config
+        if (config?.plugins) {
+          return context
+            .loadPlugins(config.plugins)
+            .then(commands => s.command.commands.push(...commands.map(c => adjustCommand(s.command, c))))
+        }
+      }))
+  }
   return {
     name: s.name,
     version: s.version || '',
     description,
-    loadPlugins(pluginNames: string[]) {
-      s.command.commands.push(adjustCommand(s.command, pluginsCommand))
-      pending.push(context
-        .loadPlugins(pluginNames)
-        .then(commands => s.command.commands.push(...commands.map(c => adjustCommand(s.command, c)))))
-      return { ...this, parse }
-    },
+    parse: (mayAcceptPlugins ? parse : undefined) as any,
     default(command) {
       s.command = adjustCommand(s.command, { ...s.command, ...command })
       return { ...this, parse }
@@ -65,7 +77,10 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
 
     if (command.config) {
-      const { config, errors } = loadConfig(context, s.configName || s.name, command.config)
+      const configName = typeof s.configName === 'string' ? s.configName : s.name
+      const { config, errors } = parseConfig(command.config, await context.loadConfig(configName))
+      s.config = config
+
       if (errors) {
         context.ui.error(`config fails validation:`)
         forEachKey(errors, k => context.ui.error(`  ${String(k)}: ${errors[k]}`))
@@ -79,8 +94,7 @@ export function builder(context: Context, options?: cli.Options): cli.Builder {
     return commandInstance.run(args as any)
   }
 
-  function loadConfig(context: Context, configName: string, configType: ZodTypeAny) {
-    const config = context.loadConfig(configName)
+  function parseConfig(configType: ZodTypeAny, config: any) {
     const r = configType.safeParse(config)
     if (r.success) {
       return { config }
@@ -98,13 +112,13 @@ function createCommandInstance(ctx: Context, state: state.Result, command: cli.C
     run: (command as any).run,
     ui: createCommandUI(ctx, state, command),
     config: state.config,
-    keyword: state.keyword,
-    cwd: ctx.process.cwd()
+    keywords: state.keywords,
+    cwd: ctx.cwd
   }
 }
 
 function createCommandUI(ctx: Context, state: state.Result, command: cli.Command) {
-  const ui = ctx.createUI(getLogger(command.name || state.name))
+  const ui = ctx.createCommandUI(command.name || state.name)
   ui.displayLevel = state.displayLevel
   // istanbul ignore next
   return {
