@@ -14,61 +14,59 @@
 
 A highly customizable command line library.
 
-## Version 7
+## What's new in v8
 
-[clibuilder](https://github.com/unional/clibuilder) v7 is released!
+Key highlights:
 
-It is once again re-written from v6 to improve the usage in a fundamental way.
-Here are some of the highlights:
-
-- single `cli()` for both basic cli and plugin cli
-- config, argument, and option type inference now work with both basic type and array
-- using `zod@next` to define type definition and validation
-- each command can have their own config specification
-- support combining short options `-abc 100 => -a -b -c 100`
+- Support standalone CLI
+  - `name` and `version` are not required and not read from `package.json`.
+- Plugins are loaded through config
+  - This drastically improve startup time, as it does not scan in the `node_modules` anymore.
+  - Also better support other package manager such as `yarn PnP` and `pnpm`.
+- `keywords` are now used for plugin lookup.
+- Distribute `ESM` along with `CJS`.
 
 ## Features
 
-- plugin support: write commands in separate packages and reuse by multiple cli
+- plugin support: write commands in separate packages and reuse by multiple CLI
 - configuration file support
 - type inference for config, arguments, and options
 - nested commands `my-cli cmd1 cmd2 cmd3`
-- type validation for config, arguments, and options \
-  using [zod@next](https://github.com/colinhacks/zod) (exported as `z`)
+- type validation for config, arguments, and options\
+  using [zod](https://github.com/colinhacks/zod) (exported as `z`)
 
 ## Install
 
 ```sh
+# npm
+npm install clibuilder
+
+# yarn
 yarn add clibuilder
+
+# pnpm
+pnpm install clibuilder
+
+#rush
+rush add -p clibuilder
 ```
 
 ## Usage
 
-You can use `clibuilder` to create your command line application in many different ways.
+You can use `clibuilder` to create your command line application in many ways.
 The most basic way looks like this:
 
 ```ts
-cli()
+cli({ name: 'app', version: '1.0.0' })
   .default({ run() { /* ...snip... */ }})
   .parse(process.argv)
   .catch(e => /* handle error */process.exit(e?.code || 1))
 ```
 
-The above code will:
-
-- get your application name, version, and description from your `package.json`
-- call your default `run()` method when invoked
-
-You can specify name, version, and description directly:
+You can add additional named commands and sub-commands:
 
 ```ts
-cli({ name: 'foo', version: '1.2.3', description: 'some fool' })
-```
-
-You can add additional commands and sub-commands:
-
-```ts
-cli()
+cli({ ... })
   .command({ name: 'hello', run() { this.ui.info('hello world') }})
   .command({
     name: 'repo',
@@ -81,7 +79,7 @@ cli()
 You can add alias to the command:
 
 ```ts
-cli()
+cli({ ... })
   .command({
     name: 'search-packages',
     alias: ['sp'],
@@ -92,7 +90,7 @@ cli()
 You can specify arguments:
 
 ```ts
-cli().default({
+cli({ ... }).default({
   arguments: [
     // type defaults to string
     { name: 'name', description: 'your name' }
@@ -100,9 +98,7 @@ cli().default({
   run(args) { this.ui.info(`hello, ${args.name}`) }
 })
 
-import { cli, z } from 'clibuilder'
-
-cli().command({
+cli({ ... }).command({
   name: 'sum',
   arguments: [
     // using `zod` to specify number[]
@@ -118,7 +114,7 @@ cli().command({
 Of course, you can also specify options:
 
 ```ts
-cli().default({
+cli({ ... }).default({
   options: {
     // type defaults to boolean
     'no-progress': { description: 'disable progress bar' },
@@ -132,7 +128,7 @@ cli().default({
 and you can add option alias too:
 
 ```ts
-cli().command({
+cli({ ... }).command({
   options: {
     project: {
       alias: ['p']
@@ -144,9 +140,7 @@ cli().command({
 You can use `z` to mark argument and/or options as optional
 
 ```ts
-import { cli, z } from 'clibuilder'
-
-cli().default({
+cli({... }).default({
   arguments: [{ name: 'a', description: '', type: z.optional(z.string()) }],
   options: {
     y: { type: z.optional(z.number()) }
@@ -159,9 +153,7 @@ the config will be loaded.
 Each command defines their own config.
 
 ```ts
-import { cli, z } from 'clibuilder'
-
-cli()
+cli({ ... })
 .default({
   config: z.object({ presets: z.string() }),
   run() {
@@ -170,38 +162,31 @@ cli()
 })
 ```
 
-By default, the config file can be `${cli}.json`, `.${cli}rc.json`, or `.${cli}rc`.
+## Config
+
+Config file can be written in `JSON`, `YAML`, `cjs`, or `mjs`.
+Common filename are supported:
+
+- `.{name}.<cjs|mjs|js|json|yaml|yml>`
+- `.{name}rc.<cjs|mjs|js|json|yaml|yml>`
+- `{name}.<cjs|mjs|js|json|yaml|yml>`
+- `{name}rc.<cjs|mjs|js|json|yaml|yml>`
+
 You can override the config name too:
 
 ```ts
-cli({ configName: 'another-config' })
+cli({ config: 'alt-config.json' })
 ```
+
+## Plugins
 
 One important feature of `clibuilder` is supporting plugins.
-You can load plugins by calling `loadPlugins()`:
+Plugins are defined inside the config:
 
-```ts
-cli().loadPlugins()
-```
-
-By default, it uses `${cli}-plugin` as the keyword to identify plugins.
-You can change that by:
-
-```ts
-cli().loadPlugins('another-keyword')
-```
-
-When you create a command from a different files or for plugin,
-you can use the `command()` function which provides type validation and inference support.
-
-```ts
-import { command, z } from 'clibuilder'
-
-export const echo = command({
-  name: 'echo',
-  config: z.object({ a: z.string() }),
-  run() { this.ui.info(`echo ${this.config.a}`)}
-})
+```json
+{
+  "plugins": ["my-cli"]
+}
 ```
 
 ## Defining Plugins
@@ -209,11 +194,9 @@ export const echo = command({
 `clibuilder` allows you to build plugins to add commands to your application.
 i.e. You can build your application in a distributed fashion.
 
-`cli().loadPlugins()` will load plugins when available.
+To create a plugin:
 
-To create a plugins:
-
-- export an `activate(ctx: PluginActivationContext)` function
+- export a `activate(ctx: PluginActivationContext)` function
 - add the plugin keyword in your `package.json`
 
 ```ts
@@ -236,9 +219,9 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 }
 ```
 
-The cli will determine that a package is a plugin by looking at the `keywords` in its `package.json`.
+The CLI can search for plugins using the `keywords` values.
 
-## testing
+## Testing
 
 `testCommand()` can be used to test your command:
 
@@ -260,7 +243,7 @@ test('some test', async () => {
 
 ## shebang
 
-To make your cli easily executable,
+To make your CLI easily executable,
 you can add shebang to your script:
 
 ```js
