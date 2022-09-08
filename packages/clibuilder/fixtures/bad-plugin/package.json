@@ -1,4 +1,5 @@
 {
+  "name": "fixture-pkg",
   "private": true,
   "dependencies": {
     "bad-plugin": "workspace:*",

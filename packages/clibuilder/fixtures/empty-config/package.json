@@ -1,5 +1,6 @@
 {
   "name": "empty-config",
+  "name": "fixture-pkg",
   "private": true,
   "bin": "bin.js"
 }

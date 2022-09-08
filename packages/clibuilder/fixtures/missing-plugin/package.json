@@ -1,5 +1,7 @@
 {
+  "name": "fixture-pkg",
   "private": true,
+  "name": "fixture-pkg",
   "private": true,
   "type": "commonjs",
   "devDependencies": {
