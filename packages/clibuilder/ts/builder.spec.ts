@@ -357,61 +357,16 @@ describe('loadConfig()', () => {
     const a = await cli.parse(argv('test-cli two echo hello2'))
     expect(a).toEqual('hello2')
   })
-  it('loads `${name}`', async () => {
-    const ctx = mockContext({ fixtureDir: 'has-dot-rc-config' })
-    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('string-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  it('loads `.{name}rc`', async () => {
-    const ctx = mockContext({ fixtureDir: 'has-rc-config' })
-    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('string-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  it('loads `.{name}rc.json`', async () => {
-    const ctx = mockContext({ fixtureDir: 'has-dot-rc-json-config' })
-    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('string-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  it('loads `{name}rc.json`', async () => {
-    const ctx = mockContext({ fixtureDir: 'has-rc-json-config' })
-    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('string-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
-  it('loads `{name}rc.json`', async () => {
-    const ctx = mockContext({ fixtureDir: 'has-rc-json-config' })
-    const a = await builder(ctx, { name: 'string-bin', version: '1.0.0', config: true })
-      .default({
-        config: z.object({ a: z.number() }),
-        run() { return this.config }
-      }).parse(argv('string-bin'))
-    expect(a).toEqual({ a: 1 })
-  })
   it('emits warning and exit when config fails validation', async () => {
     const ctx = mockContext({ fixtureDir: 'has-json-config' })
-    await builder(ctx, { name: 'string-bin', version: '1.0.0' })
+    await builder(ctx, { name: 'show-config', version: '1.0.0' })
       .default({
         config: z.object({
           a: z.object({ c: z.number() }),
           b: z.string()
         }),
         run() { fail('should not reach') }
-      }).parse(argv('single-bin'))
+      }).parse(argv('show-config'))
 
     // TODO: error message is weak in `zod`.
     // improve this when switching back to type-plus
@@ -420,7 +375,7 @@ describe('loadConfig()', () => {
   a: Expected object, received number
   b: Required`)
     // should also print help
-    expect(msg).toContain(`Usage: string-bin`)
+    expect(msg).toContain(`Usage: show-config`)
   })
   test('default() receives config type', async () => {
     const cli = builder(mockContext({ fixtureDir: 'has-config' }),

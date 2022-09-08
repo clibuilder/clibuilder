@@ -1,5 +1,9 @@
 {
-  "string-bin": {
+  "type": "commonjs",
+  "dependencies": {
+    "clibuilder": "workspace:*"
+  },
+  "show-config": {
     "a": 1
   }
 }

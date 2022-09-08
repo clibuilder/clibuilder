@@ -1,7 +1,7 @@
 const { cli } = require('clibuilder')
 
 const app = cli({
-  name: 'test-cli',
+  name: 'show-config',
   version: '1.0.0',
   config: true
 }).default({

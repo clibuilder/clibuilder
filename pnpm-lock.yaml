@@ -178,26 +178,185 @@ importers:
   packages/clibuilder/fixtures/empty-config:
     specifiers: {}
 
+  packages/clibuilder/fixtures/has-cjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
   packages/clibuilder/fixtures/has-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-cjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-dot-js-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-json-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-mjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-cjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-dot-rc-js-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-json-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-mjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-with-json-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-with-yaml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-yaml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-rc-yml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-yaml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-dot-yml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-js-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-json-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-mjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-pjson-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-cjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/has-rc-js-config:
-    specifiers: {}
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-json-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-mjs-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-with-json-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-with-yaml.config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-yaml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-rc-yml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-yaml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
+
+  packages/clibuilder/fixtures/has-yml-config:
+    specifiers:
+      clibuilder: workspace:*
+    dependencies:
+      clibuilder: link:../..
 
   packages/clibuilder/fixtures/missing-plugin:
     specifiers:
