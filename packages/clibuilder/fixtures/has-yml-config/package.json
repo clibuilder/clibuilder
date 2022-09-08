@@ -1,4 +1,5 @@
 {
+  "private": true,
   "type": "commonjs",
   "dependencies": {
     "clibuilder": "workspace:*"

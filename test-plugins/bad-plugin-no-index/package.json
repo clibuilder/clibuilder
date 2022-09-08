@@ -1,3 +1,4 @@
 {
-  "name": "bad-plugin-no-index"
+  "name": "bad-plugin-no-index",
+  "private": true
 }

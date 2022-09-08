@@ -1,4 +1,5 @@
 {
+  "private": true,
   "dependencies": {
     "cjs-plugin": "workspace:*",
     "clibuilder": "workspace:*"

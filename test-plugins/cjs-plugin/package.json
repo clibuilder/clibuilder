@@ -1,4 +1,5 @@
 {
   "name": "cjs-plugin",
+  "private": true,
   "keywords": ["test-cli"]
 }

@@ -1,4 +1,5 @@
 {
   "name": "empty-config",
+  "private": true,
   "bin": "bin.js"
 }

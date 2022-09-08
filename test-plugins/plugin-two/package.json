@@ -1,5 +1,6 @@
 {
   "name": "plugin-two",
+  "private": true,
   "keywords": ["test-cli"],
   "type": "module"
 }

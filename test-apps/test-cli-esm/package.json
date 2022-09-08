@@ -1,5 +1,6 @@
 {
   "name": "test-cli-esm",
+  "private": true,
   "bin": "./bin.mjs",
   "type": "module",
   "dependencies": {

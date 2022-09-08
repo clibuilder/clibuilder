@@ -2,6 +2,7 @@
   "name": "has-config",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "type": "commonjs",
   "dependencies": {
     "clibuilder": "workspace:*"

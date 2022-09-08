@@ -1,4 +1,5 @@
 {
+  "private": true,
   "dependencies": {
     "bad-plugin": "workspace:*",
     "clibuilder": "workspace:*"

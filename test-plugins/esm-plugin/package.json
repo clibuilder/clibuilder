@@ -1,5 +1,6 @@
 {
   "name": "esm-plugin",
+  "private": true,
   "keywords": ["test-cli"],
   "type": "module"
 }
