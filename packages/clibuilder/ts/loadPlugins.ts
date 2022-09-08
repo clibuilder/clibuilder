@@ -14,7 +14,7 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
   const commands: cli.Command<any, any>[] = []
   entries.filter(({ name, pluginModule }) => {
     if (!isValidPlugin(pluginModule)) {
-      ui.warn('not a valid plugin:', name)
+      ui.warn(`not a valid plugin`, name)
       return false
     }
     return true

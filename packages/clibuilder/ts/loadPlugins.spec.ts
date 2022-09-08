@@ -7,7 +7,8 @@ it(`loads no plugin when plugin's activate is not a function`, async () => {
     caseName: 'fixtures/bad-plugin',
     casePath: getFixturePath('bad-plugin')
   })
-  expect(stderr).toContain('not a valid plugin: bad-plugin')
+  expect(stderr).toContain('not a valid plugin')
+  expect(stderr).toContain('bad-plugin')
 })
 
 it(`loads no plugin when plugin has no index.js`, async () => {
@@ -16,7 +17,8 @@ it(`loads no plugin when plugin has no index.js`, async () => {
     caseName: 'fixtures/bad-plugin-no-index',
     casePath: getFixturePath('bad-plugin-no-index')
   })
-  expect(stderr).toContain('not a valid plugin: bad-plugin-no-index')
+  expect(stderr).toContain('not a valid plugin')
+  expect(stderr).toContain('bad-plugin-no-index')
 })
 
 it('loads one plugin', async () => {

@@ -1,0 +1,4 @@
+{
+  "command": "node",
+  "args": ["bin.js", "one", "echo", "hello"]
+}

@@ -1,8 +1,5 @@
 import { isType } from 'type-plus'
 import { command, z } from './index.js'
-import { builder } from './builder.js'
-import { searchPluginsCommand } from './commands.js'
-import { argv, getLogMessage, mockContext } from './test-utils/index.js'
 
 test('when no argument and options, args will have help', () => {
   command({
@@ -132,75 +129,5 @@ test('options with optional type', () => {
     run(args) {
       isType.equal<true, string | undefined, typeof args.abc>()
     }
-  })
-})
-
-describe('pluginsCommand', () => {
-  // TODO: need to update how list plugin works
-  describe.skip('list', () => {
-    afterEach(() => console.info('command.pluginsCommand.list test ends'))
-    test('no plugin', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-      await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
-        .loadPlugins([]).parse(argv('string-bin plugins list'))
-      expect(getLogMessage(ctx.reporter)).toContain('no plugin with keyword: plugin-cli-plugin')
-    })
-    test('one plugin', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'one-plugin')
-      await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
-        .loadPlugins([]).parse(argv('string-bin plugins list'))
-
-      expect(getLogMessage(ctx.reporter)).toContain(`found one plugin: cli-plugin-one`)
-    })
-
-    test('two plugins', async () => {
-      const ctx = mockContext('string-bin/bin.js', 'two-plugins')
-      await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
-        .loadPlugins([]).parse(argv('string-bin plugins list'))
-
-      expect(getLogMessage(ctx.reporter)).toContain(`found the following plugins:
-
-  cli-plugin-one
-  cli-plugin-two`)
-    })
-  })
-})
-
-// TODO: need to update how searchPluginsCommand works
-describe.skip('searchPluginsCommand', () => {
-  test('no plugin', async () => {
-    const ctx = mockContext('cls-no-plugin')
-    await builder(ctx, { name: 'test-cli' })
-      .loadPlugins(['not-exist-plugin']).command({
-        ...searchPluginsCommand,
-        context: { searchByKeywords: () => Promise.resolve([]) }
-      }).parse(argv('string-bin search plugin-cli-plugin'))
-
-    expect(getLogMessage(ctx.reporter)).toContain('no package with keyword: plugin-cli-plugin')
-  })
-
-  test('one plugin', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli' })
-      .loadPlugins([]).command({
-        ...searchPluginsCommand,
-        context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
-      }).parse(argv('string-bin search'))
-
-    expect(getLogMessage(ctx.reporter)).toContain('found one package: pkg-x')
-  })
-
-  test('two plugins', async () => {
-    const ctx = mockContext('string-bin/bin.js', 'no-plugin')
-    await builder(ctx, { name: 'plugin-cli', description: '', version: '' })
-      .loadPlugins([]).command({
-        ...searchPluginsCommand,
-        context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
-      }).parse(argv('string-bin search'))
-
-    expect(getLogMessage(ctx.reporter)).toContain(`found the following packages:
-
-  pkg-x
-  pkg-y`)
   })
 })

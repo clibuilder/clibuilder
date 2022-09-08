@@ -22,5 +22,5 @@ const app = (0, clibuilder_1.cli)({
     run({ name }) {
         this.ui.info(`${name}: ${this.config[name]}`);
     }
-}).loadPlugins(['cli-plugin-x']);
+});
 app.parse(process.argv);

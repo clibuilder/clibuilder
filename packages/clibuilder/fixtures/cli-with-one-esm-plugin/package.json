@@ -1,0 +1,7 @@
+{
+  "type":"commonjs",
+  "devDependencies": {
+    "esm-plugin": "workspace:*",
+    "clibuilder": "workspace:*"
+  }
+}

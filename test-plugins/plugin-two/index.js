@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function activate(cli) {
+export function activate(cli) {
   cli.addCommand({
-    name: 'one',
+    name: 'two',
     commands: [{
       name: 'echo',
       arguments: [{ name: 'arg1' }],
@@ -13,4 +11,3 @@ function activate(cli) {
     }]
   })
 }
-exports.activate = activate;

@@ -22,16 +22,17 @@ importers:
     specifiers:
       '@babel/core': ^7.19.0
       '@types/jest': ^29.0.0
+      '@types/js-yaml': ^4.0.5
       '@types/node': ^14.18.27
+      '@types/tmp': ^0.2.3
       '@types/wordwrap': github:types/wordwrap
       '@typescript-eslint/eslint-plugin': ^5.36.2
       '@typescript-eslint/parser': ^5.36.2
-      '@unional/fixture': ^3.1.4
+      '@unional/fixture': ^3.2.1
       assertron: ^10.0.0
       babel-jest: ^28.1.3
       bad-plugin: workspace:*
       bad-plugin-no-index: workspace:*
-      chalk: ^5.0.1
       cjs-plugin: workspace:*
       clibuilder-plugin-dummy: ^1.0.1
       cross-env: ^7.0.3
@@ -40,22 +41,26 @@ importers:
       eslint: ^8.23.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-harmony: ^7.1.0
-      find-installed-packages: ^2.1.6
+      esm-plugin: workspace:*
+      find-installed-packages: ^2.1.7
       find-up: ^6.3.0
       jest: ^28.1.3
       jest-validate: ^28.1.3
       jest-watch-suspend: ^1.1.2
       jest-watch-toggle-config: ^2.0.1
       jest-watch-typeahead: ^2.1.1
+      js-yaml: ^4.1.0
       ncp: ^2.0.0
       npm-run-all: ^4.1.5
       pad-right: ^0.2.2
       path-equal: ^1.2.2
+      plugin-two: workspace:*
       rimraf: ^3.0.2
       search-packages: ^2.1.0
       standard-log: ^10.0.0
       standard-log-color: ^8.0.0
       tersify: ^3.10.2
+      tmp: ^0.2.1
       ts-jest: ^28.0.8
       tslib: ^2.4.0
       type-plus: ^4.11.2
@@ -64,9 +69,9 @@ importers:
       zod: ^3.19.0
     dependencies:
       '@types/node': 14.18.27
-      chalk: 5.0.1
-      find-installed-packages: 2.1.6
+      find-installed-packages: 2.1.7
       find-up: 6.3.0
+      js-yaml: 4.1.0
       pad-right: 0.2.2
       search-packages: 2.1.0
       standard-log: 10.0.0
@@ -78,10 +83,12 @@ importers:
     devDependencies:
       '@babel/core': 7.19.0
       '@types/jest': 29.0.0
+      '@types/js-yaml': 4.0.5
+      '@types/tmp': 0.2.3
       '@types/wordwrap': github.com/types/wordwrap/caf776ac962b305476b491499cb8457db9729c1a
       '@typescript-eslint/eslint-plugin': 5.36.2_iurrlxgqcgk5svigzxakafpeuu
       '@typescript-eslint/parser': 5.36.2_yqf6kl63nyoq5megxukfnom5rm
-      '@unional/fixture': 3.1.4
+      '@unional/fixture': 3.2.1
       assertron: 10.0.0
       babel-jest: 28.1.3_@babel+core@7.19.0
       bad-plugin: link:../../test-plugins/bad-plugin
@@ -94,6 +101,7 @@ importers:
       eslint: 8.23.0
       eslint-config-prettier: 8.5.0_eslint@8.23.0
       eslint-plugin-harmony: 7.1.0_bsdkc7v2bs3qkwrcmfjxye37ma
+      esm-plugin: link:../../test-plugins/esm-plugin
       jest: 28.1.3_@types+node@14.18.27
       jest-validate: 28.1.3
       jest-watch-suspend: 1.1.2_jest@28.1.3
@@ -102,8 +110,10 @@ importers:
       ncp: 2.0.0
       npm-run-all: 4.1.5
       path-equal: 1.2.2
+      plugin-two: link:../../test-plugins/plugin-two
       rimraf: 3.0.2
       tersify: 3.10.2
+      tmp: 0.2.1
       ts-jest: 28.0.8_zxu4g4yzf72luhfyo3dvxnefyq
       typescript: 4.8.2
 
@@ -129,6 +139,24 @@ importers:
     devDependencies:
       clibuilder: link:../..
 
+  packages/clibuilder/fixtures/cli-with-extra-plugin:
+    specifiers:
+      cjs-plugin: workspace:*
+      clibuilder: workspace:*
+      plugin-two: workspace:*
+    devDependencies:
+      cjs-plugin: link:../../../../test-plugins/cjs-plugin
+      clibuilder: link:../..
+      plugin-two: link:../../../../test-plugins/plugin-two
+
+  packages/clibuilder/fixtures/cli-with-one-esm-plugin:
+    specifiers:
+      clibuilder: workspace:*
+      esm-plugin: workspace:*
+    devDependencies:
+      clibuilder: link:../..
+      esm-plugin: link:../../../../test-plugins/esm-plugin
+
   packages/clibuilder/fixtures/cli-with-one-plugin:
     specifiers:
       cjs-plugin: workspace:*
@@ -137,10 +165,38 @@ importers:
       cjs-plugin: link:../../../../test-plugins/cjs-plugin
       clibuilder: link:../..
 
+  packages/clibuilder/fixtures/cli-with-two-plugins:
+    specifiers:
+      cjs-plugin: workspace:*
+      clibuilder: workspace:*
+      plugin-two: workspace:*
+    devDependencies:
+      cjs-plugin: link:../../../../test-plugins/cjs-plugin
+      clibuilder: link:../..
+      plugin-two: link:../../../../test-plugins/plugin-two
+
   packages/clibuilder/fixtures/empty-config:
     specifiers: {}
 
   packages/clibuilder/fixtures/has-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-dot-js-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-dot-rc-js-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-js-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-json-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-pjson-config:
+    specifiers: {}
+
+  packages/clibuilder/fixtures/has-rc-js-config:
     specifiers: {}
 
   packages/clibuilder/fixtures/missing-plugin:
@@ -160,8 +216,10 @@ importers:
 
   packages/clibuilder/fixtures/one-plugin:
     specifiers:
+      cjs-plugin: workspace:*
       clibuilder: workspace:*
     dependencies:
+      cjs-plugin: link:../../../../test-plugins/cjs-plugin
       clibuilder: link:../..
 
   packages/clibuilder/fixtures/single-bin:
@@ -186,6 +244,9 @@ importers:
     specifiers: {}
 
   test-plugins/esm-plugin:
+    specifiers: {}
+
+  test-plugins/plugin-two:
     specifiers: {}
 
 packages:
@@ -1435,6 +1496,10 @@ packages:
       pretty-format: 29.0.2
     dev: true
 
+  /@types/js-yaml/4.0.5:
+    resolution: {integrity: sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==}
+    dev: true
+
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
     dev: true
@@ -1476,6 +1541,10 @@ packages:
 
   /@types/stack-utils/2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
+    dev: true
+
+  /@types/tmp/0.2.3:
+    resolution: {integrity: sha512-dDZH/tXzwjutnuk4UacGgFRwV+JSLaXL1ikvidfJprkb7L9Nx1njcRHHmi3Dsvt7pgqqTEeucQuOrWHPFgzVHA==}
     dev: true
 
   /@types/yargs-parser/21.0.0:
@@ -1688,8 +1757,8 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unional/fixture/3.1.4:
-    resolution: {integrity: sha512-rOvmAI2/LjxcBdq6qW0lIPQ4CgUXiD7BIbw/HsKot3csQQY3L2zcJbvFXcF4LH3VBrRUCQu+JlQhiSlvKe+qMw==}
+  /@unional/fixture/3.2.1:
+    resolution: {integrity: sha512-dVjfBlCGpDAPA45fGDtH0gBENiY8R40WU8y9/fncpKYvX/sPz/f8M/h3/+966pElU9pQGnUxcS5fZeWMQ85pew==}
     dependencies:
       '@types/diff-match-patch': 1.0.32
       chalk: 5.0.1
@@ -1705,8 +1774,8 @@ packages:
       mkdirp: 1.0.4
       pad-left: 2.1.0
       rimraf: 3.0.2
-      standard-log: 9.1.8
-      standard-log-color: 7.0.3_standard-log@9.1.8
+      standard-log: 10.0.0
+      standard-log-color: 8.0.0_standard-log@10.0.0
       tersify: 3.10.2
       type-plus: 4.11.2
     dev: true
@@ -1875,7 +1944,6 @@ packages:
 
   /argparse/2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
-    dev: true
 
   /array-differ/3.0.0:
     resolution: {integrity: sha512-THtfYS6KtME/yIAhKjZ2ul7XI96lQGHRputJQHO80LAWQnuGP4iCIN8vdMRboGbIEYBwU33q8Tch1os2+X0kMg==}
@@ -2118,6 +2186,7 @@ packages:
   /chalk/5.0.1:
     resolution: {integrity: sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+    dev: true
 
   /char-regex/1.0.2:
     resolution: {integrity: sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==}
@@ -3091,11 +3160,11 @@ packages:
       to-regex-range: 5.0.1
     dev: true
 
-  /find-installed-packages/2.1.6:
-    resolution: {integrity: sha512-22o/L29wufErac/wvfuzLEwaCxuJKav1mM1AFHS8P6qmsUrJ+7jZj9Xl9AIW6dInefJ4J/mw+d8EHJa6taI+cA==}
+  /find-installed-packages/2.1.7:
+    resolution: {integrity: sha512-r/wmu8C5PBc1ADKT4o56oEQUFZIMdt3Hi7e/qvyHozuziCgjMtGcUD3JhKCEzMEdplbnqy8t9+ApEs9Y8oQo7g==}
     dependencies:
       temp: 0.9.4
-      unpartial: 0.6.4
+      unpartial: 1.0.2
     dev: false
 
   /find-up/4.1.0:
@@ -4249,7 +4318,6 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
-    dev: true
 
   /jsesc/2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
@@ -5384,16 +5452,6 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
-  /standard-log-color/7.0.3_standard-log@9.1.8:
-    resolution: {integrity: sha512-YAPpVThj4QldvPg9nNWtWIFZn2l7T4yCLTEqV2vhLgA/a1Pp/D6Vrg10iav03OHQLt72EyANWD9j+HQEDXrdwQ==}
-    peerDependencies:
-      standard-log: '>=9.1.8'
-    dependencies:
-      color-map: 2.0.3
-      standard-log: 9.1.8
-      unpartial: 1.0.2
-    dev: true
-
   /standard-log-color/8.0.0_standard-log@10.0.0:
     resolution: {integrity: sha512-/pfis4Xu5QJytUKw+qjBsyH/igrOOycowrEztlmGi9FhyCtgSHrRtx5JPjuRJ1Qhx2pmY7fKl1rSD1rw0E2XyQ==}
     peerDependencies:
@@ -5403,7 +5461,6 @@ packages:
       standard-log: 10.0.0
       supports-color: 9.2.2
       unpartial: 1.0.2
-    dev: false
 
   /standard-log/10.0.0:
     resolution: {integrity: sha512-WhQtjA3e8UMk7zjSobOJm42NyvrqjgNkk7Y1a/KLco+q0YQ6vgjZqgmLFYIrQLylHfUAaHr0aWhAMMG4MWVi0A==}
@@ -5413,17 +5470,6 @@ packages:
       ms: 2.1.3
       type-plus: 4.11.2
       upper-case: 2.0.2
-    dev: false
-
-  /standard-log/9.1.8:
-    resolution: {integrity: sha512-4jQM50sj4O64dr2s5sMYXQAg688lXyf19AVde4gfanP/QW+aw+LYSu1gwi8GkFXWFbi+aSmkTa5vJtQccIFcRg==}
-    dependencies:
-      '@just-func/types': 0.2.1
-      iso-error: 4.3.6
-      ms: 2.1.3
-      type-plus: 4.11.2
-      upper-case: 2.0.2
-    dev: true
 
   /stream-transform/2.1.3:
     resolution: {integrity: sha512-9GHUiM5hMiCi6Y03jD2ARC1ettBXkQBoQAe7nJsPknnI0ow10aXjTnew8QtYQmLjzn974BnmWEAJgCY6ZP1DeQ==}
@@ -5557,7 +5603,6 @@ packages:
   /supports-color/9.2.2:
     resolution: {integrity: sha512-XC6g/Kgux+rJXmwokjm9ECpD6k/smUoS5LKlUCcsYr4IY3rW0XyAympon2RmxGrlnZURMpg5T18gWDP9CsHXFA==}
     engines: {node: '>=12'}
-    dev: false
 
   /supports-hyperlinks/2.2.0:
     resolution: {integrity: sha512-6sXEzV5+I5j8Bmq9/vUphGRM/RJNT9SCURJLjwfOg51heRtguGWDzcaBlgAzKhQa0EVNpPEKzQuBwZ8S8WaCeQ==}
@@ -5633,6 +5678,13 @@ packages:
     engines: {node: '>=0.6.0'}
     dependencies:
       os-tmpdir: 1.0.2
+    dev: true
+
+  /tmp/0.2.1:
+    resolution: {integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==}
+    engines: {node: '>=8.17.0'}
+    dependencies:
+      rimraf: 3.0.2
     dev: true
 
   /tmpl/1.0.5:
@@ -5968,6 +6020,7 @@ packages:
   /unpartial/0.6.4:
     resolution: {integrity: sha512-t/aGg/x8vW0KCjPB8A6TBB1hd0wnWMze8WD83uUpqSDm99jmhY2ZcHpivlvvSGmPCJ/S5ASZzxeQHga4JTW/4A==}
     engines: {node: '>=6'}
+    dev: true
 
   /unpartial/0.7.5:
     resolution: {integrity: sha512-02G/AkbF7MkgaEOAJmCe7P0UYzJVkMkAIU5YEJsO5QmDX7vkqyNctVi1gPm8YLVlGo5T/Qe/hYA66AuliEKBag==}
