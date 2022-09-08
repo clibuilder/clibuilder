@@ -24,6 +24,8 @@ export function context() {
       if (config) return config
       return config = await loadConfig({ cwd, ui: this.ui }, configName)
     },
+    // ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
+    // istanbul ignore next
     async loadPlugins(pluginNames: string[]) {
       if (loadingCommands) return loadingCommands
       return loadingCommands = loadPlugins({ cwd, ui: this.ui }, pluginNames)
