@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.2
+
+### Patch Changes
+
+- e39a3c9: Add `tmp` as dependencies.
+  It is used by `testCommand()` which is part of public API.
+
 ## 8.0.1
 
 ### Patch Changes
