@@ -16,11 +16,11 @@
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "prepare": "husky install",
-    "release": "pnpm cs publish",
+    "release": "changeset publish",
     "size": "turbo run size",
     "test": "turbo run test",
     "verify": "turbo run lint build coverage depcheck size",
-    "version": "yarn cs version"
+    "version": "changeset version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.24.4",
