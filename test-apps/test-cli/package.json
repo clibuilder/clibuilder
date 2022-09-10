@@ -4,5 +4,6 @@
   "bin": "./bin.js",
   "dependencies": {
     "clibuilder": "workspace:*"
-  }
+  },
+  "version": null
 }
