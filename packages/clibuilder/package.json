@@ -61,6 +61,7 @@
     "search-packages": "^2.1.0",
     "standard-log": "^10.0.0",
     "standard-log-color": "^8.0.0",
+    "tmp": "^0.2.1",
     "tslib": "^2.4.0",
     "type-plus": "^4.11.2",
     "wordwrap": "^1.0.0",
@@ -99,7 +100,6 @@
     "plugin-two": "workspace:*",
     "rimraf": "^3.0.2",
     "tersify": "^3.10.2",
-    "tmp": "^0.2.1",
     "ts-jest": "^28.0.8",
     "typescript": "^4.8.2"
   },
