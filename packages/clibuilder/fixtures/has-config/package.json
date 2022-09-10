@@ -1,8 +1,5 @@
 {
   "name": "has-config",
-  "version": "1.0.0",
-  "description": "",
-  "name": "fixture-pkg",
   "private": true,
   "type": "commonjs",
   "dependencies": {

@@ -1,8 +1,6 @@
 {
   "name": "multi-bin",
-  "name": "fixture-pkg",
   "private": true,
-  "version": "1.0.0",
   "bin": {
     "cli-a": "bin-a.js",
     "cli-b": "bin-b.js"
