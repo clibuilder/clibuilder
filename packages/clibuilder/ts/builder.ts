@@ -6,7 +6,7 @@ import { Context } from './context.js'
 import { lookupCommand } from './lookupCommand.js'
 import { parseArgv } from './parseArgv.js'
 import { state } from './state.js'
-import { Command } from './typesInternal.js'
+import { Command } from './types.internal.js'
 
 export function builder(context: Context, options: RequiredPick<cli.Options, 'config'> | RequiredPick<cli.Options, 'keywords'>): cli.Builder & cli.Executable
 export function builder(context: Context, options: cli.Options): cli.Builder
