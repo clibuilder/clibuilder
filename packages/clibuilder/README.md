@@ -12,27 +12,26 @@
 [![Visual Studio Code][vscode-image]][vscode-url]
 [![Wallaby.js][wallaby-image]][wallaby-url]
 
-A highly customizable command line library.
+A highly customizable command line application builder.
 
 ## What's new in v8
 
 Key highlights:
 
 - Support standalone CLI
-  - `name` and `version` are not required and not read from `package.json`.
+  - `name` and `version` are now required and not read from `package.json`.
 - Plugins are loaded through config
-  - This drastically improve startup time, as it does not scan in the `node_modules` anymore.
+  - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
 - `keywords` are now used for plugin lookup.
 - Distribute `ESM` along with `CJS`.
 
-## Features
+## Feature Highlights
 
-- plugin support: write commands in separate packages and reuse by multiple CLI
+- support default commands and sub-commands `my-cli cmd1 cmd2 cmd3`
 - configuration file support
-- type inference for config, arguments, and options
-- nested commands `my-cli cmd1 cmd2 cmd3`
-- type validation for config, arguments, and options\
+- plugin support: write commands in separate packages and reuse by multiple CLI
+- type inference and validation for config, arguments, and options\
   using [zod](https://github.com/colinhacks/zod) (exported as `z`)
 
 ## Install
@@ -57,9 +56,12 @@ You can use `clibuilder` to create your command line application in many ways.
 The most basic way looks like this:
 
 ```ts
-cli({ name: 'app', version: '1.0.0' })
+// Define your app
+const app = cli({ name: 'app', version: '1.0.0' })
   .default({ run() { /* ...snip... */ }})
-  .parse(process.argv)
+
+// Use your app
+app.parse(process.argv)
   .catch(e => /* handle error */process.exit(e?.code || 1))
 ```
 
@@ -76,7 +78,7 @@ cli({ ... })
   })
 ```
 
-You can add alias to the command:
+Command can have alias:
 
 ```ts
 cli({ ... })
@@ -85,6 +87,8 @@ cli({ ... })
     alias: ['sp'],
     /* ..snip.. */
   })
+
+// call as: `my-cli sp`
 ```
 
 You can specify arguments:
@@ -180,12 +184,12 @@ cli({ config: 'alt-config.json' })
 
 ## Plugins
 
-One important feature of `clibuilder` is supporting plugins.
+One of the key features of `clibuilder` is supporting plugins.
 Plugins are defined inside the config:
 
 ```json
 {
-  "plugins": ["my-cli"]
+  "plugins": ["my-cli-plugin"]
 }
 ```
 
@@ -197,7 +201,7 @@ i.e. You can build your application in a distributed fashion.
 To create a plugin:
 
 - export a `activate(ctx: PluginActivationContext)` function
-- add the plugin keyword in your `package.json`
+- add the keywords in your `package.json` to make it searchable
 
 ```ts
 import { command, PluginActivationContext } from 'clibuilder'
@@ -215,7 +219,7 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 
 // in plugin's package.json
 {
-  "keywords": ['your-app-plugin']
+  "keywords": ['your-app-plugin', 'vocaloid']
 }
 ```
 
