@@ -76,6 +76,7 @@ importers:
       search-packages: 2.1.0
       standard-log: 10.0.0
       standard-log-color: 8.0.0_standard-log@10.0.0
+      tmp: 0.2.1
       tslib: 2.4.0
       type-plus: 4.11.2
       wordwrap: 1.0.0
@@ -113,7 +114,6 @@ importers:
       plugin-two: link:../../test-plugins/plugin-two
       rimraf: 3.0.2
       tersify: 3.10.2
-      tmp: 0.2.1
       ts-jest: 28.0.8_cywh2raxstzmu4jeb3bmrfr3yq
       typescript: 4.8.2
 
@@ -5401,7 +5401,6 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
-    dev: true
 
   /run-parallel/1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
@@ -5842,7 +5841,7 @@ packages:
     engines: {node: '>=8.17.0'}
     dependencies:
       rimraf: 3.0.2
-    dev: true
+    dev: false
 
   /tmpl/1.0.5:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
