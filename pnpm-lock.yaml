@@ -58,7 +58,7 @@ importers:
       rimraf: ^3.0.2
       search-packages: ^2.1.0
       standard-log: ^10.0.0
-      standard-log-color: ^8.0.0
+      standard-log-color: ^9.0.0
       tersify: ^3.10.2
       tmp: ^0.2.1
       ts-jest: ^28.0.8
@@ -75,7 +75,7 @@ importers:
       pad-right: 0.2.2
       search-packages: 2.1.0
       standard-log: 10.0.0
-      standard-log-color: 8.0.0_standard-log@10.0.0
+      standard-log-color: 9.0.0_standard-log@10.0.0
       tmp: 0.2.1
       tslib: 2.4.0
       type-plus: 4.11.2
@@ -5617,6 +5617,18 @@ packages:
       standard-log: 10.0.0
       supports-color: 9.2.2
       unpartial: 1.0.2
+    dev: true
+
+  /standard-log-color/9.0.0_standard-log@10.0.0:
+    resolution: {integrity: sha512-GO5kpJgZu4p6/0e3xgGHvl3s7sJYAI1L/VHksQyqyG130z2A092gx5v+O+5KM3UgHaj8Cmpg9dZUPXk6pm6Y3A==}
+    peerDependencies:
+      standard-log: '>=10.2.0'
+    dependencies:
+      color-map: 2.0.3
+      standard-log: 10.0.0
+      supports-color: 9.2.2
+      unpartial: 1.0.2
+    dev: false
 
   /standard-log/10.0.0:
     resolution: {integrity: sha512-WhQtjA3e8UMk7zjSobOJm42NyvrqjgNkk7Y1a/KLco+q0YQ6vgjZqgmLFYIrQLylHfUAaHr0aWhAMMG4MWVi0A==}
