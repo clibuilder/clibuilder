@@ -58,7 +58,7 @@ importers:
       rimraf: ^3.0.2
       search-packages: ^2.1.0
       standard-log: ^10.0.0
-      standard-log-color: ^8.0.0
+      standard-log-color: ^10.0.0
       tersify: ^3.10.2
       tmp: ^0.2.1
       ts-jest: ^28.0.8
@@ -75,7 +75,7 @@ importers:
       pad-right: 0.2.2
       search-packages: 2.1.0
       standard-log: 10.0.0
-      standard-log-color: 8.0.0_standard-log@10.0.0
+      standard-log-color: 10.0.0_standard-log@10.0.0
       tmp: 0.2.1
       tslib: 2.4.0
       type-plus: 4.11.2
@@ -5608,6 +5608,17 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
+  /standard-log-color/10.0.0_standard-log@10.0.0:
+    resolution: {integrity: sha512-H7xltGONbasfuzVD/4jhhB0pzSEVgtIiteOpqllbyO/9SQl7hd28AUSZQgV20Vw7WbUEBIv20U6+7S108cjIvQ==}
+    peerDependencies:
+      standard-log: '>=10.3.0'
+    dependencies:
+      color-map: 2.0.3
+      standard-log: 10.0.0
+      supports-color: 9.2.3
+      unpartial: 1.0.4
+    dev: false
+
   /standard-log-color/8.0.0_standard-log@10.0.0:
     resolution: {integrity: sha512-/pfis4Xu5QJytUKw+qjBsyH/igrOOycowrEztlmGi9FhyCtgSHrRtx5JPjuRJ1Qhx2pmY7fKl1rSD1rw0E2XyQ==}
     peerDependencies:
@@ -5615,8 +5626,9 @@ packages:
     dependencies:
       color-map: 2.0.3
       standard-log: 10.0.0
-      supports-color: 9.2.2
-      unpartial: 1.0.2
+      supports-color: 9.2.3
+      unpartial: 1.0.4
+    dev: true
 
   /standard-log/10.0.0:
     resolution: {integrity: sha512-WhQtjA3e8UMk7zjSobOJm42NyvrqjgNkk7Y1a/KLco+q0YQ6vgjZqgmLFYIrQLylHfUAaHr0aWhAMMG4MWVi0A==}
@@ -5756,8 +5768,8 @@ packages:
       has-flag: 4.0.0
     dev: true
 
-  /supports-color/9.2.2:
-    resolution: {integrity: sha512-XC6g/Kgux+rJXmwokjm9ECpD6k/smUoS5LKlUCcsYr4IY3rW0XyAympon2RmxGrlnZURMpg5T18gWDP9CsHXFA==}
+  /supports-color/9.2.3:
+    resolution: {integrity: sha512-aszYUX/DVK/ed5rFLb/dDinVJrQjG/vmU433wtqVSD800rYsJNWxh2R3USV90aLSU+UsyQkbNeffVLzc6B6foA==}
     engines: {node: '>=12'}
 
   /supports-hyperlinks/2.2.0:
@@ -6184,6 +6196,10 @@ packages:
 
   /unpartial/1.0.2:
     resolution: {integrity: sha512-BhtFRJKwDMB6xuuvz3WTYYS2Lb6uOKPTAwOyDe61+L8Gk1oSAhyOjpwhrjGgT/ilo2rPO1+7eAjLWC04iWBhRQ==}
+    engines: {node: '>=6'}
+
+  /unpartial/1.0.4:
+    resolution: {integrity: sha512-xY8319WOQcRDRVFWvTty2YJXKvM8XRPehqWZUd7k/BatpbuitI4Jd+2xlwjTZbZScSvT75TnUsUmy5uwFa3o0g==}
     engines: {node: '>=6'}
 
   /update-browserslist-db/1.0.5_browserslist@4.21.3:
