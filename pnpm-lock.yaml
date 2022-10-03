@@ -57,7 +57,7 @@ importers:
       plugin-two: workspace:*
       rimraf: ^3.0.2
       search-packages: ^2.1.0
-      standard-log: ^10.0.0
+      standard-log: ^11.0.0
       standard-log-color: ^10.0.0
       tersify: ^3.10.2
       tmp: ^0.2.1
@@ -74,8 +74,8 @@ importers:
       js-yaml: 4.1.0
       pad-right: 0.2.2
       search-packages: 2.1.0
-      standard-log: 10.0.0
-      standard-log-color: 10.0.0_standard-log@10.0.0
+      standard-log: 11.0.0
+      standard-log-color: 10.0.0_standard-log@11.0.0
       tmp: 0.2.1
       tslib: 2.4.0
       type-plus: 4.11.2
@@ -1526,7 +1526,7 @@ packages:
   /@just-func/types/0.2.1:
     resolution: {integrity: sha512-NHhnteq2kwQkgJcBOp3jLdIvV3zZvjVuXEBqkqkefmyS2I0XEKWGXlBQz/37N7IGZrnnG9fvd4PAAYoQ7AjkyA==}
     dependencies:
-      type-plus: 4.11.2
+      type-plus: 4.13.1
 
   /@manypkg/find-root/1.1.0:
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -3881,6 +3881,11 @@ packages:
   /iso-error/4.3.6:
     resolution: {integrity: sha512-gCGeSdffWXnJJIobk5F5JzB6k17uQiKM29M90VkPZD1WrYIQ8dFN7UqEPaaaDgg5yPNVnXBGCZ8kwz8trazYaw==}
     engines: {node: '>= 10'}
+    dev: true
+
+  /iso-error/4.4.0:
+    resolution: {integrity: sha512-DRPiLihxUYhz4rMbfdzvm+l8ihd+d1QXClNa/SJk5HMrX93T5y7A7S+rwNOS+x2Tlzfc/IE0OrJhz/RyQ6s28Q==}
+    engines: {node: '>= 10'}
 
   /istanbul-lib-coverage/3.2.0:
     resolution: {integrity: sha512-eOeJ5BHCmHYvQK7xt9GkdHuzuCGS1Y6g9Gvnx3Ym33fz/HpLRYxiS0wHNr+m/MBC8B647Xt608vCDEvhl9c6Mw==}
@@ -5608,13 +5613,13 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
-  /standard-log-color/10.0.0_standard-log@10.0.0:
+  /standard-log-color/10.0.0_standard-log@11.0.0:
     resolution: {integrity: sha512-H7xltGONbasfuzVD/4jhhB0pzSEVgtIiteOpqllbyO/9SQl7hd28AUSZQgV20Vw7WbUEBIv20U6+7S108cjIvQ==}
     peerDependencies:
       standard-log: '>=10.3.0'
     dependencies:
       color-map: 2.0.3
-      standard-log: 10.0.0
+      standard-log: 11.0.0
       supports-color: 9.2.3
       unpartial: 1.0.4
     dev: false
@@ -5634,10 +5639,21 @@ packages:
     resolution: {integrity: sha512-WhQtjA3e8UMk7zjSobOJm42NyvrqjgNkk7Y1a/KLco+q0YQ6vgjZqgmLFYIrQLylHfUAaHr0aWhAMMG4MWVi0A==}
     dependencies:
       '@just-func/types': 0.2.1
-      iso-error: 4.3.6
+      iso-error: 4.4.0
       ms: 2.1.3
-      type-plus: 4.11.2
+      type-plus: 4.13.1
       upper-case: 2.0.2
+    dev: true
+
+  /standard-log/11.0.0:
+    resolution: {integrity: sha512-zySMFLAcy2hy2Vj1iSG4UmQlFFC5GC/OK+/vwcfVV7B5NL76hSW3nwOzZZpmttSE1Q/+VZDjkjPXGrr2d2Gs5w==}
+    dependencies:
+      '@just-func/types': 0.2.1
+      iso-error: 4.4.0
+      ms: 2.1.3
+      type-plus: 4.13.1
+      upper-case: 2.0.2
+    dev: false
 
   /stream-transform/2.1.3:
     resolution: {integrity: sha512-9GHUiM5hMiCi6Y03jD2ARC1ettBXkQBoQAe7nJsPknnI0ow10aXjTnew8QtYQmLjzn974BnmWEAJgCY6ZP1DeQ==}
@@ -6159,6 +6175,12 @@ packages:
     dependencies:
       tersify: 3.10.2
       unpartial: 1.0.2
+
+  /type-plus/4.13.1:
+    resolution: {integrity: sha512-Kz7dyl3b6J6AM6WUoyEA5z45OzW310ituEaCwFEmLThTIzg0sAJieUzbLwiWE0kjaLAQpOYRY23/YQhOz3g6vQ==}
+    dependencies:
+      tersify: 3.10.2
+      unpartial: 1.0.4
 
   /typescript/4.8.2:
     resolution: {integrity: sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==}
