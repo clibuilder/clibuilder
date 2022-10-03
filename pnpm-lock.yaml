@@ -58,7 +58,7 @@ importers:
       rimraf: ^3.0.2
       search-packages: ^2.1.0
       standard-log: ^11.0.0
-      standard-log-color: ^10.0.0
+      standard-log-color: ^11.0.0
       tersify: ^3.10.2
       tmp: ^0.2.1
       ts-jest: ^28.0.8
@@ -75,7 +75,7 @@ importers:
       pad-right: 0.2.2
       search-packages: 2.1.0
       standard-log: 11.0.0
-      standard-log-color: 10.0.0_standard-log@11.0.0
+      standard-log-color: 11.0.0_standard-log@11.0.0
       tmp: 0.2.1
       tslib: 2.4.0
       type-plus: 4.11.2
@@ -3571,7 +3571,6 @@ packages:
   /has-flag/4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
-    dev: true
 
   /has-property-descriptors/1.0.0:
     resolution: {integrity: sha512-62DVLZGoiEBDHQyqG4w9xCuZ7eJEwNmJRWw2VY84Oedb7WFcA27fiEVe8oUQx9hAUJ4ekurquucTGwsyO1XGdQ==}
@@ -5613,14 +5612,14 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
-  /standard-log-color/10.0.0_standard-log@11.0.0:
-    resolution: {integrity: sha512-H7xltGONbasfuzVD/4jhhB0pzSEVgtIiteOpqllbyO/9SQl7hd28AUSZQgV20Vw7WbUEBIv20U6+7S108cjIvQ==}
+  /standard-log-color/11.0.0_standard-log@11.0.0:
+    resolution: {integrity: sha512-85yZY6JkydJVGcYqyinEzqPuS6nEsnmvvknBT/BLI7yvkat7FHQL6PEXVe3UMiJCJj0vKf6z2Ev7VBb67bdzBA==}
     peerDependencies:
-      standard-log: '>=10.3.0'
+      standard-log: '>=11.0.0'
     dependencies:
       color-map: 2.0.3
       standard-log: 11.0.0
-      supports-color: 9.2.3
+      supports-color: 8.1.1
       unpartial: 1.0.4
     dev: false
 
@@ -5782,11 +5781,11 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       has-flag: 4.0.0
-    dev: true
 
   /supports-color/9.2.3:
     resolution: {integrity: sha512-aszYUX/DVK/ed5rFLb/dDinVJrQjG/vmU433wtqVSD800rYsJNWxh2R3USV90aLSU+UsyQkbNeffVLzc6B6foA==}
     engines: {node: '>=12'}
+    dev: true
 
   /supports-hyperlinks/2.2.0:
     resolution: {integrity: sha512-6sXEzV5+I5j8Bmq9/vUphGRM/RJNT9SCURJLjwfOg51heRtguGWDzcaBlgAzKhQa0EVNpPEKzQuBwZ8S8WaCeQ==}
