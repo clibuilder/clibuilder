@@ -1,5 +1,4 @@
 {
-  "name": "clibuilder-repo",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -11,8 +10,8 @@
     "dev": "turbo run dev --parallel",
     "postinstall": "husky install",
     "lint": "turbo run lint",
-    "nuke": "turbo run nuke",
-    "nuke:local": "rimraf node_modules || true",
+    "nuke": "turbo run nuke && pnpm nuke:local",
+    "nuke:local": "rimraf node_modules",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "prepare": "husky install",
