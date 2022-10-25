@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.3
+
+### Patch Changes
+
+- d8b5de1: Update `type-plus` and `standard-log`
+
 ## 8.0.2
 
 ### Patch Changes
