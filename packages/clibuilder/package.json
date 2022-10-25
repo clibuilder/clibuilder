@@ -53,7 +53,7 @@
     "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch"
   },
   "dependencies": {
-    "@types/node": "^16.0.0",
+    "@types/node": "^18.0.0",
     "find-installed-packages": "^3.0.1",
     "find-up": "^6.3.0",
     "js-yaml": "^4.1.0",
