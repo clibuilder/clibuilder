@@ -1,6 +1,6 @@
 {
   "name": "clibuilder",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "description": "A CLI building library",
   "keywords": [
     "builder",
@@ -30,7 +30,7 @@
     "default": "./esm/index.js",
     "types": "./esm/index.d.ts"
   },
-  "typings": "./lib/index.d.ts",
+  "typings": "./esm/index.d.ts",
   "files": [
     "cjs",
     "esm",

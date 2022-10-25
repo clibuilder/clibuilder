@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.4
+
+### Patch Changes
+
+- re-release with typings
+
 ## 8.0.3
 
 ### Patch Changes
