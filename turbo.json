@@ -44,6 +44,9 @@
         "ts/**/*.tsx?"
       ]
     },
+    "nuke": {
+      "cache": false
+    },
     "size": {
       "dependsOn": [
         "build"
