@@ -76,7 +76,7 @@
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
     "@unional/fixture": "^3.2.1",
-    "assertron": "^10.0.0",
+    "assertron": "^11.0.0",
     "babel-jest": "^29.0.0",
     "bad-plugin": "workspace:*",
     "bad-plugin-no-index": "workspace:*",
