@@ -29,7 +29,7 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.36.2
       '@typescript-eslint/parser': ^5.36.2
       '@unional/fixture': ^3.2.1
-      assertron: ^10.0.0
+      assertron: ^11.0.0
       babel-jest: ^29.0.0
       bad-plugin: workspace:*
       bad-plugin-no-index: workspace:*
@@ -90,7 +90,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.36.2_iurrlxgqcgk5svigzxakafpeuu
       '@typescript-eslint/parser': 5.36.2_yqf6kl63nyoq5megxukfnom5rm
       '@unional/fixture': 3.2.1
-      assertron: 10.0.0
+      assertron: 11.0.1
       babel-jest: 29.0.2_@babel+core@7.19.0
       bad-plugin: link:../../test-plugins/bad-plugin
       bad-plugin-no-index: link:../../test-plugins/bad-plugin-no-index
@@ -2159,12 +2159,12 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /assertron/10.0.0:
-    resolution: {integrity: sha512-u4bl3Yrj5rEtYr0FoSAyK9CUKxUv/N8dd+kts5FNkXHuFqjwJi4BxN8rMNyrS3FmCKdRv0FBwP/YNDtSNN0AnA==}
+  /assertron/11.0.1:
+    resolution: {integrity: sha512-D1U7weslbYgIoItGhuRqasdvZtU/1dtO9cmeMhuUbcNzd6Zztp3mlNlUF/EtZBfgjSFLjgUhBxw5uabsDR/b8A==}
     engines: {node: '>= 10'}
     dependencies:
       is-promise: 4.0.0
-      iso-error: 4.3.6
+      iso-error: 4.4.0
       path-equal: 1.2.2
       satisfier: 5.2.2
       tersify: 3.10.5
