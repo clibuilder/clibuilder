@@ -1,9 +1,7 @@
 ignores:
-  - '@babel/core'
-  - "@size-limit/preset-small-lib"
+  - "@repobuddy/jest"
   - "@types/jest"
   - "@typescript-eslint/parser"
-  - babel-jest
   - clibuilder-plugin-dummy
   - jest-*
   - standard-log-color

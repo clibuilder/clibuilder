@@ -1,4 +1,4 @@
-import { RequiredPick } from 'type-plus'
+import type { RequiredPick } from 'type-plus'
 import type { cli, DisplayLevel } from './cli.js'
 import { getBaseCommand } from './commands.js'
 import type { Command } from './types.internal.js'
