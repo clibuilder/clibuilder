@@ -3,7 +3,7 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "clibuilder": "pnpm run --filter clibuilder",
+    "clibuilder": "pnpm --filter clibuilder",
     "coverage": "turbo run coverage",
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
