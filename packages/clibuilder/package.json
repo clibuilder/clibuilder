@@ -63,7 +63,7 @@
     "standard-log-color": "^11.2.1",
     "tmp": "^0.2.1",
     "tslib": "^2.4.0",
-    "type-plus": "^4.14.1",
+    "type-plus": "^5.0.0",
     "wordwrap": "^1.0.0",
     "zod": "^3.19.0"
   },

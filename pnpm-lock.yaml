@@ -63,7 +63,7 @@ importers:
       tmp: ^0.2.1
       ts-jest: ^29.0.3
       tslib: ^2.4.0
-      type-plus: ^4.14.1
+      type-plus: ^5.0.0
       typescript: ^4.8.2
       wordwrap: ^1.0.0
       zod: ^3.19.0
@@ -78,7 +78,7 @@ importers:
       standard-log-color: 11.2.1_standard-log@11.2.1
       tmp: 0.2.1
       tslib: 2.4.0
-      type-plus: 4.14.1
+      type-plus: 5.0.0
       wordwrap: 1.0.0
       zod: 3.19.0
     devDependencies:
@@ -1715,13 +1715,13 @@ packages:
   /@just-func/types/0.2.1:
     resolution: {integrity: sha512-NHhnteq2kwQkgJcBOp3jLdIvV3zZvjVuXEBqkqkefmyS2I0XEKWGXlBQz/37N7IGZrnnG9fvd4PAAYoQ7AjkyA==}
     dependencies:
-      type-plus: 4.14.1
+      type-plus: 4.18.1
     dev: true
 
   /@just-func/types/0.4.0:
     resolution: {integrity: sha512-JsBoSndz/rN/cmBgUC9DOFyWdMMJzBwEcaNnayZgzZ30mRnQVKEot5Xqy6X3Cc3+RwAmrowQFudLGTH3kfzXxA==}
     dependencies:
-      type-plus: 4.14.1
+      type-plus: 4.18.1
     dev: false
 
   /@manypkg/find-root/1.1.0:
@@ -2146,7 +2146,7 @@ packages:
       standard-log: 10.0.0
       standard-log-color: 8.0.0_standard-log@10.0.0
       tersify: 3.10.5
-      type-plus: 4.14.1
+      type-plus: 4.18.1
     dev: true
 
   /@vue/compiler-core/3.2.37:
@@ -2209,12 +2209,12 @@ packages:
       through: 2.3.8
     dev: true
 
-  /acorn-jsx/5.3.2_acorn@8.8.0:
+  /acorn-jsx/5.3.2_acorn@8.8.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      acorn: 8.8.0
+      acorn: 8.8.1
     dev: true
 
   /acorn-walk/8.2.0:
@@ -2224,6 +2224,12 @@ packages:
 
   /acorn/8.8.0:
     resolution: {integrity: sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+    dev: true
+
+  /acorn/8.8.1:
+    resolution: {integrity: sha512-7zFpHzhnqYKrkYdUjF1HI1bzd0VygEGX8lFk4k5zVMqHEoES+P+7TKI+EvLO9WVMJ8eekdO0aDEK044xTXwPPA==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -2357,7 +2363,7 @@ packages:
       path-equal: 1.2.2
       satisfier: 5.2.2
       tersify: 3.10.5
-      type-plus: 4.14.1
+      type-plus: 4.18.1
     dev: true
 
   /babel-jest/29.0.2_@babel+core@7.19.0:
@@ -3182,8 +3188,8 @@ packages:
     resolution: {integrity: sha512-DQmnRpLj7f6TgN/NYb0MTzJXL+vJF9h3pHy4JhCIs3zwcgez8xmGg3sXHcEO97BrmO2OSvCwMdfdlyl+E9KjOw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
-      acorn: 8.8.0
-      acorn-jsx: 5.3.2_acorn@8.8.0
+      acorn: 8.8.1
+      acorn-jsx: 5.3.2_acorn@8.8.1
       eslint-visitor-keys: 3.3.0
     dev: true
 
@@ -5614,7 +5620,7 @@ packages:
       '@just-func/types': 0.2.1
       iso-error: 4.4.0
       ms: 2.1.3
-      type-plus: 4.14.1
+      type-plus: 4.18.1
       upper-case: 2.0.2
     dev: true
 
@@ -5624,7 +5630,7 @@ packages:
       '@just-func/types': 0.4.0
       iso-error: 4.4.0
       ms: 2.1.3
-      type-plus: 4.14.1
+      type-plus: 4.18.1
       upper-case: 2.0.2
     dev: false
 
@@ -5799,6 +5805,14 @@ packages:
     resolution: {integrity: sha512-dLgsTbGVH/6Z+KU4d+NqMmsMFRwRmTFNxsl5vKGkUmaSQ0TTAwnv+Hck5S8Pdn5bcZSyjR3aTvvetJ7ZUs+ZYg==}
     dependencies:
       acorn: 8.8.0
+      is-buffer: 2.0.5
+      unpartial: 1.0.4
+    dev: true
+
+  /tersify/3.11.1:
+    resolution: {integrity: sha512-W/Kv1z+cgDRsI10p9CyCZJ+gopPUVOz1/h7OPntr6D52iIHQTbsg40MBUoaG82q8IgD/GKoWhoujg/rOxQW7SA==}
+    dependencies:
+      acorn: 8.8.1
       is-buffer: 2.0.5
       unpartial: 1.0.4
 
@@ -6143,11 +6157,18 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /type-plus/4.14.1:
-    resolution: {integrity: sha512-Xk6qb+HILmW+03NNMMk7UiUQYroEu9ta36JOZNZX003AYRhWf8+sdE2HPf/p1DIK0/FpjzHWfRNZsIEI0+oJIA==}
+  /type-plus/4.18.1:
+    resolution: {integrity: sha512-/Dq0K/TUedajerhr2JuXhw44V2tiAniGvyZJL23PqxjUzxrXeASWvfi01Bo8o6mudRXJL/sfBD+KZiHSzrhZ9g==}
     dependencies:
-      tersify: 3.10.5
+      tersify: 3.11.1
       unpartial: 1.0.4
+
+  /type-plus/5.0.0:
+    resolution: {integrity: sha512-nKp5pOQDldmR9BdEjLplLFwiXTVhOK2kReBSgVJ65URDLXCqENYzVDCONaExADIIc1CAGzvzTkB0TUgMAWR2qQ==}
+    dependencies:
+      tersify: 3.11.1
+      unpartial: 1.0.4
+    dev: false
 
   /typescript/4.8.2:
     resolution: {integrity: sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==}
