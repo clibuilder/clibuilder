@@ -131,3 +131,16 @@ test('options with optional type', () => {
     }
   })
 })
+
+it('pass array default values options to the run function', () => {
+  command({
+    name: 'cmd',
+    options: {
+      arrayValues: { description: 'desc', type: z.array(z.string()), default: ['a', 'b'] }
+    },
+    run({ arrayValues }) {
+      isType.equal<true, string[], typeof arrayValues>()
+      expect(arrayValues).toEqual(['a', 'b'])
+    }
+  })
+})
