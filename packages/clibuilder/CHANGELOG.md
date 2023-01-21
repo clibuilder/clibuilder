@@ -1,5 +1,15 @@
 # Change Log
 
+## 8.0.6
+
+### Patch Changes
+
+- 251aba2: Fix array options default value should not be wrapped in an array if it is already an array.
+- fcd4fb8: Adjust `exports` field order.
+  Add `main` field for compatibility.
+
+  Remove extra deps.
+
 ## 8.0.5
 
 ### Patch Changes
