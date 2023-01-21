@@ -136,7 +136,7 @@ function fillDefaultOptions(state: processCommand.State) {
     const options = optionsMap[key]
     if (typeof options === 'string' || options.default === undefined) return p
 
-    p.args[key] = isZodArray(options.type) ? [options.default] : options.default
+    p.args[key] = isZodArray(options.type) && !Array.isArray(options.default) ? [options.default] : options.default
     return p
   }, state)
 }
