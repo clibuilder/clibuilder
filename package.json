@@ -29,5 +29,5 @@
     "pinst": "^3.0.0",
     "turbo": "^1.4.5"
   },
-  "packageManager": "pnpm@7.25.1"
+  "packageManager": "pnpm@7.26.0"
 }
