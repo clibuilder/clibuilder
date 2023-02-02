@@ -126,7 +126,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=string         desc
+  <--abc=string>         desc
 `)
     })
     test('required number', () => {
@@ -142,7 +142,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=number         desc
+  <--abc=number>         desc
 `)
     })
     test('required boolean', () => {
@@ -174,7 +174,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=string...      desc
+  <--abc=string...>      desc
 `)
     })
     test('required number array', () => {
@@ -190,7 +190,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=number...      desc
+  <--abc=number...>      desc
 `)
     })
     test('required boolean array', () => {
@@ -206,7 +206,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=boolean...     desc
+  <--abc=boolean...>     desc
 `)
     })
     test('with default', () => {
@@ -222,7 +222,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>=string         desc (default 'miku')
+  <--abc=string>         desc (default 'miku')
 `)
     })
     test('options with single string alias', () => {
@@ -261,7 +261,7 @@ Options:
 Usage: cli cmd [options]
 
 Options:
-  [-h|--long]=string     description
+  [-h|--long=string]     description
 `)
     })
   })

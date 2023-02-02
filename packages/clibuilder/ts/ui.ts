@@ -218,8 +218,8 @@ function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) 
       : isArray ? '=boolean...' : ''
 
   return optional
-    ? `[${keys}]${valueType}`
-    : `<${keys}>${valueType}`
+    ? `[${keys}${valueType}]`
+    : `<${keys}${valueType}>`
 }
 
 function formatDescription(value: cli.Command.Options.Entry) {
