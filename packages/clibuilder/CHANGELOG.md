@@ -1,5 +1,13 @@
 # Change Log
 
+## 8.0.7
+
+### Patch Changes
+
+- e12f0ea: adjust options help display.
+
+  remove `postinstall` script
+
 ## 8.0.6
 
 ### Patch Changes
