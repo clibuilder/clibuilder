@@ -8,7 +8,6 @@
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev --parallel",
-    "postinstall": "husky install",
     "lint": "turbo run lint",
     "nuke": "turbo run nuke && pnpm nuke:local",
     "nuke:local": "rimraf node_modules",
