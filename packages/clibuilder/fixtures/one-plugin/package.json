@@ -4,5 +4,6 @@
   "dependencies": {
     "cjs-plugin": "workspace:*",
     "clibuilder": "workspace:*"
-  }
+  },
+  "version": null
 }
