@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.9
+
+### Patch Changes
+
+- c3b7480: Remove extra files from package
+
 ## 8.0.8
 
 ### Patch Changes
