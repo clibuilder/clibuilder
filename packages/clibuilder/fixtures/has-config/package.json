@@ -4,6 +4,5 @@
   "type": "commonjs",
   "dependencies": {
     "clibuilder": "workspace:*"
-  },
-  "version": "0.0.0"
+  }
 }
