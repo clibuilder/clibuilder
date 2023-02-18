@@ -36,7 +36,6 @@
     "cjs",
     "esm",
     "ts",
-    "!*/test-utils",
     "!**/*.internal.*",
     "!**/*.{accept,integrate,spec,system,test,unit}.*"
   ],
