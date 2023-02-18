@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.8
+
+### Patch Changes
+
+- fix publish package content
+
 ## 8.0.7
 
 ### Patch Changes
