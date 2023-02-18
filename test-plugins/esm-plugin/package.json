@@ -1,6 +1,9 @@
 {
   "name": "esm-plugin",
+  "version": "0.0.0",
   "private": true,
-  "keywords": ["test-cli"],
+  "keywords": [
+    "test-cli"
+  ],
   "type": "module"
 }
