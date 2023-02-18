@@ -20,7 +20,7 @@ importers:
 
   packages/clibuilder:
     specifiers:
-      '@repobuddy/jest': ^2.3.1
+      '@repobuddy/jest': ^3.0.0
       '@types/jest': ^29.4.0
       '@types/js-yaml': ^4.0.5
       '@types/node': ^18.14.0
@@ -79,7 +79,7 @@ importers:
       wordwrap: 1.0.0
       zod: 3.20.6
     devDependencies:
-      '@repobuddy/jest': 2.3.1_s45w25nartg6shaez2coewghxu
+      '@repobuddy/jest': 3.0.1_s45w25nartg6shaez2coewghxu
       '@types/jest': 29.4.0
       '@types/js-yaml': 4.0.5
       '@types/node': 18.14.0
@@ -1681,11 +1681,11 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@repobuddy/jest/2.3.1_s45w25nartg6shaez2coewghxu:
-    resolution: {integrity: sha512-SY/idH+9Xv7OkYccN9Ig+bcYzXKlCSh9ouU2E7VA5pJwSh2UtjIz4Hj6swbBPwsBapeFxURcGrVd5O8HoX969g==}
+  /@repobuddy/jest/3.0.1_s45w25nartg6shaez2coewghxu:
+    resolution: {integrity: sha512-swqwiSl1FuNtHdEKLA/ZNTPD4dpoxtAuY3sSeouRj3PiLEJwdplD+ijabNqbVvXNG/UljWOfv4d38FEFg/92iQ==}
     peerDependencies:
       '@kayahr/jest-electron-runner': ^29
-      jest: ^29
+      jest: '>=29.4.0'
       jest-watch-suspend: ^1
       jest-watch-toggle-config-2: ^2
       jest-watch-typeahead: ^2
@@ -1708,7 +1708,7 @@ packages:
       jest-watch-toggle-config-2: 2.1.0_jest@29.4.3
       jest-watch-typeahead: 2.2.2_jest@29.4.3
       read-pkg-up: 7.0.1
-      resolve.imports: 1.2.7
+      resolve.imports: 2.0.3
       satisfier: 5.4.2
       ts-jest: 29.0.5_f3xcywq34ovysqssdda3odcpl4
       type-plus: 5.6.0
@@ -5080,8 +5080,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /pattern-key-compare/1.0.0:
-    resolution: {integrity: sha512-7wi8a7OFmdx4Hx31+KY9kcD7gO+MWWupXtlAx7ANqoE8Pypl501FsDAPX2tSYLOuafED82A0Mv3lzeNfn82Jlg==}
+  /pattern-key-compare/2.0.0:
+    resolution: {integrity: sha512-b+yp/Q0KwFotxRgemVsNQ4qyqcA/LxzyfSjqJ7maKSlYTRmaUffwfX07l7KdxkVdc89k6WYtC3SwFCEo8GhbWQ==}
     dev: true
 
   /picocolors/1.0.0:
@@ -5345,10 +5345,10 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /resolve.imports/1.2.7:
-    resolution: {integrity: sha512-q+UNv8vIE8wiB3BYjN9cAEtx17TnV6PoQSBWLCWaI9DDumevUifHY5ocKL4S5qcETHm++Gia3EdNJO81IW3PaQ==}
+  /resolve.imports/2.0.3:
+    resolution: {integrity: sha512-aQaI4EGxTXnhA9EWScjgcpuUAbm51MXGkIHQ0WOEUyFMNjb8Yp/jIKGUu6y1SXMYG3FhTqnnscFNxs2+Pjp9YQ==}
     dependencies:
-      pattern-key-compare: 1.0.0
+      pattern-key-compare: 2.0.0
     dev: true
 
   /resolve/1.22.1:
