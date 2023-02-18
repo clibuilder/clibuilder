@@ -53,7 +53,7 @@ importers:
       pad-right: ^0.2.2
       path-equal: ^1.2.5
       plugin-two: workspace:*
-      rimraf: ^3.0.2
+      rimraf: ^4.0.0
       search-packages: ^2.1.0
       standard-log: ^11.5.1
       standard-log-color: ^11.5.1
@@ -108,7 +108,7 @@ importers:
       npm-run-all: 4.1.5
       path-equal: 1.2.5
       plugin-two: link:../../test-plugins/plugin-two
-      rimraf: 3.0.2
+      rimraf: 4.1.2
       tersify: 3.12.1
       ts-jest: 29.0.5_f3xcywq34ovysqssdda3odcpl4
       typescript: 4.9.5
@@ -5377,6 +5377,12 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+
+  /rimraf/4.1.2:
+    resolution: {integrity: sha512-BlIbgFryTbw3Dz6hyoWFhKk+unCcHMSkZGrTFVAx2WmttdBSonsdtRlwiuTbDqTKr+UlXIUqJVS4QT5tUzGENQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
 
   /run-parallel/1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
