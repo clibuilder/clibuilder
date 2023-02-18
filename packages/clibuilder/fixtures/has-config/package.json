@@ -1,9 +1,9 @@
 {
-  "name": "has-config",
+  "name": "fixtures-has-config",
   "private": true,
   "type": "commonjs",
   "dependencies": {
     "clibuilder": "workspace:*"
   },
-  "version": null
+  "version": "0.0.0"
 }

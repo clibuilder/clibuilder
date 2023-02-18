@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-cli-with-one-esm-plugin",
   "private": true,
   "type": "commonjs",
   "devDependencies": {

@@ -1,9 +1,9 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-one-plugin",
   "private": true,
   "dependencies": {
     "cjs-plugin": "workspace:*",
     "clibuilder": "workspace:*"
   },
-  "version": null
+  "version": "0.0.0"
 }

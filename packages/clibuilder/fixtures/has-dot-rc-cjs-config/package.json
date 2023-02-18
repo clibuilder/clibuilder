@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-has-dot-rc-cjs-config",
   "private": true,
   "type": "commonjs",
   "dependencies": {

@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-bad-lugin-no-index",
   "private": true,
   "dependencies": {
     "bad-plugin-no-index": "workspace:*",

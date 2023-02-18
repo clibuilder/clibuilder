@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-cli-with-extra-plugin",
   "private": true,
   "type": "commonjs",
   "devDependencies": {

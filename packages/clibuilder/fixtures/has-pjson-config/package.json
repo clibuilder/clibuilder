@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-has-pjson-config",
   "private": true,
   "type": "commonjs",
   "dependencies": {

@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-missing-plugin",
   "private": true,
   "type": "commonjs",
   "devDependencies": {

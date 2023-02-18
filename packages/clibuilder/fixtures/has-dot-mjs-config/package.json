@@ -1,5 +1,5 @@
 {
-  "name": "fixture-pkg",
+  "name": "fixtures-has-dot-mjs-config",
   "private": true,
   "type": "commonjs",
   "dependencies": {

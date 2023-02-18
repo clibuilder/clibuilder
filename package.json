@@ -21,12 +21,12 @@
     "version": "changeset version"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.24.4",
-    "@commitlint/cli": "^17.1.2",
-    "@commitlint/config-conventional": "^17.1.0",
-    "husky": "^8.0.1",
+    "@changesets/cli": "^2.26.0",
+    "@commitlint/cli": "^17.4.4",
+    "@commitlint/config-conventional": "^17.4.4",
+    "husky": "^8.0.3",
     "pinst": "^3.0.0",
-    "turbo": "^1.4.5"
+    "turbo": "^1.8.1"
   },
-  "packageManager": "pnpm@7.27.0"
+  "packageManager": "pnpm@7.27.1"
 }
