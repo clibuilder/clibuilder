@@ -36,8 +36,9 @@
     "cjs",
     "esm",
     "ts",
-    "!*.spec.*",
-    "!*.tsbuildinfo"
+    "!*/test-utils",
+    "!**/*.internal.*",
+    "!**/*.{accept,integrate,spec,system,test,unit}.*"
   ],
   "scripts": {
     "build": "run-p build:cjs build:esm",
