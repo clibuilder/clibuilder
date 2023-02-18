@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.10
+
+### Patch Changes
+
+- 0ab7c75: Add test-utils folder back.
+  It is actually needed by `testCommand`.
+
 ## 8.0.9
 
 ### Patch Changes
