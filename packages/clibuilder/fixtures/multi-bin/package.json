@@ -1,8 +1,8 @@
 {
-  "name": "multi-bin",
-  "private": true,
-  "bin": {
-    "cli-a": "bin-a.js",
-    "cli-b": "bin-b.js"
-  }
+	"name": "multi-bin",
+	"private": true,
+	"bin": {
+		"cli-a": "bin-a.js",
+		"cli-b": "bin-b.js"
+	}
 }

@@ -1,12 +1,12 @@
 {
-  "name": "fixtures-has-pjson-config",
-  "private": true,
-  "type": "commonjs",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "show-config": {
-    "a": 1
-  },
-  "version": null
+	"name": "fixtures-has-pjson-config",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"show-config": {
+		"a": 1
+	},
+	"version": null
 }

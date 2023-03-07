@@ -1,8 +1,8 @@
 {
-  "name": "single-bin",
-  "private": true,
-  "description": "a single bin app",
-  "bin": {
-    "single-cli": "bin.js"
-  }
+	"name": "single-bin",
+	"private": true,
+	"description": "a single bin app",
+	"bin": {
+		"single-cli": "bin.js"
+	}
 }

@@ -1,9 +1,9 @@
 {
-  "name": "fixtures-cli-with-one-esm-plugin",
-  "private": true,
-  "type": "commonjs",
-  "devDependencies": {
-    "esm-plugin": "workspace:*",
-    "clibuilder": "workspace:*"
-  }
+	"name": "fixtures-cli-with-one-esm-plugin",
+	"private": true,
+	"type": "commonjs",
+	"devDependencies": {
+		"esm-plugin": "workspace:*",
+		"clibuilder": "workspace:*"
+	}
 }

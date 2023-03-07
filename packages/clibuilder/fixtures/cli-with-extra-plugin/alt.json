@@ -1,5 +1,3 @@
 {
-  "plugins": [
-    "plugin-two"
-  ]
+	"plugins": ["plugin-two"]
 }

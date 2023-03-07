@@ -233,7 +233,6 @@
 //   t.strictEqual(actual, 'a: true, b: true')
 // })
 
-
 // test(`
 // Given cli with groupOption command
 // When called with 'opt b'

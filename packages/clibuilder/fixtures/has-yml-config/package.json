@@ -1,9 +1,9 @@
 {
-  "name": "fixture-pkg",
-  "private": true,
-  "type": "commonjs",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "fixture-pkg",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

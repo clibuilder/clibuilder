@@ -1,10 +1,10 @@
 {
-  "name": "test-cli-esm",
-  "private": true,
-  "bin": "./bin.mjs",
-  "type": "module",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "test-cli-esm",
+	"private": true,
+	"bin": "./bin.mjs",
+	"type": "module",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

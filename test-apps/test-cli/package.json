@@ -1,9 +1,9 @@
 {
-  "name": "test-cli",
-  "private": true,
-  "bin": "./bin.js",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "test-cli",
+	"private": true,
+	"bin": "./bin.js",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

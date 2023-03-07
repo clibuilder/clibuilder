@@ -1,82 +1,45 @@
 {
-  "$schema": "https://turborepo.org/schema.json",
-  "pipeline": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "package.json",
-        "tsconfig.*",
-        "ts/**/*.tsx?"
-      ],
-      "outputs": [
-        "esm/**"
-      ]
-    },
-    "clean": {
-      "cache": false
-    },
-    "coverage": {
-      "dependsOn": [
-        "build"
-      ],
-      "inputs": [
-        "package.json",
-        "tsconfig.*",
-        "ts/**/*.tsx?"
-      ],
-      "outputs": [
-        "coverage/**"
-      ]
-    },
-    "depcheck": {
-      "inputs": [
-        "package.json",
-        "ts/**/*.tsx?"
-      ]
-    },
-    "dev": {
-      "cache": false
-    },
-    "lint": {
-      "inputs": [
-        "ts/**/*.tsx?"
-      ]
-    },
-    "nuke": {
-      "cache": false
-    },
-    "size": {
-      "dependsOn": [
-        "build"
-      ]
-    },
-    "test": {
-      "dependsOn": [
-        "build"
-      ],
-      "inputs": [
-        "package.json",
-        "tsconfig.*",
-        "ts/**/*.tsx?"
-      ]
-    },
-    "verify": {
-      "dependsOn": [
-        "build"
-      ],
-      "cache": false
-    },
-    "watch": {
-      "dependsOn": [
-        "build"
-      ],
-      "inputs": [
-        "package.json",
-        "tsconfig.*",
-        "ts/**/*.tsx?"
-      ]
-    }
-  }
+	"$schema": "https://turborepo.org/schema.json",
+	"pipeline": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"],
+			"outputs": ["esm/**"]
+		},
+		"clean": {
+			"cache": false
+		},
+		"coverage": {
+			"dependsOn": ["build"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"],
+			"outputs": ["coverage/**"]
+		},
+		"depcheck": {
+			"inputs": ["package.json", "ts/**/*.tsx?"]
+		},
+		"dev": {
+			"cache": false
+		},
+		"lint": {
+			"inputs": ["ts/**/*.tsx?"]
+		},
+		"nuke": {
+			"cache": false
+		},
+		"size": {
+			"dependsOn": ["build"]
+		},
+		"test": {
+			"dependsOn": ["build"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"]
+		},
+		"verify": {
+			"dependsOn": ["build"],
+			"cache": false
+		},
+		"watch": {
+			"dependsOn": ["build"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"]
+		}
+	}
 }

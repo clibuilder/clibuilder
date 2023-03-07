@@ -1,40 +1,38 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "json.schemas": [
-    {
-      "fileMatch": [
-        "tsconfig.*.json"
-      ],
-      "url": "http://json.schemastore.org/tsconfig"
-    }
-  ],
-  "search.exclude": {
-    "dist-es5": true,
-    "**/node_modules": true,
-    "**/bower_components": true,
-    "**/.yarn": true,
-    "**/.pnp.*": true
-  },
-  "eslint.enable": true,
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "cSpell.words": [
-    "binrc",
-    "clibuilder",
-    "clirc",
-    "codeql",
-    "greenkeeper",
-    "libm",
-    "macos",
-    "oobm",
-    "oonm",
-    "oosm",
-    "pinst",
-    "pjson",
-    "pnpify",
-    "snyk",
-    "tersify",
-    "tsbuildinfo",
-    "USERPROFILE",
-    "yarnpkg"
-  ]
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"json.schemas": [
+		{
+			"fileMatch": ["tsconfig.*.json"],
+			"url": "http://json.schemastore.org/tsconfig"
+		}
+	],
+	"search.exclude": {
+		"dist-es5": true,
+		"**/node_modules": true,
+		"**/bower_components": true,
+		"**/.yarn": true,
+		"**/.pnp.*": true
+	},
+	"eslint.enable": true,
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"cSpell.words": [
+		"binrc",
+		"clibuilder",
+		"clirc",
+		"codeql",
+		"greenkeeper",
+		"libm",
+		"macos",
+		"oobm",
+		"oonm",
+		"oosm",
+		"pinst",
+		"pjson",
+		"pnpify",
+		"snyk",
+		"tersify",
+		"tsbuildinfo",
+		"USERPROFILE",
+		"yarnpkg"
+	]
 }

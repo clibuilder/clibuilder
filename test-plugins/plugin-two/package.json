@@ -1,9 +1,9 @@
 {
-  "name": "plugin-two",
-  "version": "0.0.0",
-  "private": true,
-  "keywords": [
-    "test-cli"
-  ],
-  "type": "module"
+	"name": "plugin-two",
+	"version": "0.0.0",
+	"private": true,
+	"keywords": [
+		"test-cli"
+	],
+	"type": "module"
 }
