@@ -1,18 +1,17 @@
 import { createStandardLogForTest, logLevels } from 'standard-log'
 import { command, z } from './index.js'
-import { getLogMessage } from './test-utils/index.js'
 import { createUI } from './ui.js'
 
 describe('showVersion', () => {
   test('undefined version shows "not versioned"', () => {
     const { ui, reporter } = testUI()
     ui.showVersion()
-    expect(getLogMessage(reporter)).toEqual('not versioned')
+    expect(reporter.getLogMessage()).toEqual('not versioned')
   })
   test('empty version shows "not versioned"', () => {
     const { ui, reporter } = testUI()
     ui.showVersion('')
-    expect(getLogMessage(reporter)).toEqual('not versioned')
+    expect(reporter.getLogMessage()).toEqual('not versioned')
   })
 })
 
@@ -24,7 +23,7 @@ describe('showHelp()', () => {
       alias: ['sp'],
       run() { }
     }))
-    expect(getLogMessage(reporter)).toEqual(`
+    expect(reporter.getLogMessage()).toEqual(`
 Usage: cli search-package
 
 Alias:
@@ -40,7 +39,7 @@ Alias:
         run() { }
       })]
     }))
-    expect(getLogMessage(reporter)).toEqual(`
+    expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <command>
 
 Commands:
@@ -59,7 +58,7 @@ cmd <command> -h         Get help for <command>
         run() { }
       }]
     }))
-    expect(getLogMessage(reporter)).toEqual(`
+    expect(reporter.getLogMessage()).toEqual(`
 Usage: cli repo <command>
 
 Commands:
@@ -75,7 +74,7 @@ repo <command> -h        Get help for <command>
       arguments: [{ name: 'x', description: '' }],
       run() { }
     }))
-    expect(getLogMessage(reporter)).toEqual(`
+    expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -89,7 +88,7 @@ Arguments:
       arguments: [{ name: 'x', description: '', type: z.optional(z.string()) }],
       run() { }
     }))
-    expect(getLogMessage(reporter)).toEqual(`
+    expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd [arguments]
 
 Arguments:
@@ -106,7 +105,7 @@ Arguments:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -122,7 +121,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -138,7 +137,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -154,7 +153,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -170,7 +169,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -186,7 +185,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -202,7 +201,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -218,7 +217,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -234,7 +233,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -257,7 +256,7 @@ Options:
         },
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -274,7 +273,7 @@ Options:
         config: z.object({ a: z.string() }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -288,7 +287,7 @@ Config:
         config: z.object({ a: z.string(), b: z.boolean() }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -302,7 +301,7 @@ Config:
         config: z.object({ c: z.number() }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -316,7 +315,7 @@ Config:
         config: z.object({ c: z.optional(z.array(z.string())) }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -330,7 +329,7 @@ Config:
         config: z.object({ a: z.array(z.object({ d: z.string() })) }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -348,7 +347,7 @@ Config:
         }),
         run() { }
       }))
-      expect(getLogMessage(reporter)).toEqual(`
+      expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd
 
 Config:
