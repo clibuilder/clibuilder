@@ -1,7 +1,7 @@
 # CLI Builder
 
 [![NPM version][npm-image]][npm-url]
-[![NPM downloads][downloads-image]][downloads-url]
+[![NPM downloads][downloads-image]][npm-url]
 
 [![GitHub NodeJS][github-nodejs]][github-action-url]
 
@@ -36,8 +36,7 @@ Learn more in the [`clibuilder` README](./packages/clibuilder/README.md)
 [codecov-image]: https://codecov.io/gh/unional/clibuilder/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/unional/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
-[downloads-url]: https://npmjs.org/package/clibuilder
-[github-nodejs]: https://github.com/unional/clibuilder/workflows/nodejs/badge.svg
+[github-nodejs]: https://github.com/unional/clibuilder/workflows/release/badge.svg
 [github-action-url]: https://github.com/unional/clibuilder/actions
 [greenkeeper-image]: https://badges.greenkeeper.io/unional/clibuilder.svg
 [greenkeeper-url]: https://greenkeeper.io/
