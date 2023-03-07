@@ -3,7 +3,7 @@ import { assertType, IsExtend, isType, required } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
 import { cli, command, z } from './index.js'
-import { argv, getLogMessage } from './test-utils/index.js'
+import { argv } from './test-utils/index.js'
 
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
   const opt = required({ name: 'test-cli', version: '1.0.0' }, options)
@@ -309,7 +309,7 @@ describe('command()', () => {
         ]
       })
     await cli.parse(argv('single-bin cmd1 not-exist'))
-    expect(getLogMessage(ctx.sl.reporter)).toContain('Usage: test-cli cmd1 <command>')
+    expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd1 <command>')
   })
   test('ui uses command name', async () => {
     const [builder, ctx] = setupBuilderTest()
@@ -370,7 +370,7 @@ describe('loadConfig()', () => {
 
     // TODO: error message is weak in `zod`.
     // improve this when switching back to type-plus
-    const msg = getLogMessage(ctx.sl.reporter)
+    const msg = ctx.sl.reporter.getLogMessage()
     expect(msg).toContain(`config fails validation:
   a: Expected object, received number
   b: Required`)
@@ -450,7 +450,7 @@ describe('loadConfig()', () => {
         config: z.object({ a: z.number() }),
         run() { return this.config }
       }).parse(argv('single-bin'))
-    const msg = getLogMessage(ctx.sl.reporter)
+    const msg = ctx.sl.reporter.getLogMessage()
     expect(msg).toContain(`no config found`)
     expect(actual).toEqual(undefined)
   })
