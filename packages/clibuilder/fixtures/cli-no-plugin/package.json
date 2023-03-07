@@ -1,8 +1,8 @@
 {
-  "name": "fixtures-cli-no-plugin",
-  "private": true,
-  "type": "commonjs",
-  "devDependencies": {
-    "clibuilder": "workspace:*"
-  }
+	"name": "fixtures-cli-no-plugin",
+	"private": true,
+	"type": "commonjs",
+	"devDependencies": {
+		"clibuilder": "workspace:*"
+	}
 }

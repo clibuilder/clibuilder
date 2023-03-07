@@ -1,6 +1,6 @@
 {
-  "type": "commonjs",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  }
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	}
 }

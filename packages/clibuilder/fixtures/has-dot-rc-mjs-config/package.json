@@ -1,9 +1,9 @@
 {
-  "name": "fixtures-has-dot-rc-mjs-config",
-  "private": true,
-  "type": "commonjs",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "fixtures-has-dot-rc-mjs-config",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

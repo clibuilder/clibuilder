@@ -1,10 +1,10 @@
 {
-  "name": "fixtures-cli-with-extra-plugin",
-  "private": true,
-  "type": "commonjs",
-  "devDependencies": {
-    "cjs-plugin": "workspace:*",
-    "plugin-two": "workspace:*",
-    "clibuilder": "workspace:*"
-  }
+	"name": "fixtures-cli-with-extra-plugin",
+	"private": true,
+	"type": "commonjs",
+	"devDependencies": {
+		"cjs-plugin": "workspace:*",
+		"plugin-two": "workspace:*",
+		"clibuilder": "workspace:*"
+	}
 }

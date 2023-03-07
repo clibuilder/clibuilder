@@ -1,9 +1,9 @@
 {
-  "name": "fixtures-bad-plugin",
-  "private": true,
-  "dependencies": {
-    "bad-plugin": "workspace:*",
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "fixtures-bad-plugin",
+	"private": true,
+	"dependencies": {
+		"bad-plugin": "workspace:*",
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

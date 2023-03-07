@@ -1,9 +1,9 @@
 {
-  "name": "has-json-config",
-  "private": true,
-  "type": "commonjs",
-  "dependencies": {
-    "clibuilder": "workspace:*"
-  },
-  "version": null
+	"name": "has-json-config",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	},
+	"version": null
 }

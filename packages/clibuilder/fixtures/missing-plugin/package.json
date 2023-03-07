@@ -1,8 +1,8 @@
 {
-  "name": "fixtures-missing-plugin",
-  "private": true,
-  "type": "commonjs",
-  "devDependencies": {
-    "test-cli": "workspace:*"
-  }
+	"name": "fixtures-missing-plugin",
+	"private": true,
+	"type": "commonjs",
+	"devDependencies": {
+		"test-cli": "workspace:*"
+	}
 }

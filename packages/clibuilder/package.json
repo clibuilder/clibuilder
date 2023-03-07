@@ -1,109 +1,109 @@
 {
-  "name": "clibuilder",
-  "version": "8.0.10",
-  "description": "A CLI building library",
-  "keywords": [
-    "builder",
-    "cli",
-    "command",
-    "parser"
-  ],
-  "homepage": "https://github.com/unional/clibuilder",
-  "bugs": {
-    "url": "https://github.com/unional/clibuilder/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/unional/clibuilder.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Homa Wong (unional)",
-    "email": "homawong@gmail.com",
-    "url": "https://github.com/unional"
-  },
-  "sideEffects": false,
-  "type": "module",
-  "exports": {
-    "types": "./esm/index.d.ts",
-    "import": "./esm/index.js",
-    "require": "./cjs/index.js",
-    "default": "./cjs/index.js"
-  },
-  "main": "./cjs/index.js",
-  "types": "./esm/index.d.ts",
-  "files": [
-    "cjs",
-    "esm",
-    "ts",
-    "!**/*.internal.*",
-    "!**/*.{accept,integrate,spec,system,test,unit}.*"
-  ],
-  "scripts": {
-    "build": "run-p build:cjs build:esm",
-    "build:cjs": "esbuild ts/index.ts --bundle --platform=node --outfile=cjs/index.js && ncp package.cjs.json cjs/package.json",
-    "build:esm": "tsc",
-    "build:watch": "tsc --watch",
-    "clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
-    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --coverage",
-    "depcheck": "depcheck",
-    "lint": "eslint --ext=js,ts .",
-    "nuke": "run-s clean && rimraf node_modules",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest",
-    "verify": "npm-run-all clean -p build lint coverage depcheck",
-    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --watch"
-  },
-  "dependencies": {
-    "find-installed-packages": "^3.0.1",
-    "find-up": "^6.3.0",
-    "js-yaml": "^4.1.0",
-    "pad-right": "^0.2.2",
-    "search-packages": "^2.1.0",
-    "standard-log": "^11.5.1",
-    "standard-log-color": "^11.5.1",
-    "tmp": "^0.2.1",
-    "tslib": "^2.5.0",
-    "type-plus": "^5.6.0",
-    "wordwrap": "^1.0.0",
-    "zod": "^3.20.6"
-  },
-  "devDependencies": {
-    "@repobuddy/jest": "^3.0.0",
-    "@types/jest": "^29.4.0",
-    "@types/js-yaml": "^4.0.5",
-    "@types/node": "^18.14.0",
-    "@types/tmp": "^0.2.3",
-    "@types/wordwrap": "github:types/wordwrap",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.52.0",
-    "@unional/fixture": "^3.2.12",
-    "assertron": "^11.1.2",
-    "bad-plugin": "workspace:*",
-    "bad-plugin-no-index": "workspace:*",
-    "cjs-plugin": "workspace:*",
-    "clibuilder-plugin-dummy": "^1.0.1",
-    "cross-env": "^7.0.3",
-    "depcheck": "^1.4.3",
-    "esbuild": "^0.17.8",
-    "eslint": "^8.34.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-harmony": "^7.1.1",
-    "esm-plugin": "workspace:*",
-    "jest": "^29.4.3",
-    "jest-watch-suspend": "^1.1.2",
-    "jest-watch-toggle-config-2": "^2.1.0",
-    "jest-watch-typeahead": "^2.2.2",
-    "ncp": "^2.0.0",
-    "npm-run-all": "^4.1.5",
-    "path-equal": "^1.2.5",
-    "plugin-two": "workspace:*",
-    "rimraf": "^3.0.2",
-    "tersify": "^3.12.1",
-    "ts-jest": "^29.0.5",
-    "tslib": "^2.4.0",
-    "typescript": "^4.9.5"
-  },
-  "engines": {
-    "node": ">= 8"
-  }
+	"name": "clibuilder",
+	"version": "8.0.10",
+	"description": "A CLI building library",
+	"keywords": [
+		"builder",
+		"cli",
+		"command",
+		"parser"
+	],
+	"homepage": "https://github.com/unional/clibuilder",
+	"bugs": {
+		"url": "https://github.com/unional/clibuilder/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/unional/clibuilder.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"types": "./esm/index.d.ts",
+		"import": "./esm/index.js",
+		"require": "./cjs/index.js",
+		"default": "./cjs/index.js"
+	},
+	"main": "./cjs/index.js",
+	"types": "./esm/index.d.ts",
+	"files": [
+		"cjs",
+		"esm",
+		"ts",
+		"!**/*.internal.*",
+		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+	],
+	"scripts": {
+		"build": "run-p build:cjs build:esm",
+		"build:cjs": "esbuild ts/index.ts --bundle --platform=node --outfile=cjs/index.js && ncp package.cjs.json cjs/package.json",
+		"build:esm": "tsc",
+		"build:watch": "tsc --watch",
+		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
+		"coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --coverage",
+		"depcheck": "depcheck",
+		"lint": "eslint --ext=js,ts .",
+		"nuke": "run-s clean && rimraf node_modules",
+		"test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest",
+		"verify": "npm-run-all clean -p build lint coverage depcheck",
+		"watch": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --watch"
+	},
+	"dependencies": {
+		"find-installed-packages": "^3.0.1",
+		"find-up": "^6.3.0",
+		"js-yaml": "^4.1.0",
+		"pad-right": "^0.2.2",
+		"search-packages": "^2.1.0",
+		"standard-log": "^11.5.1",
+		"standard-log-color": "^11.5.1",
+		"tmp": "^0.2.1",
+		"tslib": "^2.5.0",
+		"type-plus": "^5.6.0",
+		"wordwrap": "^1.0.0",
+		"zod": "^3.20.6"
+	},
+	"devDependencies": {
+		"@repobuddy/jest": "^3.0.0",
+		"@types/jest": "^29.4.0",
+		"@types/js-yaml": "^4.0.5",
+		"@types/node": "^18.14.0",
+		"@types/tmp": "^0.2.3",
+		"@types/wordwrap": "github:types/wordwrap",
+		"@typescript-eslint/eslint-plugin": "^5.52.0",
+		"@typescript-eslint/parser": "^5.52.0",
+		"@unional/fixture": "^3.2.12",
+		"assertron": "^11.1.2",
+		"bad-plugin": "workspace:*",
+		"bad-plugin-no-index": "workspace:*",
+		"cjs-plugin": "workspace:*",
+		"clibuilder-plugin-dummy": "^1.0.1",
+		"cross-env": "^7.0.3",
+		"depcheck": "^1.4.3",
+		"esbuild": "^0.17.8",
+		"eslint": "^8.34.0",
+		"eslint-config-prettier": "^8.6.0",
+		"eslint-plugin-harmony": "^7.1.1",
+		"esm-plugin": "workspace:*",
+		"jest": "^29.4.3",
+		"jest-watch-suspend": "^1.1.2",
+		"jest-watch-toggle-config-2": "^2.1.0",
+		"jest-watch-typeahead": "^2.2.2",
+		"ncp": "^2.0.0",
+		"npm-run-all": "^4.1.5",
+		"path-equal": "^1.2.5",
+		"plugin-two": "workspace:*",
+		"rimraf": "^3.0.2",
+		"tersify": "^3.12.1",
+		"ts-jest": "^29.0.5",
+		"tslib": "^2.4.0",
+		"typescript": "^4.9.5"
+	},
+	"engines": {
+		"node": ">= 8"
+	}
 }
