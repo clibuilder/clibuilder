@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.11
+
+### Patch Changes
+
+- c36be5b: Fix `testCommand()` log format when the log argument contains object.
+
 ## 8.0.10
 
 ### Patch Changes
@@ -87,7 +93,7 @@
 
   ```json
   {
-    "plugins": ["your-plugin"]
+  	"plugins": ["your-plugin"]
   }
   ```
 
