@@ -61,7 +61,7 @@ importers:
       tmp: ^0.2.1
       ts-jest: ^29.0.5
       tslib: ^2.5.0
-      type-plus: ^5.6.0
+      type-plus: ^6.0.0
       typescript: ^5.0.0
       wordwrap: ^1.0.0
       zod: ^3.20.6
@@ -75,7 +75,7 @@ importers:
       standard-log-color: 11.5.1_standard-log@11.5.1
       tmp: 0.2.1
       tslib: 2.5.0
-      type-plus: 5.6.0
+      type-plus: 6.0.0
       wordwrap: 1.0.0
       zod: 3.20.6
     devDependencies:
@@ -6033,6 +6033,13 @@ packages:
     dependencies:
       tersify: 3.12.1
       unpartial: 1.0.4
+
+  /type-plus/6.0.0:
+    resolution: {integrity: sha512-ezkCTr6LGC87w9LHc83XJnJFfaeEa/nPhr4yzBKv2+Pw0y4FXKHgrJ2GWM4H1nSKzcEPv4q/Sfw4MKmi8NTxbg==}
+    dependencies:
+      tersify: 3.12.1
+      unpartial: 1.0.4
+    dev: false
 
   /typed-array-length/1.0.4:
     resolution: {integrity: sha512-KjZypGq+I/H7HI5HlOoGHkWUUGq+Q0TPhQurLbyrVrvnKTBgzLhIJ7j6J/XTQOi0d1RjyZ0wdas8bKs2p0x3Ng==}
