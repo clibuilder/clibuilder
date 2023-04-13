@@ -44,8 +44,8 @@ importers:
         specifier: ^11.5.1
         version: 11.5.1
       standard-log-color:
-        specifier: ^11.5.1
-        version: 11.5.1(standard-log@11.5.1)
+        specifier: ^12.0.0
+        version: 12.0.0(standard-log@11.5.1)
       tmp:
         specifier: ^0.2.1
         version: 0.2.1
@@ -3593,6 +3593,7 @@ packages:
   /has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
+    dev: true
 
   /has-property-descriptors@1.0.0:
     resolution: {integrity: sha512-62DVLZGoiEBDHQyqG4w9xCuZ7eJEwNmJRWw2VY84Oedb7WFcA27fiEVe8oUQx9hAUJ4ekurquucTGwsyO1XGdQ==}
@@ -5646,6 +5647,18 @@ packages:
       standard-log: 11.5.1
       supports-color: 8.1.1
       unpartial: 1.0.4
+    dev: true
+
+  /standard-log-color@12.0.0(standard-log@11.5.1):
+    resolution: {integrity: sha512-i+7DPvT68qywVT0bs0e36Ppizd8ot//ezuTpBceIEo+bCkWDnk6pcj4m++EffkZ9b+bViiJgSICbYVuo7KainQ==}
+    peerDependencies:
+      standard-log: '>=11.0.1'
+    dependencies:
+      color-map: 2.0.6
+      standard-log: 11.5.1
+      supports-color: 9.3.1
+      unpartial: 1.0.4
+    dev: false
 
   /standard-log@11.5.1:
     resolution: {integrity: sha512-cA0+vIloNK0rUIi92XnCa0hOQEwFqyZt/nTuPpWTfv2WsqfIGdGyAM1Q2WLalXYPisCnSaxSQ673ecjE21oY3w==}
@@ -5783,6 +5796,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       has-flag: 4.0.0
+    dev: true
+
+  /supports-color@9.3.1:
+    resolution: {integrity: sha512-knBY82pjmnIzK3NifMo3RxEIRD9E0kIzV4BKcyTZ9+9kWgLMxd4PrsTSMoFQUabgRBbF8KOLRDCyKgNV+iK44Q==}
+    engines: {node: '>=12'}
+    dev: false
 
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
