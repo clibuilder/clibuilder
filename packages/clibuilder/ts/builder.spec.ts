@@ -1,5 +1,5 @@
 import { a } from 'assertron'
-import { assertType, IsExtend, isType, required } from 'type-plus'
+import { assertType, IsExtend, testType, required } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
 import { cli, command, z } from './index.js'
@@ -13,7 +13,7 @@ function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<
 
 it('will not have parse() if there is no `config`, `keywords` and have not define any command', async () => {
 	const [builder] = setupBuilderTest()
-	isType.equal<true, never, keyof typeof builder & 'parse'>()
+	testType.equal<never, keyof typeof builder & 'parse'>(true)
 	expect((builder as any).parse).toBeUndefined()
 	// call parse to wait for `loadingConfig` to complete
 	await builder.default({ run() {} }).parse([])
@@ -190,7 +190,7 @@ describe('--silent', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				isType.f<IsExtend<typeof args, { silent: any }>>()
+				testType.false<IsExtend<typeof args, { silent: any }>>(true)
 				return args
 			}
 		})
@@ -224,7 +224,7 @@ describe('verbose', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				isType.f<IsExtend<typeof args, { verbose: any }>>()
+				testType.false<IsExtend<typeof args, { verbose: any }>>(true)
 				return args
 			}
 		})
@@ -235,7 +235,7 @@ describe('verbose', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				isType.f<IsExtend<typeof args, { V: any }>>()
+				testType.false<IsExtend<typeof args, { V: any }>>(true)
 				return args
 			}
 		})
@@ -386,21 +386,21 @@ describe('fluent syntax', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.default({ run() {} })
-		isType.equal<true, never, keyof typeof a & 'default'>()
+		testType.equal<never, keyof typeof a & 'default'>(true)
 	})
 
 	test('default() adds parse()', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.default({ run() {} })
-		isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+		testType.equal<'parse', keyof typeof a & 'parse'>(true)
 	})
 
 	test('command() adds parse()', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.command({ name: 'x', run() {} })
-		isType.equal<true, 'parse', keyof typeof a & 'parse'>()
+		testType.equal<'parse', keyof typeof a & 'parse'>(true)
 	})
 })
 
@@ -487,7 +487,7 @@ describe('loadConfig()', () => {
 			config: z.object({ a: z.number() }),
 			run() {
 				const cfg = this.config
-				isType.equal<true, { a: number }, typeof cfg>()
+				testType.equal<{ a: number }, typeof cfg>(true)
 				return cfg
 			}
 		})

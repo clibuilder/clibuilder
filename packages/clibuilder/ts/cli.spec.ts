@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, isType } from 'type-plus'
+import { assertType, testType } from 'type-plus'
 import { cli, z } from './index.js'
 
 it('needs name and version', () => {
@@ -82,8 +82,8 @@ which will default to string and boolean respectively`, () => {
 		arguments: [{ name: 'a', description: 'some a' }],
 		options: { b: { description: 'some b' } },
 		run(args) {
-			isType.equal<true, string, typeof args.a>()
-			isType.equal<true, boolean | undefined, typeof args.b>()
+			testType.equal<string, typeof args.a>(true)
+			testType.equal<boolean | undefined, typeof args.b>(true)
 		}
 	})
 })
@@ -94,7 +94,7 @@ it('can specify the config used by the command', () => {
 			c: z.boolean()
 		}),
 		run() {
-			isType.equal<true, boolean, typeof this.config.c>()
+			testType.equal<boolean, typeof this.config.c>(true)
 		}
 	})
 })

@@ -11,7 +11,7 @@ baseline(
 	({ caseName, casePath }) => {
 		test(caseName, async () => {
 			const { stdout, stderr } = await execCommand({ casePath, command: 'node', args: ['bin.js'] })
-			if (stderr) console.info('sterr', stderr)
+			if (stderr) console.info('stderr', stderr)
 			expect(stdout).toEqual('{"a":1}')
 		})
 	}
