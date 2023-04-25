@@ -41,11 +41,11 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       standard-log:
-        specifier: ^11.5.1
-        version: 11.5.1
+        specifier: ^12.0.0
+        version: 12.0.0
       standard-log-color:
         specifier: ^12.0.0
-        version: 12.0.0(standard-log@11.5.1)
+        version: 12.0.0(standard-log@12.0.0)
       tmp:
         specifier: ^0.2.1
         version: 0.2.1
@@ -3932,11 +3932,11 @@ packages:
   /iso-error@5.0.2:
     resolution: {integrity: sha512-Yf9e0ROw4TpMHU92s2YeV0G05cOk5/HkQiRZxYAUqfI9ls5wLIPI+5plTLOrFJIPeohMOVNdFZqiUiB55QHIqA==}
     engines: {node: '>= 10'}
+    dev: true
 
   /iso-error@6.0.0:
     resolution: {integrity: sha512-5rbZLnE/HhN1I9JA0zXtDG1LHzaXXGejhP5yRRmtK50B1DKD1ppZbf848USXE1wvZNxESbyIs3lRrNVcd6F0Fg==}
     engines: {node: '>= 10'}
-    dev: true
 
   /istanbul-lib-coverage@3.2.0:
     resolution: {integrity: sha512-eOeJ5BHCmHYvQK7xt9GkdHuzuCGS1Y6g9Gvnx3Ym33fz/HpLRYxiS0wHNr+m/MBC8B647Xt608vCDEvhl9c6Mw==}
@@ -5649,13 +5649,13 @@ packages:
       unpartial: 1.0.4
     dev: true
 
-  /standard-log-color@12.0.0(standard-log@11.5.1):
+  /standard-log-color@12.0.0(standard-log@12.0.0):
     resolution: {integrity: sha512-i+7DPvT68qywVT0bs0e36Ppizd8ot//ezuTpBceIEo+bCkWDnk6pcj4m++EffkZ9b+bViiJgSICbYVuo7KainQ==}
     peerDependencies:
       standard-log: '>=11.0.1'
     dependencies:
       color-map: 2.0.6
-      standard-log: 11.5.1
+      standard-log: 12.0.0
       supports-color: 9.3.1
       unpartial: 1.0.4
     dev: false
@@ -5668,6 +5668,17 @@ packages:
       ms: 2.1.3
       type-plus: 5.6.0
       upper-case: 2.0.2
+    dev: true
+
+  /standard-log@12.0.0:
+    resolution: {integrity: sha512-yrdmBJfJyLEqHeih0yNE4LgBf3Ukf+BD15Z3dbutmlhDx+VKl/DWL74eIaIZBaMk3L4JE50pwx3aTn4mhbS/cA==}
+    dependencies:
+      '@just-func/types': 0.5.1
+      iso-error: 6.0.0
+      ms: 2.1.3
+      type-plus: 6.6.0
+      upper-case: 2.0.2
+    dev: false
 
   /stream-transform@2.1.3:
     resolution: {integrity: sha512-9GHUiM5hMiCi6Y03jD2ARC1ettBXkQBoQAe7nJsPknnI0ow10aXjTnew8QtYQmLjzn974BnmWEAJgCY6ZP1DeQ==}
