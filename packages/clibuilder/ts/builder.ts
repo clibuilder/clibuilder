@@ -99,7 +99,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			s.config = config
 		}
 		const commandInstance = createCommandInstance(context, s, command)
-		if (args.help) return commandInstance.ui.showHelp()
+		if (!commandInstance.run || args.help) return commandInstance.ui.showHelp()
 		return commandInstance.run(args as any)
 	}
 

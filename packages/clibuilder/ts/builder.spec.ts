@@ -367,6 +367,23 @@ describe('command()', () => {
 		await cli.parse(argv('single-bin cmd1 not-exist'))
 		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd1 <command>')
 	})
+	test('parent command without run shows help', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.command({
+			name: 'cmd1',
+			commands: [
+				{
+					name: 'cmd2',
+					run() {
+						return 'cmd2'
+					}
+				}
+			]
+		})
+		await cli.parse(argv('single-bin cmd1'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd1 <command>')
+	})
+
 	test('ui uses command name', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.command({
