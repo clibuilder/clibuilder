@@ -12,3 +12,4 @@ ignores:
   - cjs-plugin
   - esm-plugin
   - plugin-two
+  - rimraf
