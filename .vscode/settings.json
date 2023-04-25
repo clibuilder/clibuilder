@@ -23,16 +23,19 @@
 		"greenkeeper",
 		"libm",
 		"macos",
+		"miku",
 		"oobm",
 		"oonm",
 		"oosm",
 		"pinst",
 		"pjson",
 		"pnpify",
+		"repobuddy",
 		"snyk",
 		"tersify",
 		"tsbuildinfo",
 		"USERPROFILE",
+		"vocaloid",
 		"yarnpkg"
 	]
 }
