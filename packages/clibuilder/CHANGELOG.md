@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.14
+
+### Patch Changes
+
+- 9acc311: Fix running parent command withou `run()` will show help.
+
 ## 8.0.13
 
 ### Patch Changes
