@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.13
+
+### Patch Changes
+
+- 0c221b6: Update standard-log to v12
+
 ## 8.0.12
 
 ### Patch Changes
