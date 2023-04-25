@@ -5,7 +5,7 @@ on:
 
 jobs:
   code:
-    uses: unional/.github/.github/workflows/pnpm-verify-cross-platform.yml@main
+    uses: unional/.github/.github/workflows/pnpm-verify.yml@main
 
   release:
     uses: unional/.github/.github/workflows/pnpm-release-changeset.yml@main

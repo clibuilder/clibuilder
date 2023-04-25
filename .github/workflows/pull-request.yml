@@ -5,33 +5,4 @@ on:
 
 jobs:
   code:
-    uses: unional/.github/.github/workflows/pnpm-verify-cross-platform.yml@main
-  # verify:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest]
-  #       node-version: [14]
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: pnpm/action-setup@v2
-  #       with:
-  #         version: 7.11.0
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #         cache: pnpm
-  #     - name: Install Dependencies
-  #       run: pnpm install
-
-  #     # - name: Setup tmate session
-  #     #   uses: mxschmitt/action-tmate@v3
-  #     # - name: Setup upterm session
-  #     #   uses: lhotari/action-upterm@v1
-  #     - name: Verify
-  #       run: pnpm verify
-
-  #     - name: codecov
-  #       if: matrix.os == 'ubuntu-latest' && matrix.node-version == 16
-  #       uses: codecov/codecov-action@v3
+    uses: unional/.github/.github/workflows/pnpm-verify.yml@main
