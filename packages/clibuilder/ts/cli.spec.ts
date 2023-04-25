@@ -88,6 +88,25 @@ which will default to string and boolean respectively`, () => {
 	})
 })
 
+it('will have parse method if default command is defined', () => {
+	const app = cli({ name: 'app', version: '1.0.0' }).default({ run() {} })
+	testType.canAssign<typeof app, { parse(args: string[]): Promise<any> }>(true)
+})
+
+it('will have parse method if a command is defined', () => {
+	const app = cli({ name: 'app', version: '1.0.0' }).command({
+		name: 'cmd',
+		run() {}
+	})
+	testType.canAssign<typeof app, { parse(args: string[]): Promise<any> }>(true)
+})
+
+it('will have parse method if config is defined', () => {
+	const app = cli({ name: 'app', version: '1.0.0', config: true })
+	testType.canAssign<typeof app, { parse(args: string[]): Promise<any> }>(true)
+	expect(app.parse).toBeDefined()
+})
+
 it('can specify the config used by the command', () => {
 	cli({ name: 'app', version: '1.0.0' }).default({
 		config: z.object({
