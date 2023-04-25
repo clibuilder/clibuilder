@@ -1,5 +1,12 @@
 # Change Log
 
+## 8.0.12
+
+### Patch Changes
+
+- 52f3951: CLI with config defined should be assumed to have command. So parse function should be available.
+- 41d8fad: update `type-plus` to 6.6.0
+
 ## 8.0.11
 
 ### Patch Changes

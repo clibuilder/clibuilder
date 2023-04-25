@@ -4,6 +4,14 @@
 
 ### Patch Changes
 
+- Updated dependencies [52f3951]
+- Updated dependencies [41d8fad]
+  - clibuilder@8.0.12
+
+## null
+
+### Patch Changes
+
 - Updated dependencies [c36be5b]
   - clibuilder@8.0.11
 
