@@ -1,4 +1,5 @@
-import { createStandardLogForTest, LogLevel, logLevels, StandardLogForTest } from 'standard-log'
+import { LogLevel, logLevels } from 'standard-log'
+import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/testing'
 import tmp from 'tmp'
 import { required } from 'type-plus'
 import { loadConfig } from './config.js'
@@ -14,7 +15,7 @@ export namespace mockContext {
 export function mockContext(params?: mockContext.Params): Context & { sl: StandardLogForTest } {
 	const { fixtureDir, logLevel } = required({ logLevel: logLevels.debug }, params)
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
-	const sl = createStandardLogForTest(logLevel)
+	const sl = createStandardLogForTest({ logLevel })
 	return {
 		async loadConfig(configName: string) {
 			return loadConfig({ cwd, ui: this.ui }, configName)

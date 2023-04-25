@@ -1,6 +1,7 @@
-import { createStandardLogForTest, logLevels } from 'standard-log'
+import { logLevels } from 'standard-log'
 import { command, z } from './index.js'
 import { createUI } from './ui.js'
+import { createStandardLogForTest } from 'standard-log/testing'
 
 describe('showVersion', () => {
 	test('undefined version shows "not versioned"', () => {
@@ -429,7 +430,7 @@ Config:
 })
 
 function testUI() {
-	const sl = createStandardLogForTest(logLevels.all)
+	const sl = createStandardLogForTest({ logLevel: logLevels.all })
 	const log = sl.getLogger('mock-ui')
 	return { ui: createUI(log), reporter: sl.reporter }
 }
