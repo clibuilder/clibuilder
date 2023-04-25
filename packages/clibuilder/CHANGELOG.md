@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.16
+
+### Patch Changes
+
+- 0ead505: Default keywords to the name of the cli if it is plugin cli and keywords are not specified.
+
 ## 8.0.14
 
 ### Patch Changes
