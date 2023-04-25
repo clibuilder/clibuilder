@@ -8,7 +8,7 @@ export namespace state {
 		name: string
 		version: string
 		description: string
-		configName?: string | boolean
+		configName?: string
 		config?: any
 		keywords: string[]
 		displayLevel: DisplayLevel
@@ -18,11 +18,13 @@ export namespace state {
 
 export function state(options: cli.Options): state.Result {
 	const { name, description = '', version, config, keywords = [] } = options
+	if (config && keywords.length === 0) keywords.push(name)
+	const configName = typeof config === 'string' ? config : config ? name : undefined
 	return {
 		name,
 		description,
 		version,
-		configName: config,
+		configName,
 		keywords,
 		displayLevel: 'info',
 		command: getBaseCommand(description) as any

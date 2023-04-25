@@ -47,10 +47,6 @@ export const listPluginsCommand = command({
 	description: 'List installed plugins',
 	context: { findByKeywords },
 	async run() {
-		if (this.keywords.length === 0) {
-			this.ui.warn('unable to list plugins because this CLI has no keywords specified')
-			return []
-		}
 		const plugins = await this.context.findByKeywords(this.keywords, this)
 		if (plugins.length === 0) {
 			this.ui.info(`no plugin with keywords: ${this.keywords.join(', ')}`)

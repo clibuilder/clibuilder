@@ -51,7 +51,8 @@
 		"nuke": "run-s clean && rimraf node_modules",
 		"test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest",
 		"verify": "npm-run-all clean -p build lint coverage depcheck",
-		"watch": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --watch"
+		"watch": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest --watch",
+		"w": "pnpm watch"
 	},
 	"dependencies": {
 		"find-installed-packages": "^3.0.1",

@@ -5,15 +5,6 @@ import { argv } from './test-utils/index.js'
 
 describe('pluginsCommand', () => {
 	describe('list', () => {
-		it('warns when the CLI does not have any keywords', async () => {
-			const ctx = mockContext({ fixtureDir: 'no-plugin' })
-			await builder(ctx, { name: 'test-cli', description: '', version: '', config: true }).parse(
-				argv('test-cli plugins list')
-			)
-			expect(ctx.sl.reporter.getLogMessage()).toContain(
-				'unable to list plugins because this CLI has no keywords specified'
-			)
-		})
 		test('no plugin', async () => {
 			const ctx = mockContext({ fixtureDir: 'no-plugin' })
 			await builder(ctx, {

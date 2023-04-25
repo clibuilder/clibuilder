@@ -21,12 +21,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	const s = state(options)
 	const description = s.description
 	const pending: Promise<any>[] = []
-	const configName = s.configName
-		? typeof s.configName === 'string'
-			? s.configName
-			: s.name
-		: undefined
-	const loadingConfig = configName ? context.loadConfig(configName) : undefined
+	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
 	const mayAcceptPlugins = s.configName || s.keywords.length > 0
 	if (mayAcceptPlugins) s.command.commands.push(adjustCommand(s.command, pluginsCommand))
 
