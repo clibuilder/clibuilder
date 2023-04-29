@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.17
+
+### Patch Changes
+
+- 38920e0: Update readme
+
 ## 8.0.16
 
 ### Patch Changes
