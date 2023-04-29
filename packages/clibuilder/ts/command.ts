@@ -1,5 +1,5 @@
-import * as z from 'zod'
 import type { cli } from './cli.js'
+import type { z } from './zod.js'
 
 export function command<
 	Context extends Record<string, any>,

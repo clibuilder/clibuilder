@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from 'fs'
 import yaml from 'js-yaml'
 import { pathToFileURL } from 'node:url'
 import path from 'path'
-import { UI } from './cli.js'
+import type { UI } from './cli.js'
 import { findPackageJson, getHomePath, getPackageJson } from './platform.js'
 
 export const ctx = {

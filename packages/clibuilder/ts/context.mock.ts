@@ -4,7 +4,7 @@ import tmp from 'tmp'
 import { required } from 'type-plus'
 import { loadConfig } from './config.js'
 import { Context } from './context.js'
-import { loadPlugins } from './loadPlugins.js'
+import { loadPlugins } from './plugins.js'
 import { getFixturePath } from './test-utils/index.js'
 import { createBuilderUI, createUI } from './ui.js'
 

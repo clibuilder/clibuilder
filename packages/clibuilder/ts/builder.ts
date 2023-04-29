@@ -1,12 +1,12 @@
-import { forEachKey, RequiredPick } from 'type-plus'
-import { ZodTypeAny } from 'zod'
+import { forEachKey, type RequiredPick } from 'type-plus'
+import { parseArgv } from './argv.js'
 import type { cli } from './cli.js'
+import type { Command } from './command.internal.types.js'
 import { getBaseCommand, pluginsCommand } from './commands.js'
-import { Context } from './context.js'
-import { lookupCommand } from './lookupCommand.js'
-import { parseArgv } from './parseArgv.js'
+import type { Context } from './context.js'
+import { lookupCommand } from './lookup_command.js'
 import { state } from './state.js'
-import { Command } from './types.internal.js'
+import type { z } from './zod.js'
 
 export function builder(
 	context: Context,
@@ -98,7 +98,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		return commandInstance.run(args as any)
 	}
 
-	function parseConfig(configType: ZodTypeAny, config: any) {
+	function parseConfig(configType: z.ZodTypeAny, config: any) {
 		const r = configType.safeParse(config)
 		if (r.success) {
 			return { config }

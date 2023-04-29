@@ -1,4 +1,4 @@
-import * as z from 'zod'
+import { z } from 'zod'
 export { z }
 
 export function isZodObject(type: any | undefined): type is z.ZodObject<any> {

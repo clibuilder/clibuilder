@@ -3,7 +3,6 @@ import { Logger, logLevels } from 'standard-log'
 import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
-import * as z from 'zod'
 import type { cli } from './cli.js'
 import {
 	isZodArray,
@@ -11,7 +10,7 @@ import {
 	isZodNumber,
 	isZodObject,
 	isZodOptional,
-	isZodString
+	isZodString, z
 } from './zod.js'
 
 const INDENT = 2

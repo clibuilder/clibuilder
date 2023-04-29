@@ -1,7 +1,7 @@
-import { RequiredPick, UnionOfValues } from 'type-plus'
-import * as z from 'zod'
+import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './builder.js'
 import { context } from './context.js'
+import { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
 export function cli(options: cli.Options): cli.Builder

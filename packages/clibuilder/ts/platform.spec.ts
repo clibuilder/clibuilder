@@ -1,7 +1,7 @@
 import path from 'path'
 import { ctx, findPackageJson, getHomePath, getPackageJson } from './platform.js'
 import { pathEqual } from 'path-equal'
-import { getFixturePath } from './test-utils/getFixturePath.js'
+import { getFixturePath } from './test-utils/fixture.js'
 describe('findPackageJson()', () => {
 	it('looks up to get the nearest package.json', () => {
 		const a = findPackageJson(path.resolve('.'))!

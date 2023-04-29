@@ -1,7 +1,7 @@
 import { a } from 'assertron'
 import { cli, command, parseArgv, z } from './index.js'
 import { getBaseCommand } from './commands.js'
-import { lookupCommand } from './lookupCommand.js'
+import { lookupCommand } from './lookup_command.js'
 import { argv } from './test-utils/index.js'
 
 function testLookupCommand(command: cli.Command, args: string) {

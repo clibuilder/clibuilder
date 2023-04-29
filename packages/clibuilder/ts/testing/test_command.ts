@@ -1,8 +1,8 @@
 import { logLevels } from 'standard-log'
-import { builder } from './builder.js'
-import { cli } from './cli.js'
-import { mockContext } from './context.mock.js'
-import * as tu from './test-utils/index.js'
+import { builder } from '../builder.js'
+import { cli } from '../cli.js'
+import { mockContext } from '../context.mock.js'
+import * as tu from '../test-utils/index.js'
 
 export async function testCommand(
 	command: cli.Command,
