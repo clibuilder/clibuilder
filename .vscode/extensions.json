@@ -1,3 +1,11 @@
 {
-	"recommendations": ["arcanis.vscode-zipfs"]
+	"recommendations": [
+		"streetsidesoftware.code-spell-checker",
+		"editorconfig.editorconfig",
+		"dbaeumer.vscode-eslint",
+		"yzhang.markdown-all-in-one",
+		"davidanson.vscode-markdownlint",
+		"unional.vscode-sort-package-json",
+		"wallabyjs.wallaby-extension-pack"
+	]
 }

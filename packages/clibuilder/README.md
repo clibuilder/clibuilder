@@ -1,13 +1,11 @@
 # CLI Builder
 
 [![NPM version][npm-image]][npm-url]
-[![NPM downloads][downloads-image]][downloads-url]
+[![NPM downloads][downloads-image]][npm-url]
 
-[![GitHub NodeJS][github-nodejs]][github-action-url]
+[![GitHub Release][github_release]][github-action-url]
 [![Codecov][codecov-image]][codecov-url]
 [![Codacy Badge][codacy-image]][codacy-url]
-
-[![Semantic Release][semantic-release-image]][semantic-release-url]
 
 [![Visual Studio Code][vscode-image]][vscode-url]
 [![Wallaby.js][wallaby-image]][wallaby-url]
@@ -257,17 +255,14 @@ you can add shebang to your script:
 ```
 
 [codacy-image]: https://api.codacy.com/project/badge/Grade/07959fd66e08490cbbd7da836f229053
-[codacy-url]: https://www.codacy.com/manual/homawong/clibuilder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=unional/clibuilder&amp;utm_campaign=Badge_Grade
+[codacy-url]: https://app.codacy.com/gh/unional/clibuilder/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
 [codecov-image]: https://codecov.io/gh/unional/clibuilder/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/unional/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
-[downloads-url]: https://npmjs.org/package/clibuilder
-[github-nodejs]: https://github.com/unional/clibuilder/workflows/nodejs/badge.svg
+[github_release]: https://github.com/unional/clibuilder/workflows/release/badge.svg
 [github-action-url]: https://github.com/unional/clibuilder/actions
 [npm-image]: https://img.shields.io/npm/v/clibuilder.svg?style=flat
 [npm-url]: https://npmjs.org/package/clibuilder
-[semantic-release-image]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
-[semantic-release-url]: https://github.com/semantic-release/semantic-release
 [vscode-image]: https://img.shields.io/badge/vscode-ready-green.svg
 [vscode-url]: https://code.visualstudio.com/
 [wallaby-image]: https://img.shields.io/badge/wallaby.js-configured-green.svg

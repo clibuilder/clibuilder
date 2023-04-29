@@ -3,11 +3,12 @@
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][downloads-image]][npm-url]
 
-[![GitHub NodeJS][github-nodejs]][github-action-url]
+[![GitHub Release][github_release]][github-action-url]
 
 [![Visual Studio Code][vscode-image]][vscode-url]
+[![Wallaby.js][wallaby-image]][wallaby-url]
 
-A highly customizable command line application builder.
+A highly customizable command line builder.
 
 ## What's new in v8
 
@@ -31,19 +32,11 @@ Key highlights:
 
 Learn more in the [`clibuilder` README](./packages/clibuilder/README.md)
 
-[codacy-image]: https://api.codacy.com/project/badge/Grade/07959fd66e08490cbbd7da836f229053
-[codacy-url]: https://www.codacy.com/manual/homawong/clibuilder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=unional/clibuilder&amp;utm_campaign=Badge_Grade
-[codecov-image]: https://codecov.io/gh/unional/clibuilder/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/unional/clibuilder
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
-[github-nodejs]: https://github.com/unional/clibuilder/workflows/release/badge.svg
+[github_release]: https://github.com/unional/clibuilder/workflows/release/badge.svg
 [github-action-url]: https://github.com/unional/clibuilder/actions
-[greenkeeper-image]: https://badges.greenkeeper.io/unional/clibuilder.svg
-[greenkeeper-url]: https://greenkeeper.io/
 [npm-image]: https://img.shields.io/npm/v/clibuilder.svg?style=flat
 [npm-url]: https://npmjs.org/package/clibuilder
-[semantic-release-image]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
-[semantic-release-url]: https://github.com/semantic-release/semantic-release
 [vscode-image]: https://img.shields.io/badge/vscode-ready-green.svg
 [vscode-url]: https://code.visualstudio.com/
 [wallaby-image]: https://img.shields.io/badge/wallaby.js-configured-green.svg
