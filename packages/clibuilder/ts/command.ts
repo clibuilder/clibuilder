@@ -1,6 +1,23 @@
 import type { cli } from './cli.js'
 import type { z } from './zod.js'
 
+/**
+ * Helper function to define a command.
+ *
+ * @example
+ * ```ts
+ * const cmd = command({
+ * 	name: 'cmd',
+ * 	description: 'command description',
+ * 	options: {
+ * 		abc: { description: 'abc' }
+ * 	},
+ * 	run(args) {
+ * 		this.ui.info(args.abc)
+ * 	}
+ * })
+ * ```
+ */
 export function command<
 	Context extends Record<string, any>,
 	ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
