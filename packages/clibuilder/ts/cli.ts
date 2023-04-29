@@ -101,7 +101,6 @@ export namespace cli {
 				commands: Command[]
 		  }
 	)
-	// } & Command.DefaultCommand<ConfigType, A, O>
 
 	export namespace Command {
 		export type DefaultCommand<

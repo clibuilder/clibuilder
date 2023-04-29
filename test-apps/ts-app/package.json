@@ -1,0 +1,7 @@
+{
+	"name": "ts-app",
+	"dependencies": {
+		"clibuilder": "workspace:*",
+		"typescript": "^5.0.4"
+	}
+}
