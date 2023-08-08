@@ -85,7 +85,7 @@
 		"clibuilder-plugin-dummy": "^1.0.1",
 		"cross-env": "^7.0.3",
 		"depcheck": "^1.4.3",
-		"esbuild": "^0.18.0",
+		"esbuild": "^0.19.0",
 		"eslint": "^8.39.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-harmony": "^7.1.2",
