@@ -57,8 +57,8 @@ importers:
         specifier: ^2.5.0
         version: 2.5.0
       type-plus:
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^7.0.0
+        version: 7.6.0
       wordwrap:
         specifier: ^1.0.0
         version: 1.0.0
@@ -6501,6 +6501,13 @@ packages:
     dependencies:
       tersify: 3.12.1
       unpartial: 1.0.4
+
+  /type-plus@7.6.0:
+    resolution: {integrity: sha512-ijsLw2QQDynAMpANnCc4jWUfeo65EGDHXeiqUaUKxq6bxuoTvcXHJGbOihGQMhHjxE4159pkWiTLP1xu/6xdhA==}
+    dependencies:
+      tersify: 3.12.1
+      unpartial: 1.0.4
+    dev: false
 
   /typed-array-length@1.0.4:
     resolution: {integrity: sha512-KjZypGq+I/H7HI5HlOoGHkWUUGq+Q0TPhQurLbyrVrvnKTBgzLhIJ7j6J/XTQOi0d1RjyZ0wdas8bKs2p0x3Ng==}
