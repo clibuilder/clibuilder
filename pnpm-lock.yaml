@@ -63,8 +63,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       zod:
-        specifier: ^3.20.6
-        version: 3.20.6
+        specifier: ^3.22.3
+        version: 3.22.3
     devDependencies:
       '@repobuddy/jest':
         specifier: ^3.3.0
@@ -6803,8 +6803,8 @@ packages:
     engines: {node: '>=12.20'}
     dev: false
 
-  /zod@3.20.6:
-    resolution: {integrity: sha512-oyu0m54SGCtzh6EClBVqDDlAYRz4jrVtKwQ7ZnsEmMI9HnzuZFj8QFwAY1M5uniIYACdGvv0PBWPF2kO0aNofA==}
+  /zod@3.22.3:
+    resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
     dev: false
 
   github.com/types/wordwrap/caf776ac962b305476b491499cb8457db9729c1a:
