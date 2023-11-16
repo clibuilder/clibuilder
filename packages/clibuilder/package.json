@@ -56,7 +56,7 @@
 	},
 	"dependencies": {
 		"find-installed-packages": "^3.0.1",
-		"find-up": "^6.3.0",
+		"find-up": "^7.0.0",
 		"js-yaml": "^4.1.0",
 		"pad-right": "^0.2.2",
 		"search-packages": "^2.1.0",
