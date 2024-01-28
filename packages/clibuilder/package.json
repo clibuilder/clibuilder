@@ -95,7 +95,7 @@
 		"jest-watch-toggle-config-2": "^2.1.0",
 		"jest-watch-typeahead": "^2.2.2",
 		"ncp": "^2.0.0",
-		"npm-run-all2": "^5.0.0",
+		"npm-run-all2": "^6.0.0",
 		"path-equal": "^1.2.5",
 		"plugin-two": "workspace:*",
 		"rimraf": "^5.0.0",
