@@ -1,38 +1,35 @@
 {
-	"private": true,
-	"scripts": {
-		"build": "turbo run build",
-		"check": "biome check .",
-		"clean": "turbo run clean",
-		"clibuilder": "pnpm --filter clibuilder",
-		"coverage": "turbo run coverage",
-		"cs": "changeset",
-		"depcheck": "turbo run depcheck",
-		"dev": "turbo run dev --parallel",
-		"format":"biome format .",
-		"lint": "turbo run lint",
-		"nuke": "turbo run nuke && pnpm nuke:local",
-		"nuke:local": "rimraf node_modules",
-		"prepack": "pinst --disable",
-		"postpack": "pinst --enable",
-		"prepare": "husky install",
-		"release": "changeset publish",
-		"size": "turbo run size",
-		"test": "turbo run test",
-		"verify": "turbo run lint build coverage depcheck size",
-		"version": "changeset version"
-	},
-	"devDependencies": {
-		"@changesets/cli": "^2.26.0",
-		"@commitlint/cli": "^18.0.0",
-		"@commitlint/config-conventional": "^18.0.0",
-		"husky": "^9.0.0",
-		"pinst": "^3.0.0",
-		"turbo": "^1.8.1"
-	},
-	"packageManager": "pnpm@8.15.3",
-	"dependencies": {
-		"@biomejs/biome": "^1.5.3",
-		"@repobuddy/biome": "^1.0.4"
-	}
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check": "biome check .",
+    "clean": "turbo run clean",
+    "clibuilder": "pnpm --filter clibuilder",
+    "coverage": "turbo run coverage",
+    "cs": "changeset",
+    "depcheck": "turbo run depcheck",
+    "dev": "turbo run dev --parallel",
+    "format": "biome format .",
+    "lint": "turbo run lint",
+    "nuke": "turbo run nuke && pnpm nuke:local",
+    "nuke:local": "rimraf node_modules",
+    "prepare": "husky install",
+    "release": "changeset publish",
+    "size": "turbo run size",
+    "test": "turbo run test",
+    "verify": "turbo run lint build coverage depcheck size",
+    "version": "changeset version"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^1.5.3",
+    "@repobuddy/biome": "^1.0.4"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.0",
+    "@commitlint/cli": "^18.0.0",
+    "@commitlint/config-conventional": "^18.0.0",
+    "husky": "^9.0.0",
+    "turbo": "^1.8.1"
+  },
+  "packageManager": "pnpm@8.15.3"
 }
