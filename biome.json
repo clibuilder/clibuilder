@@ -1,0 +1,8 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
+	"extends":["./node_modules/@repobuddy/biome/recommended.json"],
+	"files": {
+		"ignore": ["cjs", "coverage", "esm", "target"],
+		"include": ["ts/**/*", "**/*.json"]
+	}
+}

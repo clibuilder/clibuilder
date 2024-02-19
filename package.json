@@ -2,12 +2,14 @@
 	"private": true,
 	"scripts": {
 		"build": "turbo run build",
+		"check": "biome check .",
 		"clean": "turbo run clean",
 		"clibuilder": "pnpm --filter clibuilder",
 		"coverage": "turbo run coverage",
 		"cs": "changeset",
 		"depcheck": "turbo run depcheck",
 		"dev": "turbo run dev --parallel",
+		"format":"biome format .",
 		"lint": "turbo run lint",
 		"nuke": "turbo run nuke && pnpm nuke:local",
 		"nuke:local": "rimraf node_modules",
@@ -28,5 +30,9 @@
 		"pinst": "^3.0.0",
 		"turbo": "^1.8.1"
 	},
-	"packageManager": "pnpm@8.15.3"
+	"packageManager": "pnpm@8.15.3",
+	"dependencies": {
+		"@biomejs/biome": "^1.5.3",
+		"@repobuddy/biome": "^1.0.4"
+	}
 }
