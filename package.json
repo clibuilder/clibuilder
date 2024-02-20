@@ -1,33 +1,35 @@
 {
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "check": "biome check .",
-    "clean": "turbo run clean",
-    "clibuilder": "pnpm --filter clibuilder",
-    "coverage": "turbo run coverage",
-    "cs": "changeset",
-    "depcheck": "turbo run depcheck",
-    "dev": "turbo run dev --parallel",
-    "format": "biome format . --write",
-    "lint": "biome lint .",
-    "nuke": "turbo run nuke && pnpm nuke:local",
-    "nuke:local": "rimraf node_modules",
-    "prepare": "husky install",
-    "release": "changeset publish",
-    "size": "turbo run size",
-    "test": "turbo run test",
-    "verify": "turbo run lint build coverage depcheck size",
-    "version": "changeset version"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@changesets/cli": "^2.26.0",
-    "@commitlint/cli": "^18.0.0",
-    "@commitlint/config-conventional": "^18.0.0",
-    "@repobuddy/biome": "^1.0.4",
-    "husky": "^9.0.11",
-    "turbo": "^1.12.4"
-  },
-  "packageManager": "pnpm@8.15.3"
+	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"check": "biome check .",
+		"clean": "turbo run clean",
+		"clibuilder": "pnpm --filter clibuilder",
+		"coverage": "turbo run coverage",
+		"cs": "changeset",
+		"depcheck": "turbo run depcheck",
+		"dev": "turbo run dev --parallel",
+		"format": "biome format . --write",
+		"lint": "biome lint .",
+		"nuke": "turbo run nuke && pnpm nuke:local",
+		"nuke:local": "rimraf node_modules",
+		"prepare": "husky install",
+		"release": "changeset publish",
+		"size": "turbo run size",
+		"test": "turbo run test",
+		"verify": "run-p lint verify:pkg",
+		"verify:pkg": "turbo run build coverage depcheck size",
+		"version": "changeset version"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.5.3",
+		"@changesets/cli": "^2.26.0",
+		"@commitlint/cli": "^18.0.0",
+		"@commitlint/config-conventional": "^18.0.0",
+		"@repobuddy/biome": "^1.0.4",
+		"husky": "^9.0.11",
+		"npm-run-all2": "^6.0.0",
+		"turbo": "^1.12.4"
+	},
+	"packageManager": "pnpm@8.15.3"
 }
