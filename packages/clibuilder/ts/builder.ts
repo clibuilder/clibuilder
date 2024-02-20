@@ -27,14 +27,12 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 	if (loadingConfig) {
 		pending.push(
-			loadingConfig.then(config => {
+			loadingConfig.then((config) => {
 				s.config = config
 				if (config?.plugins) {
 					return context
 						.loadPlugins(config.plugins)
-						.then(commands =>
-							s.command.commands.push(...commands.map(c => adjustCommand(s.command, c)))
-						)
+						.then((commands) => s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c))))
 				}
 			})
 		)
@@ -60,14 +58,17 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const rawArgs = parseArgv(argv)
 		const { args: baseArgs } = lookupCommand(getBaseCommand(s.description), rawArgs)
 		if (baseArgs.silent) {
+			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs.silent
 			s.displayLevel = 'none'
 		}
 		if (baseArgs.verbose) {
+			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs.verbose
 			s.displayLevel = 'debug'
 		}
 		if (baseArgs['debug-cli']) {
+			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs['debug-cli']
 			s.displayLevel = 'trace'
 		}
@@ -86,8 +87,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			s.config = config
 
 			if (errors) {
-				context.ui.error(`config fails validation:`)
-				forEachKey(errors, k => context.ui.error(`  ${String(k)}: ${errors[k]}`))
+				context.ui.error('config fails validation:')
+				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
 				createCommandInstance(context, s, r.command).ui.showHelp()
 				return
 			}
@@ -102,10 +103,9 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const r = configType.safeParse(config)
 		if (r.success) {
 			return { config }
-		} else {
-			const errors = r.error.flatten().fieldErrors
-			return { errors }
 		}
+		const errors = r.error.flatten().fieldErrors
+		return { errors }
 	}
 }
 
@@ -136,7 +136,7 @@ function adjustCommand<C extends Command>(base: Command, command: C): C {
 		command.parent = base
 	}
 	if (command.commands) {
-		command.commands = command.commands.map(c => adjustCommand(command, c))
+		command.commands = command.commands.map((c) => adjustCommand(command, c))
 	}
 	return command
 }

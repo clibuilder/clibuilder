@@ -9,8 +9,8 @@
     "cs": "changeset",
     "depcheck": "turbo run depcheck",
     "dev": "turbo run dev --parallel",
-    "format": "biome format .",
-    "lint": "turbo run lint",
+    "format": "biome format . --write",
+    "lint": "biome lint .",
     "nuke": "turbo run nuke && pnpm nuke:local",
     "nuke:local": "rimraf node_modules",
     "prepare": "husky install",
@@ -20,14 +20,12 @@
     "verify": "turbo run lint build coverage depcheck size",
     "version": "changeset version"
   },
-  "dependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@repobuddy/biome": "^1.0.4"
-  },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@changesets/cli": "^2.26.0",
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
+    "@repobuddy/biome": "^1.0.4",
     "husky": "^9.0.11",
     "turbo": "^1.12.4"
   },

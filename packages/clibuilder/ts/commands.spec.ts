@@ -13,9 +13,7 @@ describe('pluginsCommand', () => {
 				version: '',
 				keywords: ['plugin-cli-plugin']
 			}).parse(argv('test-cli plugins list'))
-			expect(ctx.sl.reporter.getLogMessage()).toContain(
-				'no plugin with keywords: plugin-cli-plugin'
-			)
+			expect(ctx.sl.reporter.getLogMessage()).toContain('no plugin with keywords: plugin-cli-plugin')
 		})
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.
 		// thus this test will fail
@@ -28,7 +26,7 @@ describe('pluginsCommand', () => {
 				keywords: ['test-cli']
 			}).parse(argv('test-cli plugins list'))
 
-			expect(ctx.sl.reporter.getLogMessage()).toContain(`found one plugin: cjs-plugin`)
+			expect(ctx.sl.reporter.getLogMessage()).toContain('found one plugin: cjs-plugin')
 		})
 
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.

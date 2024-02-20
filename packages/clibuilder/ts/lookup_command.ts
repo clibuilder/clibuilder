@@ -3,7 +3,7 @@ import type { cli } from './cli.js'
 import { parseArgv } from './argv.js'
 import { isZodArray, isZodBoolean, isZodNumber, isZodOptional, isZodString, z } from './zod.js'
 
-namespace lookupCommand {
+export namespace lookupCommand {
 	export type Result = {
 		command: cli.Command
 		args: {
@@ -11,12 +11,7 @@ namespace lookupCommand {
 		} & Record<string, string[]>
 		errors: Error[]
 	}
-	export type Error =
-		| InvalidKey
-		| InvalidValueType
-		| ExpectSingle
-		| ExtraArguments
-		| MissingArgument
+	export type Error = InvalidKey | InvalidValueType | ExpectSingle | ExtraArguments | MissingArgument
 	export type InvalidKey = {
 		type: 'invalid-key'
 		key: string
@@ -49,10 +44,7 @@ export function lookupCommand(command: cli.Command, args: parseArgv.Result): loo
 	return processCommand(m[0], m[1])
 }
 
-function matchCommand(
-	command: cli.Command,
-	rawArgs: parseArgv.Result
-): [cli.Command, parseArgv.Result] | undefined {
+function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Command, parseArgv.Result] | undefined {
 	if (command.commands) {
 		const commands = command.commands
 		for (let i = commands.length - 1; i >= 0; i--) {
@@ -70,20 +62,18 @@ function matchCommand(
 	return [command, rawArgs]
 }
 
-namespace processCommand {
-	export type State = {
-		command: cli.Command
-		rawArgs: parseArgv.Result
-		errors: lookupCommand.Error[]
-		args: { _: string[] } & Record<string, any>
-	}
+export type State = {
+	command: cli.Command
+	rawArgs: parseArgv.Result
+	errors: lookupCommand.Error[]
+	args: { _: string[] } & Record<string, any>
 }
 function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
-	const state: processCommand.State = { command, rawArgs, args: { _: [] }, errors: [] }
+	const state: State = { command, rawArgs, args: { _: [] }, errors: [] }
 	return fillDefaultOptions(fillInputOptions(fillArguments(state)))
 }
 
-function fillArguments(state: processCommand.State) {
+function fillArguments(state: State) {
 	const command = state.command
 	const args = [...state.rawArgs._]
 	const argSpecs = command.arguments || []
@@ -114,7 +104,7 @@ function fillArguments(state: processCommand.State) {
 	}
 	return state
 }
-function fillInputOptions(state: processCommand.State) {
+function fillInputOptions(state: State) {
 	return reduceByKey(
 		state.rawArgs,
 		(s, key) => {
@@ -129,11 +119,7 @@ function fillInputOptions(state: processCommand.State) {
 				s.errors.push({ type: 'invalid-key', key })
 				return s
 			}
-			const [value, errors] = convertValue(
-				optionEntry!.type || z.optional(z.string()),
-				key,
-				state.rawArgs[key]
-			)
+			const [value, errors] = convertValue(optionEntry!.type || z.optional(z.string()), key, state.rawArgs[key])
 			if (errors) s.errors.push(...errors)
 			s.args[name] = value
 
@@ -143,7 +129,7 @@ function fillInputOptions(state: processCommand.State) {
 	)
 }
 
-function fillDefaultOptions(state: processCommand.State) {
+function fillDefaultOptions(state: State) {
 	const optionsMap = state.command.options || {}
 	return reduceByKey(
 		optionsMap,
@@ -153,28 +139,22 @@ function fillDefaultOptions(state: processCommand.State) {
 			const options = optionsMap[key]
 			if (typeof options === 'string' || options.default === undefined) return p
 
-			p.args[key] =
-				isZodArray(options.type) && !Array.isArray(options.default)
-					? [options.default]
-					: options.default
+			p.args[key] = isZodArray(options.type) && !Array.isArray(options.default) ? [options.default] : options.default
 			return p
 		},
 		state
 	)
 }
 
-function lookupOptions(
-	command: cli.Command,
-	key: string
-): [string, cli.Command.Options.Entry] | [] {
+function lookupOptions(command: cli.Command, key: string): [string, cli.Command.Options.Entry] | [] {
 	const opts = command.options
 	if (!opts) return []
 	const options = opts[key]
 	if (options) return [key, options]
-	const optKey = findKey(opts, k => {
+	const optKey = findKey(opts, (k) => {
 		const opt = opts[k]
 		if (!opt.alias) return false
-		return opt.alias.some(a => a === key || (a as { alias: string }).alias === key)
+		return opt.alias.some((a) => a === key || (a as { alias: string }).alias === key)
 	})
 	return optKey ? [optKey, opts[optKey]] : []
 }

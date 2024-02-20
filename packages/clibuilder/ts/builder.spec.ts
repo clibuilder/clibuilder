@@ -249,7 +249,7 @@ describe('debug cli', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const app = builder.default({ run() {} })
 		await app.parse(argv('test-cli --debug-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`argv: node test-cli --debug-cli`)
+		expect(ctx.sl.reporter.getLogMessage()).toContain('argv: node test-cli --debug-cli')
 	})
 	it('logs when loading plugins', async () => {
 		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin' }, { config: true })
@@ -258,25 +258,22 @@ describe('debug cli', () => {
 		const msg = ctx.sl.reporter.getLogMessage()
 		expect(msg).toContain('load config from:')
 		expect(msg).toContain('test-clirc.json')
-		expect(msg).toContain(`activating plugin cjs-plugin`)
-		expect(msg).toContain(`adding command one`)
-		expect(msg).toContain(`activated plugin cjs-plugin`)
-		expect(msg).toContain(`argv: node test-cli --debug-cli`)
+		expect(msg).toContain('activating plugin cjs-plugin')
+		expect(msg).toContain('adding command one')
+		expect(msg).toContain('activated plugin cjs-plugin')
+		expect(msg).toContain('argv: node test-cli --debug-cli')
 	})
 	it('logs when loading ESM plugin', async () => {
-		const [builder, ctx] = setupBuilderTest(
-			{ fixtureDir: 'cli-with-one-esm-plugin' },
-			{ config: true }
-		)
+		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'cli-with-one-esm-plugin' }, { config: true })
 		const app = builder.default({ run() {} })
 		await app.parse(argv('test-cli --debug-cli'))
 		const msg = ctx.sl.reporter.getLogMessage()
 		expect(msg).toContain('load config from:')
 		expect(msg).toContain('test-clirc.json')
-		expect(msg).toContain(`activating plugin esm-plugin`)
-		expect(msg).toContain(`adding command one`)
-		expect(msg).toContain(`activated plugin esm-plugin`)
-		expect(msg).toContain(`argv: node test-cli --debug-cli`)
+		expect(msg).toContain('activating plugin esm-plugin')
+		expect(msg).toContain('adding command one')
+		expect(msg).toContain('activated plugin esm-plugin')
+		expect(msg).toContain('argv: node test-cli --debug-cli')
 	})
 	it('will not pass this flag to the command', async () => {
 		const [builder] = setupBuilderTest()
@@ -393,7 +390,7 @@ describe('command()', () => {
 			}
 		})
 		await cli.parse(argv('single-bin cmd1'))
-		const log = ctx.sl.reporter.logs.find(l => l.args.indexOf('hello') >= 0)
+		const log = ctx.sl.reporter.logs.find((l) => l.args.indexOf('hello') >= 0)
 		a.satisfies(log, { id: 'cmd1' })
 	})
 })
@@ -455,7 +452,7 @@ describe('loadConfig()', () => {
   a: Expected object, received number
   b: Required`)
 		// should also print help
-		expect(msg).toContain(`Usage: show-config`)
+		expect(msg).toContain('Usage: show-config')
 	})
 	test('default() receives config type', async () => {
 		const cli = builder(mockContext({ fixtureDir: 'has-config' }), {
@@ -471,7 +468,7 @@ describe('loadConfig()', () => {
 		const a = await cli.parse(argv('has-config'))
 		expect(a).toEqual({ a: 1 })
 	})
-	test(`read config file in parent directory`, async () => {
+	test('read config file in parent directory', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config/sub-folder' })
 		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' }).default({
 			config: z.object({ a: z.number() }),
@@ -483,7 +480,7 @@ describe('loadConfig()', () => {
 		expect(a).toEqual({ a: 1 })
 	})
 	//   // seems to be some issue with `zod` default system
-	test.skip(`default config is overridden by value in config file`, async () => {
+	test.skip('default config is overridden by value in config file', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config' })
 		const a = await builder(ctx, { name: 'has-config', version: '1.0.0' })
 			.default({
@@ -541,7 +538,7 @@ describe('loadConfig()', () => {
 			})
 			.parse(argv('single-bin'))
 		const msg = ctx.sl.reporter.getLogMessage()
-		expect(msg).toContain(`no config found`)
+		expect(msg).toContain('no config found')
 		expect(actual).toEqual(undefined)
 	})
 })

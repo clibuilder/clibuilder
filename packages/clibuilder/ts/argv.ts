@@ -37,9 +37,8 @@ function isOption(value: string) {
 function startOption(result: parseArgv.State, value: string) {
 	if (/^-\w+/.test(value)) {
 		return startSingleCharacterOptions(result, value)
-	} else {
-		return startMultiCharacterOptions(result, value)
 	}
+	return startMultiCharacterOptions(result, value)
 }
 
 function startSingleCharacterOptions(result: parseArgv.State, value: string) {

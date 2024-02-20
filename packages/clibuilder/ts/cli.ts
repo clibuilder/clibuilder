@@ -48,10 +48,7 @@ export namespace cli {
 			A extends Command.Argument<AName>[],
 			OName extends string,
 			O extends Command.Options<OName>
-		>(
-			this: T,
-			command: Command.DefaultCommand<ConfigType, A, O>
-		): Omit<T, 'default'> & Executable
+		>(this: T, command: Command.DefaultCommand<ConfigType, A, O>): Omit<T, 'default'> & Executable
 		command<
 			T,
 			Context extends Record<string, any>,
@@ -60,10 +57,7 @@ export namespace cli {
 			A extends Command.Argument<AName>[],
 			OName extends string,
 			O extends Command.Options<OName>
-		>(
-			this: T,
-			command: Command<Context, ConfigType, A, O>
-		): T & Executable
+		>(this: T, command: Command<Context, ConfigType, A, O>): T & Executable
 	}
 
 	export type Executable = {
@@ -148,9 +142,7 @@ export namespace cli {
 			export type Default = {
 				help: boolean | undefined
 			}
-			export type Entry<
-				Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>
-			> = {
+			export type Entry<Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>> = {
 				description: string
 				type?: Type
 				default?: z.infer<Type>
@@ -199,7 +191,5 @@ export type PluginActivationContext = {
 		A extends cli.Command.Argument<AName>[],
 		OName extends string,
 		O extends cli.Command.Options<OName>
-	>(
-		command: cli.Command<Context, ConfigType, A, O>
-	): void
+	>(command: cli.Command<Context, ConfigType, A, O>): void
 }

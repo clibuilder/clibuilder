@@ -26,7 +26,7 @@ export function mockContext(params?: mockContext.Params): Context & { sl: Standa
 		cwd,
 		exit: function (this: any, code?: number) {
 			// istanbul ignore next
-			this.ui.error(code === undefined ? `exit` : `exit with ${code}`)
+			this.ui.error(code === undefined ? 'exit' : `exit with ${code}`)
 		} as any,
 		createCommandUI(id: string) {
 			return createUI(sl.getLogger(id))

@@ -162,10 +162,7 @@ describe('boolean options', () => {
 			options: { abc: { type: z.boolean(), description: 'a' } },
 			run() {}
 		})
-		const { cmd, args, errors } = testLookupCommand(
-			defaultCommand,
-			'my-cli --abc=false --abc=true'
-		)!
+		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=false --abc=true')!
 		expect(cmd).toBe(defaultCommand)
 		expect(args).toEqual({ _: [], abc: true })
 		a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['false', 'true'] }])

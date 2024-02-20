@@ -1,18 +1,18 @@
 import type { cli, PluginActivationContext } from './cli.js'
 import { createUI } from './ui.js'
 
-export async function loadPlugins(
-	{ cwd, ui }: { cwd: string; ui: createUI.UI },
-	pluginNames: string[]
-) {
+export async function loadPlugins({ cwd, ui }: { cwd: string; ui: createUI.UI }, pluginNames: string[]) {
 	return activatePlugins(cwd, ui, pluginNames)
 }
 
 async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
 	const entries = await Promise.all(
-		pluginNames.map(name => {
+		pluginNames.map((name) => {
 			ui.debug('loading plugin', name)
-			return loadModule(cwd, ui, name).then(pluginModule => ({ name, pluginModule }))
+			return loadModule(cwd, ui, name).then((pluginModule) => ({
+				name,
+				pluginModule
+			}))
 		})
 	)
 
@@ -22,14 +22,14 @@ async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string
 			// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
 			// istanbul ignore next
 			if (!isValidPlugin(pluginModule)) {
-				ui.warn(`not a valid plugin`, name)
+				ui.warn('not a valid plugin', name)
 				return false
 			}
 			return true
 		})
 		.forEach(({ name, pluginModule }) => {
 			ui.debug('activating plugin', name)
-			activatePlugin(pluginModule).forEach(cmd => {
+			activatePlugin(pluginModule).forEach((cmd) => {
 				ui.debug('adding command', cmd.name)
 				commands.push(cmd)
 			})
@@ -46,7 +46,7 @@ async function loadModule(cwd: string, ui: createUI.UI, name: string) {
 	} catch (e: any) {
 		ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
 		ui.warn(`cwd: ${cwd}`)
-		ui.warn(`error: `, e.message || e)
+		ui.warn('error: ', e.message || e)
 		return undefined
 	}
 }
@@ -55,8 +55,10 @@ function isValidPlugin(m: any) {
 	return m && typeof m.activate === 'function'
 }
 
-function activatePlugin(m: { activate: (context: PluginActivationContext) => void }) {
+function activatePlugin(m: {
+	activate: (context: PluginActivationContext) => void
+}) {
 	const commands: cli.Command[] = []
-	m.activate({ addCommand: cmd => commands.push(cmd) })
+	m.activate({ addCommand: (cmd) => commands.push(cmd) })
 	return commands
 }

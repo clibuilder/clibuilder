@@ -51,15 +51,15 @@ export const listPluginsCommand = command({
 		if (plugins.length === 0) {
 			this.ui.info(`no plugin with keywords: ${this.keywords.join(', ')}`)
 			return []
-		} else if (plugins.length === 1) {
+		}
+		if (plugins.length === 1) {
 			this.ui.info(`found one plugin: ${plugins[0]}`)
 			return plugins
-		} else {
-			this.ui.info('found the following plugins:')
-			this.ui.info('')
-			plugins.forEach(p => this.ui.info(`  ${p}`))
-			return plugins
 		}
+		this.ui.info('found the following plugins:')
+		this.ui.info('')
+		plugins.forEach((p) => this.ui.info(`  ${p}`))
+		return plugins
 	}
 })
 
@@ -76,7 +76,7 @@ export const searchPluginsCommand = command({
 		} else {
 			this.ui.info('found the following packages:')
 			this.ui.info('')
-			packages.forEach(p => this.ui.info(`  ${p}`))
+			packages.forEach((p) => this.ui.info(`  ${p}`))
 		}
 	}
 })

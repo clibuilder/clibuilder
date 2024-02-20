@@ -11,7 +11,7 @@ it(`loads no plugin when plugin's activate is not a function`, async () => {
 	expect(stderr).toContain('bad-plugin')
 })
 
-it(`loads no plugin when plugin has no index.js`, async () => {
+it('loads no plugin when plugin has no index.js', async () => {
 	const { stderr } = await execCommand({
 		caseType: 'folder',
 		caseName: 'fixtures/bad-plugin-no-index',

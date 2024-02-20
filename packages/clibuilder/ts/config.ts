@@ -30,13 +30,12 @@ export async function loadConfig(
 		const cfg = await readConfig(configFilePath)
 		ui.debug(`config: ${JSON.stringify(cfg, undefined, 2)}`)
 		return cfg
-	} else {
-		const pjsonPath = ctx.findPackageJson(cwd)
-		if (pjsonPath) {
-			ui.debug(`load config from package.json: ${pjsonPath}`)
-			const pjson = ctx.getPackageJson(pjsonPath)
-			if (pjson[configName]) return pjson[configName]
-		}
+	}
+	const pjsonPath = ctx.findPackageJson(cwd)
+	if (pjsonPath) {
+		ui.debug(`load config from package.json: ${pjsonPath}`)
+		const pjson = ctx.getPackageJson(pjsonPath)
+		if (pjson[configName]) return pjson[configName]
 	}
 	ui.warn(`no config found under '${cwd}':\n  ${configFileNames.join('\n  ')}`)
 }
@@ -58,7 +57,7 @@ function getConfigFilenames(configFileName: string) {
 		`${configFileName}rc.yaml`,
 		`${configFileName}rc`
 	]
-	return configFileName.startsWith('.') ? names : names.flatMap(n => [n, `.${n}`])
+	return configFileName.startsWith('.') ? names : names.flatMap((n) => [n, `.${n}`])
 }
 
 function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {

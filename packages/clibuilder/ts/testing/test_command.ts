@@ -4,11 +4,7 @@ import { cli } from '../cli.js'
 import { mockContext } from '../context.mock.js'
 import * as tu from '../test-utils/index.js'
 
-export async function testCommand(
-	command: cli.Command,
-	argv: string,
-	config?: Record<string, any>
-) {
+export async function testCommand(command: cli.Command, argv: string, config?: Record<string, any>) {
 	const ctx = mockContext({ logLevel: logLevels.info })
 
 	ctx.loadConfig = async () => config

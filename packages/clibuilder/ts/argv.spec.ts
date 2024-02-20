@@ -28,10 +28,10 @@ describe('options without value', () => {
 	test(`single option gets ['true']`, () => {
 		testParse('cli --abc', { _: [], abc: ['true'] })
 	})
-	test(`multiple options`, () => {
+	test('multiple options', () => {
 		testParse('cli --abc --abc', { _: [], abc: ['true', 'true'] })
 	})
-	test(`multiple options with multiple spaces in between`, () => {
+	test('multiple options with multiple spaces in between', () => {
 		testParse('cli --abc   --abc', { _: [], abc: ['true', 'true'] })
 	})
 
@@ -52,22 +52,22 @@ describe('options without value', () => {
 })
 
 describe('options with value(s)', () => {
-	test(`single option with single value`, () => {
+	test('single option with single value', () => {
 		testParse('cli --abc x', { _: [], abc: ['x'] })
 	})
-	test(`single option with multiple values`, () => {
+	test('single option with multiple values', () => {
 		testParse('cli --abc x y', { _: [], abc: ['x', 'y'] })
 	})
-	test(`single option with single value with multiple spaces`, () => {
+	test('single option with single value with multiple spaces', () => {
 		testParse('cli --abc  x  y  ', { _: [], abc: ['x', 'y'] })
 	})
-	test(`multiple options with single value`, () => {
+	test('multiple options with single value', () => {
 		testParse('cli --abc x --abc y', { _: [], abc: ['x', 'y'] })
 	})
-	test(`multiple options with multiple values`, () => {
+	test('multiple options with multiple values', () => {
 		testParse('cli --abc x y --abc p r', { _: [], abc: ['x', 'y', 'p', 'r'] })
 	})
-	test(`multiple options with multiple values with multiple spaces`, () => {
+	test('multiple options with multiple values with multiple spaces', () => {
 		testParse('cli   --abc  x  y  --abc   p  r   ', { _: [], abc: ['x', 'y', 'p', 'r'] })
 	})
 	test('single option with = syntax', () => {

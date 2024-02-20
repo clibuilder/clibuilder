@@ -23,24 +23,18 @@ module.exports = () => {
 			const path = require('path')
 
 			const writeFile = fs.writeFileSync
-			fs.writeFileSync = function (file, content) {
+			fs.writeFileSync = function (file, content, options) {
 				if (/__komondor__/.test(file)) {
-					writeFile(
-						path.join(wallaby.localProjectDir, file.replace(wallaby.projectCacheDir, '')),
-						content
-					)
+					writeFile(path.join(wallaby.localProjectDir, file.replace(wallaby.projectCacheDir, '')), content)
 				}
-				return writeFile.apply(this, arguments)
+				return writeFile.apply(this, [file, content, options])
 			}
 			const mkdirSync = fs.mkdirSync
 			fs.mkdirSync = function (dir, mode) {
 				if (/__komondor__/.test(dir)) {
-					mkdirSync(
-						path.join(wallaby.localProjectDir, dir.replace(wallaby.projectCacheDir, '')),
-						mode
-					)
+					mkdirSync(path.join(wallaby.localProjectDir, dir.replace(wallaby.projectCacheDir, '')), mode)
 				}
-				return mkdirSync.apply(this, arguments)
+				return mkdirSync.apply(this, [dir, mode])
 			}
 			fs.patched = true
 		},
