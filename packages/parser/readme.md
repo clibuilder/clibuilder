@@ -1,10 +1,10 @@
-# `miniparse`
+# `@clibuilder/parser`
 
 A minimal parser for command line input.
 
 ## Why?
 
-There are many command line parsers out there, why `miniparse`?
+There are many command line parsers out there, why `@clibuilder/parser`?
 
 In short, they are doing too much.
 Too much in a sense that they impose certain assumptions to the input.
@@ -37,20 +37,20 @@ and should defer decisions to frameworks or applications.
 Some command line parsing packages are frameworks, which are fine,
 but other packages are designed as a library, but act more like a framework.
 
-`miniparse` is designed to be a library.
+`@clibuilder/parser` is designed to be a library.
 Its sole purpose is to provide a convenient and consistent way to parse command line input,
 in the way you want to parse it.
 
 ## Installation
 
 ```sh
-npm install miniparse
+npm install @clibuilder/parser
 
-pnpm add miniparse
+pnpm add @clibuilder/parser
 
-yarn add miniparse
+yarn add @clibuilder/parser
 
-deno add miniparse
+deno add @clibuilder/parser
 
-bun add miniparse
+bun add @clibuilder/parser
 ```
