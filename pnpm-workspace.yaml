@@ -3,6 +3,4 @@ packages:
   - packages/*/fixtures2/**
   - packages/*/fixtures/**
   - test-apps/*
-  - test-clis/*
-  - test-clis/*/fixtures/**
   - test-plugins/*

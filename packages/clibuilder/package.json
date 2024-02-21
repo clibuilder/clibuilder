@@ -71,7 +71,6 @@
 		"@repobuddy/jest": "^3.3.0",
 		"@types/jest": "^29.5.1",
 		"@types/js-yaml": "^4.0.5",
-		"@types/node": "^18.16.0",
 		"@types/tmp": "^0.2.3",
 		"@types/wordwrap": "github:types/wordwrap",
 		"@unional/fixture": "^3.2.16",

@@ -1,0 +1,67 @@
+{
+	"name": "micro-args",
+	"version": "0.0.0",
+	"description": "A minimal command line parsing library",
+	"keywords": [
+		"cli",
+		"command",
+		"command-line",
+		"commandline",
+		"parser"
+	],
+	"homepage": "https://github.com/unional/clibuilder",
+	"bugs": {
+		"url": "https://github.com/unional/clibuilder/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/unional/clibuilder.git",
+		"directory": "packages/micro-args"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"types": "./esm/index.d.ts",
+		"import": "./esm/index.js"
+	},
+	"files": [
+		"esm",
+		"src",
+		"!**/*.internal.*",
+		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+	],
+	"scripts": {
+		"build": "tsc",
+		"build:watch": "tsc --watch",
+		"clean": "rimraf .turbo coverage esm",
+		"coverage": "jest --coverage",
+		"depcheck": "depcheck",
+		"nuke": "run-s clean && rimraf node_modules",
+		"test": "jest",
+		"watch": "jest --watch",
+		"w": "pnpm watch"
+	},
+	"devDependencies": {
+		"@repobuddy/jest": "^3.3.0",
+		"@repobuddy/typescript": "^2.0.0",
+		"@types/jest": "^29.5.1",
+		"depcheck": "^1.4.3",
+		"jest": "^29.5.0",
+		"jest-watch-suspend": "^1.1.2",
+		"jest-watch-toggle-config-2": "^2.1.0",
+		"jest-watch-typeahead": "^2.2.2",
+		"npm-run-all2": "^6.0.0",
+		"rimraf": "^5.0.0",
+		"ts-jest": "^29.1.0",
+		"typescript": "^5.0.4"
+	},
+	"engines": {
+		"node": ">= 8"
+	}
+}
