@@ -28,7 +28,7 @@
 		"@commitlint/cli": "^18.0.0",
 		"@commitlint/config-conventional": "^18.0.0",
 		"@repobuddy/biome": "^1.0.4",
-		"@types/node": "^18.16.0",
+		"@types/node": "^20.0.0",
 		"husky": "^9.0.11",
 		"npm-run-all2": "^6.0.0",
 		"turbo": "^1.12.4"
