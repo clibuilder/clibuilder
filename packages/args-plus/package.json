@@ -1,13 +1,15 @@
 {
-	"name": "@clibuilder/parser",
+	"name": "args-plus",
 	"version": "0.0.0",
-	"description": "A minimal command line parsing library",
+	"description": "An enhanced version of `parseArgs`",
 	"keywords": [
 		"cli",
 		"command",
 		"command-line",
 		"commandline",
-		"parser"
+		"parser",
+		"args",
+		"utils"
 	],
 	"homepage": "https://github.com/unional/clibuilder",
 	"bugs": {
@@ -16,7 +18,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/unional/clibuilder.git",
-		"directory": "packages/parser"
+		"directory": "packages/args-plus"
 	},
 	"license": "MIT",
 	"author": {
