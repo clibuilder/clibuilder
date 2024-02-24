@@ -2,15 +2,7 @@
 	"name": "args-plus",
 	"version": "0.0.0",
 	"description": "An enhanced version of `parseArgs`",
-	"keywords": [
-		"cli",
-		"command",
-		"command-line",
-		"commandline",
-		"parser",
-		"args",
-		"utils"
-	],
+	"keywords": ["cli", "command", "command-line", "commandline", "parser", "args", "utils"],
 	"homepage": "https://github.com/unional/clibuilder",
 	"bugs": {
 		"url": "https://github.com/unional/clibuilder/issues"
@@ -32,12 +24,7 @@
 		"types": "./esm/index.d.ts",
 		"import": "./esm/index.js"
 	},
-	"files": [
-		"esm",
-		"src",
-		"!**/*.internal.*",
-		"!**/*.{accept,integrate,spec,system,test,unit}.*"
-	],
+	"files": ["esm", "src", "!**/*.internal.*", "!**/*.{accept,integrate,spec,system,test,unit}.*"],
 	"scripts": {
 		"build": "tsc",
 		"build:watch": "tsc --watch",
