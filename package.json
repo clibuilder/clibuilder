@@ -14,7 +14,7 @@
 		"ap": "pnpm --filter ./packages/args-plus",
 		"nuke": "turbo run nuke && pnpm nuke:local",
 		"nuke:local": "rimraf node_modules",
-		"prepare": "husky install",
+		"prepare": "husky",
 		"release": "changeset publish",
 		"size": "turbo run size",
 		"test": "turbo run test",
