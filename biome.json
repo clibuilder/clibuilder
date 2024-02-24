@@ -3,5 +3,20 @@
 	"extends": ["./node_modules/@repobuddy/biome/recommended.json"],
 	"files": {
 		"ignore": ["cjs", "coverage", "esm", "target"]
-	}
+	},
+	"overrides": [
+		{
+			"include": ["args-plus/src"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noInnerDeclarations": "warn"
+					},
+					"style": {
+						"noVar": "off"
+					}
+				}
+			}
+		}
+	]
 }
