@@ -2,11 +2,9 @@
 	"recommendations": [
 		"biomejs.biome",
 		"davidanson.vscode-markdownlint",
-		"dbaeumer.vscode-eslint",
 		"editorconfig.editorconfig",
 		"streetsidesoftware.code-spell-checker",
 		"unional.vscode-sort-package-json",
-		"wallabyjs.wallaby-extension-pack",
-		"yzhang.markdown-all-in-one",
+		"yzhang.markdown-all-in-one"
 	]
 }
