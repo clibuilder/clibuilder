@@ -1,5 +1,5 @@
 /**
- * A cheap form of primordials.
+ * A poorman primordials.
  */
 
 export const StringCharCodeAt = String.prototype.charCodeAt
