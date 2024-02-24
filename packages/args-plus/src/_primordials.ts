@@ -4,4 +4,6 @@
 
 export const StringCharCodeAt = String.prototype.charCodeAt
 export const StringSlice = String.prototype.slice
-export const ArrayMap = Array.prototype.map
+export const ArrayForEach = Array.prototype.forEach
+export const ArrayReduce = Array.prototype.reduce
+export const ArrayPush = Array.prototype.push

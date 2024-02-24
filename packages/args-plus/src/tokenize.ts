@@ -1,18 +1,41 @@
-import { ArrayMap, StringCharCodeAt, StringSlice } from './_primordials.js'
+import { ArrayForEach, ArrayPush, ArrayReduce, StringCharCodeAt, StringSlice } from './_primordials.js'
 
+export interface OptionToken {
+	kind: 'option'
+	index: string
+	name: string
+	raw: string
+}
+
+export type Token = OptionToken
 export function tokenize(argv: string[]) {
-	var index = 0
-	return ArrayMap.call(argv, (raw) => {
-		var [name, nameIndex] = extractName(raw)
+	return ArrayReduce.call(
+		argv,
+		(acc, raw, index) => {
+			var [name, nameIndex] = extractName(raw)
 
-		if (nameIndex >= 1 && name)
-			return {
-				type: 'option',
-				index: index++,
-				name,
-				raw
-			}
-	})
+			if (nameIndex === 1 && name)
+				ArrayForEach.call(name, (name) =>
+					ArrayPush.call(acc, {
+						kind: 'option',
+						index,
+						name,
+						raw: `-${name}`
+					})
+				)
+			else if (nameIndex >= 2 && name)
+				ArrayPush.call(acc, {
+					kind: 'option',
+					index,
+					name,
+					raw
+				})
+
+			index++
+			return acc
+		},
+		[]
+	)
 }
 
 function extractName(arg: string) {
