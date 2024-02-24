@@ -1,70 +1,90 @@
-import { tokenize } from './index.js'
+import { parseArgs, type ParseArgsConfig } from 'util'
+import { tokenize, type Token } from './index.js'
 
 it('returns empty array for empty argv', () => {
-	expect(tokenize([])).toEqual([])
+	testTokenize([], [])
 })
 
 it('parse long option as option', () => {
-	expect(tokenize(['--opt'])).toEqual([
-		{
-			kind: 'option',
-			index: 0,
-			name: 'opt',
-			raw: '--opt'
-		}
-	])
+	testTokenize(
+		['--opt'],
+		[
+			{
+				kind: 'option',
+				index: 0,
+				name: 'opt',
+				raw: '--opt'
+			}
+		]
+	)
 })
 
 it('parse short option as option', () => {
-	expect(tokenize(['-a'])).toEqual([
-		{
-			kind: 'option',
-			index: 0,
-			name: 'a',
-			raw: '-a'
-		}
-	])
+	testTokenize(
+		['-a'],
+		[
+			{
+				kind: 'option',
+				index: 0,
+				name: 'a',
+				raw: '-a'
+			}
+		]
+	)
 })
 
 it('split multiple short options', () => {
-	// console.info(
-	// 	parseArgs({
-	// 		args: ['-abc', '-bca'],
-	// 		tokens: true,
-	// 		options: {
-	// 			a: { type: 'boolean' },
-	// 			b: { type: 'boolean' },
-	// 			c: { type: 'boolean' }
-	// 		}
-	// 	})
-	// )
-	expect(tokenize(['-abc'])).toEqual([
-		{
-			kind: 'option',
-			index: 0,
-			name: 'a',
-			raw: '-a'
-		},
-		{
-			kind: 'option',
-			index: 0,
-			name: 'b',
-			raw: '-b'
-		},
-		{
-			kind: 'option',
-			index: 0,
-			name: 'c',
-			raw: '-c'
-		}
-	])
+	testTokenize(
+		['-abc'],
+		[
+			{
+				kind: 'option',
+				index: 0,
+				name: 'a',
+				raw: '-a'
+			},
+			{
+				kind: 'option',
+				index: 0,
+				name: 'b',
+				raw: '-b'
+			},
+			{
+				kind: 'option',
+				index: 0,
+				name: 'c',
+				raw: '-c'
+			}
+		]
+	)
 })
 
 it('parse option-terminator', () => {
-	expect(tokenize(['--'])).toEqual([
-		{
-			kind: 'option-terminator',
-			index: 0
-		}
-	])
+	testTokenize(
+		['--'],
+		[
+			{
+				kind: 'option-terminator',
+				index: 0
+			}
+		]
+	)
 })
+
+function testTokenize(args: string[], expected: Token[], parseArgsOptions: ParseArgsConfig['options'] = undefined) {
+	const result = tokenize(args)
+	if (parseArgsOptions) {
+		console.info('args:', args)
+		parseArgs()
+		console.info(
+			'parseArgs:',
+			parseArgs({
+				args,
+				tokens: true,
+				options: parseArgsOptions
+			})
+		)
+		console.info('tokenize:', result)
+	}
+	expect(result).toEqual(expected)
+}
