@@ -2,13 +2,19 @@ import { ArrayForEach, ArrayPush, ArrayReduce, StringCharCodeAt, StringSlice } f
 
 export interface OptionToken {
 	kind: 'option'
-	index: string
+	index: number
 	name: string
 	raw: string
 }
 
-export type Token = OptionToken
-export function tokenize(argv: string[]) {
+export interface OptionTerminatorToken {
+	kind: 'option-terminator'
+	index: number
+}
+
+export type Token = OptionToken | OptionTerminatorToken
+
+export function tokenize(argv: string[]): Token[] {
 	return ArrayReduce.call(
 		argv,
 		(acc, raw, index) => {
@@ -23,19 +29,25 @@ export function tokenize(argv: string[]) {
 						raw: `-${name}`
 					})
 				)
-			else if (nameIndex >= 2 && name)
-				ArrayPush.call(acc, {
-					kind: 'option',
-					index,
-					name,
-					raw
-				})
-
+			else if (nameIndex >= 2) {
+				if (name)
+					ArrayPush.call(acc, {
+						kind: 'option',
+						index,
+						name,
+						raw
+					})
+				else
+					ArrayPush.call(acc, {
+						kind: 'option-terminator',
+						index
+					})
+			}
 			index++
 			return acc
 		},
 		[]
-	)
+	) as Token[]
 }
 
 function extractName(arg: string) {

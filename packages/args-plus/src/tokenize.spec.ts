@@ -59,3 +59,12 @@ it('split multiple short options', () => {
 		}
 	])
 })
+
+it('parse option-terminator', () => {
+	expect(tokenize(['--'])).toEqual([
+		{
+			kind: 'option-terminator',
+			index: 0
+		}
+	])
+})
