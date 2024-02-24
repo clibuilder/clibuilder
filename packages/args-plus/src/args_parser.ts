@@ -1,4 +1,4 @@
-export function createParser() {
+export function argsParser() {
 	return {
 		/**
 		 * parse command line input: `process.argv.slice(2)`.
@@ -10,5 +10,3 @@ export function createParser() {
 		}
 	}
 }
-
-export const parser = createParser()
