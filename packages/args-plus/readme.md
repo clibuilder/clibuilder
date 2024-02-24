@@ -44,13 +44,13 @@ in the way you want to parse it.
 ## Installation
 
 ```sh
-npm install @clibuilder/parser
+npm install args-plus
 
-pnpm add @clibuilder/parser
+pnpm add args-plus
 
-yarn add @clibuilder/parser
+yarn add args-plus
 
-deno add @clibuilder/parser
+deno add args-plus
 
-bun add @clibuilder/parser
+bun add args-plus
 ```
