@@ -50,10 +50,12 @@ export function tokenize(argv: string[]): Token[] {
 	) as Token[]
 }
 
+const DASH_CHAR_CODE = 45
+
 function extractName(arg: string) {
 	var len = arg.length
 	for (var i = 0; i < len; i++) {
-		if (StringCharCodeAt.call(arg, i) !== 45) break
+		if (StringCharCodeAt.call(arg, i) !== DASH_CHAR_CODE) break
 	}
 	return [StringSlice.call(arg, i), i] as const
 }
