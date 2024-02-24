@@ -14,3 +14,14 @@ it('parse long option as option', () => {
 		}
 	])
 })
+
+it('parse short option as option', () => {
+	expect(tokenize(['-a'])).toEqual([
+		{
+			type: 'option',
+			index: 0,
+			name: 'a',
+			raw: '-a'
+		}
+	])
+})

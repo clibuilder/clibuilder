@@ -5,7 +5,7 @@ export function tokenize(argv: string[]) {
 	return ArrayMap.call(argv, (raw) => {
 		var [name, nameIndex] = extractName(raw)
 
-		if (nameIndex >= 2 && name)
+		if (nameIndex >= 1 && name)
 			return {
 				type: 'option',
 				index: index++,
