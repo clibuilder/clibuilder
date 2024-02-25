@@ -33,11 +33,12 @@ export function tokenize(args: string[]): Token[] {
 				kind: 'option-terminator',
 				index
 			})
+			index++
 			ArrayPush.apply(
 				tokens,
 				remainingArgs.map((value, i) => ({
 					kind: 'positional',
-					index: index + i + 1,
+					index: index + i,
 					value
 				}))
 			)
