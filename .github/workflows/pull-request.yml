@@ -5,4 +5,4 @@ on:
 
 jobs:
   code:
-    uses: repobuddy/.github/.github/workflows/pnpm-verify.yml@main
+    uses: clibuilder/.github/.github/workflows/pnpm-verify.yml@main
