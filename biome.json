@@ -10,7 +10,7 @@
 			"linter": {
 				"rules": {
 					"correctness": {
-						"noInnerDeclarations": "warn"
+						"noInnerDeclarations": "off"
 					},
 					"style": {
 						"noVar": "off"
