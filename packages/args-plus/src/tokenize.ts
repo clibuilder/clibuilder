@@ -67,68 +67,6 @@ export function tokenize(args: string[]): Token[] {
 		index++
 	}
 	return tokens
-	// const len = args.length
-
-	// for (let index=0;index<len;index++){
-	// 	const raw = args[index]!
-	// 	var [name, dashes] = extractName(raw)
-	// 	if (dashes === 0)
-	// 	ArrayPush.call(acc, {
-	// 		kind: 'positional',
-	// 		index,
-	// 		name
-	// 	})
-	// 	else if (dashes ===2 && !name){
-
-	// 	}
-
-	// }
-	// return ArrayReduce.call(
-	// 	args,
-	// 	(acc, raw, index) => {
-	// 		var [name, dashes] = extractName(raw)
-	// 		if (dashes === 0)
-	// 			ArrayPush.call(acc, {
-	// 				kind: 'positional',
-	// 				index,
-	// 				name
-	// 			})
-	// 		else if (dashes ===2 && !name){
-
-	// 		}	else if (dashes === 1 && name)
-	// 		ArrayPush.call(acc, {
-	// 			kind: 'option',
-	// 			index,
-	// 			name,
-	// 			dashes
-	// 		})
-	// 			ArrayForEach.call(name, (name) =>
-	// 				ArrayPush.call(acc, {
-	// 					kind: 'option',
-	// 					index,
-	// 					name,
-	// 					raw: `-${name}`
-	// 				})
-	// 			)
-	// 		else if (dashes >= 2) {
-	// 			if (name)
-	// 				ArrayPush.call(acc, {
-	// 					kind: 'option',
-	// 					index,
-	// 					name,
-	// 					raw
-	// 				})
-	// 			else
-	// 				ArrayPush.call(acc, {
-	// 					kind: 'option-terminator',
-	// 					index
-	// 				})
-	// 		}
-	// 		index++
-	// 		return acc
-	// 	},
-	// 	[]
-	// ) as Token[]
 }
 
 const DASH_CHAR_CODE = 45
