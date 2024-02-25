@@ -1,9 +1,10 @@
-import { ArrayForEach, ArrayPush, ArrayReduce, StringCharCodeAt, StringSlice } from './_primordials.js'
+import { ArrayPush, ArraySlice, StringCharCodeAt, StringSlice } from './_primordials.js'
 
 export interface OptionToken {
 	kind: 'option'
 	index: number
 	name: string
+	dashes: number
 	raw: string
 }
 
@@ -12,42 +13,117 @@ export interface OptionTerminatorToken {
 	index: number
 }
 
-export type Token = OptionToken | OptionTerminatorToken
+export interface PositionalToken {
+	kind: 'positional'
+	index: number
+	value: string
+}
+export type Token = OptionToken | OptionTerminatorToken | PositionalToken
 
-export function tokenize(argv: string[]): Token[] {
-	return ArrayReduce.call(
-		argv,
-		(acc, raw, index) => {
-			var [name, nameIndex] = extractName(raw)
+export function tokenize(args: string[]): Token[] {
+	const tokens: Token[] = []
+	var index = 0
 
-			if (nameIndex === 1 && name)
-				ArrayForEach.call(name, (name) =>
-					ArrayPush.call(acc, {
-						kind: 'option',
-						index,
-						name,
-						raw: `-${name}`
-					})
-				)
-			else if (nameIndex >= 2) {
-				if (name)
-					ArrayPush.call(acc, {
-						kind: 'option',
-						index,
-						name,
-						raw
-					})
-				else
-					ArrayPush.call(acc, {
-						kind: 'option-terminator',
-						index
-					})
-			}
-			index++
-			return acc
-		},
-		[]
-	) as Token[]
+	const remainingArgs = ArraySlice.call(args)
+	while (remainingArgs.length > 0) {
+		var raw = remainingArgs.shift()
+		if (raw === '--') {
+			ArrayPush.call(tokens, {
+				kind: 'option-terminator',
+				index
+			})
+			ArrayPush.apply(
+				tokens,
+				remainingArgs.map((value, i) => ({
+					kind: 'positional',
+					index: index + i + 1,
+					value
+				}))
+			)
+			break
+		}
+
+		var [name, dashes] = extractName(raw)
+		if (dashes === 0)
+			ArrayPush.call(tokens, {
+				kind: 'positional',
+				index,
+				value: name
+			})
+		else
+			ArrayPush.call(tokens, {
+				kind: 'option',
+				index,
+				name,
+				dashes,
+				raw
+			})
+
+		index++
+	}
+	return tokens
+	// const len = args.length
+
+	// for (let index=0;index<len;index++){
+	// 	const raw = args[index]!
+	// 	var [name, dashes] = extractName(raw)
+	// 	if (dashes === 0)
+	// 	ArrayPush.call(acc, {
+	// 		kind: 'positional',
+	// 		index,
+	// 		name
+	// 	})
+	// 	else if (dashes ===2 && !name){
+
+	// 	}
+
+	// }
+	// return ArrayReduce.call(
+	// 	args,
+	// 	(acc, raw, index) => {
+	// 		var [name, dashes] = extractName(raw)
+	// 		if (dashes === 0)
+	// 			ArrayPush.call(acc, {
+	// 				kind: 'positional',
+	// 				index,
+	// 				name
+	// 			})
+	// 		else if (dashes ===2 && !name){
+
+	// 		}	else if (dashes === 1 && name)
+	// 		ArrayPush.call(acc, {
+	// 			kind: 'option',
+	// 			index,
+	// 			name,
+	// 			dashes
+	// 		})
+	// 			ArrayForEach.call(name, (name) =>
+	// 				ArrayPush.call(acc, {
+	// 					kind: 'option',
+	// 					index,
+	// 					name,
+	// 					raw: `-${name}`
+	// 				})
+	// 			)
+	// 		else if (dashes >= 2) {
+	// 			if (name)
+	// 				ArrayPush.call(acc, {
+	// 					kind: 'option',
+	// 					index,
+	// 					name,
+	// 					raw
+	// 				})
+	// 			else
+	// 				ArrayPush.call(acc, {
+	// 					kind: 'option-terminator',
+	// 					index
+	// 				})
+	// 		}
+	// 		index++
+	// 		return acc
+	// 	},
+	// 	[]
+	// ) as Token[]
 }
 
 const DASH_CHAR_CODE = 45

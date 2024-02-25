@@ -5,6 +5,23 @@ it('returns empty array for empty argv', () => {
 	testTokenize([], [])
 })
 
+it('parse arguments as positionals', () => {
+	testTokenize(
+		['abc', 'def'],
+		[
+			{
+				kind: 'positional',
+				index: 0,
+				value: 'abc'
+			},
+			{
+				kind: 'positional',
+				index: 1,
+				value: 'def'
+			}
+		]
+	)
+})
 it('parse long option as option', () => {
 	testTokenize(
 		['--opt'],
@@ -13,6 +30,7 @@ it('parse long option as option', () => {
 				kind: 'option',
 				index: 0,
 				name: 'opt',
+				dashes: 2,
 				raw: '--opt'
 			}
 		]
@@ -27,33 +45,27 @@ it('parse short option as option', () => {
 				kind: 'option',
 				index: 0,
 				name: 'a',
+				dashes: 1,
 				raw: '-a'
 			}
 		]
 	)
 })
 
-it('split multiple short options', () => {
+it('keep short option group', () => {
+	// without knowing what is the defined option,
+	// there is no way to determine if `-abc` means `-a -b -c`,
+	// or `-a` with value `bc`.
+	// That should be done at the parsing stage.
 	testTokenize(
 		['-abc'],
 		[
 			{
 				kind: 'option',
 				index: 0,
-				name: 'a',
-				raw: '-a'
-			},
-			{
-				kind: 'option',
-				index: 0,
-				name: 'b',
-				raw: '-b'
-			},
-			{
-				kind: 'option',
-				index: 0,
-				name: 'c',
-				raw: '-c'
+				name: 'abc',
+				dashes: 1,
+				raw: '-abc'
 			}
 		]
 	)
@@ -71,11 +83,32 @@ it('parse option-terminator', () => {
 	)
 })
 
+it('treat input after option-terminator to be positional', () => {
+	testTokenize(
+		['--', 'abc', '-a'],
+		[
+			{
+				kind: 'option-terminator',
+				index: 0
+			},
+			{
+				kind: 'positional',
+				index: 1,
+				value: 'abc'
+			},
+			{
+				kind: 'positional',
+				index: 2,
+				value: '-a'
+			}
+		]
+	)
+})
+
 function testTokenize(args: string[], expected: Token[], parseArgsOptions: ParseArgsConfig['options'] = undefined) {
 	const result = tokenize(args)
 	if (parseArgsOptions) {
 		console.info('args:', args)
-		parseArgs()
 		console.info(
 			'parseArgs:',
 			parseArgs({
