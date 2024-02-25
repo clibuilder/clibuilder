@@ -45,11 +45,11 @@ export function tokenize(args: string[]): Token[] {
 		}
 
 		var [name, dashes] = extractName(raw)
-		if (dashes === 0)
+		if (dashes === 0 || !name)
 			ArrayPush.call(tokens, {
 				kind: 'positional',
 				index,
-				value: name
+				value: name || raw
 			})
 		else {
 			const [n, value] = name.split('=', 2)

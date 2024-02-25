@@ -121,6 +121,19 @@ it('treat input after option-terminator to be positional', () => {
 	)
 })
 
+it('parse single dash as positional', () => {
+	testTokenize(['-'], [{ kind: 'positional', index: 0, value: '-' }])
+})
+
+it('parse 3 or more dashes as positional', () => {
+	testTokenize(
+		['---', '----'],
+		[
+			{ kind: 'positional', index: 0, value: '---' },
+			{ kind: 'positional', index: 1, value: '----' }
+		]
+	)
+})
 function testTokenize(args: string[], expected: Token[], parseArgsOptions: ParseArgsConfig['options'] = undefined) {
 	const result = tokenize(args)
 	if (parseArgsOptions) {
