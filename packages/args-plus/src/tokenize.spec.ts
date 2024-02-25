@@ -9,22 +9,15 @@ it('parse arguments as positionals', () => {
 	testTokenize(
 		['abc', 'def'],
 		[
-			{
-				kind: 'positional',
-				index: 0,
-				value: 'abc'
-			},
-			{
-				kind: 'positional',
-				index: 1,
-				value: 'def'
-			}
+			{ kind: 'positional', index: 0, value: 'abc' },
+			{ kind: 'positional', index: 1, value: 'def' }
 		]
 	)
 })
+
 it('parse long option as option', () => {
 	testTokenize(
-		['--opt'],
+		['--opt', '--xyz', 'abc'],
 		[
 			{
 				kind: 'option',
@@ -32,14 +25,16 @@ it('parse long option as option', () => {
 				name: 'opt',
 				dashes: 2,
 				raw: '--opt'
-			}
+			},
+			{ kind: 'option', index: 1, name: 'xyz', dashes: 2, raw: '--xyz' },
+			{ kind: 'positional', index: 2, value: 'abc' }
 		]
 	)
 })
 
 it('parse short option as option', () => {
 	testTokenize(
-		['-a'],
+		['-a', 'abc'],
 		[
 			{
 				kind: 'option',
@@ -47,7 +42,8 @@ it('parse short option as option', () => {
 				name: 'a',
 				dashes: 1,
 				raw: '-a'
-			}
+			},
+			{ kind: 'positional', index: 1, value: 'abc' }
 		]
 	)
 })
@@ -58,7 +54,7 @@ it('keep short option group', () => {
 	// or `-a` with value `bc`.
 	// That should be done at the parsing stage.
 	testTokenize(
-		['-abc'],
+		['-abc', 'def'],
 		[
 			{
 				kind: 'option',
@@ -66,41 +62,23 @@ it('keep short option group', () => {
 				name: 'abc',
 				dashes: 1,
 				raw: '-abc'
-			}
+			},
+			{ kind: 'positional', index: 1, value: 'def' }
 		]
 	)
 })
 
 it('parse option-terminator', () => {
-	testTokenize(
-		['--'],
-		[
-			{
-				kind: 'option-terminator',
-				index: 0
-			}
-		]
-	)
+	testTokenize(['--'], [{ kind: 'option-terminator', index: 0 }])
 })
 
 it('treat input after option-terminator to be positional', () => {
 	testTokenize(
 		['--', 'abc', '-a'],
 		[
-			{
-				kind: 'option-terminator',
-				index: 0
-			},
-			{
-				kind: 'positional',
-				index: 1,
-				value: 'abc'
-			},
-			{
-				kind: 'positional',
-				index: 2,
-				value: '-a'
-			}
+			{ kind: 'option-terminator', index: 0 },
+			{ kind: 'positional', index: 1, value: 'abc' },
+			{ kind: 'positional', index: 2, value: '-a' }
 		]
 	)
 })
