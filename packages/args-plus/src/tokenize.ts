@@ -6,6 +6,7 @@ export interface OptionToken {
 	name: string
 	dashes: number
 	raw: string
+	value?: string
 }
 
 export interface OptionTerminatorToken {
@@ -50,14 +51,17 @@ export function tokenize(args: string[]): Token[] {
 				index,
 				value: name
 			})
-		else
+		else {
+			const [n, value] = name.split('=', 2)
 			ArrayPush.call(tokens, {
 				kind: 'option',
 				index,
-				name,
+				name: n,
 				dashes,
-				raw
+				raw,
+				value
 			})
+		}
 
 		index++
 	}

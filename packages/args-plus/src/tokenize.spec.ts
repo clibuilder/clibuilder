@@ -32,6 +32,44 @@ it('parse long option as option', () => {
 	)
 })
 
+it('extracts option value from --opt=abc', () => {
+	testTokenize(
+		['--opt=abc'],
+		[
+			{
+				kind: 'option',
+				name: 'opt',
+				raw: '--opt=abc',
+				index: 0,
+				dashes: 2,
+				value: 'abc'
+			}
+		]
+	)
+})
+
+it('extracts short option value from -o=abc', () => {
+	// This is different than the NodeJS implementation.
+	// I feel that that is more for legacy purpose and is mostly not used.
+	// We are keeping it simple and consistent here.
+	// If the application requires NodeJS like behavior,
+	// it can handle it anyway and this can bee seen as an error,
+	// or appending the `=` back to the `value`.
+	testTokenize(
+		['-o=abc'],
+		[
+			{
+				kind: 'option',
+				name: 'o',
+				raw: '-o=abc',
+				index: 0,
+				dashes: 1,
+				value: 'abc'
+			}
+		]
+	)
+})
+
 it('parse short option as option', () => {
 	testTokenize(
 		['-a', 'abc'],
