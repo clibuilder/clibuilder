@@ -1,4 +1,5 @@
-import { ArrayPush, ArraySlice, StringCharCodeAt, StringSlice } from './_primordials.js'
+import { ArrayPush, ArraySlice } from './_primordials.js'
+import { trimDashes } from './_trim_dashes.js'
 
 export interface OptionToken {
 	kind: 'option'
@@ -45,7 +46,7 @@ export function tokenize(args: string[]): Token[] {
 			break
 		}
 
-		var [name, dashes] = extractName(raw)
+		var [name, dashes] = trimDashes(raw)
 		if (dashes === 0 || !name)
 			ArrayPush.call(tokens, {
 				kind: 'positional',
@@ -67,14 +68,4 @@ export function tokenize(args: string[]): Token[] {
 		index++
 	}
 	return tokens
-}
-
-const DASH_CHAR_CODE = 45
-
-function extractName(arg: string) {
-	var len = arg.length
-	for (var i = 0; i < len; i++) {
-		if (StringCharCodeAt.call(arg, i) !== DASH_CHAR_CODE) break
-	}
-	return [StringSlice.call(arg, i), i] as const
 }
