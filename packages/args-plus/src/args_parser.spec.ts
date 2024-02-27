@@ -55,3 +55,11 @@ it('parses short option with inline value', () => {
 		c: '123'
 	})
 })
+
+it('keep input after terminator in __', () => {
+	const parser = argsParser()
+	expect(parser.parse(['a', '--', 'b', '-c'])).toEqual({
+		_: ['a'],
+		__: ['b', '-c']
+	})
+})

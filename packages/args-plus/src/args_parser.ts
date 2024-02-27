@@ -21,10 +21,6 @@ export function argsParser() {
 						result._.push(token.value)
 						break
 					}
-					case 'option-terminator': {
-						result.__.push(...remainingTokens.map((token) => (token as PositionalToken).value))
-						break
-					}
 					case 'option': {
 						if (token.dashes === 1) {
 							Array.from(token.name).forEach(
@@ -33,6 +29,11 @@ export function argsParser() {
 						} else {
 							result[token.name] = token.value ?? true
 						}
+						break
+					}
+					case 'option-terminator': {
+						result.__.push(...remainingTokens.map((token) => (token as PositionalToken).value))
+						return result
 					}
 				}
 			}
