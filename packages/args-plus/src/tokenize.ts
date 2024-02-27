@@ -26,9 +26,9 @@ export function tokenize(args: string[]): Token[] {
 	var tokens: Token[] = []
 	var index = 0
 
-	var remainingArgs = ArraySlice.call(args)
+	var remainingArgs: string[] = ArraySlice.call(args)
 	while (remainingArgs.length > 0) {
-		var raw = remainingArgs.shift()
+		var raw = remainingArgs.shift()!
 		if (raw === '--') {
 			ArrayPush.call(tokens, {
 				kind: 'option-terminator',
