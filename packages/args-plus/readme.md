@@ -19,7 +19,7 @@ In fact, they are quite popular.
 By taking away certain flexibility,
 it simplifies the consumption (in code) and normalizes usage (for user).
 
-The problem is, where to define that opinion.
+The problem is where to define that opinion.
 There are 3 obvious candidates: library, framework, or application.
 
 Application has all the rights to be opinionated.
