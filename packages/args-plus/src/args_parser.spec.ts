@@ -25,6 +25,15 @@ it('parses long option', () => {
 	})
 })
 
+it('parses long option with inline value', () => {
+	const parser = argsParser()
+	expect(parser.parse(['--opt=abc'])).toEqual({
+		_: [],
+		__: [],
+		opt: 'abc'
+	})
+})
+
 it('parses short option', () => {
 	const parser = argsParser()
 	expect(parser.parse(['-abc'])).toEqual({
