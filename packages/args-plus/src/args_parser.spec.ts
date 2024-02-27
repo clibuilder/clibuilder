@@ -56,6 +56,15 @@ it('parses short option with inline value', () => {
 	})
 })
 
+it('supports options with 3 dashes', () => {
+	const parser = argsParser()
+	expect(parser.parse(['---abc'])).toEqual({
+		_: [],
+		__: [],
+		abc: true
+	})
+})
+
 it('keep input after terminator in __', () => {
 	const parser = argsParser()
 	expect(parser.parse(['a', '--', 'b', '-c'])).toEqual({
