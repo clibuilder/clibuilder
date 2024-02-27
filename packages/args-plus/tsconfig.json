@@ -2,7 +2,9 @@
 	"extends": "@repobuddy/typescript/tsconfig/legacy/monorepo.json",
 	"compilerOptions": {
 		"outDir": "esm",
-		"rootDir": "src"
+		"rootDir": "src",
+		"exactOptionalPropertyTypes": true,
+		"verbatimModuleSyntax": true
 	},
 	"include": ["src"]
 }
