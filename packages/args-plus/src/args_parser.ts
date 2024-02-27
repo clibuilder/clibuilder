@@ -1,6 +1,10 @@
 import { tokenize, type PositionalToken } from './tokenize.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
+export type ParsedArgs<T extends Record<string, ArgsValue> = Record<string, ArgsValue>> = T & {
+	_: string[]
+	__: string[]
+}
 
 export function argsParser() {
 	return {
@@ -9,10 +13,10 @@ export function argsParser() {
 		 */
 		parse(argv: string[]) {
 			const tokens = tokenize(argv)
-			const result = {
+			const result: ParsedArgs = {
 				_: [],
 				__: []
-			} as Record<string, ArgsValue> & { _: string[]; __: string[] }
+			}
 			const remainingTokens = tokens.slice()
 			while (remainingTokens.length > 0) {
 				const token = remainingTokens.shift()!

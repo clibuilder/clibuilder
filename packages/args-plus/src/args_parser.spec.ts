@@ -1,4 +1,5 @@
-import { argsParser } from './index.js'
+import { testType } from 'type-plus'
+import { argsParser, type ParsedArgs } from './index.js'
 
 it('parses empty args', () => {
 	const parser = argsParser()
@@ -71,4 +72,12 @@ it('keep input after terminator in __', () => {
 		_: ['a'],
 		__: ['b', '-c']
 	})
+})
+
+it('returns ParsedArgs type', () => {
+	const parser = argsParser()
+	const r = parser.parse([])
+	expect(r['p']).toBeUndefined()
+
+	testType.equal<typeof r, ParsedArgs>(true)
 })
