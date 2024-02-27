@@ -3,7 +3,7 @@
 	"pipeline": {
 		"build": {
 			"dependsOn": ["^build"],
-			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?", "src/**/*.tsx?"],
 			"outputs": ["esm/**"]
 		},
 		"clean": {
@@ -11,17 +11,14 @@
 		},
 		"coverage": {
 			"dependsOn": ["build"],
-			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"],
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?", "src/**/*.tsx?"],
 			"outputs": ["coverage/**"]
 		},
 		"depcheck": {
-			"inputs": ["package.json", "ts/**/*.tsx?"]
+			"inputs": ["package.json", "ts/**/*.tsx?", "src/**/*.tsx?"]
 		},
 		"dev": {
 			"cache": false
-		},
-		"lint": {
-			"inputs": ["ts/**/*.tsx?"]
 		},
 		"nuke": {
 			"cache": false
@@ -31,7 +28,7 @@
 		},
 		"test": {
 			"dependsOn": ["build"],
-			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"]
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?", "src/**/*.tsx?"]
 		},
 		"verify": {
 			"dependsOn": ["build"],
@@ -39,7 +36,7 @@
 		},
 		"watch": {
 			"dependsOn": ["build"],
-			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?"]
+			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?", "src/**/*.tsx?"]
 		}
 	}
 }
