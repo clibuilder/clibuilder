@@ -27,9 +27,9 @@ export function argsParser() {
 					}
 					case 'option': {
 						if (token.dashes === 1) {
-							for (const k of token.name) {
-								result[k] = token.value ?? true
-							}
+							Array.from(token.name).forEach(
+								(k, i) => (result[k] = i === token.name.length - 1 ? token.value ?? true : true)
+							)
 						} else {
 							result[token.name] = token.value ?? true
 						}

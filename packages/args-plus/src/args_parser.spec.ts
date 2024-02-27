@@ -44,3 +44,14 @@ it('parses short option', () => {
 		c: true
 	})
 })
+
+it('parses short option with inline value', () => {
+	const parser = argsParser()
+	expect(parser.parse(['-abc=123'])).toEqual({
+		_: [],
+		__: [],
+		a: true,
+		b: true,
+		c: '123'
+	})
+})
