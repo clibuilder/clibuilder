@@ -20,6 +20,7 @@ export interface PositionalToken {
 	index: number
 	value: string
 }
+
 export type Token = OptionToken | OptionTerminatorToken | PositionalToken
 
 export function tokenize(args: string[]): Token[] {
