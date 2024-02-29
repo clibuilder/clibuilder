@@ -61,10 +61,10 @@ it('extracts short option value from -o=abc', () => {
 			{
 				kind: 'option',
 				name: 'o',
-				raw: '-o=abc',
+				raw: '-o=abc', // `rawName: -o` in NodeJS
 				index: 0,
 				dashes: 1,
-				value: 'abc'
+				value: 'abc' // `value: =abc` in NodeJS
 			}
 		]
 	)
@@ -112,11 +112,12 @@ it('parse option-terminator', () => {
 
 it('treat input after option-terminator to be positional', () => {
 	testTokenize(
-		['--', 'abc', '-a'],
+		['xyz', '--', 'abc', '-a'],
 		[
-			{ kind: 'option-terminator', index: 0 },
-			{ kind: 'positional', index: 1, value: 'abc' },
-			{ kind: 'positional', index: 2, value: '-a' }
+			{ kind: 'positional', index: 0, value: 'xyz' },
+			{ kind: 'option-terminator', index: 1 },
+			{ kind: 'positional', index: 2, value: 'abc' },
+			{ kind: 'positional', index: 3, value: '-a' }
 		]
 	)
 })
@@ -143,6 +144,7 @@ function testTokenize(args: string[], expected: Token[], parseArgsOptions: Parse
 			parseArgs({
 				args,
 				tokens: true,
+				allowPositionals: true,
 				options: parseArgsOptions
 			})
 		)
