@@ -12,7 +12,7 @@ export type ParsedArgs = {
 /**
  * Parse command line input: `process.argv.slice(2)`.
  */
-export function parseArgs(config: { args: string[]; tokens?: boolean }) {
+export function parseArgs(config: { args: string[]; tokens?: boolean }): ParsedArgs {
 	const tokens = tokenize(config.args)
 	const options = Object.create(null)
 	const _: string[] = []
