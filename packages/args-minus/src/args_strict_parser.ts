@@ -1,5 +1,5 @@
 import { trimDashes } from './_trim_dashes.js'
-import { tokenize, type PositionalToken } from './tokenize.js'
+import { tokenizeArgs, type PositionalToken } from './tokenize_args.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
 
@@ -17,7 +17,7 @@ export function argsStrictParser() {
 		 * parse command line input: `process.argv.slice(2)`.
 		 */
 		parse(argv: string[]) {
-			const tokens = tokenize(argv)
+			const tokens = tokenizeArgs(argv)
 			const result = {
 				_: [],
 				__: []

@@ -1,5 +1,5 @@
 import { parseArgs, type ParseArgsConfig } from 'util'
-import { tokenize, type Token } from './index.js'
+import { tokenizeArgs, type Token } from './index.js'
 
 it('returns empty array for empty argv', () => {
 	testTokenize([], [])
@@ -136,7 +136,7 @@ it('parse 3 or more dashes as positional', () => {
 	)
 })
 function testTokenize(args: string[], expected: Token[], parseArgsOptions: ParseArgsConfig['options'] = undefined) {
-	const result = tokenize(args)
+	const result = tokenizeArgs(args)
 	if (parseArgsOptions) {
 		console.info('args:', args)
 		console.info(

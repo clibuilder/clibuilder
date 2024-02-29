@@ -7,7 +7,7 @@ export interface OptionToken {
 	name: string
 	dashes: number
 	raw: string
-	value?: string
+	value?: string | undefined
 }
 
 export interface OptionTerminatorToken {
@@ -23,7 +23,7 @@ export interface PositionalToken {
 
 export type Token = OptionToken | OptionTerminatorToken | PositionalToken
 
-export function tokenize(args: string[]): Token[] {
+export function tokenizeArgs(args: string[]): Token[] {
 	var tokens: Token[] = []
 	var index = 0
 

@@ -1,19 +1,45 @@
-import { tokenize, type PositionalToken, type Token } from './tokenize.js'
+import { tokenizeArgs, type PositionalToken, type Token } from './tokenize_args.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
 
 export type ParsedArgs = {
+	/**
+	 * Positional arguments.
+	 */
 	_: string[]
+	/**
+	 * Positional arguments after `--`.
+	 */
 	__: string[]
+	/**
+	 * Parsed options.
+	 */
 	options: Record<string, ArgsValue>
-	tokens?: Token[]
+	/**
+	 * Parsed tokens. Only returned if `config` includes `tokens: true`.
+	 */
+	tokens?: Token[] | undefined
+}
+
+export type ParseArgsConfig = {
+	/**
+	 * Array of argument strings.
+	 * This should be `process.argv.slice(2)`.
+	 * i.e. with `execPath` and `filename` removed.
+	 */
+	args: string[]
+	/**
+	 * Return the parsed tokens.
+	 * **Default: `false`.**
+	 */
+	tokens?: boolean
 }
 
 /**
- * Parse command line input: `process.argv.slice(2)`.
+ * Parse command line input into options and positional arguments.
  */
-export function parseArgs(config: { args: string[]; tokens?: boolean }): ParsedArgs {
-	const tokens = tokenize(config.args)
+export function parseArgs(config: ParseArgsConfig): ParsedArgs {
+	const tokens = tokenizeArgs(config.args)
 	const options = Object.create(null)
 	const _: string[] = []
 	const __: string[] = []
