@@ -2,20 +2,19 @@ import { tokenize, type PositionalToken } from './tokenize.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
 
-export type ParsedArgs<T extends Record<string, ArgsValue> = Record<string, ArgsValue>> = T & {
+export type ParsedArgs = {
 	_: string[]
 	__: string[]
-}
+} & Record<string, ArgsValue>
 
 /**
  * Parse command line input: `process.argv.slice(2)`.
  */
 export function parseArgs(args: string[]) {
 	const tokens = tokenize(args)
-	const result: ParsedArgs = {
-		_: [],
-		__: []
-	}
+	const result: ParsedArgs = Object.create(null)
+	result._ = []
+	result.__ = []
 	const remainingTokens = tokens.slice()
 	while (remainingTokens.length > 0) {
 		const token = remainingTokens.shift()!
