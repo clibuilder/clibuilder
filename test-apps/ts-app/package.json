@@ -3,5 +3,6 @@
 	"dependencies": {
 		"clibuilder": "workspace:*",
 		"typescript": "^5.0.4"
-	}
+	},
+	"version": null
 }
