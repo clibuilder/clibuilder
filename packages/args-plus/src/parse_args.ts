@@ -1,43 +1,49 @@
-import { tokenize, type PositionalToken } from './tokenize.js'
+import { tokenize, type PositionalToken, type Token } from './tokenize.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
 
 export type ParsedArgs = {
 	_: string[]
 	__: string[]
-} & Record<string, ArgsValue>
+	options: Record<string, ArgsValue>
+	tokens?: Token[]
+}
 
 /**
  * Parse command line input: `process.argv.slice(2)`.
  */
-export function parseArgs({ args }: { args: string[] }) {
-	const tokens = tokenize(args)
-	const result: ParsedArgs = Object.create(null)
-	result._ = []
-	result.__ = []
+export function parseArgs(config: { args: string[]; tokens?: boolean }) {
+	const tokens = tokenize(config.args)
+	const options = Object.create(null)
+	const _: string[] = []
+	const __: string[] = []
+
 	const remainingTokens = tokens.slice()
 	while (remainingTokens.length > 0) {
 		const token = remainingTokens.shift()!
 		switch (token.kind) {
 			case 'positional': {
-				result._.push(token.value)
+				_.push(token.value)
 				break
 			}
 			case 'option': {
 				if (token.dashes === 1) {
 					Array.from(token.name).forEach(
-						(k, i) => (result[k] = i === token.name.length - 1 ? token.value ?? true : true)
+						(k, i) => (options[k] = i === token.name.length - 1 ? token.value ?? true : true)
 					)
 				} else {
-					result[token.name] = token.value ?? true
+					options[token.name] = token.value ?? true
 				}
 				break
 			}
 			case 'option-terminator': {
-				result.__.push(...remainingTokens.map((token) => (token as PositionalToken).value))
-				return result
+				__.push(...remainingTokens.map((token) => (token as PositionalToken).value))
+				remainingTokens.length = 0
+				break
 			}
 		}
 	}
+	const result: ParsedArgs = { _, __, options }
+	if (config.tokens) result.tokens = tokens
 	return result
 }
