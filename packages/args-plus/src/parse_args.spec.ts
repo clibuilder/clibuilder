@@ -2,21 +2,21 @@ import { testType } from 'type-plus'
 import { parseArgs, type ParsedArgs } from './index.js'
 
 it('parses empty args', () => {
-	expect(parseArgs([])).toEqual({
+	expect(parseArgs({ args: [] })).toEqual({
 		_: [],
 		__: []
 	})
 })
 
 it('parses arguments under _ ', () => {
-	expect(parseArgs(['a', 'b'])).toEqual({
+	expect(parseArgs({ args: ['a', 'b'] })).toEqual({
 		_: ['a', 'b'],
 		__: []
 	})
 })
 
 it('parses long option', () => {
-	expect(parseArgs(['--opt'])).toEqual({
+	expect(parseArgs({ args: ['--opt'] })).toEqual({
 		_: [],
 		__: [],
 		opt: true
@@ -24,7 +24,7 @@ it('parses long option', () => {
 })
 
 it('parses long option with inline value', () => {
-	expect(parseArgs(['--opt=abc'])).toEqual({
+	expect(parseArgs({ args: ['--opt=abc'] })).toEqual({
 		_: [],
 		__: [],
 		opt: 'abc'
@@ -32,7 +32,7 @@ it('parses long option with inline value', () => {
 })
 
 it('parses short option', () => {
-	expect(parseArgs(['-abc'])).toEqual({
+	expect(parseArgs({ args: ['-abc'] })).toEqual({
 		_: [],
 		__: [],
 		a: true,
@@ -42,7 +42,7 @@ it('parses short option', () => {
 })
 
 it('parses short option with inline value', () => {
-	expect(parseArgs(['-abc=123'])).toEqual({
+	expect(parseArgs({ args: ['-abc=123'] })).toEqual({
 		_: [],
 		__: [],
 		a: true,
@@ -52,7 +52,7 @@ it('parses short option with inline value', () => {
 })
 
 it('supports options with 3 dashes', () => {
-	expect(parseArgs(['---abc'])).toEqual({
+	expect(parseArgs({ args: ['---abc'] })).toEqual({
 		_: [],
 		__: [],
 		abc: true
@@ -60,24 +60,23 @@ it('supports options with 3 dashes', () => {
 })
 
 it('keep input after terminator in __', () => {
-	expect(parseArgs(['a', '--', 'b', '-c'])).toEqual({
+	expect(parseArgs({ args: ['a', '--', 'b', '-c'] })).toEqual({
 		_: ['a'],
 		__: ['b', '-c']
 	})
 })
 
 it('returns ParsedArgs type', () => {
-	const r = parseArgs([])
+	const r = parseArgs({ args: [] })
 	expect(r['p']).toBeUndefined()
 
 	testType.equal<typeof r, ParsedArgs>(true)
 })
 
 it('uses the last value if the option is specified multiple times', () => {
-	expect(parseArgs(['-a=1', '-a=2'])).toEqual({
+	expect(parseArgs({ args: ['-a=1', '-a=2'] })).toEqual({
 		_: [],
 		__: [],
 		a: '2'
 	})
 })
-
