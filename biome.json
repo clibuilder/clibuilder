@@ -6,7 +6,7 @@
 	},
 	"overrides": [
 		{
-			"include": ["args-plus/src"],
+			"include": ["args-minus/src"],
 			"linter": {
 				"rules": {
 					"correctness": {

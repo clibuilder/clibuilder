@@ -36,7 +36,7 @@ importers:
         specifier: ^1.12.4
         version: 1.12.4
 
-  packages/args-plus:
+  packages/args-minus:
     devDependencies:
       '@repobuddy/jest':
         specifier: ^3.3.0
@@ -70,7 +70,7 @@ importers:
         version: 5.0.0
       ts-jest:
         specifier: ^29.1.0
-        version: 29.1.0(@babel/core@7.20.12)(jest@29.5.0)(typescript@5.2.2)
+        version: 29.1.0(jest@29.5.0)(typescript@5.2.2)
       type-plus:
         specifier: ^7.0.0
         version: 7.6.0
@@ -1902,7 +1902,7 @@ packages:
       read-pkg-up: 7.0.1
       resolve.imports: 2.0.3
       satisfier: 5.4.2
-      ts-jest: 29.1.0(@babel/core@7.20.12)(jest@29.5.0)(typescript@5.2.2)
+      ts-jest: 29.1.0(jest@29.5.0)(typescript@5.2.2)
       type-plus: 6.6.0
     dev: true
 
@@ -5770,7 +5770,7 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
-  /ts-jest@29.1.0(@babel/core@7.20.12)(jest@29.5.0)(typescript@5.2.2):
+  /ts-jest@29.1.0(jest@29.5.0)(typescript@5.2.2):
     resolution: {integrity: sha512-ZhNr7Z4PcYa+JjMl62ir+zPiNJfXJN6E8hSLnaUKhOgqcn8vb3e537cpkd0FuAfRK3sR1LSqM1MOhliXNgOFPA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     hasBin: true
@@ -5791,7 +5791,6 @@ packages:
       esbuild:
         optional: true
     dependencies:
-      '@babel/core': 7.20.12
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
       jest: 29.5.0(@types/node@18.16.0)(ts-node@10.9.1)

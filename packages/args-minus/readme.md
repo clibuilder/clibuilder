@@ -1,10 +1,10 @@
-# `args-plus`
+# `args-minus`
 
-A minimal parser for command line input.
+A less-is-more way to parse command line input.
 
 ## Why?
 
-There are many command line parsers out there, why `args-plus`?
+There are many command line parsers out there, why `args-minus`?
 
 In short, they are doing too much.
 Too much in a sense that they impose certain assumptions to the input.
@@ -37,20 +37,20 @@ and should defer decisions to frameworks or applications.
 Some command line parsing packages are frameworks, which are fine,
 but other packages are designed as a library, but act more like a framework.
 
-`args-plus` is designed to be a library.
+`args-minus` is designed to be a library.
 Its sole purpose is to provide a convenient and consistent way to parse command line input,
 in the way you want to parse it.
 
 ## Installation
 
 ```sh
-npm install args-plus
+npm install args-minus
 
-pnpm add args-plus
+pnpm add args-minus
 
-yarn add args-plus
+yarn add args-minus
 
-deno add args-plus
+deno add args-minus
 
-bun add args-plus
+bun add args-minus
 ```
