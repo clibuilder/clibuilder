@@ -72,3 +72,12 @@ it('returns ParsedArgs type', () => {
 
 	testType.equal<typeof r, ParsedArgs>(true)
 })
+
+it('uses the last value if the option is specified multiple times', () => {
+	expect(parseArgs(['-a=1', '-a=2'])).toEqual({
+		_: [],
+		__: [],
+		a: '2'
+	})
+})
+
