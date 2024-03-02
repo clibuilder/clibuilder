@@ -1,5 +1,11 @@
 # Change Log
 
+## 8.0.18
+
+### Patch Changes
+
+- db9c301: improve imports (e.g. `import type ...`)
+
 ## 8.0.17
 
 ### Patch Changes
@@ -124,7 +130,7 @@
 
   ```json
   {
-  	"plugins": ["your-plugin"]
+    "plugins": ["your-plugin"]
   }
   ```
 
