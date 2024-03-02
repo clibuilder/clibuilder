@@ -2,7 +2,15 @@
 	"name": "args-minus",
 	"version": "0.0.0",
 	"description": "A less-is-more `parseArgs`",
-	"keywords": ["cli", "command", "command-line", "commandline", "parser", "args", "utils"],
+	"keywords": [
+		"cli",
+		"command",
+		"command-line",
+		"commandline",
+		"parser",
+		"args",
+		"utils"
+	],
 	"homepage": "https://github.com/unional/clibuilder",
 	"bugs": {
 		"url": "https://github.com/unional/clibuilder/issues"
@@ -24,7 +32,12 @@
 		"types": "./esm/index.d.ts",
 		"import": "./esm/index.js"
 	},
-	"files": ["esm", "src", "!**/*.internal.*", "!**/*.{accept,integrate,spec,system,test,unit}.*"],
+	"files": [
+		"esm",
+		"src",
+		"!**/*.internal.*",
+		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+	],
 	"scripts": {
 		"build": "tsc",
 		"build:watch": "tsc --watch",
@@ -40,6 +53,7 @@
 		"@repobuddy/jest": "^3.3.0",
 		"@repobuddy/typescript": "^2.0.0",
 		"@types/jest": "^29.5.1",
+		"assertron": "^11.2.1",
 		"depcheck": "^1.4.3",
 		"jest": "^29.5.0",
 		"jest-watch-suspend": "^1.1.2",

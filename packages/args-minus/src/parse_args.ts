@@ -1,6 +1,7 @@
 import { tokenizeArgs, type PositionalToken, type Token } from './tokenize_args.js'
 
-export type ArgsValue = string | boolean | string[] | boolean[]
+export type ArgsValue = string | boolean
+export type MultipleArgsValue = string[] | boolean[]
 
 export type ParsedArgs = {
 	/**
@@ -28,6 +29,7 @@ export type ParseArgsConfig = {
 	 * i.e. with `execPath` and `filename` removed.
 	 */
 	args: string[]
+	options?: Record<string, { type: 'boolean' | 'number' | 'string' }>
 	/**
 	 * Return the parsed tokens.
 	 * **Default: `false`.**
@@ -58,7 +60,7 @@ export function parseArgs(config: ParseArgsConfig): ParsedArgs {
 						(k, i) => (options[k] = i === token.name.length - 1 ? token.value ?? true : true)
 					)
 				} else {
-					options[token.name] = token.value ?? true
+					options[token.name] = parseValue(config.options?.[token.name], token.name, token.value)
 				}
 				break
 			}
@@ -72,4 +74,28 @@ export function parseArgs(config: ParseArgsConfig): ParsedArgs {
 	const result: ParsedArgs = { _, __, options }
 	if (config.tokens) result.tokens = tokens
 	return result
+}
+
+function parseValue(
+	option: { type: 'boolean' | 'number' | 'string' } | undefined,
+	name: string,
+	value: string | undefined
+) {
+	if (!option) return value ?? true
+	if (option.type === 'boolean') {
+		return convertBoolean(name, value)
+	}
+	if (option.type === 'number') {
+		return Number(value)
+	}
+	return value
+}
+
+function convertBoolean(name: string, value: string | undefined) {
+	if (value === undefined) return true
+	if (value === 'false' || value === 'f' || value === '0') return false
+	if (value === 'true' || value === 't') return true
+	const num = Number(value)
+	if (!Number.isNaN(num)) return num > 0
+	throw new Error(`Invalid value for option '${name}': ${value}`)
 }
