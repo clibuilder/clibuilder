@@ -1,5 +1,13 @@
 # test-cli-esm
 
+## 0.0.1
+
+### Patch Changes
+
+- Updated dependencies [de5c0b5]
+- Updated dependencies [db9c301]
+  - clibuilder@9.0.0
+
 ## null
 
 ### Patch Changes
