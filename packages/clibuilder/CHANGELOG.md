@@ -1,5 +1,17 @@
 # Change Log
 
+## 9.0.0
+
+### Major Changes
+
+- de5c0b5: Drop support of global config.
+  It is not really a use case to begin with,
+  and it is causing problems in CI as CI nowadays not setting `USERPROFILE` var as assumed.
+
+### Patch Changes
+
+- db9c301: improve imports (e.g. `import type ...`)
+
 ## 8.0.17
 
 ### Patch Changes
@@ -124,7 +136,7 @@
 
   ```json
   {
-  	"plugins": ["your-plugin"]
+    "plugins": ["your-plugin"]
   }
   ```
 
