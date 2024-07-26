@@ -47,9 +47,6 @@ importers:
       '@types/jest':
         specifier: ^29.5.1
         version: 29.5.1
-      assertron:
-        specifier: ^11.2.1
-        version: 11.2.1
       depcheck:
         specifier: ^1.4.3
         version: 1.4.3
@@ -1905,7 +1902,7 @@ packages:
       read-pkg-up: 7.0.1
       resolve.imports: 2.0.3
       satisfier: 5.4.2
-      ts-jest: 29.1.0(@babel/core@7.20.12)(jest@29.5.0)(typescript@5.2.2)
+      ts-jest: 29.1.0(@babel/core@7.20.12)(esbuild@0.20.0)(jest@29.5.0)(typescript@5.0.4)
       type-plus: 6.6.0
     dev: true
 

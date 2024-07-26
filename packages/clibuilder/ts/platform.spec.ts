@@ -1,6 +1,6 @@
 import path from 'path'
-import { ctx, findPackageJson, getHomePath, getPackageJson } from './platform.js'
 import { pathEqual } from 'path-equal'
+import { findPackageJson, getPackageJson } from './platform.js'
 import { getFixturePath } from './test-utils/fixture.js'
 describe('findPackageJson()', () => {
 	it('looks up to get the nearest package.json', () => {
@@ -14,18 +14,5 @@ describe('getPackageJson()', () => {
 		const jsonPath = findPackageJson(getFixturePath('cli-with-one-plugin'))!
 		const pjson = getPackageJson(jsonPath)
 		expect(pjson.type).toEqual('commonjs')
-	})
-})
-
-describe('getHomePath()', () => {
-	it('getS USERPROFILE for Windows', () => {
-		ctx.platform = 'win32'
-		ctx.USERPROFILE = 'C:/Users/miku'
-		expect(getHomePath()).toEqual('C:/Users/miku')
-	})
-	it('gets HOME for Non Windows', () => {
-		ctx.platform = 'linux'
-		ctx.HOME = '/usr/miku'
-		expect(getHomePath()).toEqual('/usr/miku')
 	})
 })
