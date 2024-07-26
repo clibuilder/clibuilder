@@ -1,13 +1,11 @@
 import { findUpSync } from 'find-up'
-import { existsSync, readFileSync, statSync } from 'fs'
+import { readFileSync } from 'fs'
 import yaml from 'js-yaml'
 import { pathToFileURL } from 'node:url'
-import path from 'path'
 import type { UI } from './cli.js'
-import { findPackageJson, getHomePath, getPackageJson } from './platform.js'
+import { findPackageJson, getPackageJson } from './platform.js'
 
 export const ctx = {
-	getHomePath,
 	findPackageJson,
 	getPackageJson
 }
@@ -22,9 +20,8 @@ export async function loadConfig(
 	},
 	configName: string
 ) {
-	const home = ctx.getHomePath()
 	const configFileNames = getConfigFilenames(configName)
-	const configFilePath = resolveConfigFilenames(cwd, home, configFileNames)
+	const configFilePath = resolveConfigFilenames(cwd, configFileNames)
 	if (configFilePath) {
 		ui.debug(`load config from: ${configFilePath}`)
 		const cfg = await readConfig(configFilePath)
@@ -60,15 +57,10 @@ function getConfigFilenames(configFileName: string) {
 	return configFileName.startsWith('.') ? names : names.flatMap((n) => [n, `.${n}`])
 }
 
-function resolveConfigFilenames(cwd: string, home: string, filenames: string[]) {
+function resolveConfigFilenames(cwd: string, filenames: string[]) {
 	for (const filename of filenames) {
 		const filePath = findUpSync(filename, { cwd })
 		if (filePath) return filePath
-	}
-	for (const filename of filenames) {
-		const filePath = path.join(home, filename)
-		// istanbul ignore next
-		if (existsSync(filePath) && statSync(filePath).isFile()) return filePath
 	}
 }
 
