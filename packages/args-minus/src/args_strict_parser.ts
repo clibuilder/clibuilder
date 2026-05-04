@@ -1,5 +1,5 @@
 import { trimDashes } from './_trim_dashes.js'
-import { tokenizeArgs, type PositionalToken } from './tokenize_args.js'
+import { type PositionalToken, tokenizeArgs } from './tokenize_args.js'
 
 export type ArgsValue = string | boolean | string[] | boolean[]
 

@@ -1,20 +1,23 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
-	"extends": ["./node_modules/@repobuddy/biome/recommended.json"],
+	"$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+	"extends": ["@repobuddy/biome/recommended"],
 	"files": {
-		"ignore": ["cjs", "coverage", "esm", "target", "node_modules"]
+		"includes": ["!**/cjs", "!**/coverage", "!**/esm", "!**/target", "!**/node_modules"]
+	},
+	"javascript": {
+		"formatter": {
+			"trailingCommas": "none"
+		}
 	},
 	"overrides": [
 		{
-			"include": ["args-minus/src"],
+			"includes": ["args-minus/src"],
 			"linter": {
 				"rules": {
 					"correctness": {
 						"noInnerDeclarations": "off"
 					},
-					"style": {
-						"noVar": "off"
-					}
+					"style": {}
 				}
 			}
 		}

@@ -24,12 +24,12 @@ export interface PositionalToken {
 export type Token = OptionToken | OptionTerminatorToken | PositionalToken
 
 export function tokenizeArgs(args: string[]): Token[] {
-	var tokens: Token[] = []
-	var index = 0
+	const tokens: Token[] = []
+	let index = 0
 
-	var remainingArgs: string[] = ArraySlice.call(args)
+	const remainingArgs: string[] = ArraySlice.call(args)
 	while (remainingArgs.length > 0) {
-		var raw = remainingArgs.shift()!
+		const raw = remainingArgs.shift()!
 		if (raw === '--') {
 			ArrayPush.call(tokens, {
 				kind: 'option-terminator',
@@ -47,7 +47,7 @@ export function tokenizeArgs(args: string[]): Token[] {
 			break
 		}
 
-		var [name, dashes] = trimDashes(raw)
+		const [name, dashes] = trimDashes(raw)
 		if (dashes === 0 || !name)
 			ArrayPush.call(tokens, {
 				kind: 'positional',
@@ -55,7 +55,7 @@ export function tokenizeArgs(args: string[]): Token[] {
 				value: name || raw
 			})
 		else {
-			var [n, value] = name.split('=', 2)
+			const [n, value] = name.split('=', 2)
 			ArrayPush.call(tokens, {
 				kind: 'option',
 				index,

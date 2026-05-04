@@ -1,5 +1,5 @@
+import { readFileSync } from 'node:fs'
 import { findUpSync } from 'find-up'
-import { readFileSync } from 'fs'
 
 export const ctx = {
 	pjson: undefined,

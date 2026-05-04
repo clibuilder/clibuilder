@@ -1,5 +1,5 @@
 import type { cli, PluginActivationContext } from './cli.js'
-import { createUI } from './ui.js'
+import type { createUI } from './ui.js'
 
 export async function loadPlugins({ cwd, ui }: { cwd: string; ui: createUI.UI }, pluginNames: string[]) {
 	return activatePlugins(cwd, ui, pluginNames)
@@ -55,9 +55,7 @@ function isValidPlugin(m: any) {
 	return m && typeof m.activate === 'function'
 }
 
-function activatePlugin(m: {
-	activate: (context: PluginActivationContext) => void
-}) {
+function activatePlugin(m: { activate: (context: PluginActivationContext) => void }) {
 	const commands: cli.Command[] = []
 	m.activate({ addCommand: (cmd) => commands.push(cmd) })
 	return commands

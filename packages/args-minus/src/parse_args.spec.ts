@@ -1,5 +1,5 @@
 import { testType } from 'type-plus'
-import { parseArgs, type ArgsValue, tokenizeArgs } from './index.js'
+import { type ArgsValue, parseArgs, tokenizeArgs } from './index.js'
 
 it('passes positional arguments into _ ', () => {
 	expect(parseArgs({ args: ['a', 'b'] })._).toEqual(['a', 'b'])

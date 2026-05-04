@@ -1,8 +1,8 @@
 import { a } from 'assertron'
-import { assertType, IsExtend, testType, required } from 'type-plus'
+import { assertType, type IsExtend, required, testType } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
-import { cli, command, z } from './index.js'
+import { type cli, command, z } from './index.js'
 import { argv } from './test-utils/index.js'
 
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
@@ -400,6 +400,7 @@ describe('fluent syntax', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.default({ run() {} })
+		expect((a as any).default).not.toBeDefined()
 		testType.equal<never, keyof typeof a & 'default'>(true)
 	})
 
@@ -407,6 +408,7 @@ describe('fluent syntax', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.default({ run() {} })
+		expect(a.parse).toBeDefined()
 		testType.equal<'parse', keyof typeof a & 'parse'>(true)
 	})
 
@@ -414,6 +416,7 @@ describe('fluent syntax', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder
 		const a = cli.command({ name: 'x', run() {} })
+		expect(a.parse).toBeDefined()
 		testType.equal<'parse', keyof typeof a & 'parse'>(true)
 	})
 })

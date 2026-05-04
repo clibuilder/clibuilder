@@ -1,7 +1,7 @@
-import { findUpSync } from 'find-up'
-import { readFileSync } from 'fs'
-import yaml from 'js-yaml'
+import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
+import { findUpSync } from 'find-up'
+import yaml from 'js-yaml'
 import type { UI } from './cli.js'
 import { findPackageJson, getPackageJson } from './platform.js'
 

@@ -44,6 +44,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		parse: (mayAcceptPlugins ? parse : undefined) as any,
 		default(command) {
 			s.command = adjustCommand(s.command, { ...s.command, ...command })
+			delete (this as any)['default']
 			return { ...this, parse }
 		},
 		command(command) {
@@ -58,17 +59,14 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const rawArgs = parseArgv(argv)
 		const { args: baseArgs } = lookupCommand(getBaseCommand(s.description), rawArgs)
 		if (baseArgs.silent) {
-			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs.silent
 			s.displayLevel = 'none'
 		}
 		if (baseArgs.verbose) {
-			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs.verbose
 			s.displayLevel = 'debug'
 		}
 		if (baseArgs['debug-cli']) {
-			// biome-ignore lint/performance/noDelete: <explanation>
 			delete rawArgs['debug-cli']
 			s.displayLevel = 'trace'
 		}

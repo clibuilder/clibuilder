@@ -1,7 +1,7 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './builder.js'
 import { context } from './context.js'
-import { z } from './zod.js'
+import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
 export function cli(options: cli.Options): cli.Builder
@@ -159,13 +159,13 @@ export namespace cli {
 								? z.infer<AT>
 								: string
 							: never
-				  } & {
+					} & {
 						[k in OName]: O[k]['type'] extends infer OT
 							? OT extends z.ZodType<any>
 								? z.infer<OT>
 								: boolean | undefined
 							: never
-				  } & (string extends OName ? Options.Default : Omit<Options.Default, OName>)
+					} & (string extends OName ? Options.Default : Omit<Options.Default, OName>)
 				: never
 			: never
 	}

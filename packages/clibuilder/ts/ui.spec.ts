@@ -1,7 +1,7 @@
 import { logLevels } from 'standard-log'
+import { createStandardLogForTest } from 'standard-log/testing'
 import { command, z } from './index.js'
 import { createUI } from './ui.js'
-import { createStandardLogForTest } from 'standard-log/testing'
 
 describe('showVersion', () => {
 	test('undefined version shows "not versioned"', () => {

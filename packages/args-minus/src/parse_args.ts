@@ -1,4 +1,4 @@
-import { tokenizeArgs, type PositionalToken, type Token } from './tokenize_args.js'
+import { type PositionalToken, type Token, tokenizeArgs } from './tokenize_args.js'
 
 export type ArgsValue = string | boolean
 export type MultipleArgsValue = string[] | boolean[]
@@ -56,9 +56,9 @@ export function parseArgs(config: ParseArgsConfig): ParsedArgs {
 			}
 			case 'option': {
 				if (token.dashes === 1) {
-					Array.from(token.name).forEach(
-						(k, i) => (options[k] = i === token.name.length - 1 ? token.value ?? true : true)
-					)
+					Array.from(token.name).forEach((k, i) => {
+						options[k] = i === token.name.length - 1 ? (token.value ?? true) : true
+					})
 				} else {
 					options[token.name] = parseValue(config.options?.[token.name], token.name, token.value)
 				}

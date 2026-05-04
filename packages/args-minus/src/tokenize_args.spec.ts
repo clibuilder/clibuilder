@@ -1,5 +1,5 @@
-import { parseArgs, type ParseArgsConfig } from 'util'
-import { tokenizeArgs, type Token } from './index.js'
+import { type ParseArgsConfig, parseArgs } from 'node:util'
+import { type Token, tokenizeArgs } from './index.js'
 
 it('returns empty array for empty argv', () => {
 	testTokenize([], [])

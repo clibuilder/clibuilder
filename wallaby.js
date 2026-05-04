@@ -18,9 +18,9 @@ module.exports = () => {
 			ignoreCoverage: /istanbul ignore next/
 		},
 		setup(wallaby) {
-			const fs = require('fs')
+			const fs = require('node:fs')
 			if (fs.patched) return
-			const path = require('path')
+			const path = require('node:path')
 
 			const writeFile = fs.writeFileSync
 			fs.writeFileSync = function (file, content, options) {

@@ -1,10 +1,10 @@
 import padRight from 'pad-right'
-import { Logger, logLevels } from 'standard-log'
+import { type Logger, logLevels } from 'standard-log'
 import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import type { cli } from './cli.js'
-import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString, z } from './zod.js'
+import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString, type z } from './zod.js'
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -29,7 +29,9 @@ export function createBuilderUI(ui: createUI.UI) {
 		error: (...args: any[]) => (pending ? entries.push(['error', args]) : ui.error(...args)),
 		dump: () => {
 			pending = false
-			entries.forEach(([m, args]) => ui[m](...args))
+			entries.forEach(([m, args]) => {
+				ui[m](...args)
+			})
 		}
 	}
 }
@@ -209,12 +211,12 @@ function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) 
 			? '=string...'
 			: '=string'
 		: isZodNumber(at)
-		  ? isArray
+			? isArray
 				? '=number...'
 				: '=number'
-		  : isArray
-			  ? '=boolean...'
-			  : ''
+			: isArray
+				? '=boolean...'
+				: ''
 
 	return optional ? `[${keys}${valueType}]` : `<${keys}${valueType}>`
 }
@@ -236,7 +238,7 @@ ${toPrettyType(command.config)}`
 }
 
 function toPrettyType(t: any): string {
-	return tersify(toTypeObject(t), { maxLength: Infinity }).replace(/'/g, '')
+	return tersify(toTypeObject(t), { maxLength: Number.POSITIVE_INFINITY }).replace(/'/g, '')
 }
 function toTypeObject(t: z.ZodAny): any {
 	if (isZodObject(t)) {

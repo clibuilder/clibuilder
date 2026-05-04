@@ -1,1 +1,1 @@
-{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qclibuilder v7 is released!\\E$"}
+{ "rule": "UPPERCASE_SENTENCE_START", "sentence": "^\\Qclibuilder v7 is released!\\E$" }

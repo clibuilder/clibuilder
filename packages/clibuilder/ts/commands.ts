@@ -58,7 +58,9 @@ export const listPluginsCommand = command({
 		}
 		this.ui.info('found the following plugins:')
 		this.ui.info('')
-		plugins.forEach((p) => this.ui.info(`  ${p}`))
+		plugins.forEach((p) => {
+			this.ui.info(`  ${p}`)
+		})
 		return plugins
 	}
 })
@@ -76,7 +78,9 @@ export const searchPluginsCommand = command({
 		} else {
 			this.ui.info('found the following packages:')
 			this.ui.info('')
-			packages.forEach((p) => this.ui.info(`  ${p}`))
+			packages.forEach((p) => {
+				this.ui.info(`  ${p}`)
+			})
 		}
 	}
 })
