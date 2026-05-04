@@ -50,6 +50,8 @@ node_modules
 # webstorm
 .idea
 
+.pnpm-store
+
 # project folders
 .ts
 .turbo

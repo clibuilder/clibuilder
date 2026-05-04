@@ -4,6 +4,5 @@
 	"dependencies": {
 		"bad-plugin-no-index": "workspace:*",
 		"clibuilder": "workspace:*"
-	},
-	"version": null
+	}
 }
