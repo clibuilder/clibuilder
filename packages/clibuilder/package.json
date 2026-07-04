@@ -54,7 +54,7 @@
 		"w": "pnpm watch"
 	},
 	"dependencies": {
-		"find-installed-packages": "^3.0.1",
+		"find-installed-packages": "^3.0.3",
 		"find-up": "^7.0.0",
 		"js-yaml": "^4.1.1",
 		"pad-right": "^0.2.2",

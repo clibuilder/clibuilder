@@ -81,7 +81,7 @@ importers:
   packages/clibuilder:
     dependencies:
       find-installed-packages:
-        specifier: ^3.0.1
+        specifier: ^3.0.3
         version: 3.0.3
       find-up:
         specifier: ^7.0.0
@@ -3891,7 +3891,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       jest-regex-util: 30.0.1
 
   '@jest/reporters@29.7.0':
@@ -3986,7 +3986,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -4246,7 +4246,6 @@ snapshots:
   '@types/node@25.6.0':
     dependencies:
       undici-types: 7.19.2
-    optional: true
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -6256,8 +6255,7 @@ snapshots:
 
   undici-types@7.16.0: {}
 
-  undici-types@7.19.2:
-    optional: true
+  undici-types@7.19.2: {}
 
   unicorn-magic@0.1.0: {}
 
