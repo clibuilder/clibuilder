@@ -27,14 +27,14 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 	if (loadingConfig) {
 		pending.push(
-			loadingConfig.then((config) => {
+			(async () => {
+				const config = await loadingConfig
 				s.config = config
 				if (config?.plugins) {
-					return context
-						.loadPlugins(config.plugins)
-						.then((commands) => s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c))))
+					const commands = await context.loadPlugins(config.plugins)
+					s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c)))
 				}
-			})
+			})()
 		)
 	}
 	return {
