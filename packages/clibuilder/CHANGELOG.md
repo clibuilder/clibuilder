@@ -1,5 +1,12 @@
 # Change Log
 
+## 9.0.1
+
+### Patch Changes
+
+- 4cc248e: Update `tmp` and `js-yaml`
+- 28ae843: Update dependencies (find-installed-packages, tmp, ts-jest, npm-run-all2, rimraf) and modernize internals: replace `.then()` chains with async/await in `builder.ts` and `plugins.ts`, bump `engines.node` to reflect actual ESM support.
+
 ## 9.0.0
 
 ### Major Changes
