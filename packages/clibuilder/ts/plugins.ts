@@ -7,12 +7,10 @@ export async function loadPlugins({ cwd, ui }: { cwd: string; ui: createUI.UI },
 
 async function activatePlugins(cwd: string, ui: createUI.UI, pluginNames: string[]) {
 	const entries = await Promise.all(
-		pluginNames.map((name) => {
+		pluginNames.map(async (name) => {
 			ui.debug('loading plugin', name)
-			return loadModule(cwd, ui, name).then((pluginModule) => ({
-				name,
-				pluginModule
-			}))
+			const pluginModule = await loadModule(cwd, ui, name)
+			return { name, pluginModule }
 		})
 	)
 
