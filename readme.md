@@ -29,6 +29,8 @@ Key highlights:
 - plugin support: write commands in separate packages and reuse by multiple CLI
 - type inference and validation for config, arguments, and options\
   using [zod](https://github.com/colinhacks/zod) (exported as `z`)
+- opt-in V8 compile cache for faster startup\
+  via `clibuilder/compile-cache`
 
 Learn more in the [`clibuilder` README](./packages/clibuilder/README.md)
 
