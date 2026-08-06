@@ -8,6 +8,9 @@ import { z } from './zod.js'
 const findByKeywords: typeof import('find-installed-packages').findByKeywords = async (...args) =>
 	(await import('find-installed-packages')).findByKeywords(...args)
 
+// ignoring coverage. Reaching this shim means querying the npm registry for real,
+// so every test substitutes `context.searchByKeywords` instead.
+// istanbul ignore next
 const searchByKeywords: typeof import('search-packages').searchByKeywords = async (...args: any[]): Promise<any> =>
 	(await import('search-packages')).searchByKeywords(...(args as [string[]]))
 
