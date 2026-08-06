@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { findUpSync } from 'find-up'
+import { findFileUp } from './find_up.js'
 
 export const ctx = {
 	pjson: undefined,
@@ -7,7 +7,7 @@ export const ctx = {
 }
 
 export function findPackageJson(appPkgPath: string) {
-	return findUpSync('package.json', { cwd: appPkgPath })
+	return findFileUp(appPkgPath, 'package.json')
 }
 
 export function getPackageJson(pjsonPath: string) {
