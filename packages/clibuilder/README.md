@@ -243,6 +243,75 @@ test('some test', async () => {
 })
 ```
 
+## Startup time
+
+Node can cache the compiled bytecode of every module your CLI loads,
+so the second and later runs skip compiling them again.
+`clibuilder` exposes it as an opt-in helper:
+
+```js
+#!/usr/bin/env node
+import { enableCompileCache } from 'clibuilder/compile-cache'
+
+enableCompileCache()
+
+const { cli } = await import('clibuilder')
+
+cli({ name: 'app', version: '1.0.0' })
+  .default({ run() { /* ...snip... */ } })
+  .parse(process.argv)
+```
+
+or in `CJS`:
+
+```js
+#!/usr/bin/env node
+require('clibuilder/compile-cache').enableCompileCache()
+
+const { cli } = require('clibuilder')
+```
+
+Measured on the `test-apps` fixtures (node 24, median of 25 warm runs):
+
+| build | without | with |
+| ----- | ------- | ---- |
+| `ESM` | 86ms    | 81ms |
+| `CJS` | 43ms    | 37ms |
+
+Two rules make it work, and both are easy to get wrong:
+
+- **Call it first.** The cache applies to modules compiled *after* the call,
+  so it must run before your CLI and its dependencies are loaded.
+  Calling it later — from your command's `run()`, or from inside `cli()` —
+  caches nothing.
+  That is why `clibuilder` does not turn it on for you:
+  by the time `cli()` runs, everything worth caching is already compiled.
+- **In `ESM`, use `await import`.** A static `import` compiles the entire module
+  graph before any of it runs, so a statically imported `cli` is already
+  compiled by the time `enableCompileCache()` executes.
+  `clibuilder/compile-cache` is a separate entry point that pulls in nothing but
+  `node:module`, so importing it statically costs nothing.
+
+The helper never throws.
+On runtimes without the API (node < 22.1, and currently `bun` and `deno`) it
+does nothing and reports why:
+
+```js
+const { enabled, directory, message } = enableCompileCache()
+```
+
+By default node picks the cache location.
+Pass a directory to choose your own:
+
+```js
+enableCompileCache(path.join(os.homedir(), '.cache/my-cli'))
+```
+
+If the user sets the `NODE_COMPILE_CACHE` environment variable,
+their directory wins and the argument is ignored.
+They can also use that variable to switch the cache on for a CLI that does not
+call the helper at all.
+
 ## shebang
 
 To make your CLI easily executable,

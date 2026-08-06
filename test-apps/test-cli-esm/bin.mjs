@@ -1,4 +1,10 @@
-import { cli } from 'clibuilder'
+import { enableCompileCache } from 'clibuilder/compile-cache'
+
+enableCompileCache()
+
+// `import` compiles the whole graph before this module runs, so the cache would
+// come too late. `await import` keeps clibuilder out of that graph.
+const { cli } = await import('clibuilder')
 
 const app = cli({
 	name: 'test-cli',
