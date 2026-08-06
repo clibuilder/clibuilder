@@ -1,3 +1,5 @@
+require('clibuilder/compile-cache').enableCompileCache()
+
 const { cli } = require('clibuilder')
 
 const app = cli({

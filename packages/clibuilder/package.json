@@ -25,10 +25,19 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
-		"types": "./esm/index.d.ts",
-		"import": "./esm/index.js",
-		"require": "./cjs/index.js",
-		"default": "./cjs/index.js"
+		".": {
+			"types": "./esm/index.d.ts",
+			"import": "./esm/index.js",
+			"require": "./cjs/index.js",
+			"default": "./cjs/index.js"
+		},
+		"./compile-cache": {
+			"types": "./esm/compile_cache.d.ts",
+			"import": "./esm/compile_cache.js",
+			"require": "./cjs/compile_cache.js",
+			"default": "./cjs/compile_cache.js"
+		},
+		"./package.json": "./package.json"
 	},
 	"main": "./cjs/index.js",
 	"types": "./esm/index.d.ts",
@@ -41,7 +50,7 @@
 	],
 	"scripts": {
 		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild ts/index.ts --bundle --platform=node --outfile=cjs/index.js && ncp package.cjs.json cjs/package.json",
+		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts --bundle --platform=node --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
