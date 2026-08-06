@@ -1,11 +1,17 @@
 import { type Dirent, readdirSync, statSync } from 'node:fs'
 import { dirname, join, parse, resolve } from 'node:path'
 
+export const ctx = {
+	platform: process.platform
+}
+
 /**
  * `darwin` and `win32` default to case-insensitive filesystems,
  * so a lookup for `foo.json` there should also match `FOO.JSON`.
  */
-const caseInsensitiveFs = process.platform === 'darwin' || process.platform === 'win32'
+function isCaseInsensitiveFs() {
+	return ctx.platform === 'darwin' || ctx.platform === 'win32'
+}
 
 /**
  * Walks up from `cwd` and returns the path of the first ancestor directory containing `filename`.
@@ -25,11 +31,12 @@ export function findFileUp(cwd: string, filename: string) {
  * The nearest directory wins; `filenames` order only breaks ties within a directory.
  */
 export function findAnyFileUp(cwd: string, filenames: string[]) {
+	const caseInsensitive = isCaseInsensitiveFs()
 	for (const dir of ancestors(cwd)) {
-		const entries = readEntries(dir)
+		const entries = readEntries(dir, caseInsensitive)
 		if (!entries) continue
 		for (const filename of filenames) {
-			const entry = lookup(entries, filename)
+			const entry = lookup(entries, filename, caseInsensitive)
 			if (entry && isFileEntry(dir, entry)) return join(dir, entry.name)
 		}
 	}
@@ -49,7 +56,7 @@ function* ancestors(cwd: string) {
  * Indexes the directory by entry name, adding a lower-cased key on case-insensitive
  * filesystems. An exact name always wins over a case-insensitive one.
  */
-function readEntries(dir: string) {
+function readEntries(dir: string, caseInsensitive: boolean) {
 	let dirents: Dirent[]
 	try {
 		dirents = readdirSync(dir, { withFileTypes: true })
@@ -59,7 +66,7 @@ function readEntries(dir: string) {
 	const entries = new Map<string, Dirent>()
 	for (const dirent of dirents) {
 		entries.set(dirent.name, dirent)
-		if (caseInsensitiveFs) {
+		if (caseInsensitive) {
 			const lowered = dirent.name.toLowerCase()
 			if (!entries.has(lowered)) entries.set(lowered, dirent)
 		}
@@ -67,9 +74,9 @@ function readEntries(dir: string) {
 	return entries
 }
 
-function lookup(entries: Map<string, Dirent>, filename: string) {
+function lookup(entries: Map<string, Dirent>, filename: string, caseInsensitive: boolean) {
 	const entry = entries.get(filename)
-	if (entry || !caseInsensitiveFs) return entry
+	if (entry || !caseInsensitive) return entry
 	return entries.get(filename.toLowerCase())
 }
 

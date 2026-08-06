@@ -79,7 +79,7 @@ describe('enableCompileCache()', () => {
 	it('passes the cache dir to node', () => {
 		let received: unknown
 		stub({
-			enableCompileCache: dir => {
+			enableCompileCache: (dir) => {
 				received = dir
 				return { status: status.ENABLED, directory: String(dir) }
 			},
@@ -93,7 +93,7 @@ describe('enableCompileCache()', () => {
 	it('leaves the cache dir to node when NODE_COMPILE_CACHE is set', () => {
 		let received: unknown = '/not-called'
 		stub({
-			enableCompileCache: dir => {
+			enableCompileCache: (dir) => {
 				received = dir
 				return { status: status.ALREADY_ENABLED, directory: '/from-env' }
 			},
