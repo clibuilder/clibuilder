@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { findUpSync } from 'find-up'
 import yaml from 'js-yaml'
 import type { UI } from './cli.js'
+import { findAnyFileUp } from './find_up.js'
 import { findPackageJson, getPackageJson } from './platform.js'
 
 export const ctx = {
@@ -21,7 +21,7 @@ export async function loadConfig(
 	configName: string
 ) {
 	const configFileNames = getConfigFilenames(configName)
-	const configFilePath = resolveConfigFilenames(cwd, configFileNames)
+	const configFilePath = findAnyFileUp(cwd, configFileNames)
 	if (configFilePath) {
 		ui.debug(`load config from: ${configFilePath}`)
 		const cfg = await readConfig(configFilePath)
@@ -55,13 +55,6 @@ function getConfigFilenames(configFileName: string) {
 		`${configFileName}rc`
 	]
 	return configFileName.startsWith('.') ? names : names.flatMap((n) => [n, `.${n}`])
-}
-
-function resolveConfigFilenames(cwd: string, filenames: string[]) {
-	for (const filename of filenames) {
-		const filePath = findUpSync(filename, { cwd })
-		if (filePath) return filePath
-	}
 }
 
 // ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
