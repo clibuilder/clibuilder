@@ -55,7 +55,8 @@ type Argument = {
 ```
 
 Positional, matched in declaration order. `type` defaults to string. An array type makes the argument
-variadic; `z.optional()` makes it optional. Note that argument values are not coerced — see
+variadic, consuming the remaining positionals; `z.optional()` makes it optional. Argument values are
+coerced to the declared type — see
 [Arguments & Options](/clibuilder/guides/arguments-and-options/#arguments).
 
 ```ts
@@ -76,7 +77,7 @@ type Options = Record<string, {
 }>
 ```
 
-`type` defaults to a flag (`boolean | undefined`). Option values *are* coerced to the declared type,
+`type` defaults to a flag (`boolean | undefined`). Option values are coerced to the declared type,
 and a value that fails is a usage error.
 
 ```ts

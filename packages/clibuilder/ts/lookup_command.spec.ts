@@ -62,6 +62,137 @@ describe('argument', () => {
 		expect(args).toEqual({ _: [] })
 		expect(errors).toEqual([{ type: 'missing-argument', name: 'arg' }])
 	})
+	test('argument without a type is a string', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'arg', description: 'some arg' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 123')!
+		expect(args).toEqual({ _: [], arg: '123' })
+		expect(errors).toEqual([])
+	})
+	test('number argument is coerced to a number', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'arg', type: z.number(), description: 'some arg' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 42')!
+		expect(args).toEqual({ _: [], arg: 42 })
+		expect(errors).toEqual([])
+	})
+	test('boolean argument is coerced to a boolean', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'arg', type: z.boolean(), description: 'some arg' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli false')!
+		expect(args).toEqual({ _: [], arg: false })
+		expect(errors).toEqual([])
+	})
+	test('a number argument that is not a number reports invalid-value', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'arg', type: z.number(), description: 'some arg' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli xyz')!
+		expect(args).toEqual({ _: [], arg: undefined })
+		a.satisfies(errors, [{ type: 'invalid-value', key: 'arg', value: 'xyz' }])
+	})
+	test('number array argument is variadic and coerced', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'values', type: z.array(z.number()), description: 'some args' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 1 2 3')!
+		expect(args).toEqual({ _: [], values: [1, 2, 3] })
+		expect(errors).toEqual([])
+	})
+	test('string array argument is variadic', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'values', type: z.array(z.string()), description: 'some args' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli abc def')!
+		expect(args).toEqual({ _: [], values: ['abc', 'def'] })
+		expect(errors).toEqual([])
+	})
+	test('boolean array argument is variadic and coerced', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'values', type: z.array(z.boolean()), description: 'some args' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli true false')!
+		expect(args).toEqual({ _: [], values: [true, false] })
+		expect(errors).toEqual([])
+	})
+	test('optional array argument is coerced', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'values', type: z.optional(z.array(z.number())), description: 'some args' }],
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 1 2')!
+		expect(args).toEqual({ _: [], values: [1, 2] })
+		expect(errors).toEqual([])
+	})
+	test('an argument type without a string conversion is validated by the schema itself', () => {
+		const defaultCommand = command({
+			name: '',
+			arguments: [{ name: 'arg', type: z.enum(['abc', 'def']), description: 'some arg' }],
+			run() {}
+		})
+		expect(testLookupCommand(defaultCommand, 'my-cli abc')!.args).toEqual({ _: [], arg: 'abc' })
+		expect(testLookupCommand(defaultCommand, 'my-cli xyz')!.args).toEqual({ _: [], arg: undefined })
+	})
+})
+describe('option without a declared type', () => {
+	test('is a boolean when present', () => {
+		const defaultCommand = command({
+			name: '',
+			options: { f: { description: 'f' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --f')!
+		expect(args).toEqual({ _: [], f: true })
+		expect(errors).toEqual([])
+	})
+	test('bundled short flags are booleans', () => {
+		const defaultCommand = command({
+			name: '',
+			options: { a: { description: 'a' }, b: { description: 'b' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli -ab')!
+		expect(args).toEqual({ _: [], a: true, b: true })
+		expect(errors).toEqual([])
+	})
+	test('accepts an explicit false', () => {
+		const defaultCommand = command({
+			name: '',
+			options: { f: { description: 'f' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --f=false')!
+		expect(args).toEqual({ _: [], f: false })
+		expect(errors).toEqual([])
+	})
+	test('a non-boolean value reports invalid-value', () => {
+		const defaultCommand = command({
+			name: '',
+			options: { f: { description: 'f' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --f=somevalue')!
+		expect(args).toEqual({ _: [], f: undefined })
+		a.satisfies(errors, [{ type: 'invalid-value', key: 'f', value: 'somevalue' }])
+	})
 })
 describe('options basic', () => {
 	test('---option is invalid', () => {

@@ -79,22 +79,17 @@ function fillArguments(state: State) {
 	const argSpecs = command.arguments || []
 	state.args = argSpecs.reduce(
 		(p, s) => {
+			// an argument without a declared type is a string, matching `cli.Command.RunArgs`
+			const type = s.type ?? z.string()
 			if (args.length === 0) {
-				if (!isZodOptional(s.type)) state.errors.push({ type: 'missing-argument', name: s.name })
+				if (!isZodOptional(type)) state.errors.push({ type: 'missing-argument', name: s.name })
 				return p
 			}
-			if (isZodArray(s.type)) {
-				const e = s.type.element
-				let r = e.safeParse(args.shift())
-				p.args[s.name] = p.args[s.name] || []
-				while (r.success) {
-					p.args[s.name].push(r.data)
-					const arg = args.shift()
-					r = e.safeParse(arg)
-				}
-			} else {
-				p.args[s.name] = args.shift()!
-			}
+			// an array argument is variadic: it consumes the remaining positionals
+			const values = isZodArray(unwrapOptional(type)) ? args.splice(0) : [args.shift()!]
+			const [value, errors] = convertValue(type, s.name, values)
+			state.errors.push(...errors)
+			p.args[s.name] = value
 			return p
 		},
 		{ args: { _: [] } as { _: string[] } & Record<any, any> }
@@ -119,7 +114,8 @@ function fillInputOptions(state: State) {
 				s.errors.push({ type: 'invalid-key', key })
 				return s
 			}
-			const [value, errors] = convertValue(optionEntry!.type || z.optional(z.string()), key, state.rawArgs[key])
+			// an option without a declared type is a boolean, matching `cli.Command.RunArgs`
+			const [value, errors] = convertValue(optionEntry!.type || z.optional(z.boolean()), key, state.rawArgs[key])
 			if (errors) s.errors.push(...errors)
 			s.args[name] = value
 
@@ -159,7 +155,11 @@ function lookupOptions(command: cli.Command, key: string): [string, cli.Command.
 	return optKey ? [optKey, opts[optKey]] : []
 }
 
-function convertValue(t: z.ZodType<any>, key: string, values: string[]) {
+function unwrapOptional(t: z.ZodType<any>): z.ZodType<any> {
+	return isZodOptional(t) ? t._def.innerType : t
+}
+
+function convertValue(t: z.ZodType<any>, key: string, values: string[]): [any, lookupCommand.Error[]] {
 	const [r, errors] = parse(t, key, values)
 	return [r.success ? r.data : undefined, errors]
 }
@@ -216,9 +216,10 @@ function toParsable(
 			return [values, errors]
 		}
 	}
-	// not supported zod type
-	// istanbul ignore next
-	return [undefined, errors]
+	// zod type without a dedicated string conversion (e.g. `z.enum`).
+	// hand the raw value to `safeParse` and let the schema itself accept or reject it.
+	if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
+	return [values[values.length - 1], errors]
 }
 
 function toBoolean(
