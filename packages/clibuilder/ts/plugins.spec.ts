@@ -29,3 +29,15 @@ it('loads one plugin', async () => {
 	})
 	expect(stdout).toEqual('echo hello')
 })
+
+// https://github.com/clibuilder/clibuilder/issues/286
+// `execCommand()` resolves only when the child process exits on its own,
+// so this hangs (and times out) if an async plugin command retains the event loop.
+it('exits after an async plugin command resolves', async () => {
+	const { stdout } = await execCommand({
+		caseType: 'folder',
+		caseName: 'fixtures/cli-with-async-plugin',
+		casePath: getFixturePath('cli-with-async-plugin')
+	})
+	expect(stdout).toEqual('echo hello')
+})

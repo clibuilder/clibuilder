@@ -169,6 +169,9 @@ importers:
       assertron:
         specifier: ^11.2.1
         version: 11.5.2
+      async-plugin:
+        specifier: workspace:*
+        version: link:../../test-plugins/async-plugin
       bad-plugin:
         specifier: workspace:*
         version: link:../../test-plugins/bad-plugin
@@ -250,6 +253,15 @@ importers:
 
   packages/clibuilder/fixtures/cli-no-plugin:
     devDependencies:
+      clibuilder:
+        specifier: workspace:*
+        version: link:../..
+
+  packages/clibuilder/fixtures/cli-with-async-plugin:
+    devDependencies:
+      async-plugin:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/async-plugin
       clibuilder:
         specifier: workspace:*
         version: link:../..
@@ -523,6 +535,8 @@ importers:
       typescript:
         specifier: ^5.0.4
         version: 5.9.3
+
+  test-plugins/async-plugin: {}
 
   test-plugins/bad-plugin: {}
 
