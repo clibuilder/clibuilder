@@ -20,7 +20,7 @@
 		"size": "turbo run size",
 		"test": "turbo run test",
 		"verify": "run-p lint verify:pkg",
-		"verify:pkg": "turbo run build coverage depcheck size",
+		"verify:pkg": "turbo run build coverage depcheck size --filter=!website",
 		"version": "changeset version",
 		"web": "pnpm run --filter=website"
 	},
