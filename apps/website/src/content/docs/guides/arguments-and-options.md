@@ -197,3 +197,10 @@ Every command inherits these; you don't declare them, and you shouldn't shadow t
 | `--debug-cli` | | Display level `trace`, including clibuilder's own internal messages |
 
 `args.help` is always present in the inferred type for that reason.
+
+One more is added only when the CLI declares `config`, since it would have nothing to report
+otherwise:
+
+| Flag | Alias | Effect |
+| --- | --- | --- |
+| `--show-config` | | Print the resolved config and the file it came from — see [Configuration](/clibuilder/guides/configuration/#inspecting-the-resolved-config) |

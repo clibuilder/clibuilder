@@ -1,0 +1,4 @@
+{
+	// a line comment, which is not valid YAML
+	"a": 1
+}

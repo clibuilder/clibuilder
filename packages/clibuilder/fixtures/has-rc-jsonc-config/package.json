@@ -1,0 +1,8 @@
+{
+	"name": "has-rc-jsonc-config",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	}
+}

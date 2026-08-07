@@ -3,6 +3,7 @@ import { parseArgv } from './argv.js'
 import type { cli } from './cli.js'
 import type { Command } from './command.internal.types.js'
 import { getBaseCommand, pluginsCommand } from './commands.js'
+import { describeConfigSource } from './config.js'
 import type { Context } from './context.js'
 import { lookupCommand } from './lookup_command.js'
 import { state } from './state.js'
@@ -57,7 +58,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		const { args: baseArgs } = lookupCommand(getBaseCommand(s.description), rawArgs)
+		const { args: baseArgs } = lookupCommand(getBaseCommand(s.description, { config: !!s.configName }), rawArgs)
 		if (baseArgs.silent) {
 			delete rawArgs.silent
 			s.displayLevel = 'none'
@@ -72,6 +73,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		}
 		context.ui.displayLevel = s.displayLevel
 		context.ui.dump()
+
+		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
 
 		const r = lookupCommand(s.command, rawArgs)
 		const { args, command } = r
@@ -95,6 +98,20 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const commandInstance = createCommandInstance(context, s, command)
 		if (!commandInstance.run || args.help) return commandInstance.ui.showHelp()
 		return commandInstance.run(args as any)
+	}
+
+	/**
+	 * Reports the resolved config and its provenance.
+	 *
+	 * The resolution itself is `context.resolveConfig`, the same call the cli
+	 * already makes to load its config, so this reports what the cli actually
+	 * uses rather than re-deriving it.
+	 */
+	async function showConfig(configName: string) {
+		const { config, source } = await context.resolveConfig(configName)
+		const ui = createCommandUI(context, s, s.command)
+		ui.info(`config: ${describeConfigSource(source)}`)
+		if (source.type !== 'none') ui.info(JSON.stringify(config, undefined, 2))
 	}
 
 	function parseConfig(configType: z.ZodTypeAny, config: any) {

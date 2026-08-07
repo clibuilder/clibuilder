@@ -2,7 +2,7 @@ import { type LogLevel, logLevels } from 'standard-log'
 import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/testing'
 import tmp from 'tmp'
 import { required } from 'type-plus'
-import { loadConfig } from './config.js'
+import { type ConfigLoadResult, resolveConfig } from './config.js'
 import type { Context } from './context.js'
 import { loadPlugins } from './plugins.js'
 import { getFixturePath } from './test-utils/index.js'
@@ -18,7 +18,10 @@ export function mockContext(params?: mockContext.Params): Context & { sl: Standa
 	const sl = createStandardLogForTest({ logLevel })
 	return {
 		async loadConfig(configName: string) {
-			return loadConfig({ cwd, ui: this.ui }, configName)
+			return (await this.resolveConfig(configName)).config
+		},
+		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
+			return resolveConfig({ cwd, ui: this.ui }, configName)
 		},
 		async loadPlugins(pluginNames: string[]) {
 			return loadPlugins({ cwd, ui: this.ui }, pluginNames)
