@@ -68,7 +68,7 @@ and its options — you never write it by hand. It is printed automatically when
 Usage: app <arguments> [options]
 
 Arguments:
-  [values]               values to add
+  <values=number...>     values to add
 
 Options:
   [-h|--help]            Print help message
@@ -77,6 +77,18 @@ Options:
   [--silent]             Turn off logging
   [--debug-cli]          Display clibuilder debug messages
 ```
+
+Arguments and options are written in the same notation:
+
+| Notation | Meaning |
+| --- | --- |
+| `<name>` | Required |
+| `[name]` | Optional — declared with `z.optional(...)` |
+| `=string`, `=number`, `=boolean` | The declared type, when there is one |
+| `...` | Variadic — declared with `z.array(...)` |
+
+A boolean option is a flag, so it shows as `[--flag]` rather than `[--flag=boolean]`. An option with
+no declared type is a flag too, and an argument with no declared type is a required string.
 
 Calling it yourself is the right move when a command detects an input problem it can't express in a
 schema:

@@ -81,39 +81,132 @@ Commands:
 repo <command> -h        Get help for <command>
 `)
 	})
-	test('required argument', () => {
-		const { ui, reporter } = testUI()
-		ui.showHelp(
-			'cli',
-			command({
-				name: 'cmd',
-				arguments: [{ name: 'x', description: '' }],
-				run() {}
-			})
-		)
-		expect(reporter.getLogMessage()).toEqual(`
+	describe('arguments', () => {
+		test('untyped argument is required', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '' }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
   <x>
 `)
-	})
-	test('optional argument', () => {
-		const { ui, reporter } = testUI()
-		ui.showHelp(
-			'cli',
-			command({
-				name: 'cmd',
-				arguments: [{ name: 'x', description: '', type: z.optional(z.string()) }],
-				run() {}
-			})
-		)
-		expect(reporter.getLogMessage()).toEqual(`
+		})
+		test('required argument', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '', type: z.string() }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd <arguments>
+
+Arguments:
+  <x=string>
+`)
+		})
+		test('optional argument', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '', type: z.optional(z.string()) }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
 Usage: cli cmd [arguments]
 
 Arguments:
-  [x]
+  [x=string]
 `)
+		})
+		test('variadic argument', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '', type: z.array(z.string()) }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd <arguments>
+
+Arguments:
+  <x=string...>
+`)
+		})
+		test('optional variadic argument', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '', type: z.optional(z.array(z.number())) }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd [arguments]
+
+Arguments:
+  [x=number...]
+`)
+		})
+		test('boolean argument shows its type', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [{ name: 'x', description: '', type: z.boolean() }],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd <arguments>
+
+Arguments:
+  <x=boolean>
+`)
+		})
+		test('required, optional, and variadic arguments together', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					arguments: [
+						{ name: 'src', description: 'the source', type: z.string() },
+						{ name: 'host', description: 'the host', type: z.optional(z.string()) },
+						{ name: 'files', description: 'the files', type: z.array(z.string()) }
+					],
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd <arguments>
+
+Arguments:
+  <src=string>           the source
+  [host=string]          the host
+  <files=string...>      the files
+`)
+		})
 	})
 	describe('options', () => {
 		test('default (optional boolean)', () => {
