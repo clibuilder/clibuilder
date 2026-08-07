@@ -1,0 +1,68 @@
+---
+// biome-ignore lint/correctness/noUnusedImports: biome only parses an `.astro` file's frontmatter, so it cannot see the template's use below
+import { showcase } from '../data/showcase'
+---
+
+<ul class="cb-showcase not-content">
+	{
+		showcase.map((entry) => (
+			<li class="cb-showcase-card">
+				<h3>
+					<a href={entry.repo}>{entry.name}</a>
+				</h3>
+				<p>{entry.description}</p>
+				<p class="cb-showcase-links">
+					<a href={entry.repo}>repo</a>
+					{entry.npm && <a href={entry.npm}>npm</a>}
+				</p>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.cb-showcase {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+		list-style: none;
+		margin-top: 1.5rem;
+		padding: 0;
+	}
+
+	.cb-showcase-card {
+		border: 1px solid var(--sl-color-hairline, var(--sl-color-gray-5));
+		border-radius: 0.5rem;
+		padding: 1rem 1.25rem;
+	}
+
+	.cb-showcase-card h3 {
+		font-size: var(--sl-text-lg);
+		margin: 0;
+	}
+
+	.cb-showcase-card h3 a {
+		color: var(--sl-color-white);
+		text-decoration: none;
+	}
+
+	.cb-showcase-card h3 a:hover {
+		color: var(--sl-color-accent-high);
+	}
+
+	.cb-showcase-card p {
+		color: var(--sl-color-gray-2);
+		font-size: var(--sl-text-sm);
+		margin: 0.5rem 0 0;
+	}
+
+	.cb-showcase-links {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.cb-showcase-links a {
+		color: var(--sl-color-accent-high);
+		font-size: var(--sl-text-xs);
+	}
+</style>
