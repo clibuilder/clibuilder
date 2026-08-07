@@ -1,5 +1,78 @@
 # Change Log
 
+## 9.2.0
+
+### Minor Changes
+
+- d709f62: Coerce argument and untyped-option values to match their declared types.
+
+  Both fixes close a gap where the type system and the runtime disagreed about what `run(args)`
+  receives.
+
+  - Positional arguments are now coerced through the same conversion path options already use.
+    `type: z.number()` yields a `number`, `type: z.array(z.number())` yields `number[]`, and a value
+    that fails its schema is a usage error instead of being silently dropped. An array argument is
+    variadic: it consumes the remaining positionals. Previously every argument arrived as a raw string,
+    and `z.array(z.number())` ended up `undefined`.
+  - An option declared without a `type` now defaults to `z.optional(z.boolean())` instead of
+    `z.optional(z.string())`, so a flag yields a real `true` rather than the string `'true'`.
+    `RunArgs` has always inferred this case as `boolean | undefined`.
+
+  Note two behavior changes for code that relied on the old runtime values:
+
+  - `--flag=somevalue` on an option with no declared `type` is now a usage error. Declare
+    `type: z.string()` to keep accepting a string value.
+  - An argument declared with a type that has no string conversion (`z.enum`, `z.literal`) now has the
+    raw argv string handed to its schema, which accepts or rejects it. It is no longer passed through
+    unvalidated.
+
+- 9b629d0: Config subsystem: jsonc support, a public lookup/load API, and `--show-config`.
+
+  **JSONC config (#341)**
+
+  `.jsonc` and `.jsonc`-suffixed rc files are now searched for, and `.json` files may contain comments
+  and trailing commas. Parsing goes through `jsonc-parser`, so comment-like sequences inside strings
+  are left alone — `"http://example.com"` is no longer at risk of being truncated at the `//`.
+
+  The format is now chosen by extension rather than by trying every parser in turn. Extension-less
+  candidates such as `.apprc` still infer their format from content (JSONC, then YAML, then module).
+  One consequence: a `.json` file that is not valid JSON now reports a parse error naming the file,
+  where before it was silently retried as YAML and could load as something unintended.
+
+  **Config lookup/load API (#488)**
+
+  `clibuilder` now exports its config resolution, so plugins and tools can ask where a config came
+  from, not just what it holds:
+
+  - `lookupConfig({ cwd }, name)` — resolve the origin without reading the file
+  - `resolveConfig({ cwd, ui }, name)` — the config plus its provenance
+  - `loadConfig`, `readConfigFile`, `getConfigFilenames`, `getConfigFormat`, `describeConfigSource`
+
+  A resolved `source` is `{ type: 'file', path, format }`, `{ type: 'package.json', path, property }`,
+  or `{ type: 'none' }`. These are read-only; writing config back to disk is not supported yet.
+
+  **`--show-config` (#317)**
+
+  A cli declaring `config` now accepts `--show-config`, which prints the resolved config and where it
+  was loaded from — the matching file path, the `package.json` property, or that nothing was found.
+  Clis without config do not advertise the option.
+
+### Patch Changes
+
+- 2efd5dc: Fix optional and variadic arguments in the help output.
+
+  The `Arguments:` section tested the `isOptional` _method_ instead of calling it, so a typed required
+  argument rendered as `[name]` and an optional one as `<name>`, exactly backwards. Arguments now use
+  the same notation as options: `<name>` when required, `[name]` when optional, with the declared type
+  (`=string`, `=number`, `=boolean`) and a `...` variadic marker.
+
+  ```
+  Arguments:
+    <src=string>           the source
+    [host=string]          the host
+    <files=string...>      the files
+  ```
+
 ## 9.1.0
 
 ### Minor Changes
