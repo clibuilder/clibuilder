@@ -7,6 +7,7 @@ ignores:
   - standard-log-color
   - ts-jest
   - tslib
+  - async-plugin
   - bad-plugin
   - bad-plugin-no-index
   - cjs-plugin
