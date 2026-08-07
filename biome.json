@@ -2,7 +2,16 @@
 	"$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
 	"extends": ["@repobuddy/biome/recommended"],
 	"files": {
-		"includes": ["!**/.pnpm-store", "!**/cjs", "!**/coverage", "!**/esm", "!**/target", "!**/node_modules"]
+		"includes": [
+			"!**/.astro",
+			"!**/.pnpm-store",
+			"!**/cjs",
+			"!**/coverage",
+			"!**/dist",
+			"!**/esm",
+			"!**/target",
+			"!**/node_modules"
+		]
 	},
 	"javascript": {
 		"formatter": {

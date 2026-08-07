@@ -1,0 +1,122 @@
+@import "@fontsource-variable/inter";
+
+@layer base, starlight, theme, components, utilities;
+
+@import "@astrojs/starlight-tailwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Reserve the scrollbar gutter on every page, scrolling or not, so the content column doesn't
+   shift width when navigating between a short page (no scrollbar) and a long one (scrollbar). */
+html {
+	scrollbar-gutter: stable;
+}
+
+/* Design tokens — dark (default) */
+:root {
+	--sl-color-accent-low: #12283a;
+	--sl-color-accent: #2f7ec4;
+	--sl-color-accent-high: #a9d0f0;
+	--sl-color-white: #f7f8f8;
+	--sl-color-gray-1: #d0d6e0;
+	--sl-color-gray-2: #b3b9c4;
+	--sl-color-gray-3: #8a8f98;
+	--sl-color-gray-4: #62666d;
+	--sl-color-gray-5: #2a2c31;
+	--sl-color-gray-6: #141516;
+	--sl-color-black: #08090a;
+	--sl-color-bg-sidebar: #0f1011;
+	--sl-color-hairline: #23252a;
+	--sl-font: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--sl-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+	--cb-border: #23252a;
+	--cb-border-strong: #34343a;
+	--cb-accent-hover: #5aa3e0;
+	--cb-shadow-glow: 0px 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Design tokens — light */
+:root[data-theme="light"] {
+	--sl-color-accent-low: #d7e7f5;
+	--sl-color-accent: #1f6096;
+	--sl-color-accent-high: #103a5c;
+	--sl-color-white: #10111a;
+	--sl-color-gray-1: #383a42;
+	--sl-color-gray-2: #53565f;
+	--sl-color-gray-3: #73767e;
+	--sl-color-gray-4: #94979e;
+	--sl-color-gray-5: #d4d6da;
+	--sl-color-gray-6: #eceef2;
+	--sl-color-black: #ffffff;
+	--sl-color-bg-sidebar: #f7f7f9;
+	--sl-color-hairline: #e2e4e9;
+
+	--cb-border: #e2e4e9;
+	--cb-border-strong: #d4d6da;
+	--cb-accent-hover: #17496f;
+	--cb-shadow-glow: 0px 4px 20px rgba(31, 96, 150, 0.16);
+}
+
+/* Hero polish (splash template) */
+.hero h1 {
+	font-weight: 590;
+	letter-spacing: -0.022em;
+}
+
+.hero .tagline {
+	color: var(--sl-color-gray-2);
+}
+
+.hero .actions a.sl-flex {
+	border-radius: 9999px;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		transform 0.1s ease;
+}
+
+.hero .actions a:active {
+	transform: scale(0.97);
+}
+
+.hero .actions a:not(.minimal) {
+	background: var(--sl-color-accent);
+	border-color: var(--sl-color-accent);
+	box-shadow: var(--cb-shadow-glow);
+}
+
+.hero .actions a:not(.minimal):hover {
+	background: var(--cb-accent-hover);
+	border-color: var(--cb-accent-hover);
+}
+
+.hero .actions a.minimal {
+	/* Starlight's minimal variant ships with padding: 0 (it is meant to read as a bare text link).
+	   We restyle it into a pill, so restore the primary button's inline padding to match. */
+	padding: 0.4375rem 1.125rem;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--cb-border-strong);
+	color: var(--sl-color-white);
+}
+
+:root[data-theme="light"] .hero .actions a.minimal {
+	background: rgba(16, 17, 26, 0.03);
+}
+
+.hero .actions a.minimal:hover {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-accent);
+}
+
+.expressive-code pre {
+	/* biome-ignore lint/complexity/noImportantStyles: expressive-code sets this background inline,
+	   so !important is the only way to theme the code block. */
+	background: var(--sl-color-black) !important;
+	border: 1px solid var(--cb-border);
+	border-radius: 12px;
+}
+
+code:not(pre code) {
+	border-radius: 6px;
+}

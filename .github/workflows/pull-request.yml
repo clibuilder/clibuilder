@@ -8,3 +8,18 @@ jobs:
     uses: clibuilder/.github/.github/workflows/pnpm-verify.yml@main
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # The docs site is excluded from `verify:pkg` because astro needs node >= 22 and
+  # that matrix still covers node 18. Build it here on the repo's own node version.
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm web typecheck
+      - run: pnpm web build

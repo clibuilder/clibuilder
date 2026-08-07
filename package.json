@@ -20,8 +20,9 @@
 		"size": "turbo run size",
 		"test": "turbo run test",
 		"verify": "run-p lint verify:pkg",
-		"verify:pkg": "turbo run build coverage depcheck size",
-		"version": "changeset version"
+		"verify:pkg": "turbo run build coverage depcheck size --filter=!website",
+		"version": "changeset version",
+		"web": "pnpm run --filter=website"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.2",
