@@ -51,8 +51,8 @@ Learn more in the [`clibuilder` README](./packages/clibuilder/README.md)
 [docs-image]: https://img.shields.io/badge/docs-clibuilder.github.io-blue.svg?style=flat
 [docs-url]: https://clibuilder.github.io/clibuilder/
 [downloads-image]: https://img.shields.io/npm/dm/clibuilder.svg?style=flat
-[github_release]: https://github.com/unional/clibuilder/workflows/release/badge.svg
-[github-action-url]: https://github.com/unional/clibuilder/actions
+[github_release]: https://github.com/clibuilder/clibuilder/actions/workflows/release.yml/badge.svg
+[github-action-url]: https://github.com/clibuilder/clibuilder/actions
 [npm-image]: https://img.shields.io/npm/v/clibuilder.svg?style=flat
 [npm-url]: https://npmjs.org/package/clibuilder
 [vscode-image]: https://img.shields.io/badge/vscode-ready-green.svg

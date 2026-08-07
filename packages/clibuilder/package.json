@@ -8,13 +8,13 @@
 		"command",
 		"parser"
 	],
-	"homepage": "https://github.com/unional/clibuilder",
+	"homepage": "https://github.com/clibuilder/clibuilder",
 	"bugs": {
-		"url": "https://github.com/unional/clibuilder/issues"
+		"url": "https://github.com/clibuilder/clibuilder/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/unional/clibuilder.git"
+		"url": "https://github.com/clibuilder/clibuilder.git"
 	},
 	"license": "MIT",
 	"author": {
