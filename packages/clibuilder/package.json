@@ -83,6 +83,7 @@
 		"@types/wordwrap": "github:types/wordwrap",
 		"@unional/fixture": "^3.2.16",
 		"assertron": "^11.2.1",
+		"async-plugin": "workspace:*",
 		"bad-plugin": "workspace:*",
 		"bad-plugin-no-index": "workspace:*",
 		"cjs-plugin": "workspace:*",

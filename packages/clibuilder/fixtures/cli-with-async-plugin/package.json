@@ -1,0 +1,9 @@
+{
+	"name": "fixtures-cli-with-async-plugin",
+	"private": true,
+	"type": "commonjs",
+	"devDependencies": {
+		"async-plugin": "workspace:*",
+		"clibuilder": "workspace:*"
+	}
+}

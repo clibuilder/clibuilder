@@ -1,0 +1,10 @@
+{
+	"name": "async-plugin",
+	"version": "0.0.0",
+	"private": true,
+	"keywords": [
+		"test-cli"
+	],
+	"type": "module",
+	"main": "index.js"
+}
