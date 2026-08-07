@@ -1,5 +1,54 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- e8bb823: Resolve the config file with a single upward directory walk instead of one walk per candidate name.
+
+  `getConfigFilenames()` produces ~28 candidate names, and each one used to be searched with its own
+  `findUpSync()` call — 28 walks from `cwd` to the filesystem root to answer one question. Each ancestor
+  directory is now read once and matched against every candidate. From a directory 13 levels below the
+  config, the lookup drops from 165 `stat` calls to 13 `readdir` calls (~0.51 ms to ~0.15 ms); when no
+  config exists, from 580 `stat` calls to 40.
+
+  **Behavior change — nearest config now wins.** Because candidates used to be searched one full walk at
+  a time, a lower-priority name in a _nearer_ directory lost to a higher-priority name in a _farther_
+  one: a `foorc.json` in a grandparent beat a `foo.yaml` in the current directory. Resolution is now
+  directory-first — the nearest ancestor containing any candidate wins, and the candidate order only
+  breaks ties within that directory. This matches how other config loaders behave. Projects with config
+  files at more than one level of the tree may now load a different file.
+
+  `find-up` is no longer a dependency; the walk used for `package.json` lookup moved to an internal
+  helper as well.
+
+- deac99f: Add `clibuilder/compile-cache`, an opt-in helper to turn on node's V8 compile cache from your cli's bin script.
+
+  ```js
+  import { enableCompileCache } from "clibuilder/compile-cache";
+
+  enableCompileCache();
+
+  const { cli } = await import("clibuilder");
+  ```
+
+  Measured on the `test-apps` fixtures (node 24, median of 25 warm runs), startup drops from 86ms to 81ms for the `ESM` build and from 43ms to 37ms for the `CJS` build.
+
+  The helper never throws, and does nothing on runtimes without the API (node < 22.1, `bun`, `deno`). `NODE_COMPILE_CACHE` takes precedence when the user sets it.
+
+### Patch Changes
+
+- 10cea5a: Load `find-installed-packages` and `search-packages` lazily.
+
+  They are only needed by `plugins list` and `plugins search`, but `commands.ts` sits on the startup path of every CLI invocation. They are now pulled in with a dynamic `import()` at call time, cutting roughly 20ms off startup.
+
+- f462467: Point the package's `homepage`, `bugs`, and `repository` URLs at `clibuilder/clibuilder`. They still named `unional/clibuilder`, which the repository moved away from — npm rendered the old owner on the package page and linked issues to a redirect.
+- 4cc248e: Update `tmp` and `js-yaml`
+- 28ae843: Update dependencies (find-installed-packages, tmp, ts-jest, npm-run-all2, rimraf) and modernize internals: replace `.then()` chains with async/await in `builder.ts` and `plugins.ts`, bump `engines.node` to reflect actual ESM support.
+- 3b0870c: Update `search-packages` to `^2.2.0`.
+
+  It replaces its `npm search` shell-out with a direct `fetch()` against the registry, so `plugins search` no longer requires `npm` on `PATH` — it now works for standalone CLI installs and under bun/deno — and drops the process-spawn cost from the command. The API `clibuilder` uses is unchanged.
+
 ## 9.0.0
 
 ### Major Changes
