@@ -50,7 +50,7 @@
 	],
 	"scripts": {
 		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts --bundle --platform=node --outdir=cjs && ncp package.cjs.json cjs/package.json",
+		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
@@ -65,6 +65,7 @@
 	"dependencies": {
 		"find-installed-packages": "^3.1.1",
 		"js-yaml": "^4.1.1",
+		"jsonc-parser": "^3.3.1",
 		"pad-right": "^0.2.2",
 		"search-packages": "^2.2.0",
 		"standard-log": "^12.1.1",

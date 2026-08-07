@@ -120,6 +120,9 @@ importers:
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
+      jsonc-parser:
+        specifier: ^3.3.1
+        version: 3.3.1
       pad-right:
         specifier: ^0.2.2
         version: 0.2.2
@@ -418,6 +421,12 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  packages/clibuilder/fixtures/has-jsonc-config:
+    dependencies:
+      clibuilder:
+        specifier: workspace:*
+        version: link:../..
+
   packages/clibuilder/fixtures/has-mjs-config:
     dependencies:
       clibuilder:
@@ -443,6 +452,12 @@ importers:
         version: link:../..
 
   packages/clibuilder/fixtures/has-rc-json-config:
+    dependencies:
+      clibuilder:
+        specifier: workspace:*
+        version: link:../..
+
+  packages/clibuilder/fixtures/has-rc-jsonc-config:
     dependencies:
       clibuilder:
         specifier: workspace:*

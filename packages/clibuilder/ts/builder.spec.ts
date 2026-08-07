@@ -3,7 +3,7 @@ import { assertType, type IsExtend, required, testType } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
 import { type cli, command, z } from './index.js'
-import { argv } from './test-utils/index.js'
+import { argv, getFixturePath } from './test-utils/index.js'
 
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
 	const opt = required({ name: 'test-cli', version: '1.0.0' }, options)
@@ -573,3 +573,45 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `
 }
+
+describe('--show-config (#317)', () => {
+	it('prints the config and the file it was loaded from', async () => {
+		const ctx = mockContext({ fixtureDir: 'has-json-config' })
+		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain(`config: ${getFixturePath('has-json-config')}`)
+		expect(msg).toContain('show-config.json')
+		expect(msg).toContain('"a": 1')
+	})
+
+	it('reports the package.json fallback as the source', async () => {
+		const ctx = mockContext({ fixtureDir: 'has-pjson-config' })
+		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain('package.json (property "show-config")')
+		expect(msg).toContain('"a": 1')
+	})
+
+	it('reports that no config was found', async () => {
+		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
+		await builder.default({ run() {} }).parse(argv('test-cli --show-config'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('config: not found')
+	})
+
+	it('is offered by a cli that accepts config', async () => {
+		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
+		await builder.default({ run() {} }).parse(argv('test-cli --help'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('[--show-config]')
+	})
+
+	it('is not offered by a cli that does not accept config', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.default({ run() {} }).parse(argv('test-cli --help'))
+
+		expect(ctx.sl.reporter.getLogMessage()).not.toContain('show-config')
+	})
+})

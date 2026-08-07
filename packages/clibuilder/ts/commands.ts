@@ -14,7 +14,12 @@ const findByKeywords: typeof import('find-installed-packages').findByKeywords = 
 const searchByKeywords: typeof import('search-packages').searchByKeywords = async (...args: any[]): Promise<any> =>
 	(await import('search-packages')).searchByKeywords(...(args as [string[]]))
 
-export function getBaseCommand(description: string) {
+/**
+ * @param options.config whether the cli accepts configuration.
+ * `--show-config` is only offered when it does, so a cli without config
+ * does not advertise an option that could never do anything.
+ */
+export function getBaseCommand(description: string, options?: { config?: boolean }) {
 	return command({
 		name: '',
 		description,
@@ -41,7 +46,15 @@ export function getBaseCommand(description: string) {
 			'debug-cli': {
 				type: z.optional(z.boolean()),
 				description: 'Display clibuilder debug messages'
-			}
+			},
+			...(options?.config
+				? {
+						'show-config': {
+							type: z.optional(z.boolean()),
+							description: 'Print the resolved config and where it was loaded from'
+						}
+					}
+				: {})
 		},
 		commands: [],
 		run() {

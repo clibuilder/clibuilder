@@ -27,6 +27,6 @@ export function state(options: cli.Options): state.Result {
 		configName,
 		keywords,
 		displayLevel: 'info',
-		command: getBaseCommand(description) as any
+		command: getBaseCommand(description, { config: !!configName }) as any
 	}
 }
