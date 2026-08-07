@@ -74,10 +74,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.displayLevel = s.displayLevel
 		context.ui.dump()
 
-		if (s.configName && baseArgs['show-config']) {
-			delete rawArgs['show-config']
-			return showConfig(s.configName)
-		}
+		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
 
 		const r = lookupCommand(s.command, rawArgs)
 		const { args, command } = r

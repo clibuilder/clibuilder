@@ -148,6 +148,14 @@ describe('jsonc config (#341)', () => {
 		expect(await loadConfig({ cwd, ui }, name)).toEqual({ a: 1 })
 	})
 
+	// an extension-less file carries no format hint, so YAML content still has to work
+	it('falls back to YAML for an extension-less rc file that is not JSON', async () => {
+		const name = nextConfigName()
+		const { cwd } = scaffold({ [`.${name}rc`]: 'a: 1\nb: two\n' })
+
+		expect(await loadConfig({ cwd, ui }, name)).toEqual({ a: 1, b: 'two' })
+	})
+
 	// a regex-based comment stripper truncates this value at the `//` of the url
 	it('does not treat a comment-like sequence inside a string as a comment', async () => {
 		const name = nextConfigName()
@@ -254,5 +262,23 @@ describe('resolveConfig() (#488)', () => {
 		const { config, source } = await resolveConfig({ cwd, ui }, name)
 		expect(config).toBeUndefined()
 		expect(source).toEqual({ type: 'none' })
+	})
+})
+
+describe('getConfigFilenames()', () => {
+	it('skips the dotted variants when the config name already starts with a dot', () => {
+		const candidates = getConfigFilenames('.app')
+
+		expect(candidates).toContain('.app.json')
+		expect(candidates).not.toContain('..app.json')
+	})
+})
+
+describe('module config', () => {
+	it('loads a `.cjs` config through its export', async () => {
+		const name = nextConfigName()
+		const { cwd } = scaffold({ [`${name}.cjs`]: 'module.exports = { a: 1 }\n' })
+
+		expect(await loadConfig({ cwd, ui }, name)).toEqual({ a: 1 })
 	})
 })

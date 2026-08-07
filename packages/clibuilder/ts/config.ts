@@ -188,6 +188,9 @@ export async function readConfigFile(configFilePath: string) {
 		try {
 			return yaml.load(content)
 		} catch {
+			// ignoring coverage. An extension-less module config cannot be `import()`ed by name,
+			// so this is only reachable for a file `node` can already resolve.
+			// istanbul ignore next
 			return readModuleConfig(configFilePath)
 		}
 	}
