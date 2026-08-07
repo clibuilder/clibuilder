@@ -6,6 +6,8 @@ on:
 jobs:
   code:
     uses: clibuilder/.github/.github/workflows/pnpm-verify.yml@main
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Secretless: GITHUB_TOKEN for the version PR, npm trusted publishing (OIDC) to
   # publish. No CI_GITHUB_TOKEN or NPM_TOKEN, so nothing to rotate. npm validates the
