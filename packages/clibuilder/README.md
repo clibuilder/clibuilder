@@ -7,10 +7,14 @@
 [![Codecov][codecov-image]][codecov-url]
 [![Codacy Badge][codacy-image]][codacy-url]
 
+[![Documentation][docs-image]][docs-url]
+
 [![Visual Studio Code][vscode-image]][vscode-url]
 [![Wallaby.js][wallaby-image]][wallaby-url]
 
 A highly customizable command line application builder.
+
+📖 **[Documentation](https://clibuilder.github.io/clibuilder/)**
 
 ## What's new in v8
 
@@ -323,6 +327,8 @@ you can add shebang to your script:
 // your code
 ```
 
+[docs-image]: https://img.shields.io/badge/docs-clibuilder.github.io-blue.svg?style=flat
+[docs-url]: https://clibuilder.github.io/clibuilder/
 [codacy-image]: https://api.codacy.com/project/badge/Grade/07959fd66e08490cbbd7da836f229053
 [codacy-url]: https://app.codacy.com/gh/unional/clibuilder/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
 [codecov-image]: https://codecov.io/gh/unional/clibuilder/branch/master/graph/badge.svg

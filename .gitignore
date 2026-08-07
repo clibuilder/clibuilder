@@ -56,3 +56,7 @@ node_modules
 .ts
 .turbo
 lib*
+
+# astro (apps/website)
+.astro
+dist

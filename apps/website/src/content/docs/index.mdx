@@ -1,0 +1,58 @@
+---
+title: clibuilder
+description: A highly customizable command line application builder for Node.js, with type inference powered by zod.
+template: splash
+hero:
+  tagline: Build a command line application out of typed commands, config files, and plugins.
+  actions:
+    - text: Get Started
+      link: /clibuilder/getting-started/introduction/
+      icon: right-arrow
+    - text: API Reference
+      link: /clibuilder/api/
+      icon: open-book
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+`clibuilder` builds command line applications from **commands**. Each command declares its own
+arguments, options, and config schema with [zod](https://github.com/colinhacks/zod), and the types of
+what `run()` receives are inferred from those declarations — no separate type definition to keep in
+sync.
+
+```ts
+import { cli, z } from 'clibuilder'
+
+cli({ name: 'greet', version: '1.0.0' })
+  .default({
+    arguments: [{ name: 'name', description: 'who to greet' }],
+    options: { times: { description: 'how many times', type: z.number(), default: 1 } },
+    run(args) {
+      // args.name is string, args.times is number
+      for (let i = 0; i < args.times; i++) this.ui.info(`hello, ${args.name}`)
+    }
+  })
+  .parse(process.argv)
+  .catch(e => process.exit(e?.code || 1))
+```
+
+## What you get
+
+<CardGrid>
+	<LinkCard title="Commands & sub-commands" href="/clibuilder/guides/commands/" description="Nest commands to any depth — my-cli repo create — with aliases and a generated help message." />
+	<LinkCard title="Typed arguments & options" href="/clibuilder/guides/arguments-and-options/" description="Declare with zod; run(args) is typed from the declaration, and input is validated before it runs." />
+	<LinkCard title="Config files" href="/clibuilder/guides/configuration/" description="JSON, YAML, cjs, or mjs — resolved by convention from the CLI name and validated per command." />
+	<LinkCard title="Plugins" href="/clibuilder/guides/plugins/" description="Ship commands as separate packages and let a config file load them into your CLI." />
+	<LinkCard title="Testing" href="/clibuilder/guides/testing/" description="testCommand() runs a command in-process and hands back its result and its UI messages." />
+	<LinkCard title="ESM and CJS" href="/clibuilder/getting-started/installation/" description="Both module formats are published, so it works whichever way your project consumes packages." />
+</CardGrid>
+
+## Install
+
+```sh
+npm install clibuilder
+```
+
+See [Installation](/clibuilder/getting-started/installation/) for other package managers, then walk
+through [Your First CLI](/clibuilder/getting-started/first-cli/).
