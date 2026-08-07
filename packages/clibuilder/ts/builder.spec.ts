@@ -41,6 +41,43 @@ describe('default()', () => {
 			.parse(argv('test-cli abc def'))
 		expect(a).toEqual(['abc', 'def'])
 	})
+	it('coerces arguments to their declared type', async () => {
+		const [builder] = setupBuilderTest()
+		const a = await builder
+			.default({
+				arguments: [{ name: 'a', description: 'd', type: z.number() }],
+				run(args) {
+					return args.a
+				}
+			})
+			.parse(argv('test-cli 42'))
+		expect(a).toBe(42)
+	})
+	it('runs the documented `sum` example', async () => {
+		const [builder] = setupBuilderTest()
+		const a = await builder
+			.command({
+				name: 'sum',
+				arguments: [{ name: 'values', description: 'values to add', type: z.array(z.number()) }],
+				run(args) {
+					return args.values.reduce((p, v) => p + v, 0)
+				}
+			})
+			.parse(argv('test-cli sum 1 2 3'))
+		expect(a).toBe(6)
+	})
+	it('an option without a declared type is a boolean', async () => {
+		const [builder] = setupBuilderTest()
+		const a = await builder
+			.default({
+				options: { f: { description: 'f' } },
+				run(args) {
+					return args.f
+				}
+			})
+			.parse(argv('test-cli --f'))
+		expect(a).toBe(true)
+	})
 
 	it('uses the app name in the ui', async () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { name: 'some-cli' })

@@ -16,7 +16,7 @@ recognized" bugs.
 
 | Position | What the schema does |
 | --- | --- |
-| An [argument's](/clibuilder/api/command/#arguments) `type` | Marks it optional (`z.optional`) or variadic (`z.array`), and types `args.<name>` |
+| An [argument's](/clibuilder/api/command/#arguments) `type` | Coerces and validates the value, marks it optional (`z.optional`) or variadic (`z.array`), and types `args.<name>` |
 | An [option's](/clibuilder/api/command/#options) `type` | Coerces and validates the value, and types `args.<name>` |
 | A [command's](/clibuilder/guides/configuration/) `config` | Validates the loaded config file, and types `this.config` |
 
@@ -30,8 +30,9 @@ For arguments and options, the parser converts raw argv strings using these:
 - `z.array(z.string())`, `z.array(z.number())`, `z.array(z.boolean())`
 - `z.optional(...)` around any of the above
 
-Richer zod types — refinements, unions, transforms — are not converted from strings and will not
-behave as you expect on an argument or option. Do that validation inside `run()` instead.
+Richer zod types — refinements, unions, transforms — get no string conversion. The raw argv string is
+handed to the schema as-is, so ones that accept a string (`z.enum`, `z.literal('on')`) validate
+correctly, while ones expecting a converted value do not. Do that validation inside `run()` instead.
 
 Config schemas have no such restriction: the config file is already structured data, so any zod
 schema works.

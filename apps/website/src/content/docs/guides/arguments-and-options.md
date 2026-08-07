@@ -45,20 +45,11 @@ cli({ name: 'app', version: '1.0.0' }).command({
 $ app cat a.txt b.txt c.txt
 ```
 
-:::caution[Arguments arrive as strings]
-Positional argument values are **not** coerced to the declared type — only `z.optional()` (is it
-required?) and `z.array()` (is it variadic?) change behavior. Declaring
-`type: z.number()` on an argument makes `args.n` *typed* as `number`, but at runtime you get the raw
-string `'42'`.
+:::note
+Argument values are coerced to the declared type, just like options. `type: z.number()` gives you a
+real `number` in `run()`, and a value that doesn't fit its schema is a usage error.
 
-Use an **option** when you want a coerced non-string value, or convert the argument yourself:
-
-```ts
-arguments: [{ name: 'count', description: 'how many' }],
-run(args) {
-  const count = Number(args.count)
-}
-```
+An `z.array()` argument is variadic: it consumes the remaining positional arguments.
 :::
 
 ## Options
@@ -79,14 +70,12 @@ cli({ name: 'app', version: '1.0.0' }).default({
 ```
 
 :::note
-A flag declared without a `type` is *typed* as `boolean | undefined`, but the value handed to `run()`
-is the string `'true'` when the flag is present and `undefined` when it is not. Truthiness checks
-(`if (args.flag)`) behave as expected; strict comparisons (`args.flag === true`) do not. Declare
-`type: z.boolean()` when you need a real boolean.
+A flag declared without a `type` behaves exactly as `type: z.boolean()` would: `args.flag` is `true`
+when the flag is present and `undefined` when it is not. Passing a non-boolean value to it
+(`--flag=somevalue`) is a usage error — declare `type: z.string()` if you want to accept one.
 :::
 
-Unlike arguments, option values **are** coerced to the declared type, and a value that doesn't fit is
-a usage error.
+Option values are coerced to the declared type, and a value that doesn't fit is a usage error.
 
 ```ts
 options: {
@@ -174,10 +163,10 @@ cli({ name: 'app', version: '1.0.0' }).default({
 | --- | --- | --- | --- |
 | *(omitted)* | `string` / `boolean \| undefined` | The default — a string | The default — a flag |
 | `z.string()` | `string` | ✓ | ✓ |
-| `z.number()` | `number` | typed only, value stays a string | ✓ coerced |
-| `z.boolean()` | `boolean` | typed only, value stays a string | ✓ `--flag`, `--flag=true`, `--flag false` |
+| `z.number()` | `number` | ✓ coerced | ✓ coerced |
+| `z.boolean()` | `boolean` | ✓ coerced | ✓ `--flag`, `--flag=true`, `--flag false` |
 | `z.array(z.string())` | `string[]` | ✓ variadic | ✓ repeatable |
-| `z.array(z.number())` | `number[]` | not coerced — use an option | ✓ repeatable, coerced |
+| `z.array(z.number())` | `number[]` | ✓ variadic, coerced | ✓ repeatable, coerced |
 | `z.optional(...)` | `T \| undefined` | ✓ makes it optional | ✓ |
 
 Option validation happens before `run()` is called. A value that fails its schema, an unknown flag,
