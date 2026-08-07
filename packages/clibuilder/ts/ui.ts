@@ -157,7 +157,7 @@ function generateArgumentsSection(command: createUI.Command) {
 	const entries: string[][] = []
 	let maxWidth = 0
 	command.arguments.forEach((a) => {
-		const argStr = !a.type?.isOptional ? `<${a.name}>` : `[${a.name}]`
+		const argStr = formatSignature(a.name, a.type, { defaultRequired: true, booleanIsFlag: false })
 		maxWidth = Math.max(maxWidth, argStr.length)
 		entries.push([argStr, a.description || ''])
 	})
@@ -197,28 +197,38 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
 		.sort((a, b) => a.length - b.length)
 		.map((v) => (v.length === 1 ? `-${v}` : `--${v}`))
 		.join('|')
-	return formatOptionSignature(value.type, keyString)
+	return formatSignature(keyString, value.type, { defaultRequired: false, booleanIsFlag: true })
 }
 
-function formatOptionSignature(zodType: z.ZodTypeAny | undefined, keys: string) {
-	if (!zodType) return `[${keys}]`
-	const optional = isZodOptional(zodType)
-	const t = optional ? zodType._def.innerType : zodType
+/**
+ * Renders a name as it appears in the help output:
+ * `<name>` when required, `[name]` when optional,
+ * with a `=<type>` hint and a `...` variadic marker when the type is known.
+ *
+ * @param defaultRequired how a missing type is treated.
+ * Arguments are required by default while options are optional by default.
+ * @param booleanIsFlag options are flags so a `=boolean` hint is noise,
+ * while a boolean argument is a value the user has to type out.
+ */
+function formatSignature(
+	name: string,
+	zodType: z.ZodTypeAny | undefined,
+	{ defaultRequired, booleanIsFlag }: { defaultRequired: boolean; booleanIsFlag: boolean }
+) {
+	const required = zodType ? !isZodOptional(zodType) : defaultRequired
+	const body = `${name}${formatTypeHint(zodType, booleanIsFlag)}`
+	return required ? `<${body}>` : `[${body}]`
+}
+
+function formatTypeHint(zodType: z.ZodTypeAny | undefined, booleanIsFlag: boolean) {
+	if (!zodType) return ''
+	const t = isZodOptional(zodType) ? zodType._def.innerType : zodType
 	const isArray = isZodArray(t)
 	const at = isArray ? t.element : t
-	const valueType = isZodString(at)
-		? isArray
-			? '=string...'
-			: '=string'
-		: isZodNumber(at)
-			? isArray
-				? '=number...'
-				: '=number'
-			: isArray
-				? '=boolean...'
-				: ''
-
-	return optional ? `[${keys}${valueType}]` : `<${keys}${valueType}>`
+	const typeName = isZodString(at) ? 'string' : isZodNumber(at) ? 'number' : isZodBoolean(at) ? 'boolean' : ''
+	if (isArray) return typeName ? `=${typeName}...` : '...'
+	if (!typeName || (booleanIsFlag && typeName === 'boolean')) return ''
+	return `=${typeName}`
 }
 
 function formatDescription(value: cli.Command.Options.Entry) {
