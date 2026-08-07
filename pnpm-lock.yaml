@@ -90,8 +90,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       search-packages:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.2.0
+        version: 2.2.0
       standard-log:
         specifier: ^12.1.1
         version: 12.1.2
@@ -2834,8 +2834,9 @@ packages:
   satisfier@5.4.2:
     resolution: {integrity: sha512-K1QPzEPjiC/7FcwiCwRH218SS3OVEWlx56EcHI+tZIf+TaAs+OHwwruAD4ke6xvRk/QniwSPkP98o9Oo84RxGQ==}
 
-  search-packages@2.1.0:
-    resolution: {integrity: sha512-UtiuizI/dm68NnKGbV/gN/vAyqggq9RwtNtl1367yWP2YW8IHfYUt7gBQWg7IoeDYjP4PxQSOqni2uc2/0szJg==}
+  search-packages@2.2.0:
+    resolution: {integrity: sha512-CGuvoRHrTzZEbESuuCrO8+RhMkWzM+YSFvv8C4jCxZXE6umqaG+ZIZ6FEiCWD5zO4OV9c562PFwU7G7JV4a+Ew==}
+    engines: {node: '>= 18'}
 
   semver-compare@1.0.0:
     resolution: {integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow==}
@@ -4515,7 +4516,7 @@ snapshots:
       find-up: 7.0.0
       js-yaml: 4.1.1
       pad-right: 0.2.2
-      search-packages: 2.1.0
+      search-packages: 2.2.0
       standard-log: 12.1.2
       standard-log-color: 12.1.2(standard-log@12.1.2)
       tmp: 0.2.7
@@ -5997,7 +5998,7 @@ snapshots:
     dependencies:
       tersify: 3.12.1
 
-  search-packages@2.1.0: {}
+  search-packages@2.2.0: {}
 
   semver-compare@1.0.0: {}
 
