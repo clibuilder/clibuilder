@@ -1,0 +1,30 @@
+---
+title: Showcase
+description: Command line applications built with clibuilder.
+---
+
+import ShowcaseGrid from '../../components/showcase-grid.astro'
+
+Command line applications built with `clibuilder`. Every entry here was checked against its source —
+if it is on this page, `clibuilder` is in its `package.json`.
+
+<ShowcaseGrid />
+
+## Add your CLI
+
+The list is a plain data file,
+[`src/data/showcase.ts`](https://github.com/clibuilder/clibuilder/blob/main/apps/website/src/data/showcase.ts).
+There is no submission form and no approval queue — additions come in as pull requests against that
+file:
+
+```ts
+{
+  name: 'your-cli',
+  description: 'One line on what it does.',
+  repo: 'https://github.com/you/your-cli',
+  npm: 'https://www.npmjs.com/package/your-cli' // optional
+}
+```
+
+Two things a reviewer will check: that the project actually depends on `clibuilder`, and that `repo`
+resolves. `npm` is optional — plenty of useful CLIs are never published.

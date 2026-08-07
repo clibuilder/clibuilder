@@ -61,6 +61,10 @@ export default defineConfig({
 						{ label: 'enableCompileCache()', slug: 'api/compile-cache' },
 						{ label: 'z', slug: 'api/zod' }
 					]
+				},
+				{
+					label: 'Showcase',
+					slug: 'showcase'
 				}
 			]
 		})
