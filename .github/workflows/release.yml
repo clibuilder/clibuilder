@@ -7,7 +7,14 @@ jobs:
   code:
     uses: clibuilder/.github/.github/workflows/pnpm-verify.yml@main
 
+  # Secretless: GITHUB_TOKEN for the version PR, npm trusted publishing (OIDC) to
+  # publish. No CI_GITHUB_TOKEN or NPM_TOKEN, so nothing to rotate. npm validates the
+  # caller workflow, so the trusted publisher is registered against this file rather
+  # than the reusable one, and `id-token: write` is granted here as well as in the callee.
   release:
     uses: clibuilder/.github/.github/workflows/pnpm-release-changeset.yml@main
     needs: code
-    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
