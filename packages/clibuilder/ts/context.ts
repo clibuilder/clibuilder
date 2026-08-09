@@ -3,6 +3,7 @@ import { createColorLogReporter } from 'standard-log-color'
 import type { Command } from './command.internal.types.js'
 import { type ConfigLoadResult, resolveConfig } from './config.js'
 import { loadPlugins } from './plugins.js'
+import type { RegistryOwner } from './registry.js'
 import { createBuilderUI, createUI } from './ui.js'
 
 /**
@@ -34,9 +35,9 @@ export function context() {
 		},
 		// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
 		// istanbul ignore next
-		async loadPlugins(pluginNames: string[]) {
+		async loadPlugins(pluginNames: string[], registry: RegistryOwner, host: { name: string; version: string }) {
 			if (loadingCommands) return loadingCommands
-			return (loadingCommands = loadPlugins({ cwd, ui: this.ui }, pluginNames))
+			return (loadingCommands = loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames))
 		},
 		cwd,
 		exit: process.exit,

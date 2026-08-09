@@ -5,6 +5,7 @@ import { required } from 'type-plus'
 import { type ConfigLoadResult, resolveConfig } from './config.js'
 import type { Context } from './context.js'
 import { loadPlugins } from './plugins.js'
+import type { RegistryOwner } from './registry.js'
 import { getFixturePath } from './test-utils/index.js'
 import { createBuilderUI, createUI } from './ui.js'
 
@@ -23,8 +24,8 @@ export function mockContext(params?: mockContext.Params): Context & { sl: Standa
 		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
 			return resolveConfig({ cwd, ui: this.ui }, configName)
 		},
-		async loadPlugins(pluginNames: string[]) {
-			return loadPlugins({ cwd, ui: this.ui }, pluginNames)
+		async loadPlugins(pluginNames: string[], registry: RegistryOwner, host: { name: string; version: string }) {
+			return loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames)
 		},
 		cwd,
 		exit: function (this: any, code?: number) {

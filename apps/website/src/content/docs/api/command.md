@@ -126,6 +126,11 @@ The argument a [plugin's](/clibuilder/guides/plugins/) `activate()` receives:
 ```ts
 type PluginActivationContext = {
   addCommand(command: cli.Command): void
+  register<T>(key: ValueKey<T> | CollectionKey<T>, value: T): void
+  get<T>(key: ValueKey<T>): T | undefined
+  get<T>(key: CollectionKey<T>): readonly Contribution<T>[]
+  has(key: RegistryKey<unknown>): boolean
+  host: { name: string; version: string }
 }
 ```
 
@@ -136,3 +141,7 @@ export function activate({ addCommand }: PluginActivationContext) {
   addCommand(command({ name: 'sing', description: 'sing a song', run() { this.ui.info('🎵') } }))
 }
 ```
+
+`defineKey()` creates a single-value capability key; the first plugin to register one wins. Use
+`defineCollectionKey()` for values contributed by multiple plugins. Command `run()` methods receive
+the same read-only registry as `this.registry`, which is the preferred place to resolve values.

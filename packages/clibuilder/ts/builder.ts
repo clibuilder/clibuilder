@@ -6,6 +6,7 @@ import { getBaseCommand, pluginsCommand } from './commands.js'
 import { describeConfigSource } from './config.js'
 import type { Context } from './context.js'
 import { lookupCommand } from './lookup_command.js'
+import { createRegistry } from './registry.js'
 import { state } from './state.js'
 import type { z } from './zod.js'
 
@@ -22,6 +23,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	const s = state(options)
 	const description = s.description
 	const pending: Promise<any>[] = []
+	const registry = createRegistry()
 	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
 	const mayAcceptPlugins = s.configName || s.keywords.length > 0
 	if (mayAcceptPlugins) s.command.commands.push(adjustCommand(s.command, pluginsCommand))
@@ -32,7 +34,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				const config = await loadingConfig
 				s.config = config
 				if (config?.plugins) {
-					const commands = await context.loadPlugins(config.plugins)
+					const commands = await context.loadPlugins(config.plugins, registry, {
+						name: s.name,
+						version: s.version || ''
+					})
 					s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c)))
 				}
 			})()
@@ -79,8 +84,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const r = lookupCommand(s.command, rawArgs)
 		const { args, command } = r
 
-		if (args.version) return createCommandInstance(context, s, r.command).ui.showVersion()
-		if (r.errors.length > 0) return createCommandInstance(context, s, r.command).ui.showHelp()
+		if (args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
+		if (r.errors.length > 0) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
 
 		if (command.config) {
 			const configName = typeof s.configName === 'string' ? s.configName : s.name
@@ -90,12 +95,12 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			if (errors) {
 				context.ui.error('config fails validation:')
 				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
-				createCommandInstance(context, s, r.command).ui.showHelp()
+				createCommandInstance(context, s, r.command, registry).ui.showHelp()
 				return
 			}
 			s.config = config
 		}
-		const commandInstance = createCommandInstance(context, s, command)
+		const commandInstance = createCommandInstance(context, s, command, registry)
 		if (!commandInstance.run || args.help) return commandInstance.ui.showHelp()
 		return commandInstance.run(args as any)
 	}
@@ -124,14 +129,20 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	}
 }
 
-function createCommandInstance(ctx: Context, state: state.Result, command: cli.Command) {
+function createCommandInstance(
+	ctx: Context,
+	state: state.Result,
+	command: cli.Command,
+	registry: ReturnType<typeof createRegistry>
+) {
 	return {
 		...command,
 		run: (command as any).run,
 		ui: createCommandUI(ctx, state, command),
 		config: state.config,
 		keywords: state.keywords,
-		cwd: ctx.cwd
+		cwd: ctx.cwd,
+		registry
 	}
 }
 

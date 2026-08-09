@@ -37,6 +37,12 @@
 			"require": "./cjs/compile_cache.js",
 			"default": "./cjs/compile_cache.js"
 		},
+		"./testing": {
+			"types": "./esm/testing/index.d.ts",
+			"import": "./esm/testing/index.js",
+			"require": "./cjs/testing/index.js",
+			"default": "./cjs/testing/index.js"
+		},
 		"./package.json": "./package.json"
 	},
 	"main": "./cjs/index.js",
@@ -50,7 +56,7 @@
 	],
 	"scripts": {
 		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
+		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts ts/testing/index.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",

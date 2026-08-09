@@ -220,9 +220,33 @@ export function activate({ addCommand }: PluginActivationContext) {
 receives are ordinary [commands](/clibuilder/guides/commands/) — arguments, options, sub-commands,
 and config schemas all work exactly as they do in the host CLI.
 
-`activate` is called during `parse()`, before the CLI resolves which command to run. Keep it cheap:
-build command objects and return. Anything expensive belongs inside `run()`, so a user typing
-`my-cli --help` does not pay for work no command asked for.
+### Contributing content or capabilities
+
+Plugins can also register values that are not commands. Define the key in a small contracts package
+that both the host and its plugins depend on, then register against that key during activation:
+
+```ts
+// @my-cli/contracts
+export const governances = defineCollectionKey<Governance>('my-cli:governances')
+
+// a plugin
+export function activate(ctx: PluginActivationContext) {
+  ctx.register(governances, { name: 'changeset-authoring', load })
+}
+```
+
+Use `defineKey<T>()` for a capability supplied by one plugin. The first configured plugin to register
+that key wins; later registrations are skipped with a warning. Use `defineCollectionKey<T>()` for
+contributions from many plugins. `get()` returns those in config order, each with its `source` package:
+
+```ts
+const allGovernances = this.registry.get(governances)
+```
+
+Keys match by their string id, so independently installed copies of the contracts package interoperate.
+Read a capability inside `run()` rather than `activate()`: all configured plugins have activated before
+a command runs, regardless of their order in the config. `activate()` may return a promise, but should
+still stay cheap; register lazy functions rather than loading content up front.
 
 ### Publishing so `plugins search` finds you
 
@@ -284,3 +308,14 @@ test('miku sings', async () => {
 
 Calling `activate` yourself with a stub `addCommand` also checks the half of the contract that only
 the host normally exercises — that `activate` is exported, and that it registers what you expect.
+
+For registry-aware plugins, `mockPluginContext()` is available from `clibuilder/testing`:
+
+```ts
+import { mockPluginContext } from 'clibuilder/testing'
+
+const { context, commands } = mockPluginContext({ source: 'my-plugin' })
+activate(context)
+
+expect(commands).toHaveLength(1)
+```
