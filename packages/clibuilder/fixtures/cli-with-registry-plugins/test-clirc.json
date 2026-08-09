@@ -1,3 +1,0 @@
-{
-	"plugins": ["registry-consumer", "registry-provider", "registry-provider-second"]
-}

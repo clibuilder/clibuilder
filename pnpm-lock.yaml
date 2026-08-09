@@ -223,15 +223,6 @@ importers:
       plugin-two:
         specifier: workspace:*
         version: link:../../test-plugins/plugin-two
-      registry-consumer:
-        specifier: workspace:*
-        version: link:../../test-plugins/registry-consumer
-      registry-provider:
-        specifier: workspace:*
-        version: link:../../test-plugins/registry-provider
-      registry-provider-second:
-        specifier: workspace:*
-        version: link:../../test-plugins/registry-provider-second
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
@@ -307,21 +298,6 @@ importers:
       clibuilder:
         specifier: workspace:*
         version: link:../..
-
-  packages/clibuilder/fixtures/cli-with-registry-plugins:
-    devDependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-      registry-consumer:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/registry-consumer
-      registry-provider:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/registry-provider
-      registry-provider-second:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/registry-provider-second
 
   packages/clibuilder/fixtures/cli-with-two-plugins:
     devDependencies:
@@ -586,12 +562,6 @@ importers:
   test-plugins/esm-plugin: {}
 
   test-plugins/plugin-two: {}
-
-  test-plugins/registry-consumer: {}
-
-  test-plugins/registry-provider: {}
-
-  test-plugins/registry-provider-second: {}
 
 packages:
 
