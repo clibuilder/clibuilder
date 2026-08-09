@@ -1,7 +1,5 @@
-const { defineCollectionKey, defineKey } = require('clibuilder')
-
-const capability = defineKey('clibuilder:test-capability')
-const documents = defineCollectionKey('clibuilder:test-documents')
+const capability = { id: 'clibuilder:test-capability', kind: 'value' }
+const documents = { id: 'clibuilder:test-documents', kind: 'collection' }
 
 exports.activate = async function activate(context) {
 	await Promise.resolve()
