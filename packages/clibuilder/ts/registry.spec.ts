@@ -25,6 +25,18 @@ describe('registry', () => {
 		])
 	})
 
+	it('reports whether value and collection keys are registered', () => {
+		const valueKey = defineKey<string>('example:port')
+		const collectionKey = defineCollectionKey<string>('example:content')
+		const registry = createRegistry()
+
+		registry.register('content-plugin', collectionKey, 'content')
+
+		expect(registry.has(valueKey)).toBe(false)
+		expect(registry.has(collectionKey)).toBe(true)
+		expect(registry.describe(collectionKey)).toEqual(['content-plugin'])
+	})
+
 	it('matches independently-defined keys by their string identity', () => {
 		const providerKey = defineKey<string>('example:port')
 		const consumerKey = defineKey<string>('example:port')
