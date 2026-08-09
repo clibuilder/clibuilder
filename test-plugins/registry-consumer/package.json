@@ -1,0 +1,8 @@
+{
+	"name": "registry-consumer",
+	"version": "0.0.0",
+	"private": true,
+	"dependencies": {
+		"clibuilder": "workspace:*"
+	}
+}

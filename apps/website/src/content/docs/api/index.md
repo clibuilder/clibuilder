@@ -16,6 +16,7 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | [`cli()`](/clibuilder/api/cli/) | Create the CLI builder — the entry point of every application |
 | [`command()`](/clibuilder/api/command/) | Identity helper that types a standalone command object |
 | [`testCommand()`](/clibuilder/api/test-command/) | Run a command in-process and capture its result and messages |
+| `defineKey()` / `defineCollectionKey()` | Create typed plugin registry keys |
 | [`parseArgv()`](/clibuilder/api/parse-argv/) | The raw argv tokenizer, exported for reuse |
 | [`enableCompileCache()`](/clibuilder/api/compile-cache/) | Opt into Node's V8 compile cache, from `clibuilder/compile-cache` |
 
@@ -36,6 +37,7 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | [`UI`](/clibuilder/api/ui/) | The object on `this.ui` inside `run()` |
 | [`DisplayLevel`](/clibuilder/api/ui/#displaylevel) | `'none' \| 'info' \| 'debug' \| 'trace'` |
 | [`PluginActivationContext`](/clibuilder/api/command/#pluginactivationcontext) | What a plugin's `activate()` receives |
+| `Registry` | Read-only values and contributions available as `this.registry` in commands |
 
 Most of the command types live under the `cli` namespace rather than at the top level, so you rarely
 import them directly — `command()` infers them for you.

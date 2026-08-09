@@ -1,6 +1,7 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './builder.js'
 import { context } from './context.js'
+import type { CollectionKey, Registry, RegistryKey, ValueKey } from './registry.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
@@ -87,6 +88,7 @@ export namespace cli {
 						keywords: string[]
 						cwd: string
 						context: Context
+						registry: Registry
 					},
 					args: Command.RunArgs<A, O>
 				): Promise<any> | any
@@ -115,6 +117,7 @@ export namespace cli {
 							config: z.infer<ConfigType>
 							keywords: string[]
 							cwd: string
+							registry: Registry
 						},
 						args: RunArgs<A, O>
 					): Promise<any> | any
@@ -192,4 +195,9 @@ export type PluginActivationContext = {
 		OName extends string,
 		O extends cli.Command.Options<OName>
 	>(command: cli.Command<Context, ConfigType, A, O>): void
+	register<T>(key: ValueKey<T> | CollectionKey<T>, value: T): void
+	get<T>(key: ValueKey<T>): T | undefined
+	get<T>(key: CollectionKey<T>): readonly { readonly source: string; readonly value: T }[]
+	has(key: RegistryKey<unknown>): boolean
+	readonly host: { readonly name: string; readonly version: string }
 }

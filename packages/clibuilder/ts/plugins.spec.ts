@@ -41,3 +41,14 @@ it('exits after an async plugin command resolves', async () => {
 	})
 	expect(stdout).toEqual('echo hello')
 })
+
+it('lets a command consume capabilities and content contributed by a later plugin', async () => {
+	const { stdout, stderr } = await execCommand({
+		caseType: 'folder',
+		caseName: 'fixtures/cli-with-registry-plugins',
+		casePath: getFixturePath('cli-with-registry-plugins')
+	})
+	expect(stdout).toEqual('provided registry-provider:document')
+	expect(stderr).toContain('plugin registry-provider-second could not register clibuilder:test-capability')
+	expect(stderr).toContain('already registered by registry-provider')
+})
