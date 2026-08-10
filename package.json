@@ -7,6 +7,8 @@
 		"clean": "turbo run clean",
 		"clibuilder": "pnpm --filter clibuilder",
 		"coverage": "turbo run coverage",
+		"coverage:compare": "pnpm coverage && node scripts/compare-codecov-coverage.mjs",
+		"coverage:compare:test": "node --test scripts/compare-codecov-coverage.test.mjs",
 		"cs": "changeset",
 		"depcheck": "turbo run depcheck",
 		"dev": "turbo run dev --parallel",
