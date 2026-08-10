@@ -39,6 +39,19 @@ describe('with default command', () => {
 		expect(args).toEqual({ _: [], arg: 'abc' })
 	})
 })
+describe('command aliases', () => {
+	test('resolves a nested command by its alias', () => {
+		const listCommand = command({ name: 'list', alias: ['ls'], run() {} })
+		const pluginsCommand = command({ name: 'plugins', commands: [listCommand] })
+		const rootCommand = command({ name: '', commands: [pluginsCommand] })
+
+		const { cmd, args, errors } = testLookupCommand(rootCommand, 'my-cli plugins ls')!
+
+		expect(cmd).toBe(listCommand)
+		expect(args).toEqual({ _: [] })
+		expect(errors).toEqual([])
+	})
+})
 describe('argument', () => {
 	test('argument can be optional', () => {
 		const defaultCommand = command({

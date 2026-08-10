@@ -50,7 +50,7 @@ function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Com
 		for (let i = commands.length - 1; i >= 0; i--) {
 			const command = commands[i]
 			if (!command.name) return [command, rawArgs]
-			if (rawArgs._[0] !== command.name) continue
+			if (rawArgs._[0] !== command.name && !command.alias?.includes(rawArgs._[0])) continue
 			rawArgs._.shift()
 			if (command.commands) {
 				const m = matchCommand(command, rawArgs)
