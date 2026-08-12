@@ -9,8 +9,6 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  # The docs site is excluded from `verify:pkg` because astro needs node >= 22 and
-  # that matrix still covers node 18. Build it here on the repo's own node version.
   website:
     runs-on: ubuntu-latest
     steps:
