@@ -19,7 +19,7 @@ rush add -p clibuilder
 
 ## Requirements
 
-- **Node.js 18 or newer.**
+- **Node.js 20.19 or newer.**
 - **TypeScript is optional but recommended.** The type inference in `run(args)` is the main reason to
   use `clibuilder` over a hand-rolled parser; in plain JavaScript everything still works, you just
   don't see the inferred types.
