@@ -1,6 +1,10 @@
 autoInstallPeers: true
 strictPeerDependencies: false
 
+# Packages we maintain ourselves, so the cooling-off period buys nothing.
+minimumReleaseAgeExclude:
+  - find-installed-packages
+
 packages:
   - apps/*
   - packages/*
