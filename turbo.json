@@ -4,7 +4,7 @@
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": ["package.json", "tsconfig.*", "ts/**/*.tsx?", "src/**/*.tsx?"],
-			"outputs": ["esm/**"]
+			"outputs": ["cjs/**", "esm/**"]
 		},
 		"clean": {
 			"cache": false
