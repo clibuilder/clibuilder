@@ -146,6 +146,72 @@ describe('searchPluginsCommand', () => {
 		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[3]: pkg-a,pkg-shared,pkg-b')
 	})
 
+	test('--format text keeps the human-readable prose', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
+			})
+			.parse(argv('string-bin search --format text'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain(`found the following packages:
+
+  pkg-x
+  pkg-y`)
+	})
+
+	test('--format text reports one package and none in prose', async () => {
+		const one = mockContext()
+		await builder(one, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
+			})
+			.parse(argv('string-bin search --format text'))
+		expect(one.sl.reporter.getLogMessage()).toContain('found one package: pkg-x')
+
+		const none = mockContext()
+		await builder(none, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: () => Promise.resolve([]) }
+			})
+			.parse(argv('string-bin search --format text'))
+		expect(none.sl.reporter.getLogMessage()).toContain('no package with keywords: plugin-cli-plugin')
+	})
+
+	test('--format json emits the payload alone, so it survives a pipe', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
+			})
+			.parse(argv('string-bin search --format json'))
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain(`{
+  "packages": [
+    "pkg-x",
+    "pkg-y"
+  ]
+}`)
+		expect(msg).not.toContain('help[1]')
+	})
+
+	test('--format json states the empty result as data', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: () => Promise.resolve([]) }
+			})
+			.parse(argv('string-bin search --format json'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('"packages": []')
+	})
+
 	test('reports zero with every keyword when no keyword matches', async () => {
 		const ctx = mockContext()
 		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })

@@ -92,21 +92,65 @@ export const listPluginsCommand = command({
 export const searchPluginsCommand = command({
 	name: 'search',
 	description: 'Search only for available plugins',
+	options: {
+		format: {
+			type: z.optional(z.enum(['toon', 'text', 'json'])),
+			description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
+			default: 'toon' as const
+		}
+	},
 	context: { searchByKeywords },
-	async run() {
+	async run(args) {
 		// `searchByKeywords` matches packages carrying *all* of the keywords it is given.
 		// A cli declaring several keywords wants a package matching *any* of them, so query
 		// one keyword at a time and union the results, first-seen order wins.
 		const found = await Promise.all(this.keywords.map((keyword) => this.context.searchByKeywords([keyword])))
 		const packages = [...new Set(found.flat())]
-		if (packages.length === 0) {
-			this.ui.info(`packages: 0 packages found with keywords: ${this.keywords.join(', ')}`)
-			return
-		}
-		this.ui.info(`packages[${packages.length}]: ${packages.map(toonValue).join(',')}`)
-		this.ui.info('help[1]: Run `plugins list` to see which of them are installed')
+		reportPackages(this.ui, args.format, packages, this.keywords)
 	}
 })
+
+/**
+ * Renders the search result in the caller's chosen format.
+ *
+ * `toon` is the default because a cli's plugin search is read by an agent far more often
+ * than by a person, and toon is the cheaper read for one. It is a default, not the only
+ * option: `text` is the prose a human wants, and `json` is what survives a pipe.
+ */
+function reportPackages(
+	ui: { info(...args: any[]): void },
+	format: 'toon' | 'text' | 'json' | undefined,
+	packages: string[],
+	keywords: string[]
+) {
+	if (format === 'json') {
+		// no help line here — a `| jq` consumer wants the payload and nothing else.
+		ui.info(JSON.stringify({ packages }, undefined, 2))
+		return
+	}
+	if (format === 'text') {
+		if (packages.length === 0) {
+			ui.info(`no package with keywords: ${keywords.join(', ')}`)
+			return
+		}
+		if (packages.length === 1) {
+			ui.info(`found one package: ${packages[0]}`)
+			return
+		}
+		ui.info('found the following packages:')
+		ui.info('')
+		packages.forEach((p) => {
+			ui.info(`  ${p}`)
+		})
+		return
+	}
+	if (packages.length === 0) {
+		ui.info(`packages: 0 packages found with keywords: ${keywords.join(', ')}`)
+		return
+	}
+	ui.info(`packages[${packages.length}]: ${packages.map(toonValue).join(',')}`)
+	ui.info('help[1]: Run `plugins list` to see which of them are installed')
+}
 
 /**
  * Quotes a toon value when it would otherwise be ambiguous.
