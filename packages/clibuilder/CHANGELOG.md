@@ -1,5 +1,108 @@
 # Change Log
 
+## 10.1.0
+
+### Minor Changes
+
+- c71f536: Report usage errors and exit non-zero.
+
+  A clibuilder cli could not fail. `lookupCommand` already built a typed list of everything wrong with
+  an invocation — unknown option, missing argument, extra arguments, a value of the wrong type — and
+  `builder` threw it away and printed the help message with an exit code of `0`. A command that knew
+  it had failed had no way to say so either.
+
+  - Usage errors are now reported by name (`unknown option --bogus`, `missing required argument
+<target>`) ahead of the help message, and the cli exits `2`.
+  - A config that fails its schema exits `1`.
+  - A command fails by throwing the new `CliError`, which carries an `exitCode` and optional `help`
+    lines. `parse()` still resolves rather than rejecting, so the failure is reported instead of
+    surfacing as an unhandled rejection.
+  - New exports: `CliError`, `exitCodes` (`success`/`error`/`usage` — 0/1/2), and `isCliError()`.
+  - `testCommand()` returns the `exitCode` alongside `result` and `messages`, so a test can assert a
+    failure without ending the test run.
+  - `--help` and `--version` are accepted by every command, including sub-commands that declare no
+    options of their own, and both still exit `0`.
+
+  The exit code is recorded on `process.exitCode` rather than applied with `process.exit()`, so
+  pending stdout writes are not truncated.
+
+  **This changes the behavior of every cli built with clibuilder**: an invocation with a typo used to
+  exit `0` and now exits `2`. The TypeScript surface is additive, which is why this is a minor rather
+  than a major, but a caller downstream of your cli that ignored the exit code will now see it fail.
+
+- 2f4afde: Add `--format` to `plugins list`.
+
+  `plugins list --format <toon|text|json>` picks how the installed plugins are rendered,
+  matching `plugins search`. The default is `toon`, following the Agent eXperience
+  Interface — a cli's plugin list is read by an agent far more often than by a person:
+
+  ```
+  plugins[2]: my-cli-plugin,@acme/my-cli-plugin-deploy
+  help[1]: Run `plugins search` to find more plugins on npm
+  ```
+
+  Nothing installed is stated as the answer rather than left as silence, and it says
+  `installed` because that is the whole difference from what `search` reports — nothing
+  installed here says nothing about what exists on npm:
+
+  ```
+  plugins: 0 installed plugins found with keywords: my-cli-plugin
+  help[1]: Run `plugins search` to find plugins to install
+  ```
+
+  `--format text` is the previous human-readable prose, unchanged, including its separate
+  wording for none, one, and several. `toon` and `json` report one shape whatever the
+  count. `--format json` emits `{ "plugins": [...] }` alone, with no help line, so it
+  survives a pipe into `jq`. The command still returns the plugin names to its caller.
+
+- 4925f20: Match `plugins search` keywords disjunctively, and add `--format` to its output.
+
+  A cli declaring several keywords used to find only packages carrying _all_ of them, so
+  a plugin tagged with one of the cli's keywords was never listed. Each keyword is now
+  searched on its own and the results are unioned, deduped, in keyword order.
+
+  `plugins search --format <toon|text|json>` picks how that result is rendered. The default
+  is `toon`, following the Agent eXperience Interface — a cli's plugin search is read by an
+  agent far more often than by a person, and toon is the cheaper read for one:
+
+  ```
+  packages[2]: pkg-x,pkg-y
+  help[1]: Run `plugins list` to see which of them are installed
+  ```
+
+  `--format text` is the previous human-readable prose, unchanged. `--format json` emits
+  `{ "packages": [...] }` alone, with no help line, so it survives a pipe into `jq`.
+
+  `--fields keywords` adds which of the cli's keywords found each package — the question
+  disjunctive matching makes worth asking, since one over-broad keyword can now pull in a
+  package that is not a plugin at all. It is off by default: a cli with a single keyword
+  would spend the column on a value every row repeats.
+
+  ```
+  packages[3]{name,keywords}:
+    my-cli-plugin-alpha,my-cli-plugin
+    shared-plugin,my-cli-plugin unional
+    unional-tool,unional
+  ```
+
+### Patch Changes
+
+- 033a38a: Reject an option value the option's `type` does not accept.
+
+  A value that failed the option's schema used to be dropped and replaced by the option's
+  `default`, so `--format yaml` quietly rendered `toon` and the caller had no way to tell.
+  It is now reported as a usage error and the cli exits with `2`, the same as an unknown
+  option. An enum lists what it would have accepted, so the invocation can be fixed in one
+  step:
+
+  ```
+  error: invalid value for option --format: expected one of: toon, text, json, received "yaml"
+  ```
+
+  This applies to every option whose `type` clibuilder does not convert itself — `z.enum`
+  above all. Booleans and numbers already reported their own conversion errors and are
+  unchanged.
+
 ## 10.0.0
 
 ### Major Changes
