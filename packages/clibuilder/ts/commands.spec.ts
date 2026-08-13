@@ -110,6 +110,19 @@ describe('searchPluginsCommand', () => {
 		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: @scope/pkg-x,"odd,name"')
 	})
 
+	test('escapes quotes and backslashes in package names', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['odd"name', 'trailing\\']) }
+			})
+			.parse(argv('string-bin search'))
+
+		// a hand-escaped trailing backslash would escape the closing quote and merge the entries
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: "odd\\"name","trailing\\\\"')
+	})
+
 	test('searches each keyword separately and unions the results', async () => {
 		const ctx = mockContext()
 		const calls: string[][] = []

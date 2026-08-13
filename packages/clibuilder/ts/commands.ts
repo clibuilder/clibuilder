@@ -111,11 +111,14 @@ export const searchPluginsCommand = command({
 /**
  * Quotes a toon value when it would otherwise be ambiguous.
  *
- * Package names have no reason to contain a comma or a quote, but the registry is not
- * ours to trust: an unquoted one would read as two entries to whoever parses the output.
+ * Package names have no reason to contain a comma, a quote, or a backslash, but the
+ * registry is not ours to trust: an unquoted one would read as two entries to whoever
+ * parses the output. `JSON.stringify` does the escaping, since toon strings escape the
+ * same way json ones do — hand-rolling it drops the backslash case, which is worse than
+ * not quoting at all (a trailing `\` would escape the closing quote).
  */
 function toonValue(value: string) {
-	return /[",]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value
+	return /["\\,]|^\s|\s$/.test(value) ? JSON.stringify(value) : value
 }
 
 export const pluginsCommand = command({
