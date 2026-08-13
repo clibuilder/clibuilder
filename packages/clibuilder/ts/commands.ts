@@ -92,22 +92,130 @@ export const listPluginsCommand = command({
 export const searchPluginsCommand = command({
 	name: 'search',
 	description: 'Search only for available plugins',
-	context: { searchByKeywords },
-	async run() {
-		const packages = await this.context.searchByKeywords(this.keywords)
-		if (packages.length === 0) {
-			this.ui.info(`no package with keywords: ${this.keywords.join(', ')}`)
-		} else if (packages.length === 1) {
-			this.ui.info(`found one package: ${packages[0]}`)
-		} else {
-			this.ui.info('found the following packages:')
-			this.ui.info('')
-			packages.forEach((p) => {
-				this.ui.info(`  ${p}`)
-			})
+	options: {
+		format: {
+			type: z.optional(z.enum(['toon', 'text', 'json'])),
+			description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
+			default: 'toon' as const
+		},
+		fields: {
+			type: z.optional(z.string()),
+			description: "Extra fields to report, comma separated. Only 'keywords' is available"
 		}
+	},
+	context: { searchByKeywords },
+	async run(args) {
+		const fields = parseFields(args.fields)
+		if (!fields) {
+			this.ui.info(`error: unknown value for --fields: ${args.fields}`)
+			this.ui.info('help[1]: The only extra field is `keywords`. Run `plugins search --fields keywords`')
+			return
+		}
+		// `searchByKeywords` matches packages carrying *all* of the keywords it is given.
+		// A cli declaring several keywords wants a package matching *any* of them, so query
+		// one keyword at a time and union the results, first-seen order wins.
+		const found = await Promise.all(this.keywords.map((keyword) => this.context.searchByKeywords([keyword])))
+		// a `Map` keyed by name is the union and the provenance in one pass: insertion order is
+		// first-seen order, and a package matched by a later keyword appends rather than repeats.
+		const packages = new Map<string, string[]>()
+		found.forEach((names, i) => {
+			names.forEach((name) => {
+				const matched = packages.get(name)
+				if (matched) matched.push(this.keywords[i]!)
+				else packages.set(name, [this.keywords[i]!])
+			})
+		})
+		reportPackages(this.ui, args.format, fields, [...packages].map(toPackage), this.keywords)
 	}
 })
+
+type FoundPackage = { name: string; keywords: string[] }
+
+function toPackage([name, keywords]: [string, string[]]): FoundPackage {
+	return { name, keywords }
+}
+
+/**
+ * Reads `--fields` into the set of extra columns to report.
+ *
+ * `name` is not one of them: it is the row's identity, so it is always present and
+ * naming it is accepted as a no-op rather than rejected. Returns `undefined` for an
+ * unrecognized field, which the caller reports — silently dropping it would hand back a
+ * narrower result than was asked for, which AXI treats as worse than an error.
+ */
+function parseFields(fields: string | undefined) {
+	if (fields === undefined) return { keywords: false }
+	const requested = fields.split(',').map((f) => f.trim())
+	if (requested.some((f) => f !== 'keywords' && f !== 'name')) return undefined
+	return { keywords: requested.includes('keywords') }
+}
+
+/**
+ * Renders the search result in the caller's chosen format.
+ *
+ * `toon` is the default because a cli's plugin search is read by an agent far more often
+ * than by a person, and toon is the cheaper read for one. It is a default, not the only
+ * option: `text` is the prose a human wants, and `json` is what survives a pipe.
+ */
+function reportPackages(
+	ui: { info(...args: any[]): void },
+	format: 'toon' | 'text' | 'json' | undefined,
+	fields: { keywords: boolean },
+	packages: FoundPackage[],
+	keywords: string[]
+) {
+	if (format === 'json') {
+		// no help line here — a `| jq` consumer wants the payload and nothing else.
+		const payload = fields.keywords ? packages : packages.map((p) => p.name)
+		ui.info(JSON.stringify({ packages: payload }, undefined, 2))
+		return
+	}
+	if (format === 'text') {
+		if (packages.length === 0) {
+			ui.info(`no package with keywords: ${keywords.join(', ')}`)
+			return
+		}
+		const describe = (p: FoundPackage) => (fields.keywords ? `${p.name} (${p.keywords.join(', ')})` : p.name)
+		if (packages.length === 1) {
+			ui.info(`found one package: ${describe(packages[0]!)}`)
+			return
+		}
+		ui.info('found the following packages:')
+		ui.info('')
+		packages.forEach((p) => {
+			ui.info(`  ${describe(p)}`)
+		})
+		return
+	}
+	if (packages.length === 0) {
+		ui.info(`packages: 0 packages found with keywords: ${keywords.join(', ')}`)
+		return
+	}
+	if (fields.keywords) {
+		// tabular toon: the extra column is worth a row per package, where the flat form is not.
+		// the cell joins on a space because comma is the field delimiter.
+		ui.info(`packages[${packages.length}]{name,keywords}:`)
+		packages.forEach((p) => {
+			ui.info(`  ${toonValue(p.name)},${toonValue(p.keywords.join(' '))}`)
+		})
+	} else {
+		ui.info(`packages[${packages.length}]: ${packages.map((p) => toonValue(p.name)).join(',')}`)
+	}
+	ui.info('help[1]: Run `plugins list` to see which of them are installed')
+}
+
+/**
+ * Quotes a toon value when it would otherwise be ambiguous.
+ *
+ * Package names have no reason to contain a comma, a quote, or a backslash, but the
+ * registry is not ours to trust: an unquoted one would read as two entries to whoever
+ * parses the output. `JSON.stringify` does the escaping, since toon strings escape the
+ * same way json ones do — hand-rolling it drops the backslash case, which is worse than
+ * not quoting at all (a trailing `\` would escape the closing quote).
+ */
+function toonValue(value: string) {
+	return /["\\,]|^\s|\s$/.test(value) ? JSON.stringify(value) : value
+}
 
 export const pluginsCommand = command({
 	name: 'plugins',
