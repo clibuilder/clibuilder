@@ -212,6 +212,62 @@ describe('searchPluginsCommand', () => {
 		expect(ctx.sl.reporter.getLogMessage()).toContain('"packages": []')
 	})
 
+	describe('--fields keywords', () => {
+		// `pkg-a` matches only the first keyword, `pkg-b` only the second, `pkg-both` carries both.
+		const mixed: Record<string, string[]> = {
+			'keyword-a': ['pkg-a', 'pkg-both'],
+			'keyword-b': ['pkg-both', 'pkg-b']
+		}
+		const searchMixed = (keywords: string[]) => Promise.resolve(keywords.flatMap((k) => mixed[k] ?? []))
+
+		async function search(ctx: ReturnType<typeof mockContext>, line: string) {
+			await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })
+				.command({ ...searchPluginsCommand, context: { searchByKeywords: searchMixed } })
+				.parse(argv(line))
+			return ctx.sl.reporter.getLogMessage()
+		}
+
+		test('reports which keyword found each package as a toon table', async () => {
+			expect(await search(mockContext(), 'string-bin search --fields keywords')).toContain(`packages[3]{name,keywords}:
+  pkg-a,keyword-a
+  pkg-both,keyword-a keyword-b
+  pkg-b,keyword-b`)
+		})
+
+		test('naming `name` alongside it is a no-op, not an error', async () => {
+			expect(await search(mockContext(), 'string-bin search --fields name,keywords')).toContain(
+				'packages[3]{name,keywords}:'
+			)
+		})
+
+		test('stays a flat array when the field is not asked for', async () => {
+			expect(await search(mockContext(), 'string-bin search')).toContain('packages[3]: pkg-a,pkg-both,pkg-b')
+		})
+
+		test('annotates the prose in --format text', async () => {
+			expect(await search(mockContext(), 'string-bin search --format text --fields keywords')).toContain(`  pkg-a (keyword-a)
+  pkg-both (keyword-a, keyword-b)
+  pkg-b (keyword-b)`)
+		})
+
+		test('turns the json payload into objects', async () => {
+			expect(await search(mockContext(), 'string-bin search --format json --fields keywords')).toContain(`{
+      "name": "pkg-both",
+      "keywords": [
+        "keyword-a",
+        "keyword-b"
+      ]
+    }`)
+		})
+
+		test('rejects an unknown field instead of silently dropping it', async () => {
+			const msg = await search(mockContext(), 'string-bin search --fields author')
+			expect(msg).toContain('error: unknown value for --fields: author')
+			expect(msg).toContain('help[1]: The only extra field is `keywords`')
+			expect(msg).not.toContain('packages[')
+		})
+	})
+
 	test('reports zero with every keyword when no keyword matches', async () => {
 		const ctx = mockContext()
 		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })
