@@ -4,7 +4,10 @@ const { cli } = require('clibuilder')
 
 const app = cli({
 	name: 'test-cli',
-	version: '1.0.0'
+	version: '1.0.0',
+	// enables the built-in `plugins` command, so `pnpm cli plugins list` and
+	// `pnpm cli plugins search` are reachable by hand.
+	keywords: ['test-cli']
 })
 	.default({
 		run() {
