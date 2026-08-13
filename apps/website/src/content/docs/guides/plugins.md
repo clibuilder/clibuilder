@@ -127,23 +127,16 @@ any of the CLI's keywords. It reads the local dependency tree only; it never tou
 
 ```sh
 $ my-cli plugins list
-found the following plugins:
-
-  my-cli-plugin
-  my-cli-plugin-git
-  @acme/my-cli-plugin-deploy
+plugins[3]: my-cli-plugin,my-cli-plugin-git,@acme/my-cli-plugin-deploy
+help[1]: Run `plugins search` to find more plugins on npm
 ```
 
-With exactly one match, and with none:
+With none installed:
 
 ```sh
 $ my-cli plugins list
-found one plugin: my-cli-plugin
-```
-
-```sh
-$ my-cli plugins list
-no plugin with keywords: my-cli-plugin
+plugins: 0 installed plugins found with keywords: my-cli-plugin
+help[1]: Run `plugins search` to find plugins to install
 ```
 
 Note what `list` is *not*: it reports what is installed, not what is loaded. A package can appear
@@ -151,29 +144,62 @@ here and still be inert because it is missing from the config's `plugins` array.
 
 ### `plugins search` — what exists on npm
 
-`search` queries the npm registry for published packages carrying the CLI's keywords. This is how a
-user finds a plugin they have not installed yet.
+`search` queries the npm registry for published packages carrying any of the CLI's keywords. This is
+how a user finds a plugin they have not installed yet.
 
 ```sh
 $ my-cli plugins search
-found the following packages:
+packages[3]: my-cli-plugin,my-cli-plugin-git,@acme/my-cli-plugin-deploy
+help[1]: Run `plugins list` to see which of them are installed
+```
+
+`search` also takes `--fields keywords`, which reports which of the CLI's keywords found each
+package — worth asking when one broad keyword can pull in a package that is not a plugin at all:
+
+```sh
+$ my-cli plugins search --fields keywords
+packages[2]{name,keywords}:
+  my-cli-plugin,my-cli
+  shared-tool,my-cli unional
+```
+
+### `--format` — who is reading
+
+Both sub-commands take `--format <toon|text|json>`. The default is `toon`, following the
+[Agent eXperience Interface](https://toonformat.dev): a CLI's own plugin metadata is read by an
+agent far more often than by a person, and toon is the cheaper read for one.
+
+`--format text` is the human-readable prose, and it is the one form that varies with the count:
+
+```sh
+$ my-cli plugins list --format text
+found the following plugins:
 
   my-cli-plugin
   my-cli-plugin-git
-  @acme/my-cli-plugin-deploy
-```
-
-The zero- and one-result forms mirror `list`, worded for packages rather than plugins:
-
-```sh
-$ my-cli plugins search
-no package with keywords: my-cli-plugin
 ```
 
 ```sh
-$ my-cli plugins search
-found one package: my-cli-plugin
+$ my-cli plugins list --format text
+found one plugin: my-cli-plugin
 ```
+
+```sh
+$ my-cli plugins list --format text
+no plugin with keywords: my-cli-plugin
+```
+
+`--format json` emits the payload alone — no help line — so it survives a pipe:
+
+```sh
+$ my-cli plugins list --format json | jq -r '.plugins[]'
+my-cli-plugin
+my-cli-plugin-git
+```
+
+`toon` and `json` report the same shape whatever the count, so a reader never has to branch on how
+many results there turned out to be. A value outside the three is a usage error: the CLI reports it
+and exits with code `2` rather than quietly falling back to the default.
 
 Neither sub-command installs anything or edits your config. Adopting a plugin stays a deliberate,
 two-step act:
