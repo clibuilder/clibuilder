@@ -26,6 +26,10 @@ export function isZodString(type: any | undefined): type is z.ZodString {
 	return isZodType(type, 'ZodString')
 }
 
+export function isZodEnum(type: any | undefined): type is z.ZodEnum<[string, ...string[]]> {
+	return isZodType(type, 'ZodEnum')
+}
+
 function isZodType(type: any | undefined, name: string) {
 	return Object.getPrototypeOf(type).constructor.name === name
 }

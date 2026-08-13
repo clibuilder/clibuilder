@@ -1,7 +1,7 @@
 import { findKey, reduceByKey } from 'type-plus'
 import type { parseArgv } from './argv.js'
 import type { cli } from './cli.js'
-import { isZodArray, isZodBoolean, isZodNumber, isZodOptional, isZodString, z } from './zod.js'
+import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from './zod.js'
 
 export namespace lookupCommand {
 	export type Result = {
@@ -165,7 +165,28 @@ function unwrapOptional(t: z.ZodType<any>): z.ZodType<any> {
 
 function convertValue(t: z.ZodType<any>, key: string, values: string[]): [any, lookupCommand.Error[]] {
 	const [r, errors] = parse(t, key, values)
-	return [r.success ? r.data : undefined, errors]
+	if (r.success) return [r.data, errors]
+	// `toParsable` reports the conversions it performs itself (boolean, number). Every other
+	// type — an enum most of all — is only rejected by the schema, and dropping that
+	// rejection is worse than it looks: the option falls back to its default, so the caller
+	// gets plausible output for a value the cli never honoured.
+	if (errors.length === 0) {
+		errors.push({ type: 'invalid-value', key, value: values[values.length - 1], message: describeValue(t, r.error) })
+	}
+	return [undefined, errors]
+}
+
+/**
+ * Says what the option would have accepted, in the caller's terms.
+ *
+ * An enum knows its own values, and listing them is what lets the caller fix the
+ * invocation in one step. Anything else falls back to what the schema said, which is
+ * still more specific than "invalid".
+ */
+function describeValue(t: z.ZodType<any>, error: z.ZodError) {
+	const inner = unwrapOptional(t)
+	if (isZodEnum(inner)) return `expected one of: ${inner.options.join(', ')}`
+	return error.issues[0]!.message
 }
 
 function parse(t: z.ZodType<any>, key: string, values: string[]) {

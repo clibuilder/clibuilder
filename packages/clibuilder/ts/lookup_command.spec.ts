@@ -467,4 +467,40 @@ describe('string options', () => {
 		expect(cmd).toBe(defaultCommand)
 		expect(args).toEqual({ _: [], abc: ['2', '3'] })
 	})
+	test('a value the schema rejects reports invalid-value with what the schema said', () => {
+		const defaultCommand = command({
+			name: '',
+			options: { abc: { type: z.string().email(), description: 'a' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=not-an-email')!
+		expect(args).toEqual({ _: [], abc: undefined })
+		a.satisfies(errors, [{ type: 'invalid-value', key: 'abc', value: 'not-an-email', message: 'Invalid email' }])
+	})
+})
+
+describe('enum options', () => {
+	const defaultCommand = command({
+		name: '',
+		options: { fmt: { type: z.optional(z.enum(['toon', 'json'])), default: 'toon' as const, description: 'a' } },
+		run() {}
+	})
+
+	test('accepts a declared value', () => {
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --fmt=json')!
+		expect(args).toEqual({ _: [], fmt: 'json' })
+		expect(errors).toEqual([])
+	})
+
+	// silently falling back to the default here would hand the caller output rendered in a
+	// format they did not ask for, and no way to tell that is what happened.
+	test('a value outside the enum reports invalid-value instead of taking the default', () => {
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --fmt=yaml')!
+		a.satisfies(errors, [
+			{ type: 'invalid-value', key: 'fmt', value: 'yaml', message: 'expected one of: toon, json' }
+		])
+		// the default still fills the slot, but the error is what the caller acts on:
+		// `builder` reports it and exits before the command ever reads the value.
+		expect(args).toEqual({ _: [], fmt: 'toon' })
+	})
 })
