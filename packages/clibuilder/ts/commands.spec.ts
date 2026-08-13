@@ -1,5 +1,5 @@
 import { builder } from './builder.js'
-import { searchPluginsCommand } from './commands.js'
+import { listPluginsCommand, searchPluginsCommand } from './commands.js'
 import { mockContext } from './context.mock.js'
 import { argv } from './test-utils/index.js'
 
@@ -13,7 +13,9 @@ describe('pluginsCommand', () => {
 				version: '',
 				keywords: ['plugin-cli-plugin']
 			}).parse(argv('test-cli plugins list'))
-			expect(ctx.sl.reporter.getLogMessage()).toContain('no plugin with keywords: plugin-cli-plugin')
+			expect(ctx.sl.reporter.getLogMessage()).toContain(
+				'plugins: 0 installed plugins found with keywords: plugin-cli-plugin'
+			)
 		})
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.
 		// thus this test will fail
@@ -26,7 +28,7 @@ describe('pluginsCommand', () => {
 				keywords: ['test-cli']
 			}).parse(argv('test-cli plugins list'))
 
-			expect(ctx.sl.reporter.getLogMessage()).toContain('found one plugin: cjs-plugin')
+			expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[1]: cjs-plugin')
 		})
 
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.
@@ -41,11 +43,112 @@ describe('pluginsCommand', () => {
 				keywords: ['test-cli']
 			}).parse(argv('test-cli plugins list'))
 			const msg = ctx.sl.reporter.getLogMessage()
-			expect(msg).toContain(`found the following plugins:
-
-  cjs-plugin
-  plugin-two`)
+			expect(msg).toContain('plugins[2]: cjs-plugin,plugin-two')
 		})
+	})
+})
+
+describe('listPluginsCommand', () => {
+	// the found names never come from the real dependency tree here: `findByKeywords` walks
+	// whatever is installed next to the cli, which is not something a test can pin down.
+	function list(ctx: ReturnType<typeof mockContext>, line: string, installed: string[] = [], keywords?: string[]) {
+		return builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: keywords ?? ['plugin-cli-plugin'] })
+			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(installed) } })
+			.parse(argv(line))
+	}
+
+	test('reports the installed plugins as toon by default', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list', ['pkg-x', 'pkg-y'])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[2]: pkg-x,pkg-y')
+	})
+
+	test('keeps the same shape for a single plugin', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list', ['pkg-x'])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[1]: pkg-x')
+	})
+
+	test('states the empty result as nothing installed, not nothing published', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list', [], ['keyword-a', 'keyword-b'])
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain('plugins: 0 installed plugins found with keywords: keyword-a, keyword-b')
+		expect(msg).toContain('help[1]: Run `plugins search` to find plugins to install')
+	})
+
+	test('suggests the registry when plugins are already installed', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list', ['pkg-x'])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('help[1]: Run `plugins search` to find more plugins on npm')
+	})
+
+	test('quotes plugin names that would read as two toon entries', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list', ['@scope/pkg-x', 'odd,name'])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[2]: @scope/pkg-x,"odd,name"')
+	})
+
+	test('returns the found plugins, whatever the format', async () => {
+		expect(await list(mockContext(), 'string-bin list', ['pkg-x', 'pkg-y'])).toEqual(['pkg-x', 'pkg-y'])
+		expect(await list(mockContext(), 'string-bin list --format json', ['pkg-x'])).toEqual(['pkg-x'])
+		expect(await list(mockContext(), 'string-bin list', [])).toEqual([])
+	})
+
+	test('--format text keeps the human-readable prose', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list --format text', ['pkg-x', 'pkg-y'])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain(`found the following plugins:
+
+  pkg-x
+  pkg-y`)
+	})
+
+	test('--format text reports one plugin and none in prose', async () => {
+		const one = mockContext()
+		await list(one, 'string-bin list --format text', ['pkg-x'])
+		expect(one.sl.reporter.getLogMessage()).toContain('found one plugin: pkg-x')
+
+		const none = mockContext()
+		await list(none, 'string-bin list --format text', [])
+		expect(none.sl.reporter.getLogMessage()).toContain('no plugin with keywords: plugin-cli-plugin')
+	})
+
+	test('--format json emits the payload alone, so it survives a pipe', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list --format json', ['pkg-x', 'pkg-y'])
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain(`{
+  "plugins": [
+    "pkg-x",
+    "pkg-y"
+  ]
+}`)
+		expect(msg).not.toContain('help[1]')
+	})
+
+	test('--format json states the empty result as data', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list --format json', [])
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('"plugins": []')
+	})
+
+	test('rejects an unknown --format value as a usage error', async () => {
+		const ctx = mockContext()
+		await list(ctx, 'string-bin list --format yaml', ['pkg-x'])
+
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain('invalid value for option --format')
+		expect(msg).not.toContain('plugins[')
+		expect(ctx.exitCode).toBe(2)
 	})
 })
 
