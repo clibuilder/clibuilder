@@ -4,6 +4,8 @@
 		"build": "turbo run build",
 		"check": "biome check",
 		"check:fix": "biome check --fix",
+		"cli": "turbo run build --filter=clibuilder --output-logs=errors-only 1>&2 && node test-apps/test-cli/bin.js",
+		"cli:esm": "turbo run build --filter=clibuilder --output-logs=errors-only 1>&2 && node test-apps/test-cli-esm/bin.mjs",
 		"clean": "turbo run clean",
 		"clibuilder": "pnpm --filter clibuilder",
 		"coverage": "turbo run coverage",
