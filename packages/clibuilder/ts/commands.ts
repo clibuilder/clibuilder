@@ -94,20 +94,29 @@ export const searchPluginsCommand = command({
 	description: 'Search only for available plugins',
 	context: { searchByKeywords },
 	async run() {
-		const packages = await this.context.searchByKeywords(this.keywords)
+		// `searchByKeywords` matches packages carrying *all* of the keywords it is given.
+		// A cli declaring several keywords wants a package matching *any* of them, so query
+		// one keyword at a time and union the results, first-seen order wins.
+		const found = await Promise.all(this.keywords.map((keyword) => this.context.searchByKeywords([keyword])))
+		const packages = [...new Set(found.flat())]
 		if (packages.length === 0) {
-			this.ui.info(`no package with keywords: ${this.keywords.join(', ')}`)
-		} else if (packages.length === 1) {
-			this.ui.info(`found one package: ${packages[0]}`)
-		} else {
-			this.ui.info('found the following packages:')
-			this.ui.info('')
-			packages.forEach((p) => {
-				this.ui.info(`  ${p}`)
-			})
+			this.ui.info(`packages: 0 packages found with keywords: ${this.keywords.join(', ')}`)
+			return
 		}
+		this.ui.info(`packages[${packages.length}]: ${packages.map(toonValue).join(',')}`)
+		this.ui.info('help[1]: Run `plugins list` to see which of them are installed')
 	}
 })
+
+/**
+ * Quotes a toon value when it would otherwise be ambiguous.
+ *
+ * Package names have no reason to contain a comma or a quote, but the registry is not
+ * ours to trust: an unquoted one would read as two entries to whoever parses the output.
+ */
+function toonValue(value: string) {
+	return /[",]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value
+}
 
 export const pluginsCommand = command({
 	name: 'plugins',

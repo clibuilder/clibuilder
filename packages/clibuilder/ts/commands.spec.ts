@@ -59,7 +59,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('no package with keywords: plugin-cli-plugin')
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages: 0 packages found with keywords: plugin-cli-plugin')
 	})
 
 	test('one plugin', async () => {
@@ -71,7 +71,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('found one package: pkg-x')
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[1]: pkg-x')
 	})
 
 	test('two plugins', async () => {
@@ -83,9 +83,65 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`found the following packages:
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: pkg-x,pkg-y')
+	})
 
-  pkg-x
-  pkg-y`)
+	test('suggests the next command when packages are found', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
+			})
+			.parse(argv('string-bin search'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('help[1]: Run `plugins list` to see which of them are installed')
+	})
+
+	test('quotes package names containing the toon delimiter', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve(['@scope/pkg-x', 'odd,name']) }
+			})
+			.parse(argv('string-bin search'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: @scope/pkg-x,"odd,name"')
+	})
+
+	test('searches each keyword separately and unions the results', async () => {
+		const ctx = mockContext()
+		const calls: string[][] = []
+		const found: Record<string, string[]> = {
+			'keyword-a': ['pkg-a', 'pkg-shared'],
+			'keyword-b': ['pkg-shared', 'pkg-b']
+		}
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })
+			.command({
+				...searchPluginsCommand,
+				context: {
+					searchByKeywords: (keywords: string[]) => {
+						calls.push(keywords)
+						return Promise.resolve(keywords.flatMap((k) => found[k] ?? []))
+					}
+				}
+			})
+			.parse(argv('string-bin search'))
+
+		expect(calls).toEqual([['keyword-a'], ['keyword-b']])
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[3]: pkg-a,pkg-shared,pkg-b')
+	})
+
+	test('reports zero with every keyword when no keyword matches', async () => {
+		const ctx = mockContext()
+		await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })
+			.command({
+				...searchPluginsCommand,
+				context: { searchByKeywords: (_: string[]) => Promise.resolve([]) }
+			})
+			.parse(argv('string-bin search'))
+
+		expect(ctx.sl.reporter.getLogMessage()).toContain('packages: 0 packages found with keywords: keyword-a, keyword-b')
 	})
 })
