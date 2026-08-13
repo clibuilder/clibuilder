@@ -12,5 +12,6 @@ export async function testCommand(command: cli.Command, argv: string, config?: R
 		.command(command)
 		.parse(tu.argv(`test-cli ${argv}`))
 	const messages = ctx.sl.reporter.getLogMessage()
-	return { result, messages }
+	// `undefined` when the command did not fail, matching a process that exits 0.
+	return { result, messages, exitCode: ctx.exitCode }
 }

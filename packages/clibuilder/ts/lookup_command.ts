@@ -142,7 +142,11 @@ function fillDefaultOptions(state: State) {
 	)
 }
 
-function lookupOptions(command: cli.Command, key: string): [string, cli.Command.Options.Entry] | [] {
+/**
+ * Finds the option a key refers to, by name or by alias.
+ * Returns an empty tuple when the command declares no such option.
+ */
+export function lookupOptions(command: cli.Command, key: string): [string, cli.Command.Options.Entry] | [] {
 	const opts = command.options
 	if (!opts) return []
 	const options = opts[key]

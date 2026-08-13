@@ -2,7 +2,7 @@ import { a } from 'assertron'
 import { assertType, type IsExtend, required, testType } from 'type-plus'
 import { builder } from './builder.js'
 import { mockContext } from './context.mock.js'
-import { type cli, command, z } from './index.js'
+import { CliError, type cli, command, exitCodes, z } from './index.js'
 import { argv, getFixturePath } from './test-utils/index.js'
 
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
@@ -129,7 +129,7 @@ describe('help', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli not-exist'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+		expect(ctx.sl.reporter.getLogMessage()).toContain(getHelpMessage(cli))
 	})
 	it('shows help if missing argument', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -138,7 +138,7 @@ describe('help', () => {
 			run() {}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+		expect(ctx.sl.reporter.getLogMessage()).toContain(`
 Usage: test-cli <arguments> [options]
 
 Arguments:
@@ -610,6 +610,179 @@ Options:
   [--debug-cli]          Display clibuilder debug messages
 `
 }
+
+describe('usage errors', () => {
+	it('names an unknown option and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({ run() {} })
+		await cli.parse(argv('test-cli --bogus'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('unknown option --bogus')
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('names a missing argument and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			arguments: [{ name: 'abc', description: 'arg abc' }],
+			run() {
+				fail('should not reach')
+			}
+		})
+		await cli.parse(argv('test-cli'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('missing required argument <abc>')
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('names extra arguments and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({ run() {} })
+		await cli.parse(argv('test-cli not-exist'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('unexpected argument: not-exist')
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('names an invalid option value and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			options: { abc: { description: 'abc', type: z.optional(z.number()) } },
+			run() {
+				fail('should not reach')
+			}
+		})
+		await cli.parse(argv('test-cli --abc=xyz'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain(
+			'invalid value for option --abc: expected to be number, received "xyz"'
+		)
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('names every error it found', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			arguments: [{ name: 'abc', description: 'arg abc' }],
+			run() {
+				fail('should not reach')
+			}
+		})
+		await cli.parse(argv('test-cli --bogus'))
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain('unknown option --bogus')
+		expect(msg).toContain('missing required argument <abc>')
+	})
+	it('shows the help message after the errors', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({ run() {} })
+		await cli.parse(argv('test-cli --bogus'))
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg.indexOf('unknown option --bogus')).toBeLessThan(msg.indexOf('Usage: test-cli'))
+	})
+	it('does not run the command', async () => {
+		const [builder] = setupBuilderTest()
+		const cli = builder.default({
+			run() {
+				fail('should not reach')
+			}
+		})
+		expect(await cli.parse(argv('test-cli --bogus'))).toBeUndefined()
+	})
+	it('leaves the exit code alone on success', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.default({ run() {} }).parse(argv('test-cli'))
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	it('exits with the error code when the config fails validation', async () => {
+		const ctx = mockContext({ fixtureDir: 'has-json-config' })
+		await builder(ctx, { name: 'show-config', version: '1.0.0' })
+			.default({
+				config: z.object({ b: z.string() }),
+				run() {
+					fail('should not reach')
+				}
+			})
+			.parse(argv('show-config'))
+		expect(ctx.exitCode).toBe(1)
+	})
+})
+
+describe('global options are accepted by every command', () => {
+	it('shows help for a sub command that declares no options', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.command({ name: 'cmd', run: () => fail('should not reach') })
+		await cli.parse(argv('test-cli cmd -h'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd')
+		expect(ctx.sl.reporter.getLogMessage()).not.toContain('unknown option')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	it('shows the version for a sub command that declares no options', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.command({ name: 'cmd', run: () => fail('should not reach') })
+		await cli.parse(argv('test-cli cmd --version'))
+		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	it('shows help even when the invocation is otherwise invalid', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			arguments: [{ name: 'abc', description: 'arg abc' }],
+			run: () => fail('should not reach')
+		})
+		await cli.parse(argv('test-cli --help'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+})
+
+describe('CliError', () => {
+	it('reports the message and exits with the error code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			run() {
+				throw new CliError('cannot reach the registry')
+			}
+		})
+		expect(await cli.parse(argv('test-cli'))).toBeUndefined()
+		expect(ctx.sl.reporter.getLogMessage()).toContain('cannot reach the registry')
+		expect(ctx.exitCode).toBe(1)
+	})
+	it('exits with the code the command chose', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			run() {
+				throw new CliError('unknown field "bogus"', { exitCode: exitCodes.usage })
+			}
+		})
+		await cli.parse(argv('test-cli'))
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('reports the help lines', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			run() {
+				throw new CliError('unknown field "bogus"', { help: ['valid fields: name, version'] })
+			}
+		})
+		await cli.parse(argv('test-cli'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('valid fields: name, version')
+	})
+	it('is caught when thrown asynchronously', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			async run() {
+				await Promise.resolve()
+				throw new CliError('async boom')
+			}
+		})
+		await cli.parse(argv('test-cli'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('async boom')
+		expect(ctx.exitCode).toBe(1)
+	})
+	it('does not swallow other errors', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			run() {
+				throw new Error('boom')
+			}
+		})
+		await expect(cli.parse(argv('test-cli'))).rejects.toThrow('boom')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+})
 
 describe('--show-config (#317)', () => {
 	it('prints the config and the file it was loaded from', async () => {

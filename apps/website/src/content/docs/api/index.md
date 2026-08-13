@@ -19,12 +19,15 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | `defineKey()` / `defineCollectionKey()` | Create typed plugin registry keys |
 | [`parseArgv()`](/clibuilder/api/parse-argv/) | The raw argv tokenizer, exported for reuse |
 | [`enableCompileCache()`](/clibuilder/api/compile-cache/) | Opt into Node's V8 compile cache, from `clibuilder/compile-cache` |
+| `isCliError()` | Whether a caught value is a [`CliError`](/clibuilder/guides/failing/) |
 
 ## Values
 
 | Export | Purpose |
 | --- | --- |
 | [`z`](/clibuilder/api/zod/) | The zod instance used for every schema in the library |
+| [`exitCodes`](/clibuilder/guides/failing/#exit-codes) | The codes the cli exits with — `success`, `error`, `usage` |
+| [`CliError`](/clibuilder/guides/failing/#failing-from-a-command) | Thrown from `run()` to fail the cli with a message and an exit code |
 
 ## Types
 

@@ -40,7 +40,16 @@ export function context() {
 			return (loadingCommands = loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames))
 		},
 		cwd,
-		exit: process.exit,
+		/**
+		 * Records the code the process should exit with.
+		 *
+		 * `process.exit()` would end the process on the spot and truncate whatever
+		 * is still buffered on stdout, so the code is recorded instead and node
+		 * exits with it once the cli is done and the event loop drains.
+		 */
+		exit(code?: number) {
+			process.exitCode = code
+		},
 		createCommandUI(id: string) {
 			return createUI(sl.getLogger(id))
 		},

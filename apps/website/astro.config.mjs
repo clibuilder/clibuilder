@@ -45,6 +45,7 @@ export default defineConfig({
 						{ label: 'Arguments & Options', slug: 'guides/arguments-and-options' },
 						{ label: 'Configuration', slug: 'guides/configuration' },
 						{ label: 'Plugins', slug: 'guides/plugins' },
+						{ label: 'Failing', slug: 'guides/failing' },
 						{ label: 'Testing', slug: 'guides/testing' },
 						{ label: 'Publishing', slug: 'guides/publishing' }
 					]

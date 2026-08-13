@@ -14,6 +14,7 @@ export {
 	readConfigFile,
 	resolveConfig
 } from './config.js'
+export { CliError, exitCodes, isCliError } from './errors.js'
 export * from './registry.js'
 export * from './testing/test_command.js'
 export * from './zod.js'

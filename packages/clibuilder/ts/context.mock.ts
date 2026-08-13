@@ -13,10 +13,13 @@ export namespace mockContext {
 	export type Params = { fixtureDir?: string; logLevel?: LogLevel }
 }
 
-export function mockContext(params?: mockContext.Params): Context & { sl: StandardLogForTest } {
+export function mockContext(
+	params?: mockContext.Params
+): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined } {
 	const { fixtureDir, logLevel } = required({ logLevel: logLevels.debug }, params)
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
 	const sl = createStandardLogForTest({ logLevel })
+	let exitCode: number | undefined
 	return {
 		async loadConfig(configName: string) {
 			return (await this.resolveConfig(configName)).config
@@ -28,10 +31,18 @@ export function mockContext(params?: mockContext.Params): Context & { sl: Standa
 			return loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames)
 		},
 		cwd,
+		/**
+		 * Records the code instead of touching `process.exitCode`,
+		 * so a test can assert the cli failed without failing the test run.
+		 * It is also reported through `ui` so the exit shows up in the log messages.
+		 */
 		exit: function (this: any, code?: number) {
-			// istanbul ignore next
+			exitCode = code
 			this.ui.error(code === undefined ? 'exit' : `exit with ${code}`)
 		} as any,
+		get exitCode() {
+			return exitCode
+		},
 		createCommandUI(id: string) {
 			return createUI(sl.getLogger(id))
 		},

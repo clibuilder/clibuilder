@@ -5,7 +5,8 @@ import type { Command } from './command.internal.types.js'
 import { getBaseCommand, pluginsCommand } from './commands.js'
 import { describeConfigSource } from './config.js'
 import type { Context } from './context.js'
-import { lookupCommand } from './lookup_command.js'
+import { exitCodes, formatLookupError, isCliError } from './errors.js'
+import { lookupCommand, lookupOptions } from './lookup_command.js'
 import { createRegistry } from './registry.js'
 import { state } from './state.js'
 import type { z } from './zod.js'
@@ -63,7 +64,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		const { args: baseArgs } = lookupCommand(getBaseCommand(s.description, { config: !!s.configName }), rawArgs)
+		const baseCommand = getBaseCommand(s.description, { config: !!s.configName })
+		const { args: baseArgs } = lookupCommand(baseCommand, rawArgs)
 		if (baseArgs.silent) {
 			delete rawArgs.silent
 			s.displayLevel = 'none'
@@ -84,8 +86,20 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const r = lookupCommand(s.command, rawArgs)
 		const { args, command } = r
 
-		if (args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
-		if (r.errors.length > 0) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+		if (baseArgs.version || args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
+		// `--help` is answered before the errors are reported: it is the one flag
+		// that is always valid, and asking for help is not a usage error.
+		if (baseArgs.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+
+		// the global options live on the base command, so a sub command that declares
+		// no options of its own reports them as unknown. They are always accepted.
+		const errors = r.errors.filter((e) => !(e.type === 'invalid-key' && !!lookupOptions(baseCommand, e.key)[0]))
+		if (errors.length > 0) {
+			const ui = createCommandInstance(context, s, r.command, registry).ui
+			for (const e of errors) ui.error(formatLookupError(e, command))
+			ui.showHelp()
+			return context.exit(exitCodes.usage)
+		}
 
 		if (command.config) {
 			const configName = typeof s.configName === 'string' ? s.configName : s.name
@@ -96,13 +110,22 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				context.ui.error('config fails validation:')
 				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
 				createCommandInstance(context, s, r.command, registry).ui.showHelp()
-				return
+				return context.exit(exitCodes.error)
 			}
 			s.config = config
 		}
 		const commandInstance = createCommandInstance(context, s, command, registry)
-		if (!commandInstance.run || args.help) return commandInstance.ui.showHelp()
-		return commandInstance.run(args as any)
+		if (!commandInstance.run) return commandInstance.ui.showHelp()
+		try {
+			return await commandInstance.run(args as any)
+		} catch (e) {
+			// a command signals failure by throwing `CliError`. Anything else is a
+			// defect in the command and keeps propagating to the caller.
+			if (!isCliError(e)) throw e
+			commandInstance.ui.error(e.message)
+			for (const h of e.help) commandInstance.ui.error(h)
+			return context.exit(e.exitCode)
+		}
 	}
 
 	/**
