@@ -8,7 +8,7 @@ function testCommand(
   command: cli.Command,
   argv: string,
   config?: Record<string, any>
-): Promise<{ result: any; messages: string }>
+): Promise<{ result: any; messages: string; exitCode: number | undefined }>
 ```
 
 Runs a single command against a throwaway CLI (`test-cli`, version `1.0.0`) and returns what it did.
@@ -47,6 +47,7 @@ expect(messages).toBe('miku')
 | --- | --- | --- |
 | `result` | `any` | What `run()` returned or resolved to. |
 | `messages` | `string` | Everything written through `this.ui` — `info`, `warn`, and `error` — joined with `\n`. Empty when nothing was printed. |
+| `exitCode` | `number \| undefined` | The code the cli would have exited with, or `undefined` when it did not fail. |
 
 The display level is `info`, so `this.ui.debug()` output does **not** appear in `messages` unless the
 `argv` you pass includes `--verbose`.
@@ -84,18 +85,22 @@ const { result } = await testCommand(
 expect(result).toEqual({ a: 'hi' })
 ```
 
-Passing a config that fails the schema is how you test the failure path — `result` is `undefined` and
-`messages` carries the validation errors and the help message.
+Passing a config that fails the schema is how you test the failure path — `result` is `undefined`,
+`exitCode` is `1`, and `messages` carries the validation errors and the help message.
 
 ## Asserting on failures
 
-Usage errors don't reject; they print help. So assert on `messages`:
+Failures don't reject — they are reported and recorded. Assert on `exitCode` and `messages`:
 
 ```ts
-const { result, messages } = await testCommand(cmd, 'cmd --unknown-flag')
+const { result, messages, exitCode } = await testCommand(cmd, 'cmd --unknown-flag')
 expect(result).toBeUndefined()
-expect(messages).toContain('Usage:')
+expect(exitCode).toBe(2)
+expect(messages).toContain('unknown option --unknown-flag')
 ```
+
+A command that throws [`CliError`](/clibuilder/guides/failing/) is recorded the same way, with the
+code it chose.
 
 See [Testing](/clibuilder/guides/testing/) for the wider picture, including injecting fakes through a
 command's `context`.

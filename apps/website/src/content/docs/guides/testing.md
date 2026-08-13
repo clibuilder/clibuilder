@@ -30,6 +30,8 @@ test('cmd-a returns x and says miku', async () => {
 ```
 
 - **`result`** is whatever `run()` returned or resolved to.
+- **`exitCode`** is the code the cli would have exited with, or `undefined` when the command did not
+  fail — see [Failing](/clibuilder/guides/failing/).
 - **`messages`** is everything the command wrote through `this.ui`, joined with newlines — `info`,
   `warn`, and `error` all land here, so a test can assert on user-facing output without capturing
   stdout.
