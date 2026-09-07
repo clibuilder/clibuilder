@@ -480,7 +480,7 @@ describe('loadConfig()', () => {
 					b: z.string()
 				}),
 				run() {
-					fail('should not reach')
+					expect.fail('should not reach')
 				}
 			})
 			.parse(argv('show-config'))
@@ -624,7 +624,7 @@ describe('usage errors', () => {
 		const cli = builder.default({
 			arguments: [{ name: 'abc', description: 'arg abc' }],
 			run() {
-				fail('should not reach')
+				expect.fail('should not reach')
 			}
 		})
 		await cli.parse(argv('test-cli'))
@@ -643,7 +643,7 @@ describe('usage errors', () => {
 		const cli = builder.default({
 			options: { abc: { description: 'abc', type: z.optional(z.number()) } },
 			run() {
-				fail('should not reach')
+				expect.fail('should not reach')
 			}
 		})
 		await cli.parse(argv('test-cli --abc=xyz'))
@@ -657,7 +657,7 @@ describe('usage errors', () => {
 		const cli = builder.default({
 			arguments: [{ name: 'abc', description: 'arg abc' }],
 			run() {
-				fail('should not reach')
+				expect.fail('should not reach')
 			}
 		})
 		await cli.parse(argv('test-cli --bogus'))
@@ -676,7 +676,7 @@ describe('usage errors', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run() {
-				fail('should not reach')
+				expect.fail('should not reach')
 			}
 		})
 		expect(await cli.parse(argv('test-cli --bogus'))).toBeUndefined()
@@ -692,7 +692,7 @@ describe('usage errors', () => {
 			.default({
 				config: z.object({ b: z.string() }),
 				run() {
-					fail('should not reach')
+					expect.fail('should not reach')
 				}
 			})
 			.parse(argv('show-config'))
@@ -703,7 +703,7 @@ describe('usage errors', () => {
 describe('global options are accepted by every command', () => {
 	it('shows help for a sub command that declares no options', async () => {
 		const [builder, ctx] = setupBuilderTest()
-		const cli = builder.command({ name: 'cmd', run: () => fail('should not reach') })
+		const cli = builder.command({ name: 'cmd', run: () => expect.fail('should not reach') })
 		await cli.parse(argv('test-cli cmd -h'))
 		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd')
 		expect(ctx.sl.reporter.getLogMessage()).not.toContain('unknown option')
@@ -711,7 +711,7 @@ describe('global options are accepted by every command', () => {
 	})
 	it('shows the version for a sub command that declares no options', async () => {
 		const [builder, ctx] = setupBuilderTest()
-		const cli = builder.command({ name: 'cmd', run: () => fail('should not reach') })
+		const cli = builder.command({ name: 'cmd', run: () => expect.fail('should not reach') })
 		await cli.parse(argv('test-cli cmd --version'))
 		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
 		expect(ctx.exitCode).toBeUndefined()
@@ -720,7 +720,7 @@ describe('global options are accepted by every command', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({
 			arguments: [{ name: 'abc', description: 'arg abc' }],
-			run: () => fail('should not reach')
+			run: () => expect.fail('should not reach')
 		})
 		await cli.parse(argv('test-cli --help'))
 		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli')

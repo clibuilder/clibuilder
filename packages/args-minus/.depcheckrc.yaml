@@ -1,6 +1,4 @@
 ignores:
   - "@repobuddy/*"
-  - "@types/jest"
-  - jest-*
+  - "@vitest/coverage-istanbul"
   - rimraf
-  - ts-jest

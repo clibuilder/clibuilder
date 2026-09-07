@@ -4,7 +4,8 @@
 		"outDir": "esm",
 		"rootDir": "src",
 		"exactOptionalPropertyTypes": true,
-		"verbatimModuleSyntax": true
+		"verbatimModuleSyntax": true,
+		"types": ["node", "vitest/globals"]
 	},
 	"include": ["src"]
 }
