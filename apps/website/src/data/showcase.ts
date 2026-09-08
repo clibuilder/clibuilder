@@ -44,11 +44,23 @@ export const showcase: ShowcaseEntry[] = [
 	{
 		name: 'eslintest',
 		description: 'Test runner for eslint configs, rules, and plugins.',
-		repo: 'https://github.com/unional/eslintest'
+		repo: 'https://github.com/repobuddy/eslintest'
 	},
 	{
 		name: 'upstream-monitor',
 		description: 'Watches upstream dependencies of a project and reports what has moved.',
 		repo: 'https://github.com/jplomas/upstream-monitor'
+	},
+	{
+		name: 'buddy-agent-harness',
+		description: "Sets up a repository's agent configuration — AGENTS.md and skills — across coding agent harnesses.",
+		repo: 'https://github.com/repobuddy/buddy-agent-harness',
+		npm: 'https://www.npmjs.com/package/buddy-agent-harness'
+	},
+	{
+		name: 'buddy-codecov',
+		description: "Compares a branch's test coverage against the Codecov report stored for its base.",
+		repo: 'https://github.com/repobuddy/buddy-codecov',
+		npm: 'https://www.npmjs.com/package/buddy-codecov'
 	}
 ]
