@@ -140,7 +140,7 @@ describe('specifying boolean options', () => {
 	it.todo('throws if one of the multiple values is invalid')
 })
 
-it.skip('can specify the type of options', () => {
+it('can specify the type of options', () => {
 	expect(
 		parseArgs({
 			args: ['--num=1', '--bool=false', '--str=abc'],

@@ -1,11 +1,8 @@
 ignores:
-  - "@repobuddy/jest"
-  - "@types/jest"
   - "@typescript-eslint/parser"
+  - "@vitest/coverage-istanbul"
   - clibuilder-plugin-dummy
-  - jest-*
   - standard-log-color
-  - ts-jest
   - tslib
   - async-plugin
   - bad-plugin
