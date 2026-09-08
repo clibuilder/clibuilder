@@ -44,11 +44,34 @@ export const showcase: ShowcaseEntry[] = [
 	{
 		name: 'eslintest',
 		description: 'Test runner for eslint configs, rules, and plugins.',
-		repo: 'https://github.com/unional/eslintest'
+		repo: 'https://github.com/repobuddy/eslintest'
 	},
 	{
 		name: 'upstream-monitor',
 		description: 'Watches upstream dependencies of a project and reports what has moved.',
 		repo: 'https://github.com/jplomas/upstream-monitor'
+	},
+	{
+		name: 'buddy-agent-harness',
+		description: "Sets up a repository's agent configuration — AGENTS.md and skills — across coding agent harnesses.",
+		repo: 'https://github.com/repobuddy/buddy-agent-harness',
+		npm: 'https://www.npmjs.com/package/buddy-agent-harness'
+	},
+	{
+		name: 'buddy-codecov',
+		description: "Compares a branch's test coverage against the Codecov report stored for its base.",
+		repo: 'https://github.com/repobuddy/buddy-codecov',
+		npm: 'https://www.npmjs.com/package/buddy-codecov'
+	},
+	{
+		name: 'node-supported-releases',
+		description: 'Reports which Node.js release lines are currently supported.',
+		repo: 'https://github.com/unional/node-supported-releases',
+		npm: 'https://www.npmjs.com/package/node-supported-releases'
+	},
+	{
+		name: 'just-func-schema',
+		description: 'Schema and spec validator for just-func, a JSON-interoperable functional language.',
+		repo: 'https://github.com/justland/just-func'
 	}
 ]
