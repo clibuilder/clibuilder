@@ -62,16 +62,5 @@ export const showcase: ShowcaseEntry[] = [
 		description: "Compares a branch's test coverage against the Codecov report stored for its base.",
 		repo: 'https://github.com/repobuddy/buddy-codecov',
 		npm: 'https://www.npmjs.com/package/buddy-codecov'
-	},
-	{
-		name: 'node-supported-releases',
-		description: 'Reports which Node.js release lines are currently supported.',
-		repo: 'https://github.com/unional/node-supported-releases',
-		npm: 'https://www.npmjs.com/package/node-supported-releases'
-	},
-	{
-		name: 'just-func-schema',
-		description: 'Schema and spec validator for just-func, a JSON-interoperable functional language.',
-		repo: 'https://github.com/justland/just-func'
 	}
 ]
