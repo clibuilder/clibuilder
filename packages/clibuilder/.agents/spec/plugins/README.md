@@ -128,6 +128,7 @@ may be stored under it.
 | Trigger | `defineKey<T>(id)` or `defineCollectionKey<T>(id)` |
 | Inputs | an identifier |
 | Outcome | a key whose kind selects the single-owner or the many-contributor policy |
+| the identifier is the identity | two keys built separately from one id | `two keys sharing an identifier are the same key` |
 
 **Extensions.** None — the call is total: it constructs a key and cannot fail.
 Two keys sharing an id are the same key by design, which is how a plugin reaches
@@ -224,6 +225,8 @@ graph TD
   DEF[an identifier] --> WK{which was called?}
   WK -- defineKey --> VK["a value key: the single-owner policy of C"]
   WK -- defineCollectionKey --> CK["a collection key: the many-contributor policy of C"]
+  VK --> ID[the identifier is the identity: two keys sharing one id are one key, however each was constructed]
+  CK --> ID
 ```
 
 ## Scenario map
@@ -274,3 +277,4 @@ graph TD
 | --- | --- | --- |
 | a value key: the single-owner policy | `defineKey` | `a key defined as a value takes the single-owner policy` |
 | a collection key: the many-contributor policy | `defineCollectionKey` | `a key defined as a collection takes the many-contributor policy` |
+| the identifier is the identity | two keys built separately from one id | `two keys sharing an identifier are the same key` |

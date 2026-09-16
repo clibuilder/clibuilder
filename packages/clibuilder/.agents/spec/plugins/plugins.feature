@@ -44,7 +44,7 @@ Feature: Plugins
   Scenario: the commands a plugin adds are returned to the host
     Given a plugin that adds commands during activation
     When it is activated
-    Then those commands are among the ones returned to the host
+    Then the commands returned to the host are exactly the ones it added, with nothing else and nothing repeated
 
   # ── UC2 — the activation context ──
 
@@ -153,3 +153,8 @@ Feature: Plugins
     Given a key defined as a collection key
     When it is registered twice
     Then both registrations are kept
+
+  Scenario: two keys sharing an identifier are the same key
+    Given two keys built separately from the same identifier
+    When one plugin registers against the first and another reads the second
+    Then the reader sees what the first registered
