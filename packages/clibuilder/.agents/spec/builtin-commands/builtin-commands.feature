@@ -67,6 +67,11 @@ Feature: Built-in commands
     When plugins list is run
     Then the found names are returned to the caller, not only printed
 
+  Scenario: plugins search declares both a format and a fields option
+    Given the plugins search command as declared
+    When its options are inspected
+    Then it offers a format option and a fields option
+
   Scenario: plugins list declares no fields option
     Given the plugins list command as declared
     When its options are inspected

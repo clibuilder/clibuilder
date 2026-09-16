@@ -237,6 +237,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
 | name list, alias ls | any | `plugins list can be invoked as ls` |
 | no fields option | any | `plugins list declares no fields option` |
+| name search, and a format and fields option | any | `plugins search declares both a format and a fields option` |
 
 ### UC3 — `plugins search`
 
