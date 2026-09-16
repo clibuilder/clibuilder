@@ -1,3 +1,4 @@
+@frozen
 Feature: Testing support
 
   Exercise a command the way a user would, without spawning a process. The real

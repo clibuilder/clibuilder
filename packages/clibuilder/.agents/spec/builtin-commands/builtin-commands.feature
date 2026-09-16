@@ -1,3 +1,4 @@
+@frozen
 Feature: Built-in commands
 
   The commands every clibuilder application gets without writing them: the

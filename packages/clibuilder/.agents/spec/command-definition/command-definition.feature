@@ -1,3 +1,4 @@
+@frozen
 Feature: Command definition
 
   A command author states a command once — its name, its inputs, and what it

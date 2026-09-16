@@ -1,3 +1,4 @@
+@frozen
 Feature: Input parsing
 
   Turn an argv vector into the command the user meant, the values they meant,

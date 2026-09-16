@@ -1,3 +1,4 @@
+@frozen
 Feature: Plugins
 
   Import the plugin packages a configuration names, hand each a narrow

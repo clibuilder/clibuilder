@@ -1,3 +1,4 @@
+@frozen
 Feature: Presentation
 
   Everything the cli says. Messages are buffered until argv has settled how

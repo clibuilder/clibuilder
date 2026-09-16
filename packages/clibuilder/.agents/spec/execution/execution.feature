@@ -1,3 +1,4 @@
+@frozen
 Feature: Execution
 
   Turn declarations into a running program. Assembly derives state from the

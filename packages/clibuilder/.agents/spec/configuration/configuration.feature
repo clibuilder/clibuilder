@@ -1,3 +1,4 @@
+@frozen
 Feature: Configuration
 
   Find the config a CLI should use, read it in whatever format it is written,
