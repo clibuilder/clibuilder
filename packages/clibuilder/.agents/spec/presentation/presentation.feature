@@ -335,3 +335,15 @@ Feature: Presentation
     Given an expect-single error
     When it is described
     Then it names an option rather than an argument, says a single value was expected, and lists the values received
+
+  # ── UC3 — the two ui shapes ──
+
+  Scenario: the ui a command author calls needs no arguments to show help
+    Given the ui port a command author programs against
+    When its showHelp and showVersion are inspected
+    Then neither takes an argument
+
+  Scenario: the ui createUI returns is told what to render
+    Given the ui createUI returns
+    When its showHelp is inspected
+    Then it takes the cli name and the command to render

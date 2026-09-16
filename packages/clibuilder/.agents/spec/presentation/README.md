@@ -181,6 +181,10 @@ every command that reports one, in whichever format the reader asked for.
 | `formatOption` / `OutputFormat` | UC6 | — |
 | `formatLookupError` | UC7 | — |
 | `OutputUI` | UC6 | — |
+| `UI` and `DisplayLevel`, the ports in `core/ports.ts` | UC2, UC3, UC5 — what a command author programs against | — |
+| `BuilderUI` | UC1 — the buffered ui, `createUI.UI` plus `dump` | — |
+| `createUI.UI` | UC3, UC5 — what the adapter returns, which is not the port | — |
+| `generateHelpMessage` | UC3 — the help text `showHelp` renders | — |
 
 ### UC7 — `formatLookupError`: describe a usage error in words
 
@@ -227,6 +231,19 @@ graph TD
 The setter and the reader are not symmetric: the reader derives the level from
 the logger's own threshold, which is why a level the setter ignored still reads
 back as whatever the threshold actually is.
+
+### Sub-graph G2 — the two shapes of `showHelp` and `showVersion`, entered by UC3 and UC5
+
+The port and the adapter deliberately differ, and the difference is what lets a
+command author write `this.ui.showHelp()` with nothing to hand it.
+
+```mermaid
+graph TD
+  W[who is holding the ui?] --> WH{the port, or what createUI returned?}
+  WH -- "the port a command author gets" --> P1["showHelp() and showVersion() take no arguments"]
+  WH -- "what createUI returns" --> P2["showHelp(cliName, command) and showVersion(version) take what they render"]
+  P2 --> BR[execution binds the second into the first before a command runs]
+```
 
 ### Sub-graph B — generate help (`showHelp`), entered by UC3
 
@@ -407,6 +424,13 @@ graph TD
 | no description section | no description declared | `a command with no description shows no description section` |
 | no commands section | no sub-commands declared | `a command with no sub-commands shows no commands section` |
 | drop every empty section | a command declaring almost nothing | `a section with nothing to show is left out rather than rendered empty` |
+
+### UC3 — the two ui shapes
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| `showHelp()` and `showVersion()` take no arguments | the port a command author holds | `the ui a command author calls needs no arguments to show help` |
+| `showHelp(cliName, command)` takes what it renders | what `createUI` returns | `the ui createUI returns is told what to render` |
 
 ### UC4 — the signature format
 
