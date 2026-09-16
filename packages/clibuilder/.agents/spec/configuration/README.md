@@ -191,22 +191,33 @@ graph TD
 ### Sub-graph B — search (`findAnyFileUp`), entered by UC5
 
 ```mermaid
+Every candidate is tried in the current directory before the walk moves up, so
+the nearest directory wins and candidate order only breaks ties within one.
+
+```mermaid
 graph TD
-  S[start at cwd] --> D[read this directory once]
+  S[start at cwd] --> D[read this directory's entries once]
   D --> RD{readable?}
   RD -- no --> UP
-  RD -- yes --> C[try each candidate in order]
-  C --> M{a name matches?}
-  M -- no --> UP{at the filesystem root?}
-  M -- yes --> KIND{what kind of entry?}
+  RD -- yes --> C[try each candidate in declared order]
+  C --> EX{"an entry named exactly that?"}
+  EX -- yes --> KIND
+  EX -- no --> CI{case-insensitive platform?}
+  CI -- yes --> LOW{"an entry whose lower-cased name matches?"}
+  CI -- no --> NEXTC
+  LOW -- yes --> KIND{what kind of entry?}
+  LOW -- no --> NEXTC{another candidate?}
   KIND -- file --> HIT[return its path]
   KIND -- "symlink to a file" --> HIT
-  KIND -- "directory or dangling" --> C
+  KIND -- "a directory or a dangling symlink" --> NEXTC
+  NEXTC -- yes --> C
+  NEXTC -- no --> UP{at the filesystem root?}
   UP -- no --> PAR[move to the parent] --> D
   UP -- yes --> NONE[no match]
-  C --> CI{case-insensitive platform?}
-  CI -- yes --> EX[an exact name wins; otherwise a lower-cased match is accepted]
 ```
+
+The exact-name lookup runs first on every platform, which is what makes an
+exactly-named file win over a differently-cased one rather than the two racing.
 
 ### Sub-graph C — locate and read (`lookupConfig` → `resolveConfig`), entered by UC1 and UC2
 
@@ -227,12 +238,32 @@ graph TD
   FMT -- "js, cjs, mjs" --> MOD[import it] --> ACT{exports activate?}
   ACT -- yes --> WHOLE[the module itself]
   ACT -- no --> DEF[its default export]
-  FMT -- "json, jsonc" --> JS[parse permissively]
-  FMT -- "yml, yaml" --> YA[parse as YAML]
-  FMT -- "none" --> TRY[try JSON, then YAML, then module]
-  JS --> ERR{the parser reported errors?}
+  FMT -- "json, jsonc" --> JS[parse permissively] --> ERR{the parser reported errors?}
   ERR -- yes --> THROW[raise it, so the fallback chain can fire]
   ERR -- no --> VAL[the value]
+  FMT -- "yml, yaml" --> YA[parse as YAML] --> VAL
+  FMT -- "none" --> T1[try parsing it permissively as JSON] --> T1Q{did that raise?}
+  T1Q -- no --> VAL
+  T1Q -- yes --> T2[try YAML] --> T2Q{did that raise?}
+  T2Q -- no --> VAL
+  T2Q -- yes --> MOD
+```
+
+The permissive JSON parser recovers from syntax errors rather than throwing, so
+the raise is what makes the fallback chain work at all — without it a JS module
+would parse to `{}` and be accepted. The last fallback, importing an
+extension-less file as a module, is drawn because it is a real edge but carries
+**no scenario**: a file with no extension cannot be `import()`ed by name, so it
+is unreachable for anything the search could have found.
+
+### Sub-graph E — describe a source (`describeConfigSource`), entered by UC6
+
+```mermaid
+graph TD
+  DS[a source] --> ST{which kind?}
+  ST -- file --> DP[its path]
+  ST -- "package.json" --> DPP["its path, and the property named in words"]
+  ST -- none --> DN["the phrase not found"]
 ```
 
 ## Scenario map
@@ -241,8 +272,8 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| source is that file | a candidate file exists in an ancestor | `a config file in an ancestor directory is the source` |
-| source is the package.json property | no file, the property is present | `a package.json property is the source when no config file matches` |
+| source is that file, format from its extension | a candidate file exists in an ancestor | `a config file in an ancestor directory is the source` |
+| source is that package.json property | no file, the property is present | `a package.json property is the source when no config file matches` |
 | source is none | neither exists | `nothing found is reported as a source of its own` |
 
 ### UC2 — `resolveConfig` / `loadConfig`
@@ -251,7 +282,7 @@ graph TD
 | --- | --- | --- |
 | read and parse it | the source is a file | `a file source is read and parsed into the config value` |
 | the property's value is the config | the source is a package.json | `a package.json source yields that property's value` |
-| warn naming every candidate | the source is none | `nothing found warns with the directory and every name searched` |
+| warn, naming the cwd and every candidate | the source is none | `nothing found warns with the directory and every name searched` |
 | the value is undefined | the source is none | `nothing found yields an undefined config` |
 
 ### UC3 — `getConfigFilenames`
@@ -259,7 +290,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | the base names, as given | the name begins with a dot | `a config name already beginning with a dot is used as given` |
-| each base name plus its dotted variant | the name has no leading dot | `a plain config name also accepts its dotted variants` |
+| each base name, followed by its dotted variant | the name has no leading dot | `a plain config name also accepts its dotted variants` |
 
 ### UC4 — `readConfigFile`
 
@@ -269,8 +300,8 @@ graph TD
 | its default export | a module without `activate` | `a module config without activate yields its default export` |
 | parse permissively | a `.json` or `.jsonc` file | `a JSON config accepts comments and trailing commas` |
 | parse as YAML | a `.yml` or `.yaml` file | `a YAML config is parsed as YAML` |
-| try JSON, then YAML, then module | an extension-less file holding JSON | `an extension-less config holding JSON is parsed as JSON` |
-| try JSON, then YAML, then module | an extension-less file holding YAML | `an extension-less config holding YAML falls through to YAML` |
+| did that raise? — no, after JSON | an extension-less file holding JSON | `an extension-less config holding JSON is parsed as JSON` |
+| did that raise? — yes, then YAML | an extension-less file holding YAML | `an extension-less config holding YAML falls through to YAML` |
 | raise it | JSON parsing reported an error | `a JSON config the parser could not read raises rather than returning a recovered value` |
 
 ### UC5 — `findAnyFileUp` / `findFileUp`
@@ -279,20 +310,20 @@ graph TD
 | --- | --- | --- |
 | return its path | a match in the starting directory | `a file in the starting directory is found` |
 | move to the parent | no match until an ancestor | `the walk continues upward until a directory matches` |
-| candidate order breaks the tie | two candidates in the same directory | `two candidates in one directory are settled by candidate order` |
-| the nearest directory wins | candidates in two directories | `a later candidate in a nearer directory beats an earlier one further up` |
-| skip and continue | a directory cannot be read | `an unreadable directory is skipped rather than ending the walk` |
-| an exact name wins | case-insensitive platform, both cases present | `an exactly-named file wins over a differently-cased one` |
-| a lower-cased match is accepted | case-insensitive platform, only the other case present | `a differently-cased file matches on a case-insensitive filesystem` |
-| case-sensitive platform | only the other case present | `a differently-cased file does not match on a case-sensitive filesystem` |
-| symlink counts | the match is a symlink to a file | `a symlink pointing at a file counts as a match` |
-| directory does not count | the match is a directory | `a directory sharing a candidate's name is not a match` |
+| another candidate? — yes | two candidates in the same directory | `two candidates in one directory are settled by candidate order` |
+| another candidate? — no, then move to the parent | candidates in two directories | `a later candidate in a nearer directory beats an earlier one further up` |
+| readable? — no | a directory cannot be read | `an unreadable directory is skipped rather than ending the walk` |
+| an entry named exactly that? — yes | case-insensitive platform, both cases present | `an exactly-named file wins over a differently-cased one` |
+| an entry whose lower-cased name matches? — yes | case-insensitive platform, only the other case present | `a differently-cased file matches on a case-insensitive filesystem` |
+| case-insensitive platform? — no | only the other case present | `a differently-cased file does not match on a case-sensitive filesystem` |
+| symlink to a file | the match is a symlink to a file | `a symlink pointing at a file counts as a match` |
+| a directory or a dangling symlink | the match is a directory | `a directory sharing a candidate's name is not a match` |
 | no match | the walk reached the root | `a walk reaching the filesystem root with no match returns nothing` |
 
 ### UC6 — `describeConfigSource`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the path | a file source | `a file source is described by its path` |
-| the path and property | a package.json source | `a package.json source names the property as well as the path` |
-| a phrase | no source | `an absent source is described in words rather than left blank` |
+| its path | a file source | `a file source is described by its path` |
+| its path, and the property named in words | a package.json source | `a package.json source names the property as well as the path` |
+| the phrase not found | no source | `an absent source is described in words rather than left blank` |
