@@ -1,11 +1,10 @@
-import { readFileSync } from 'node:fs'
 import { extname } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import yaml from 'js-yaml'
 import { type ParseError, parse as parseJsonc, printParseErrorCode } from 'jsonc-parser'
 import type { UI } from './core/ports.js'
 import { findAnyFileUp } from './drivers/find_up.js'
 import { findPackageJson, getPackageJson } from './drivers/package_json.js'
+import { importModule, readTextFile } from './drivers/read_file.js'
 
 export const ctx = {
 	findPackageJson,
@@ -178,7 +177,7 @@ export async function readConfigFile(configFilePath: string) {
 	const format = getConfigFormat(configFilePath)
 	if (format === 'module') return readModuleConfig(configFilePath)
 
-	const content = readFileSync(configFilePath, 'utf-8')
+	const content = readTextFile(configFilePath)
 	if (format === 'jsonc') return parseJsoncOrThrow(content, configFilePath)
 	if (format === 'yaml') return yaml.load(content)
 
@@ -199,7 +198,7 @@ export async function readConfigFile(configFilePath: string) {
 // ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
 // istanbul ignore next
 async function readModuleConfig(configFilePath: string) {
-	const m = await import(pathToFileURL(configFilePath).href)
+	const m = await importModule(configFilePath)
 	if (m.activate) return m
 	return m.default
 }
