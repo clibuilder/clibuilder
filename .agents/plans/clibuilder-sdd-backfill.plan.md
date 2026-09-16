@@ -31,6 +31,20 @@ todos:
   - content: "Re-home the eight spec nodes onto the refactored layout"
     status: completed
   - content: "Re-run all eight node judges — every node changed during the sweep"
+    status: completed
+  - content: "Decide the four R6 instances: draw the guard, or delete the claim"
+    status: pending
+  - content: "Remediate: sweep R5 (under-branched structural twin) corpus-wide"
+    status: pending
+  - content: "Remediate: sweep R6 (stated constraint with no guard) corpus-wide"
+    status: pending
+  - content: "Move execution/'s 8 usage-error scenarios to presentation/, delete presentation/'s non-goal sentence"
+    status: pending
+  - content: "Fix testing/ sub-graph B — the sweep remediation that did not land"
+    status: pending
+  - content: "Fix the root spec.md placement map (line 28's stale 'validating')"
+    status: pending
+  - content: "Re-judge the six failing nodes, plus any clean node the sweep changed"
     status: pending
 ---
 
@@ -77,10 +91,10 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The gate is mid-run. Batch 1 of 3 is graded; batches 2 and 3 are not.** The
-judges are being run in threes rather than all eight at once — the earlier
-eight-wide fan-out died at seven-of-eight on a session limit, and batching lets
-each batch's verdicts be checkpointed here before the next starts.
+**The eight-judge run is COMPLETE and the gate verdict is `change`.** 2 nodes
+clean, 6 failing. Nothing is frozen; `status` stays `draft`. Batching in threes
+worked — the earlier eight-wide fan-out died at seven-of-eight on a session
+limit; each batch here was checkpointed before the next started.
 
 - **Batch 1 — `input-parsing`, `execution`, `presentation`: graded, all three
   `ALIGNED: false`.** See `## Judge verdicts — batch 1` below for the four
@@ -88,12 +102,14 @@ each batch's verdicts be checkpointed here before the next starts.
 - **Batch 2 — `builtin-commands`, `configuration`, `plugins`: graded.**
   `builtin-commands` and `configuration` are **clean** (`ALIGNED: true`, the
   first two of the run); `plugins` fails the builder lens on one undrawn edge.
-- **Batch 3 — `testing`, `command-definition`: dispatched, no verdicts taken.**
-  If this session died before they returned, re-run them.
+- **Batch 3 — `testing`, `command-definition`: graded.** Both fail builder and
+  architect.
 
-**Next action: collect batch 3, then run the remediation round.** Read
-`## A rule the gate found` below first — the remediation is a corpus-wide **R5
-sweep**, not four spot fixes.
+**Next action: run the remediation round, then re-judge the six failing nodes.**
+Read `### The remediation round — the shape it should take` below first: it is a
+corpus-wide **R5 + R6 sweep**, not eight spot fixes. Two blocking decisions are
+owed before the graphs can be called complete — see
+`### Blocking decisions — still owed`.
 The gate verdict cannot be `approve` — batch 1 already fails three lenses across
 three nodes, so this gate ends in **`change`**, and the remediation round runs
 before any re-judge. Do not freeze anything.
@@ -109,9 +125,10 @@ instances rather than one-offs — a scenario that no wrong subject can fail
 (`input-parsing`'s `HASD -- no`) are both worth sweeping corpus-wide the way
 R1–R4 were.
 
-**Assume nothing passes.** Six of the eight had never been graded at all. Of the
-six graded so far, four failed — including `input-parsing`, which the first judge
-called one of the strongest nodes in the corpus.
+**Oracle passed 8 for 8 — the backfill's content is right.** Every failure is a
+coverage or graph-completeness defect (a decision drawn but untested, or a shape
+stated in prose with no path in the graph). No judge disputed a behavior the
+corpus claims.
 
 Deterministic pre-checks green as of `e93eadf`: `check-spec-structure`
 blocking[0] with the three standing oversized advisories, `check-suite` OK
@@ -393,6 +410,15 @@ missing. One line does it:
 - **`testing`** — 4 genuine: UC4 had no **Actor / goal** line *and* no
   sub-graph (three scenarios on nothing), and B's three independent parameter
   fallbacks were drawn as one all-or-nothing decision. `489d213`.
+  **Correction (gate run, batch 3): only the UC4 half of this landed.** The
+  gate judge checked disk and found sub-graph B unchanged, and the conductor
+  verified it directly: `testing/README.md:173` still reads
+  `D{"for each of source, host and registry: given?"}` as a single two-branch
+  diamond, and `testing.feature` still has no source-only or host-only
+  scenario. **This entry overstated what `489d213` fixed** — it is the one
+  sweep verdict the gate run did not confirm; every other node's was
+  independently re-verified as landed. Treat a sweep verdict as a claim to
+  check, not a record of work done.
 - **`configuration`** — 3 genuine, one of each shape: B fanned out of one node
   into two parallel decisions with undefined order (the `input-parsing`
   sub-graph D defect again), `CI{case-insensitive?}` had no `no` branch, and
@@ -586,6 +612,128 @@ spec, not the node.
   in form: `input-parsing`, `testing` and `command-definition` tag the CFG node
   inline with a literal `(gap N)` label; `plugins` leaves `WI`/`WV` untagged and
   relies on the prose below the diagram. A style nit, not a lens failure.
+
+### Judge verdicts — batch 3 of 3, and the full tally
+
+| Node | oracle | builder | architect | ALIGNED |
+| --- | --- | --- | --- | --- |
+| `builtin-commands` | pass | pass | pass | **true** |
+| `configuration` | pass | pass | pass | **true** |
+| `input-parsing` | pass | **fail** | pass | false |
+| `execution` | pass | pass | **fail** | false |
+| `presentation` | pass | **fail** | pass | false |
+| `plugins` | pass | **fail** | pass | false |
+| `testing` | pass | **fail** | **fail** | false |
+| `command-definition` | pass | **fail** | **fail** | false |
+
+**8 of 8 graded. 2 clean, 6 failing. Pre-flight and conformance passed on all
+eight**, so the seven-governance declaration is confirmed correct and every
+behavioral node carries its four required sections.
+
+**Oracle passed 8 for 8.** The scope, the actor enumeration, the non-goals and
+the kill-or-ship judgment are sound corpus-wide — the backfill's *content* is
+right. **Builder failed five and architect three**, and every one of those is a
+**coverage or graph-completeness** defect: a decision drawn but not tested, or a
+shape stated in prose with no path in the graph. Not one judge disputed a
+behavior the corpus claims.
+
+**`testing`** — sub-graph B's collapsed three-parameter decision (see the
+correction on the sweep verdict above — this is the one remediation that did not
+land) plus the `argv` × space-containing-argument constraint stated in the
+Surface trace with no guard and no scenario.
+
+**`command-definition`** — UC1's Inputs row names three declaration shapes
+("either `run`, `commands`, or **both**") and the Surface trace says `run` "may
+coexist with `commands`", but the arm-selection graph distinguishes only
+run-only, commands-only and neither; a declaration carrying both collapses into
+the leaf arm untested. Plus the Surface trace's `context` × commands-only-arm
+exclusion, again with no guard.
+
+**A judge declining to fire is worth recording.** `command-definition` was
+briefed to look hard for R5 at its own `DF{declares default?}` — the decision
+with exactly that history — and **ruled it does not reproduce**: `DF` is
+reachable from all three option-typing paths, both arms are exercised, and the
+underlying mechanism (`Options.Entry`'s `Type` is never inferred per entry, so
+`default` widens to `any`) is provably uniform across the three, so one
+representative test suffices. It also re-verified that the UC2 re-derivation
+genuinely removed the duplication with `execution/`. That is discrimination
+working, not a rubber stamp.
+
+### R6 — a stated constraint with no guard in the graph
+
+The second rule this run found, distinct from R5 and firing on two nodes:
+**a surface-trace "may not combine with" or a stated input shape that the CFG
+carries no decision for.** Both bars name this defect explicitly — an extension
+with no path is a hole in the graph, and a forbidden combination with no guard
+is unenforceable prose, i.e. decoration.
+
+- `testing` — `argv` × an argument containing a space.
+- `command-definition` — `context` × the commands-only arm.
+- `command-definition` — `run` **and** `commands` declared together.
+
+Each resolves one of two ways, and the choice is per-instance: **draw the guard
+and let the 1:1 binding supply the scenario**, or **delete the claim** from the
+Surface trace because it is not actually enforced. Do not default to the first —
+a constraint the code does not enforce should not be specified as though it is.
+
+## Gate verdict — `change`
+
+**Nothing freezes. `status` stays `draft`. No `approval` is written.** Six nodes
+carry a failing lens, which forbids self-assertion as well as an advance
+(judge failures fail the confidence dimension), so there is no leash question to
+weigh here — the verdict is not the conductor's to assert either way.
+
+The remediation round runs next, then the failing nodes are re-judged. The two
+clean nodes (`builtin-commands`, `configuration`) do **not** need re-judging
+unless the sweep changes them — and R5/R6 may well change them, in which case
+they do.
+
+### Blocking decisions — resolved at this gate
+
+- **`@pinned`: nothing.** No judge asked for a behavior to be pinned as a seed.
+  Resolved by the run, not deferred again.
+- **Defect-as-is: endorsed, unanimously.** Every judge that read a defect
+  annotation called it honestly specified and not dressed as intent;
+  `plugins`' double-reporting entry was singled out as exemplary. The
+  convention stands.
+- **The split: hold all three.** Unanimous, and the move-makes-it-worse
+  arithmetic settles it. A formation/Warden call, not this gate's.
+- **The 8 usage-error scenarios: move to `presentation/`.** Ruled by two
+  independent judges on different evidence; `presentation/`'s non-goal sentence
+  is deleted, not reworded.
+
+### Blocking decisions — still owed
+
+- **`presentation`'s `--format` guard.** Is refusing an unsupported `--format`
+  value this node's own behavior (it needs a refusal scenario) or generic
+  option-type validation owned by `input-parsing`/`command-definition` (it is a
+  declared constraint and should not be drawn as this node's edge)? This is an
+  **R6 instance** and must be answered before the graph can be called complete.
+- **Each R6 instance's disposition** — draw the guard, or delete the claim. Four
+  instances, and the answer may differ per instance.
+
+### The remediation round — the shape it should take
+
+Two rules, swept corpus-wide, not eight spot fixes (`sdd:remediation-governance`
+— findings are evidence, and each correction is re-derived against the rule
+governing the artifact):
+
+1. **R5 sweep** — for each pair of parallel paths out of one dispatch node, diff
+   the decisions drawn on each arm; an asymmetry is a candidate. Then confirm
+   every drawn branch has a scenario a wrong subject could actually fail.
+2. **R6 sweep** — for every Surface-trace "may not combine with" cell and every
+   stated input shape, find its guard in the CFG or delete the claim.
+3. **R1 again, mildly** — `configuration` UC3/UC5 and `plugins` UC4 frame their
+   actor as an internal mechanism rather than a named Actors-table row.
+4. **The root `spec.md` placement map** — line 28's stale "validating".
+5. **Style nits, optional:** the `(gap N)` inline label is used by
+   `input-parsing`, `testing` and `command-definition` but not by `plugins`
+   (`WI`/`WV`) or `command-definition`'s `DF1`; `builtin-commands`' "installed"
+   is undefined against `plugins/`'s "activated".
+
+**Expect R5 and R6 to touch the two clean nodes too.** A sweep that finds
+nothing in `builtin-commands` and `configuration` is a result worth recording,
+not a step to skip.
 
 ### The `execution/` ↔ `presentation/` ownership ruling — now settled
 
