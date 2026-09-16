@@ -287,7 +287,7 @@ graph TD
   CACHE -- no --> START[start it, and keep the promise]
   LPG[load the plugins] --> LCACHE{"already loading?"}
   LCACHE -- yes --> LSAME[return the same promise]
-  LCACHE -- no --> LSTART[start it, and keep the promise]
+  LCACHE -- no --> LSTART[start the activation pass, and keep the promise]
   EX["exit(code)"] --> RECORD["record it as the process exit code"]
   RECORD --> NOTKILL["the process is never ended on the spot, so buffered output still reaches stdout"]
 ```
@@ -372,5 +372,6 @@ callers.
 | --- | --- | --- |
 | return the same promise; one filesystem walk is shared | config already being resolved | `concurrent config resolution shares one filesystem walk` |
 | start it, and keep the promise | config not yet being resolved | `the first config resolution starts the walk and keeps its promise` |
+| start the activation pass, and keep the promise | plugins not yet being loaded | `the first plugin load starts the activation pass and keeps its promise` |
 | return the same promise | plugins already being loaded | `concurrent plugin loading shares one activation pass` |
 | record it as the process exit code | `exit` called | `exiting records the code rather than ending the process` |

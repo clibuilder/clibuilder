@@ -230,6 +230,11 @@ Feature: Execution
     When a caller asks for the config
     Then the walk is started, and the same resolution answers the next caller
 
+  Scenario: the first plugin load starts the activation pass and keeps its promise
+    Given plugins not yet being loaded
+    When they are loaded
+    Then the activation pass is started and its promise is kept for later callers
+
   Scenario: concurrent plugin loading shares one activation pass
     Given a plugin load already in progress
     When another caller asks for the plugin commands
