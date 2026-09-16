@@ -95,50 +95,81 @@ the code, write the four sections, derive the `.feature` 1:1 off the scenario
 map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
-## NEXT — the impl phase, started
+## NEXT — the impl phase, 7 of 8 nodes verified
 
-**The spec gate is approved and frozen (below). The impl phase asks the next
-question: does the implementation honor the frozen contract?**
+**246 of 314 scenarios have now been checked against the running implementation.
+`presentation` (68) is the only node left — its judge died on a session rate
+limit mid-run (resets 16:10 America/Los_Angeles). Re-run it, then take the gate.**
 
-### The bridge does not exist, and that is the honest starting position
+| Node | scenarios | impl verdict |
+| --- | --- | --- |
+| `execution` | 53 | **53/53 pass** |
+| `input-parsing` | 53 | **53/53 pass** |
+| `configuration` | 33 | **33/33 pass** |
+| `builtin-commands` | 31 | **31/31 pass** |
+| `plugins` | 28 | **28/28 pass** |
+| `testing` | 26 | **26/26 pass** (after 1 code fix + 2 spec corrections) |
+| `command-definition` | 22 | **22/22 pass** |
+| `presentation` | 68 | **not run** — rate limit |
 
-`sdd:verify-scenarios` defines the scenario→test bridge the impl-judge reads:
-tests wrapped in `describe('spec:<node>')`, leaf titles matching the frozen
-scenario name verbatim, wired through `.agents/sdd/scenario-bridge.toml`.
+Root `spec.md` is `status: draft`, `testing/testing.feature` unfrozen from the
+Clearance re-open; the other seven suites remain `@frozen`. Suite green at 366.
 
-Measured state:
+### What the impl gate found that five spec-gate rounds could not
 
-- **315 frozen scenarios, 0 bound.**
-- **0** tests carry a `spec:<node>` describe wrapper.
-- **No** `scenario-bridge.toml`.
-- Baseline otherwise healthy: `pnpm build` OK, **366 tests pass** (3 skipped, 1
-  todo) across 20 suites.
+**Three false scenarios, all in `testing/`, all invisible to reading.** The spec
+was derived from source and never executed, and that is precisely how a wrong
+claim survives a reading-only gate:
 
-Building the full bridge means reconciling 366 existing tests — written
-independently, with their own titles — against 315 scenario-named leaves. That is
-a mission of its own, not a step inside this one.
+- **`mockContext`'s `logLevel` was dead.** It reached the test store, but
+  `createUI` set every logger it wrapped to `info` and standard-log prefers a
+  logger's own level over the store's. A real implementation defect — **fixed**
+  (`d781eba`).
+- **"defaults to debug" was a declared value, not an effective one.** The source
+  reads `required({ logLevel: logLevels.debug }, params)`; `createUI` overrode it
+  two lines later, so the effective default was `info`. Honouring the parameter
+  while leaving the declared default broke ten assertions in `builder.spec.ts` —
+  the suite naming which default was real. **The spec was wrong**, corrected
+  under Clearance.
+- **The bare-exit scenario was unobservable.** Every `Context.exit` call site
+  supplies a code, and a direct `exit()` lands in a buffered ui needing a
+  `dump()` the mock never issues. **Cut**, with its branch collapsed.
 
-### What is being run instead, and why it is the right first cut
+**One latent defect, found by tracing reachability rather than reading.**
+`builder.ts:98`'s global-option carve-out is unreachable for all six standard
+flags and engages only for a malformed *value* of a global flag on a bare
+sub-command, where it swallows the informative error and prints nothing. Filed;
+no frozen scenario covers it.
 
-The bridge *mechanizes* the question; it is not the question. This spec was
-derived by **reading** the source and never by running it — a few claims were
-settled with type probes, but most scenarios have never been executed against the
-implementation. So the highest-value impl work is the impl-judge's primary duty
-(ADR-0016): **treat each frozen scenario as the specified oracle, derive its
-expected behavior from `Given`/`When`/`Then`, and confirm independently that the
-implementation does that.**
+### The method that made this gate work
 
-Cold impl-judges run per node. Unlike the spec gate they **read `ts/**`** — that
-is the point of this gate — and may run the existing suite as reference.
+**Mutation backstops.** Two judges patched the source to *fix* a specified
+defect, confirmed the scenario went red, then reverted and diffed against origin.
+That is the difference between *the code does the buggy thing* and *the scenario
+detects the buggy thing* — it proves a defect-as-is scenario is load-bearing
+rather than vacuous. `input-parsing` proved four defects that way;
+`execution` proved five never-executed claims.
 
-**Two things they are told that an ordinary impl gate would not say:**
+**Probes must live inside the package.** ESM bare specifiers do not resolve from
+`/tmp`, so a probe importing `standard-log` fails there.
 
-1. **Nine scenarios specify known defects as current behavior.** Those must
-   **pass** — the code really does the buggy thing. One that *fails* means the
-   spec mis-described the defect, a finding about the spec's accuracy.
-2. **The `.feature` is frozen.** It is the bar, never the thing to adjust. A
-   behavior-changing gap is a `BLOCKER`, not an edit
-   (`sdd:ownership-governance`).
+**Assert the resolved value's identity, not the promise's**, when checking the
+config/plugin promise caches — the outer methods are `async`, so every caller
+gets a fresh wrapper around the same inner promise.
+
+**Concurrent judges share one working tree.** Three reported a stray probe left
+by another, two temporarily mutated source, and a judge killed by a rate limit
+left an orphan that the conductor had to remove. Every tree check came back
+byte-identical, but a fan-out of this shape wants **per-judge worktrees**, not
+cleanup discipline.
+
+### Owed before the gate can be re-approved
+
+1. Re-run `presentation`'s impl judge once the quota resets.
+2. `testing/` needs a spec-judge re-read — its `createCommandUI` arm and exit
+   prose changed after the last one (`938d4e7`).
+3. Re-freeze `testing/testing.feature` and restore `status: approved` with
+   `approval.spec`, then re-run `check-spec-state`.
 
 ## NEXT — the gate is APPROVED; this mission is done
 
