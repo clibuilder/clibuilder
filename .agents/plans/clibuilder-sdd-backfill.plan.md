@@ -33,19 +33,19 @@ todos:
   - content: "Re-run all eight node judges — every node changed during the sweep"
     status: completed
   - content: "Decide each live R6 instance: draw the guard, or delete the claim"
-    status: pending
+    status: completed
   - content: "Remediate: sweep R5 (under-branched structural twin) corpus-wide"
-    status: pending
+    status: completed
   - content: "Remediate: sweep R6 (stated constraint with no guard) corpus-wide"
-    status: pending
+    status: completed
   - content: "Move execution/'s 8 usage-error scenarios to presentation/, delete presentation/'s non-goal sentence"
-    status: pending
+    status: completed
   - content: "Fix testing/ sub-graph B — the sweep remediation that did not land"
-    status: pending
+    status: completed
   - content: "Fix the root spec.md placement map (line 28's stale 'validating')"
-    status: pending
-  - content: "Re-judge the six failing nodes, plus any clean node the sweep changed"
-    status: pending
+    status: completed
+  - content: "Re-judge all eight nodes — the sweep changed every one"
+    status: in_progress
 ---
 
 # clibuilder SDD backfill
@@ -91,49 +91,79 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The eight-judge run is COMPLETE and the gate verdict is `change`.** 2 nodes
-clean, 6 failing. Nothing is frozen; `status` stays `draft`. Batching in threes
-worked — the earlier eight-wide fan-out died at seven-of-eight on a session
-limit; each batch here was checkpointed before the next started.
+**The gate ran (verdict `change`) and the remediation round is COMPLETE. The
+next action is the re-judge.** Nothing is frozen; `status` is still `draft`.
 
-- **Batch 1 — `input-parsing`, `execution`, `presentation`: graded, all three
-  `ALIGNED: false`.** See `## Judge verdicts — batch 1` below for the four
-  findings, the settled ownership ruling, and the split verdicts.
-- **Batch 2 — `builtin-commands`, `configuration`, `plugins`: graded.**
-  `builtin-commands` and `configuration` are **clean** (`ALIGNED: true`, the
-  first two of the run); `plugins` fails the builder lens on one undrawn edge.
-- **Batch 3 — `testing`, `command-definition`: graded.** Both fail builder and
-  architect.
+**Re-judge all eight nodes, not six.** The R5/R6 sweeps changed
+`builtin-commands` and `configuration` too — both graded clean the first time,
+and both were edited afterwards, so their earlier `ALIGNED: true` no longer
+describes what is on disk. Batch in threes; relay the seven-governance
+declaration in every brief.
 
-**Next action: run the remediation round, then re-judge the six failing nodes.**
-Read `### The remediation round — the shape it should take` below first: it is a
-corpus-wide **R5 + R6 sweep**, not eight spot fixes. Two blocking decisions are
-owed before the graphs can be called complete — see
-`### Blocking decisions — still owed`.
-The gate verdict cannot be `approve` — batch 1 already fails three lenses across
-three nodes, so this gate ends in **`change`**, and the remediation round runs
-before any re-judge. Do not freeze anything.
+Suites after remediation — **273 scenarios, up from 261**:
 
-**Relay the seven-governance declaration** (see below) in every judge brief, or
-the judge fails pre-flight and grades nothing.
+| Node | before | after |
+| --- | --- | --- |
+| `presentation` | 45 | **58** (+5 own, +8 moved in) |
+| `input-parsing` | 52 | **53** |
+| `execution` | 51 | **43** (−8 moved out) |
+| `configuration` | 30 | 30 (prose only) |
+| `plugins` | 25 | **27** |
+| `builtin-commands` | 24 | **25** |
+| `testing` | 21 | **23** |
+| `command-definition` | 13 | **14** |
 
-**Treat the findings as evidence, not a work order** (`sdd:remediation-governance`):
-substantiate each against the artifact, name the rule it instantiates, and sweep
-for that rule's other instances. Batch 1's findings already look like rule
-instances rather than one-offs — a scenario that no wrong subject can fail
-(`presentation`'s reader), and a drawn branch with no scenario
-(`input-parsing`'s `HASD -- no`) are both worth sweeping corpus-wide the way
-R1–R4 were.
+Deterministic pre-checks re-run green after the remediation: `check-spec-state`
+OK, `check-suite` OK across 8 files, `check-spec-structure` blocking[0], fences
+balanced. The three oversized advisories persist and are expected to —
+`presentation` 58, `input-parsing` 53, `execution` 43.
 
-**Oracle passed 8 for 8 — the backfill's content is right.** Every failure is a
-coverage or graph-completeness defect (a decision drawn but untested, or a shape
-stated in prose with no path in the graph). No judge disputed a behavior the
-corpus claims.
+**Do not re-open the settled ground.** The ownership ruling, the split verdicts,
+the defect-as-is convention and the empty `@pinned` set are decided — see
+`### Blocking decisions — resolved at this gate`.
 
-Deterministic pre-checks green as of `e93eadf`: `check-spec-structure`
-blocking[0] with the three standing oversized advisories, `check-suite` OK
-across 8 files, `check-spec-state` OK, fences balanced, 261 scenarios counted
-from the suites (24/13/30/51/52/25/45/21).
+### What the remediation actually changed
+
+Eleven commits, one per unit. Every fix was re-derived against the rule it
+instantiates and verified against the source, not applied where a judge pointed.
+
+- **R6 swept corpus-wide** — every `May not combine with` cell in all eight
+  nodes, not the three the judges named. Four rulings were *delete the claim*
+  (`presentation`'s `--format` guard and its `toonTable` single-column rule,
+  `command-definition`'s `context` exclusion, and `testing`'s `argv` cell
+  reworded to what actually happens), three needed nothing, and the rest gained
+  the scenario they were missing.
+- **R5 swept** — `input-parsing`'s `HASD -- no`, `plugins`' `describe`
+  collection branch and its accepted-carries-no-source companion,
+  `presentation`'s four-branch reader, `builtin-commands`' `--fields`
+  declaration.
+- **`testing` sub-graph B** — the remediation the sweep recorded but never
+  landed; now three independent decisions matching the three `??` fallbacks in
+  `mock_plugin_context.ts`.
+- **The move** — 8 scenarios and their sub-graph from `execution/` to
+  `presentation/` as UC7, with the false non-goal deleted.
+- **The root `spec.md` placement map** and three use-case goals tied back to a
+  named actor.
+
+**Two rulings were overturned by evidence during the work, both recorded:**
+`command-definition`'s `context` exclusion (a type probe showed the combination
+compiles, so the claim was false rather than unguarded) and the shape of
+`presentation`'s `info` reader branch (reading back `debug` after setting `info`
+exercises the *debug* branch; the `info` branch is a ui whose level was never
+set, since `createUI` starts the logger at info).
+
+### Method notes worth carrying
+
+- **A type probe that never fails proves nothing.** The `command-definition`
+  probe was validated by planting a declaration with neither `run` nor
+  `commands` and confirming it errors, before its passes were believed.
+- **`check-suite` is scenario-map-aware and will catch a lazy map row.** It
+  rejected two rows whose `Edge` + `Path` pair duplicated an existing pair; the
+  fix was to make the *graph* name each outcome distinctly, not to reword the
+  row.
+- **A `cd` that fails inside a compound command silently skips the edits that
+  follow it, and the check then greens the unedited file.** This happened once
+  here. Run the checkers from the repo root with explicit paths.
 
 ### Blocking decisions still owed at the gate
 
