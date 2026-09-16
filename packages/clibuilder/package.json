@@ -76,6 +76,7 @@
 		"search-packages": "^2.2.0",
 		"standard-log": "^13.2.0",
 		"standard-log-color": "^13.2.0",
+		"tersify": "^4.0.6",
 		"tmp": "^0.2.7",
 		"tslib": "^2.5.0",
 		"type-plus": "8.0.0-beta.10",
@@ -103,7 +104,6 @@
 		"path-equal": "^1.2.5",
 		"plugin-two": "workspace:*",
 		"rimraf": "^5.0.10",
-		"tersify": "^4.0.6",
 		"tslib": "^2.5.0",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.11"
