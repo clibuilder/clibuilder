@@ -146,13 +146,16 @@ is specified there; what this node owns is the declaration.
 | Element | Required by | May not combine with |
 | --- | --- | --- |
 | `getBaseCommand` | UC1 | — |
-| `--help` / `--version` / `--verbose` / `--silent` / `--debug-cli` and their aliases | UC1 | — |
+| `--help` / `--version` / `--verbose` / `--silent` / `--debug-cli` | UC1 | — |
+| the `h` / `v` / `V` aliases | UC1 | — (`--silent` and `--debug-cli` carry none) |
+| the base command's own empty `commands` list | UC1 — so plugin commands can be added to it | — |
 | `--show-config` | UC1 | an application declaring no config — it is not declared there |
 | `listPluginsCommand` and its `ls` alias | UC2 | — |
 | `searchPluginsCommand` | UC3 | — |
 | `--format` on both | UC2, UC3 | — |
 | `--fields` | UC3 | — (declared on `plugins search` only; `plugins list` has no extra fields to report) |
 | `pluginsCommand` | UC4 | — |
+| `findByKeywords` / `searchByKeywords`, declared as each command's `context` | UC2, UC3 — the seam a test substitutes, and what keeps the npm dependencies off the startup path | — |
 
 ## Control Flow
 
@@ -215,6 +218,7 @@ each command *declares* is the decision that gets it matched at all.
 graph TD
   DC[the plugin commands as declared] --> WH{which one?}
   WH -- "plugins list" --> DL["name list, alias ls, a format option, and no fields option — it has no extra fields to report"]
+  DL --> DLC[and findByKeywords declared as its context, so a test can substitute it]
   WH -- "plugins search" --> DS["name search, and a format and fields option"]
   WH -- "plugins" --> DG["name plugins, sub-commands list and search, and no run of its own"]
 ```
@@ -229,7 +233,9 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | declare help, version, verbose, silent, debug-cli | any | `every application declares help, version, and the logging options` |
+| the base command's own empty commands list | any | `the base command declares an empty commands list for plugins to be added to` |
 | give help, version and verbose their short aliases | any | `the global options carry their conventional short aliases` |
+| `--silent` and `--debug-cli` carry none | any | `silent and debug-cli carry no short alias` |
 | also declare show-config | the application takes config | `an application taking config also declares show-config` |
 | do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
 | the base command's own run | the application is invoked with no command | `running the base command itself shows help` |
@@ -246,6 +252,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
 | name list, alias ls | any | `plugins list can be invoked as ls` |
 | no fields option | any | `plugins list declares no fields option` |
+| findByKeywords declared as its context | any | `the discovery call is declared as context so a test can substitute it` |
 | name search, and a format and fields option | any | `plugins search declares both a format and a fields option` |
 
 ### UC3 — `plugins search`

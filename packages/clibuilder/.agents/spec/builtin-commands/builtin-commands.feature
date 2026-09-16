@@ -13,6 +13,21 @@ Feature: Built-in commands
     When its base command is built
     Then it declares help, version, verbose, silent, and debug-cli
 
+  Scenario: silent and debug-cli carry no short alias
+    Given any application
+    When its base command is built
+    Then silent and debug-cli each carry no short alias
+
+  Scenario: the base command declares an empty commands list for plugins to be added to
+    Given any application
+    When its base command is built
+    Then it declares a commands list, empty, rather than none at all
+
+  Scenario: the discovery call is declared as context so a test can substitute it
+    Given the plugins list command as declared
+    When its context is inspected
+    Then the keyword discovery call is reachable there rather than imported directly
+
   Scenario: the global options carry their conventional short aliases
     Given any application
     When its base command is built
