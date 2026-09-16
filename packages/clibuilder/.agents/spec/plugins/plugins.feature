@@ -127,15 +127,15 @@ Feature: Plugins
     When it is described
     Then the one source owning it is named
 
-  Scenario: describing an unregistered collection key names no one
+  Scenario: describing an unregistered collection key returns an empty list rather than nothing
     Given a collection key nothing has registered against
     When it is described
-    Then no source is named
+    Then an empty list is returned, so a caller can iterate without checking first
 
-  Scenario: describing an unregistered value key names no one
+  Scenario: describing an unregistered value key returns an empty list rather than nothing
     Given a value key that was never registered
     When it is described
-    Then no source is named
+    Then an empty list is returned, so a caller can iterate without checking first
 
   Scenario: describing a collection key names every contributor in order
     Given a collection key several sources registered against

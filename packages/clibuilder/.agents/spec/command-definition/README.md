@@ -145,6 +145,7 @@ graph TD
   RN -- yes --> RB[leaf arm still: it runs and nests, and commands are accepted alongside run]
   R -- no --> C{declares commands?}
   C -- yes --> GC[group arm accepted; no run to type]
+  GC --> GCX[a declared context is accepted here, but types nothing: there is no run for it to type]
   C -- no --> X[rejected: satisfies neither arm]
   RC --> ARGS[type the run arguments]
   RB --> ARGS
@@ -201,6 +202,7 @@ This node owns only the type that makes both possible.
 | declares `run`, no `commands` | any | `a declaration with run is accepted as a leaf command` |
 | it runs and nests | `run` and `commands` together | `a declaration with both run and commands is accepted and still types its run` |
 | declares `commands`, no `run` | any | `a declaration with only commands is accepted as a group` |
+| a declared context is accepted here, but types nothing | a group declaration also carrying `context` | `a context on a group declaration is accepted and types nothing` |
 | declares neither | any | `a declaration with neither run nor commands is rejected` |
 | argument has `type` | any | `a typed argument types as its declared type` |
 | argument omits `type` | any | `an untyped argument types as string` |

@@ -202,7 +202,9 @@ graph TD
   GV -- yes --> GVV[the value]
   GV -- no --> GU[undefined]
   D[describe key] --> DK{key kind?}
-  DK -- collection --> DC[every contributing source, in order]
+  DK -- collection --> DC{any contributions?}
+  DC -- yes --> DCS[every contributing source, in order]
+  DC -- no --> DCE[no contributing sources]
   DK -- value --> DV{registered?}
   DV -- yes --> DVS[the one owning source]
   DV -- no --> DE[an empty list]
@@ -261,9 +263,9 @@ graph TD
 | present | a registered key, of either kind | `a registered key is reported as present` |
 | absent | an unregistered key, of either kind | `an unregistered key is reported as absent` |
 | the one owning source | a registered value key | `describing a value key names its single owner` |
-| an empty list | an unregistered value key | `describing an unregistered value key names no one` |
+| an empty list | an unregistered value key | `describing an unregistered value key returns an empty list rather than nothing` |
 | every contributing source, in order | a registered collection key | `describing a collection key names every contributor in order` |
-| no contributing sources | an unregistered collection key | `describing an unregistered collection key names no one` |
+| no contributing sources | an unregistered collection key | `describing an unregistered collection key returns an empty list rather than nothing` |
 
 ### UC4 — `defineKey` / `defineCollectionKey`
 

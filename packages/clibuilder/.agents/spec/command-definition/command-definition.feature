@@ -28,6 +28,11 @@ Feature: Command definition
     Then the declaration is accepted
     And it types no run arguments
 
+  Scenario: a context on a group declaration is accepted and types nothing
+    Given a declaration carrying a commands list and a context, and no run
+    When the declaration is checked
+    Then it is accepted and no run signature takes the context
+
   Scenario: a declaration with neither run nor commands is rejected
     Given a declaration naming a command
     When it declares neither a run function nor a list of sub-commands
