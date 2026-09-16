@@ -133,6 +133,31 @@ Feature: Presentation
     When its help is shown
     Then the schema's shape appears as a readable type
 
+  Scenario: usage says nothing about a command when none are declared
+    Given a command declaring no sub-commands
+    When its help is rendered
+    Then the usage line carries no command placeholder
+
+  Scenario: usage carries no argument group when none are declared
+    Given a command declaring no arguments
+    When its help is rendered
+    Then the usage line carries neither an angle-bracketed nor a square-bracketed argument group
+
+  Scenario: usage carries no option group when none are declared
+    Given a command declaring no options
+    When its help is rendered
+    Then the usage line carries neither an angle-bracketed nor a square-bracketed option group
+
+  Scenario: a command with no description shows no description section
+    Given a command declaring no description
+    When its help is rendered
+    Then no description section appears
+
+  Scenario: a command with no sub-commands shows no commands section
+    Given a command declaring no sub-commands
+    When its help is rendered
+    Then no commands section appears
+
   Scenario: a section with nothing to show is left out rather than rendered empty
     Given a command declaring no arguments, options, aliases, or config
     When its help is shown
@@ -191,9 +216,9 @@ Feature: Presentation
     Then that alias does not appear
 
   Scenario: an option's default is named in its description
-    Given an option declaring a default
+    Given an option declaring a non-string default
     When its help entry is rendered
-    Then the description names the default
+    Then the description names the default as written, without quotes
 
   Scenario: a string default is quoted in the description
     Given an option declaring a string type and a default

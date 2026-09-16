@@ -235,25 +235,31 @@ graph TD
   H[cli name and command] --> U[usage: the name chain from the cli through every ancestor]
   U --> SUB{declares sub-commands?}
   SUB -- yes --> UC["append a command placeholder"]
-  SUB -- no --> UN[nothing appended]
+  SUB -- no --> UNS[no command placeholder appended]
   U --> AR{declares arguments?}
-  AR -- no --> UN
+  AR -- no --> UNA[no argument group appended]
   AR -- yes --> ARQ{any required?}
   ARQ -- yes --> ARR[angle-bracketed]
   ARQ -- no --> ARO[square-bracketed]
   U --> OP{declares options?}
-  OP -- no --> UN
+  OP -- no --> UNO[no option group appended]
   OP -- yes --> OPQ{any required?}
   OPQ -- yes --> OPR[angle-bracketed]
   OPQ -- no --> OPO[square-bracketed]
   H --> S[build each section]
-  S --> SD[description, when declared]
-  S --> SC[commands, with their aliases, when any]
+  S --> SDQ{declares a description?}
+  SDQ -- yes --> SD[description, when declared]
+  SDQ -- no --> SDN[no description section]
+  S --> SCQ{declares sub-commands?}
+  SCQ -- yes --> SC[commands, with their aliases, when any]
+  SCQ -- no --> SCN[no commands section]
   S --> SA[arguments, column-aligned, when declared]
   S --> SO[options, column-aligned, when declared]
   S --> SL2[alias, when declared]
   S --> SG[config, rendered as a type, when declared]
   SD --> F[drop every empty section, then join]
+  SDN --> F
+  SCN --> F
   SC --> F
   SA --> F
   SO --> F
@@ -385,6 +391,9 @@ graph TD
 | --- | --- | --- |
 | the name chain from the cli through every ancestor | a nested command | `usage names the whole chain from the application through every ancestor` |
 | append a command placeholder | the command declares sub-commands | `usage says a command is expected when the command has sub-commands` |
+| no command placeholder appended | no sub-commands declared | `usage says nothing about a command when none are declared` |
+| no argument group appended | no arguments declared | `usage carries no argument group when none are declared` |
+| no option group appended | no options declared | `usage carries no option group when none are declared` |
 | angle-bracketed | at least one required argument | `usage marks arguments as required when any of them is` |
 | square-bracketed | no required argument | `usage marks arguments as optional when none of them is required` |
 | angle-bracketed | at least one required option | `usage marks options as required when any of them is` |
@@ -395,6 +404,8 @@ graph TD
 | options, column-aligned | options declared | `declared options are listed with their descriptions, aligned` |
 | alias, when declared | the command declares aliases | `a command's own aliases are shown` |
 | config, rendered as a type | a config schema declared | `a declared config schema is shown as a type` |
+| no description section | no description declared | `a command with no description shows no description section` |
+| no commands section | no sub-commands declared | `a command with no sub-commands shows no commands section` |
 | drop every empty section | a command declaring almost nothing | `a section with nothing to show is left out rather than rendered empty` |
 
 ### UC4 — the signature format
