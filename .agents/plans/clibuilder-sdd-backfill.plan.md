@@ -152,6 +152,29 @@ compiles, so the claim was false rather than unguarded) and the shape of
 exercises the *debug* branch; the `info` branch is a ui whose level was never
 set, since `createUI` starts the logger at info).
 
+### A commit of mine overstated what landed — the same defect as `testing`'s
+
+`efdf999` is titled "give describe's collection branch the split get's has".
+**The split was never applied.** The edit sat in a compound command that died on
+a zsh parse error before python ran; the *next* command printed `ok`, and that
+success was read as this one's. Only the scenario-map row and the feature
+scenario landed, so the CFG asymmetry the commit is named for survived it.
+
+The `plugins` re-judge caught it by reading the file against the commit — not by
+trusting either. Fixed for real in `2c9d8bf`.
+
+**This is the second instance in this mission of a recorded fix that did not
+land** (the first was `testing`'s sub-graph B, which an earlier sweep recorded as
+fixed). Both were caught only because a judge read the artifact instead of the
+claim about it. The rule this instantiates:
+
+> **Verify an edit landed by reading the artifact back. Never infer it from a
+> later command's success, and never from your own commit message.**
+
+A commit message is a claim like any other. The `## Sweep verdicts` correction
+above says a sweep verdict is a claim to check; so is a commit subject, including
+one of your own written minutes earlier.
+
 ### Method notes worth carrying
 
 - **A type probe that never fails proves nothing.** The `command-definition`
@@ -161,9 +184,11 @@ set, since `createUI` starts the logger at info).
   rejected two rows whose `Edge` + `Path` pair duplicated an existing pair; the
   fix was to make the *graph* name each outcome distinctly, not to reword the
   row.
-- **A `cd` that fails inside a compound command silently skips the edits that
-  follow it, and the check then greens the unedited file.** This happened once
-  here. Run the checkers from the repo root with explicit paths.
+- **A failed step inside a compound command silently skips the edits after it,
+  and the check then greens the unedited file.** This happened **twice**: once as
+  a failed `cd`, once as a zsh parse error that killed a whole heredoc. Run the
+  checkers from the repo root with explicit paths, and read the artifact back
+  after any edit whose success you did not directly observe.
 
 ### Blocking decisions still owed at the gate
 
