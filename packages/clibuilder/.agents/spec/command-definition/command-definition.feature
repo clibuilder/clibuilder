@@ -16,6 +16,21 @@ Feature: Command definition
     When the declaration is checked
     Then it is accepted, unlike the same declaration typed as an ordinary command
 
+  Scenario: a default command's run cannot reach a context
+    Given a default command declaration whose run reads this.context
+    When the declaration is checked
+    Then it is rejected, unlike the same run on an ordinary command
+
+  Scenario: an option alias may be declared as a bare string
+    Given an option declaring an alias as a bare string
+    When the declaration is checked
+    Then it is accepted
+
+  Scenario: an option alias may be declared as a pair that marks it hidden
+    Given an option declaring an alias as a pair carrying a hidden flag
+    When the declaration is checked
+    Then it is accepted
+
   Scenario: a declaration with run is accepted as a leaf command
     Given a declaration naming a command
     When it declares a run function

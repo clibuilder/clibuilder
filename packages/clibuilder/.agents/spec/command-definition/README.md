@@ -127,7 +127,8 @@ requiring it:
 | `commands` | UC1 | — |
 | `context` | UC1 — types `this.context` in `run` | — (a `commands`-only declaration accepts it too) |
 | `parent` | UC2 | — (internal; never author-declared) |
-| `Command.DefaultCommand` | UC1 | — (declares no `name`: the application supplies it) |
+| `Command.DefaultCommand` | UC1 | — (declares no `name`, and its `run` reaches no `context`) |
+| `Options.Entry.alias` and `Options.Alias` | UC1 — an option's own aliases | — (either a bare string or a `{ alias, hidden }` pair) |
 
 ## Control Flow
 
@@ -142,7 +143,8 @@ not interact: a group command simply never reaches the second.
 graph TD
   D[declaration literal] --> ND{which declaration type?}
   ND -- "Command" --> R{declares run?}
-  ND -- "Command.DefaultCommand" --> DFC[the same shape without a name: the application names it]
+  ND -- "Command.DefaultCommand" --> DFC[no name: the application supplies it]
+  DFC --> DFCX[and its run's `this` carries no context, unlike an ordinary command's]
   DFC --> R
   R -- yes --> RN{also declares commands?}
   RN -- no --> RC[leaf arm: run's `this` typed with ui, config, keywords, cwd, context, registry]
@@ -203,7 +205,8 @@ This node owns only the type that makes both possible.
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the same shape without a name | a default command's declaration | `a default command declaration needs no name` |
+| no name: the application supplies it | a default command's declaration | `a default command declaration needs no name` |
+| its run's `this` carries no context | a default command declaring a run | `a default command's run cannot reach a context` |
 | declares `run`, no `commands` | any | `a declaration with run is accepted as a leaf command` |
 | it runs and nests | `run` and `commands` together | `a declaration with both run and commands is accepted and still types its run` |
 | declares `commands`, no `run` | any | `a declaration with only commands is accepted as a group` |
@@ -214,6 +217,8 @@ This node owns only the type that makes both possible.
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |
+| an option's own aliases | an alias declared as a bare string | `an option alias may be declared as a bare string` |
+| an option's own aliases | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |
 | `default` accepted unchecked; the option keeps the type above | any — matching or contradicting | `an option default is accepted without being checked against its type` |
 | implicit `help` added | options omit `help` | `help is present on a command that declares no options` |
 | declared `help` replaces implicit | options declare `help` | `a declared help option replaces the implicit one` |
