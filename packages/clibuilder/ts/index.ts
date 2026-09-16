@@ -1,5 +1,6 @@
 export * from './argv.js'
 export * from './cli.js'
+export type { DisplayLevel, UI } from './core/ports.js'
 export * from './command.js'
 export {
 	type ConfigFormat,

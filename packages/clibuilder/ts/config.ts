@@ -3,7 +3,7 @@ import { extname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import yaml from 'js-yaml'
 import { type ParseError, parse as parseJsonc, printParseErrorCode } from 'jsonc-parser'
-import type { UI } from './cli.js'
+import type { UI } from './core/ports.js'
 import { findAnyFileUp } from './find_up.js'
 import { findPackageJson, getPackageJson } from './platform.js'
 
