@@ -179,6 +179,7 @@ whatever is still buffered on stdout.
 | `CliError` and its options | UC4 | — |
 | `isCliError` | UC4 | — |
 | `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
+| `context().createCommandUI` | UC2 — each command gets its own ui before it runs | — |
 
 ## Control Flow
 
@@ -200,6 +201,12 @@ graph TD
   PL -- yes --> PC[register the built-in plugins command; expose parse now]
   PL -- no --> PN[no plugins command; parse exposed on first registration]
   PC --> LC{config name present?}
+  UIB[build the ui a matched command runs with] --> UIN{command has a name?}
+  UIN -- yes --> UIC[a logger named for the command]
+  UIN -- no --> UIA[a logger named for the application]
+  UIC --> UIL[it starts at the application's current display level]
+  UIA --> UIL
+  UIL --> UIW[showHelp and showVersion are bound to this command, so it calls them with no arguments]
   LC -- no --> NOLOAD[nothing to load; plugins come from keywords alone]
   LC -- yes --> LOAD[start loading config as pending work] --> HASP{config names plugins?}
   HASP -- yes --> LP[load them and register their commands]
@@ -349,6 +356,15 @@ callers.
 | carries the brand? — yes | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
 | carries the brand? — no | a plain Error | `an ordinary error is not mistaken for a CliError` |
 | success, error and usage are three distinct values | any | `success, error, and usage are three distinct exit codes` |
+
+### UC2 — the ui a command runs with
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| a logger named for the command | a named command | `a command's messages are logged under its own name` |
+| a logger named for the application | the nameless base command | `the nameless base command logs under the application's name` |
+| it starts at the application's current display level | any command | `a command's ui starts at the application's display level` |
+| showHelp and showVersion are bound to this command | any command | `a command calls showHelp with no arguments and gets its own help` |
 
 ### UC5 — `context`
 

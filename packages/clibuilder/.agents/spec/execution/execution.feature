@@ -244,3 +244,25 @@ Feature: Execution
     Given a cli that has decided to fail
     When it exits with a code
     Then the code is recorded for the process to end with, leaving buffered output intact
+
+  # ── UC2 — the ui a command runs with ──
+
+  Scenario: a command's messages are logged under its own name
+    Given a registered command with a name
+    When it runs and says something
+    Then the message is logged under that command's name
+
+  Scenario: the nameless base command logs under the application's name
+    Given the nameless base command
+    When it runs and says something
+    Then the message is logged under the application's name
+
+  Scenario: a command's ui starts at the application's display level
+    Given an application whose display level has been set
+    When a command runs
+    Then its ui reports at that level
+
+  Scenario: a command calls showHelp with no arguments and gets its own help
+    Given a registered command
+    When its run calls showHelp with no arguments
+    Then the help rendered is that command's own
