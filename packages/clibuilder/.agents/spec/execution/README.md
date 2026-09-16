@@ -9,9 +9,11 @@ Governs `ts/cli.ts`, `ts/app/`, `ts/drivers/context.ts`, and `ts/render/error.ts
 — assembling an application from its declarations, running the matched command
 with its context, and reporting failure as an exit code.
 
-`ts/render/error.ts` sits among `presentation/`'s files but implements this
-node's UC3 usage-error descriptions. Behaviour decides ownership, not the
-folder — see the note in this spec's ledger.
+`ts/render/error.ts` implements this node's UC3 usage-error descriptions, so
+they are specified here, beside the `parse` flow that prints them. The code
+itself is rendering — which is why it lives in `render/` — and whether the
+scenarios should move to `presentation/` with it is an open formation question
+recorded in this spec's ledger.
 
 ## What
 
