@@ -168,6 +168,8 @@ graph TD
   AL --> CF{application takes config?}
   CF -- yes --> SC[also declare show-config]
   CF -- no --> NS[do not declare show-config]
+  SC --> EC[declare an empty commands list, so plugin commands can be added to it]
+  NS --> EC
   R["the base command's own run"] --> H[show help]
 ```
 
@@ -220,6 +222,7 @@ graph TD
   WH -- "plugins list" --> DL["name list, alias ls, a format option, and no fields option — it has no extra fields to report"]
   DL --> DLC[and findByKeywords declared as its context, so a test can substitute it]
   WH -- "plugins search" --> DS["name search, and a format and fields option"]
+  DS --> DSC[and searchByKeywords declared as its context, so a test can substitute it]
   WH -- "plugins" --> DG["name plugins, sub-commands list and search, and no run of its own"]
 ```
 
@@ -233,7 +236,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | declare help, version, verbose, silent, debug-cli | any | `every application declares help, version, and the logging options` |
-| the base command's own empty commands list | any | `the base command declares an empty commands list for plugins to be added to` |
+| declare an empty commands list | any | `the base command declares an empty commands list for plugins to be added to` |
 | give help, version and verbose their short aliases | any | `the global options carry their conventional short aliases` |
 | `--silent` and `--debug-cli` carry none | any | `silent and debug-cli carry no short alias` |
 | also declare show-config | the application takes config | `an application taking config also declares show-config` |
@@ -252,8 +255,9 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
 | name list, alias ls | any | `plugins list can be invoked as ls` |
 | no fields option | any | `plugins list declares no fields option` |
-| findByKeywords declared as its context | any | `the discovery call is declared as context so a test can substitute it` |
+| findByKeywords declared as its context | `plugins list` | `the discovery call is declared as context so a test can substitute it` |
 | name search, and a format and fields option | any | `plugins search declares both a format and a fields option` |
+| searchByKeywords declared as its context | `plugins search` | `the npm search call is declared as context so a test can substitute it` |
 
 ### UC3 — `plugins search`
 

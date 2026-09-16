@@ -23,6 +23,11 @@ Feature: Built-in commands
     When its base command is built
     Then it declares a commands list, empty, rather than none at all
 
+  Scenario: the npm search call is declared as context so a test can substitute it
+    Given the plugins search command as declared
+    When its context is inspected
+    Then the npm search call is reachable there rather than imported directly
+
   Scenario: the discovery call is declared as context so a test can substitute it
     Given the plugins list command as declared
     When its context is inspected
