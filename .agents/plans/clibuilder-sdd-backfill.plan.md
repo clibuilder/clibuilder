@@ -221,6 +221,43 @@ alternatives are to keep looping to a clean sweep, or to stop at a stated
 quality line and record the residue as known gaps in the ledger for a follow-on
 CR. **Do not silently pick the second by declaring the gate done.**
 
+### The absent-case sweep — mechanised, and what it settled
+
+The Council's call was to sweep R5/R7 by hand before spending more judge
+rounds. The sweep is now a tracked tool: **`.agents/sdd/tools/check-absent-cases.py`**
+(run it with the spec dir as its only argument). Three checks:
+
+- **UNCOVERED-SINK** — a decision arm ending at a plain node no scenario-map
+  `Edge` names. The shape that keeps recurring: the `yes` branch is covered and
+  the `no` branch runs to an unnamed sink.
+- **SHARED-SINK** — one plain node fed by several decisions but carrying fewer
+  map rows than decisions feeding it, so one outcome is untested by
+  construction. This is the defect that hid `presentation`'s four help gaps
+  behind a single `UN[nothing appended]`.
+- **ABSENCE-NOT-ASSERTED** — a map `Edge` stating an absence whose scenario's
+  steps assert none, i.e. a `Then` a rendering subject passes.
+
+**It over-reports, like the R2 sweep before it, and for two knowable reasons:**
+HTML entities in mermaid labels (`&lt;` / `&gt;`) defeat the substring match, so
+`z.infer&lt;Type&gt;` and `missing required argument &lt;name&gt;` read as
+uncovered when they are not; and a legitimate **join point** — several decisions
+converging on one downstream step — is indistinguishable from a starved sink
+without reading the graph. **Every hit needs a read.**
+
+**Result: 19 candidates, one genuine.** `builtin-commands`' sub-graph D drew all
+three plugin commands' declarations but tested only two — `plugins list`'s twice
+and the group's twice, `plugins search`'s not at all. Fixed. The other 18 are the
+two false-positive families above, or paths that do have map rows under different
+wording (`presentation`'s `REQ`/`OPT` are each reached from two decisions and all
+four arms are covered).
+
+**What that tells us about convergence.** A mechanical sweep across all eight
+nodes found *one* thing the judges had not already driven out. The R5 family is
+close to exhausted; what the judges are still finding is R7 — a `Then` weaker
+than its map row — which is a semantic judgment the sweep can only approximate
+through the absence heuristic. Expect the remaining rounds to be about assertion
+strength, not missing branches.
+
 ### A commit of mine overstated what landed — the same defect as `testing`'s
 
 `efdf999` is titled "give describe's collection branch the split get's has".
