@@ -17,6 +17,11 @@ Feature: Command definition
     Then the declaration is accepted
     And run's `this` carries the ui, config, keywords, cwd, context, and registry
 
+  Scenario: a declaration with both run and commands is accepted and still types its run
+    Given a declaration carrying a run and a commands list
+    When the declaration is checked
+    Then it is accepted and its run arguments are typed
+
   Scenario: a declaration with only commands is accepted as a group
     Given a declaration naming a command
     When it declares a list of sub-commands and no run function

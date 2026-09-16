@@ -125,7 +125,7 @@ requiring it:
 | `arguments`, `options` | UC1 — types `args` in `run` | — |
 | `run` | UC1 | — (may coexist with `commands`) |
 | `commands` | UC1 | — |
-| `context` | UC1 — types `this.context` in `run` | the `commands`-only arm, which has no `run` to type |
+| `context` | UC1 — types `this.context` in `run` | — (accepted alongside a `commands`-only declaration, where it types nothing) |
 | `parent` | UC2 | — (internal; never author-declared) |
 
 ## Control Flow
@@ -140,11 +140,14 @@ not interact: a group command simply never reaches the second.
 ```mermaid
 graph TD
   D[declaration literal] --> R{declares run?}
-  R -- yes --> RC[leaf arm: run's `this` typed with ui, config, keywords, cwd, context, registry]
+  R -- yes --> RN{also declares commands?}
+  RN -- no --> RC[leaf arm: run's `this` typed with ui, config, keywords, cwd, context, registry]
+  RN -- yes --> RB[leaf arm still: it runs and nests, and commands are accepted alongside run]
   R -- no --> C{declares commands?}
   C -- yes --> GC[group arm accepted; no run to type]
   C -- no --> X[rejected: satisfies neither arm]
   RC --> ARGS[type the run arguments]
+  RB --> ARGS
 ```
 
 ### Run-argument typing
@@ -195,7 +198,8 @@ This node owns only the type that makes both possible.
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| declares `run` | any | `a declaration with run is accepted as a leaf command` |
+| declares `run`, no `commands` | any | `a declaration with run is accepted as a leaf command` |
+| it runs and nests | `run` and `commands` together | `a declaration with both run and commands is accepted and still types its run` |
 | declares `commands`, no `run` | any | `a declaration with only commands is accepted as a group` |
 | declares neither | any | `a declaration with neither run nor commands is rejected` |
 | argument has `type` | any | `a typed argument types as its declared type` |
