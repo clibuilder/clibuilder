@@ -190,6 +190,8 @@ a phrase rather than an empty string.
 | `describeConfigSource` | UC6 | — |
 | `ConfigSource` / `ConfigFormat` / `ConfigLookupResult` / `ConfigLoadResult` | UC1, UC2 | — |
 | `findPackageJson` / `getPackageJson` | UC1, UC2 | — |
+| `config.ctx` — the `findPackageJson` / `getPackageJson` substitution seam | UC1 — a test replaces the package.json readers without a filesystem | — |
+| `find_up.ctx` — the `platform` substitution seam | UC5 — a test exercises case-insensitive matching on any host | — |
 
 ## Control Flow
 
@@ -249,7 +251,7 @@ graph TD
 ```mermaid
 graph TD
   R[path] --> FMT{format from the extension}
-  FMT -- "js, cjs, mjs" --> MOD[import it] --> ACT{exports activate?}
+  FMT -- "js, cjs, mjs" --> MOD[import it, as a file URL so an absolute Windows path is not read as a bare specifier] --> ACT{exports activate?}
   ACT -- yes --> WHOLE[the module itself]
   ACT -- no --> DEF[its default export]
   FMT -- "json, jsonc" --> JS[parse permissively] --> ERR{the parser reported errors?}
@@ -311,6 +313,7 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
+| import it, as a file URL | a module config at an absolute path | `a module config is imported through a file URL, so an absolute path resolves` |
 | the module itself | a module exporting `activate` | `a module config exporting activate yields the whole module` |
 | its default export | a module without `activate` | `a module config without activate yields its default export` |
 | parse permissively | a `.json` or `.jsonc` file | `a JSON config accepts comments and trailing commas` |

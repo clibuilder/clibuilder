@@ -64,6 +64,11 @@ Feature: Configuration
 
   # ── UC4 — readConfigFile: parse one file ──
 
+  Scenario: a module config is imported through a file URL, so an absolute path resolves
+    Given a module config at an absolute path
+    When it is loaded
+    Then it is imported as a file URL rather than as a bare specifier
+
   Scenario: a module config exporting activate yields the whole module
     Given a config file whose extension names a module
     When it exports activate
