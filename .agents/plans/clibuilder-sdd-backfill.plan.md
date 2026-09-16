@@ -20,6 +20,8 @@ todos:
     status: completed
   - content: "Reference nodes: distribution, tooling — confirm subject-only is complete"
     status: completed
+  - content: "Run the spec gate: Draft → Approved, freezing the ten nodes' suites"
+    status: in_progress
 ---
 
 # clibuilder SDD backfill
@@ -63,19 +65,54 @@ the code, write the four sections, derive the `.feature` 1:1 off the scenario
 map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
-## NEXT
+## NEXT — resume here
 
-The backfill is complete: all eight behavioral nodes carry their four sections
-and a colocated suite bound 1:1 to their scenario map, and both reference nodes
-name their sources. `check-spec-structure` reports no blocking findings.
+**Run the spec gate on `packages/clibuilder/.agents/spec` (Draft → Approved).**
+Authoring is done; the gate is the only remaining step. It is a conductor-run
+step inside the mission loop (`spec-gate`, loaded at the end of explore), not a
+standalone command — so re-enter the mission on this CR and drive it to the
+gate rather than invoking the gate directly.
 
-Remaining, none of it this CR's:
+Its three deterministic pre-checks all pass as of `7313446`, so the gate should
+go straight to spawning the cold spec-judge:
 
-- The spec is still `status: draft`. It has not been through the spec gate.
-- Three advisory oversized-node findings (execution 48, input-parsing 48,
-  presentation 45 scenarios) are logged for the Warden's formation pass.
-- Eight defects and one backlog item were found while drawing the CFGs and are
-  filed in this spec's ledger — each is independently actionable and none was
-  fixed here, since a backfill specifies what the code does.
-- The deferred zod-removal CR that prompted this backfill now has a spec to be
-  judged against.
+- `check-spec-state` — spec states OK
+- `check-suite --files */*.feature` — suite checks OK (note the `--files` flag;
+  without it the script scans nothing and prints OK, which reads as a pass)
+- `check-spec-structure` — no blocking findings
+
+### Blocking decisions for the gate
+
+- **Nothing is `@pinned`.** All 253 scenarios were derived from the CFGs. If
+  the judge wants any behavior pinned as a seed, that is a decision for the
+  gate, not a gap to fix first.
+- **The suites fix known-defective behavior as current.** Eight defects are
+  specified as-is (see the ledger) rather than as the behavior anyone wants.
+  The gate should confirm that is the right call for a backfill; the
+  alternative is specifying intent and failing the impl gate on day one.
+- **Three nodes exceed the 40-scenario soft ceiling** (execution 48,
+  input-parsing 48, presentation 45). Advisory, and a formation/Warden call —
+  decide at the gate whether to split before approving or defer.
+
+### Findings the commits won't show
+
+- **`check-suite` needs `--files`; bare invocation is a silent no-op.** It
+  printed `suite checks OK` twice against zero files before the flag was found,
+  which is how the 507-finding format break survived eight commits. Any future
+  gate run must pass the flag and confirm a non-zero file count.
+- **The scaffold left every node untagged.** `concept:` tags were absent, which
+  is a blocking `check-spec-structure` finding and leaves the by-concept index
+  empty. Fixed in `c865e44`; worth knowing for the next package backfilled from
+  the same scaffold, and `args-minus` likely has the same hole.
+- **The `args-minus` precedent is thinner than the governance requires.** Its
+  nodes stop at a one-line `## Use Cases`. Do not copy it forward — see
+  `## Resolved decisions`.
+
+Do not relearn the working method or re-litigate the layout — see
+`## Resolved decisions` and `## Working rhythm` above.
+
+### After the gate
+
+The deferred zod-removal CR that prompted this backfill now has a spec to be
+judged against, and `distribution/` records the `z` re-export as current
+published surface rather than settled design.
