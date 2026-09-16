@@ -91,8 +91,22 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**All eight nodes have been re-derived from source. The next action is one judge
-round across all eight.** The compliance gaps in the earlier re-plan are closed:
+**All eight nodes have been re-derived from source. The judge round is part-run
+and STALLED ON A SESSION RATE LIMIT** (429, quota resets 02:50 America/Los_Angeles).
+
+- **Batch 1 dispatched:** `presentation`, `execution`, `input-parsing`.
+  `presentation`'s judge **died on the rate limit before returning a verdict** —
+  re-run it. The other two may have died the same way; a verdict recorded below
+  is real, a silence is not.
+- **Batch 2 not dispatched:** `configuration`, `builtin-commands`, `plugins`.
+- **Batch 3 not dispatched:** `testing`, `command-definition`.
+
+**Do not relaunch before the quota resets** — the original eight-wide fan-out
+died the same way, and batching in threes has been the standing mitigation. No
+spec content is at risk: everything is committed and the deterministic checks are
+green.
+
+**The next action is one judge round across all eight.** The compliance gaps in the earlier re-plan are closed:
 all seven governances are read, the unserved-use-case recovery has run, and the
 suites are derived rather than patched.
 
