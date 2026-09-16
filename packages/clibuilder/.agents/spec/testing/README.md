@@ -119,9 +119,10 @@ leading elements of a real argv or building an absolute path by hand.
 | Inputs | an invocation as a string; a fixture's name |
 | Outcome | an argv array shaped like a real one; an absolute path under `fixtures` |
 
-**Extensions.** `argv` splits on spaces, so an argument **containing** a space
-cannot be expressed through it; a test needing one builds the array directly.
-Repeated spaces collapse rather than producing empty arguments.
+**Extensions.** `argv` splits on spaces unconditionally, so an argument
+**containing** a space is not refused — it is silently split into two. A test
+needing one builds the array directly. Repeated spaces collapse rather than
+producing empty arguments.
 
 **Fidelity gaps.** Two test doubles differ from what they stand in for. Both are
 filed in this spec's ledger; the suite fixes current behavior.
@@ -143,7 +144,7 @@ filed in this spec's ledger; the suite fixes current behavior.
 | `mockPluginContext` and its params | UC2 | — |
 | `mockContext` and its params | UC3 | — |
 | `mockContext.exitCode` | UC3 | — |
-| `argv` | UC4 | an invocation whose argument contains a space |
+| `argv` | UC4 | — (an argument containing a space is split, not refused) |
 | `getFixturePath` | UC4 | — |
 
 ## Control Flow
@@ -170,11 +171,19 @@ graph TD
 
 ```mermaid
 graph TD
-  P[params] --> D{"for each of source, host and registry: given?"}
-  D -- no --> DEF[fall back to a default source, host, and fresh registry]
-  D -- yes --> USE[use what was passed]
-  DEF --> C[build the activation context]
-  USE --> C
+  P[params] --> DS{source given?}
+  DS -- no --> DSD[a default source name]
+  DS -- yes --> DSU[the source passed]
+  DSD --> DH{host given?}
+  DSU --> DH
+  DH -- no --> DHD[a default host identity]
+  DH -- yes --> DHU[the host passed]
+  DHD --> DR{registry given?}
+  DHU --> DR
+  DR -- no --> DRD[a fresh registry of its own]
+  DR -- yes --> DRU[the registry passed]
+  DRD --> C[build the activation context]
+  DRU --> C
   C --> AC[addCommand appends to the collected commands]
   C --> RG[register writes to the registry under the source]
   RG --> RES["the Registration result is discarded (gap 1)"]
@@ -223,9 +232,10 @@ graph TD
 | --- | --- | --- |
 | addCommand appends | a plugin adding commands | `commands a plugin adds are collected for the test to assert on` |
 | register writes to the registry under the source | a plugin registering a value | `a value a plugin registers is stored under the mock's source` |
-| fall back to a default source, host, and fresh registry | no params given | `the mock context takes no arguments in the simple case` |
-| use what was passed | a source or host given | `a given source and host replace the defaults` |
-| use what was passed | a registry given | `a shared registry lets two plugins be activated against one another` |
+| a default source name, host identity and fresh registry | no params given | `the mock context takes no arguments in the simple case` |
+| the source passed | a source given | `a given source is used in place of the default` |
+| the host passed | a host given | `a given host is used in place of the default` |
+| the registry passed | a registry given | `a shared registry lets two plugins be activated against one another` |
 | the Registration result is discarded | a registration that is refused | `a refused registration is dropped silently rather than warned about` |
 
 ### UC3 — `mockContext`
@@ -243,5 +253,6 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | prefix the input with node | any invocation string | `an invocation string becomes an argv array shaped like a real one` |
+| kept as one argument | an invocation whose argument contains a space | `an argument containing a space becomes two arguments` |
 | dropped, so repeated spaces collapse | an invocation with repeated spaces | `repeated spaces do not become empty arguments` |
 | resolve the name against a fixtures directory | a fixture name | `a fixture name resolves to an absolute path under the fixtures directory` |

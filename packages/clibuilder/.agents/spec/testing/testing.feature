@@ -59,10 +59,15 @@ Feature: Testing support
     When a mock plugin context is built
     Then it has a usable source, host, and registry of its own
 
-  Scenario: a given source and host replace the defaults
-    Given a source name and a host identity
-    When a mock plugin context is built with them
-    Then the plugin sees those rather than the defaults
+  Scenario: a given source is used in place of the default
+    Given a source name and nothing else
+    When a mock plugin context is built with it
+    Then a value the plugin registers is stored under that source name
+
+  Scenario: a given host is used in place of the default
+    Given a host identity and nothing else
+    When a mock plugin context is built with it
+    Then the plugin sees that host identity
 
   Scenario: a shared registry lets two plugins be activated against one another
     Given a registry passed in
@@ -111,6 +116,11 @@ Feature: Testing support
     Given an invocation written as a string
     When it is converted
     Then the result is shaped like a real argv, with the leading entries a process would carry
+
+  Scenario: an argument containing a space becomes two arguments
+    Given an invocation whose argument contains a space
+    When it is turned into an argv array
+    Then that argument appears as two separate elements
 
   Scenario: repeated spaces do not become empty arguments
     Given an invocation string containing repeated spaces
