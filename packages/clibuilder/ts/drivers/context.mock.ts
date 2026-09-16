@@ -16,11 +16,29 @@ export namespace mockContext {
 export function mockContext(
 	params?: mockContext.Params
 ): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined } {
-	const { fixtureDir, logLevel } = required({ logLevel: logLevels.debug }, params)
+	const { fixtureDir, logLevel } = required({ logLevel: logLevels.info }, params)
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
 	const sl = createStandardLogForTest({ logLevel })
 	let exitCode: number | undefined
-	const ui = createBuilderUI(createUI(sl.getLogger('clibuilder')))
+
+	/**
+	 * A ui on a test logger, kept at the level the caller asked for.
+	 *
+	 * `createUI` sets every logger it wraps to `info` — that is the *production*
+	 * display default, which `--verbose` and `--debug-cli` then raise. It also
+	 * overrides the level the test store was built with, because standard-log
+	 * prefers a logger's own level over the store's. So the level is re-applied
+	 * here, after `createUI`, or `mockContext`'s `logLevel` would reach the store
+	 * and never the loggers a test can actually see.
+	 */
+	function testUI(id: string) {
+		const logger = sl.getLogger(id)
+		const ui = createUI(logger)
+		logger.level = logLevel
+		return ui
+	}
+
+	const ui = createBuilderUI(testUI('clibuilder'))
 	return {
 		async loadConfig(configName: string) {
 			return (await this.resolveConfig(configName)).config
@@ -45,7 +63,7 @@ export function mockContext(
 			return exitCode
 		},
 		createCommandUI(id: string) {
-			return createUI(sl.getLogger(id))
+			return testUI(id)
 		},
 		ui,
 		sl
