@@ -67,6 +67,11 @@ Feature: Built-in commands
     When plugins list is run
     Then the found names are returned to the caller, not only printed
 
+  Scenario: plugins list declares no fields option
+    Given the plugins list command as declared
+    When its options are inspected
+    Then it offers no fields option
+
   Scenario: plugins list can be invoked as ls
     Given an application with the plugins command
     When the list command is invoked by its alias

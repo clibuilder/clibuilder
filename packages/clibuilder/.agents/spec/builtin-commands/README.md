@@ -135,7 +135,7 @@ is specified there; what this node owns is the declaration.
 | `listPluginsCommand` and its `ls` alias | UC2 | — |
 | `searchPluginsCommand` | UC3 | — |
 | `--format` on both | UC2, UC3 | — |
-| `--fields` | UC3 | `plugins list`, which has no extra fields to report |
+| `--fields` | UC3 | — (declared on `plugins search` only; `plugins list` has no extra fields to report) |
 | `pluginsCommand` | UC4 | — |
 
 ## Control Flow
@@ -198,7 +198,7 @@ each command *declares* is the decision that gets it matched at all.
 ```mermaid
 graph TD
   DC[the plugin commands as declared] --> WH{which one?}
-  WH -- "plugins list" --> DL["name list, alias ls, and a format option"]
+  WH -- "plugins list" --> DL["name list, alias ls, a format option, and no fields option — it has no extra fields to report"]
   WH -- "plugins search" --> DS["name search, and a format and fields option"]
   WH -- "plugins" --> DG["name plugins, sub-commands list and search, and no run of its own"]
 ```
@@ -229,6 +229,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | count-dependent prose | text requested, reporting installed plugins | `text output reads as English about how many were found` |
 | the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
 | name list, alias ls | any | `plugins list can be invoked as ls` |
+| no fields option | any | `plugins list declares no fields option` |
 
 ### UC3 — `plugins search`
 
