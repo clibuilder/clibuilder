@@ -5,10 +5,10 @@ concept: [declaration-driven, error-reporting, agent-interface]
 
 # Presentation
 
-Governs `ts/render/help.ts`, `ts/render/format.ts`, `ts/drivers/logger.ts` and
-`ts/core/ports.ts` — rendering help and usage, emitting messages at their log
-level, and serializing a reported collection in the format its reader asked
-for. Generating the text is pure and lives in `render/`; writing it is the
+Governs `ts/render/help.ts`, `ts/render/format.ts`, `ts/render/error.ts`,
+`ts/drivers/logger.ts` and `ts/core/ports.ts` — rendering help and usage,
+describing a usage error in words, emitting messages at their log level, and
+serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.
 
 ## What
@@ -35,8 +35,7 @@ reader never has to count entries or wonder whether a list was truncated.
 
 **Non-goals.** Deciding *when* to show help or what to report belongs to
 `execution/` and `builtin-commands/`. What may be declared belongs to
-`command-definition/`. Describing a usage error in words belongs to
-`execution/`.
+`command-definition/`.
 
 **Key terms.** The **display level** is how much the CLI says — none, info,
 debug, or trace. A **signature** is a name as it appears in help, bracketed by
@@ -53,6 +52,7 @@ structured output shape; a **help line** is its trailing next-step suggestion.
 | Agent or script | reads TOON or JSON output | parse the answer without branching on how many results there were |
 | Command author | calls `this.ui.info` / `warn` / `error` | say something to the user at the right level |
 | `execution` | calls `showHelp`, `showVersion`, `dump` | render at the moment it has decided to |
+| `input-parsing` | hands over the usage errors it produced | have each failure described in the user's terms |
 | `builtin-commands` | calls the TOON and prose helpers | report a collection in one house style across commands |
 
 The agent is why the structured formats exist at all and why they are the
@@ -179,7 +179,26 @@ every command that reports one, in whichever format the reader asked for.
 | `toonValue` / `toonArray` / `toonTable` / `toonHelp` | UC6 | — (`toonTable` accepts a single column; preferring `toonArray` there is a token-cost choice, not a rule) |
 | `reportProse` | UC6 | — |
 | `formatOption` / `OutputFormat` | UC6 | — |
+| `formatLookupError` | UC7 | — |
 | `OutputUI` | UC6 | — |
+
+### UC7 — `formatLookupError`: describe a usage error in words
+
+**Actor / goal.** The CLI end user, reached through `input-parsing`, wants a
+failed invocation explained in the terms they typed it in — which key, which
+argument, how many values — rather than as an error record.
+
+| | |
+| --- | --- |
+| Trigger | `formatLookupError(error, command)` |
+| Inputs | one of the five lookup error types, and the command it was matched against |
+| Outcome | a line naming what went wrong in the user's own vocabulary |
+
+**Extensions.** An unknown key is dashed by its length, so a single character
+reads as a short option and several as a long one. An extra-arguments error is
+pluralized by how many values it carries. An invalid value and a too-many-values
+error each name an argument or an option depending on whether the key is a
+declared argument.
 
 ## Control Flow
 
@@ -315,6 +334,25 @@ graph TD
   HV -- no --> VN["say the application has no version, rather than printing nothing"]
 ```
 
+### Sub-graph G — describe a usage error (`formatLookupError`), entered by UC7
+
+```mermaid
+graph TD
+  F[lookup error] --> K{which type?}
+  K -- invalid-key --> IK[unknown option, dashed by key length]
+  K -- missing-argument --> MA["missing required argument &lt;name&gt;"]
+  K -- extra-arguments --> EA[unexpected argument, pluralized by count]
+  K -- invalid-value --> IV{is the key a declared argument?}
+  K -- expect-single --> ES{is the key a declared argument?}
+  IV -- yes --> IVA["described as argument &lt;name&gt;"]
+  IV -- no --> IVO[described as an option]
+  ES -- yes --> ESA["described as argument &lt;name&gt;"]
+  ES -- no --> ESO[described as an option]
+  IK --> LEN{key is one character?}
+  LEN -- yes --> ONE[single dash]
+  LEN -- no --> TWO[double dash]
+```
+
 ## Scenario map
 
 ### UC1 — `createBuilderUI`
@@ -396,3 +434,16 @@ graph TD
 | say several were found | prose, several items | `prose for several items lists them under a plural heading` |
 | toon, the default the option declares | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |
 | the payload as JSON, with no help line | json asked for | `json output carries the payload alone` |
+
+### UC7 — describing a usage error
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| single dash | unknown key of one character | `an unknown single-character option is described with one dash` |
+| double dash | unknown key of several characters | `an unknown multi-character option is described with two dashes` |
+| missing argument | any | `a missing argument is described by its name in angle brackets` |
+| pluralized by count | one extra value | `one unexpected argument is described in the singular` |
+| pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
+| described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
+| described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
+| expect-single | any | `too many values are described with the values that were given` |

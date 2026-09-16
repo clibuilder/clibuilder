@@ -223,48 +223,6 @@ Feature: Execution
     When they are compared
     Then success, error, and usage are three distinct values a caller can tell apart
 
-  # ── UC3 — describing a usage error ──
-
-  Scenario: an unknown single-character option is described with one dash
-    Given an unknown option key of one character
-    When the error is described
-    Then the key is shown with a single dash
-
-  Scenario: an unknown multi-character option is described with two dashes
-    Given an unknown option key of several characters
-    When the error is described
-    Then the key is shown with two dashes
-
-  Scenario: a missing argument is described by its name in angle brackets
-    Given a missing-argument error
-    When it is described
-    Then the argument's name is shown in angle brackets
-
-  Scenario: one unexpected argument is described in the singular
-    Given an extra-arguments error carrying one value
-    When it is described
-    Then it reads as a single unexpected argument
-
-  Scenario: several unexpected arguments are described in the plural
-    Given an extra-arguments error carrying several values
-    When it is described
-    Then it reads as several unexpected arguments
-
-  Scenario: an invalid value on an argument is described as an argument
-    Given an invalid-value error whose key is a declared argument
-    When it is described
-    Then it names an argument rather than an option
-
-  Scenario: an invalid value on an option is described as an option
-    Given an invalid-value error whose key is not a declared argument
-    When it is described
-    Then it names an option rather than an argument
-
-  Scenario: too many values are described with the values that were given
-    Given an expect-single error
-    When it is described
-    Then it says a single value was expected and lists the values received
-
   # ── UC5 — context ──
 
   Scenario: the first config resolution starts the walk and keeps its promise

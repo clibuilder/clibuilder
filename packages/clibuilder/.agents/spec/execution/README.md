@@ -5,7 +5,7 @@ concept: [declaration-driven, error-reporting, config-lifecycle, extensibility, 
 
 # Execution
 
-Governs `ts/cli.ts`, `ts/app/`, `ts/drivers/context.ts`, and `ts/render/error.ts`
+Governs `ts/cli.ts`, `ts/app/`, and `ts/drivers/context.ts`
 — assembling an application from its declarations, running the matched command
 with its context, and reporting failure as an exit code.
 
@@ -171,7 +171,6 @@ whatever is still buffered on stdout.
 | `exitCodes` | UC4 | — |
 | `CliError` and its options | UC4 | — |
 | `isCliError` | UC4 | — |
-| `formatLookupError` | UC3 (printing usage errors) | — |
 | `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
 
 ## Control Flow
@@ -242,25 +241,6 @@ graph TD
   THR -- no --> RET[return its value]
   THR -- "CliError" --> CER[print the message and help lines; exit with the error's code]
   THR -- "anything else" --> PROP[propagate to the caller]
-```
-
-### Sub-graph C — describe a usage error (`formatLookupError`), entered from B
-
-```mermaid
-graph TD
-  F[lookup error] --> K{which type?}
-  K -- invalid-key --> IK[unknown option, dashed by key length]
-  K -- missing-argument --> MA["missing required argument &lt;name&gt;"]
-  K -- extra-arguments --> EA[unexpected argument, pluralized by count]
-  K -- invalid-value --> IV{is the key a declared argument?}
-  K -- expect-single --> ES{is the key a declared argument?}
-  IV -- yes --> IVA["described as argument &lt;name&gt;"]
-  IV -- no --> IVO[described as an option]
-  ES -- yes --> ESA["described as argument &lt;name&gt;"]
-  ES -- no --> ESO[described as an option]
-  IK --> LEN{key is one character?}
-  LEN -- yes --> ONE[single dash]
-  LEN -- no --> TWO[double dash]
 ```
 
 ### Sub-graph D — failing on purpose (`CliError`, `exitCodes`), entered by UC4
@@ -362,19 +342,6 @@ callers.
 | carries the brand? — yes | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
 | carries the brand? — no | a plain Error | `an ordinary error is not mistaken for a CliError` |
 | success, error and usage are three distinct values | any | `success, error, and usage are three distinct exit codes` |
-
-### UC3 — describing a usage error
-
-| Edge | Path (Given) | Scenario |
-| --- | --- | --- |
-| single dash | unknown key of one character | `an unknown single-character option is described with one dash` |
-| double dash | unknown key of several characters | `an unknown multi-character option is described with two dashes` |
-| missing argument | any | `a missing argument is described by its name in angle brackets` |
-| pluralized by count | one extra value | `one unexpected argument is described in the singular` |
-| pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
-| described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
-| described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
-| expect-single | any | `too many values are described with the values that were given` |
 
 ### UC5 — `context`
 
