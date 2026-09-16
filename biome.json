@@ -51,7 +51,7 @@
 			}
 		},
 		{
-			"includes": ["packages/clibuilder/ts/help/**"],
+			"includes": ["packages/clibuilder/ts/render/**"],
 			"linter": {
 				"rules": {
 					"style": {
@@ -61,7 +61,7 @@
 								"patterns": [
 									{
 										"group": ["node:*", "standard-log", "standard-log/**", "standard-log-color"],
-										"message": "help/ turns a declaration into a string and stays pure. Reaching a logger, the filesystem or the process belongs to a driver."
+										"message": "render/ turns framework data into the text a person reads, and stays pure. Reaching a logger, the filesystem or the process belongs to a driver."
 									}
 								]
 							}
