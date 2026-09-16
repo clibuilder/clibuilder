@@ -18,6 +18,8 @@ export function formatLookupError(error: lookupCommand.Error, command: cli.Comma
 			return `unexpected argument${error.values.length > 1 ? 's' : ''}: ${error.values.join(', ')}`
 		case 'invalid-value':
 			return `invalid value for ${formatKey(error.key, command)}: ${error.message}, received "${error.value}"`
+		case 'conflicting-options':
+			return `option ${formatOption(error.key)} cannot be used with option ${formatOption(error.conflictsWith)}`
 		case 'expect-single':
 			return `${formatKey(error.key, command)} expects a single value, received: ${toArray(error.value).join(', ')}`
 	}

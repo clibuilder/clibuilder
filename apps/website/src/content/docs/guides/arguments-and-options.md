@@ -121,6 +121,26 @@ options: {
 }
 ```
 
+### Conflicting options
+
+`conflicts` names the options this one cannot be used with.
+
+```ts
+options: {
+  full: { description: 'print the whole file', conflicts: ['lines'] },
+  lines: { description: 'lines to print', type: z.number(), alias: ['n'], default: 10 }
+}
+```
+
+```sh
+$ app --full -n 20
+option --full cannot be used with option -n
+```
+
+Passing both is a usage error (exit code 2), reported with the other parse errors.
+A default value does not count as passed, so `app --full` is valid here.
+The conflict applies in both directions, and the help message lists it on both options.
+
 ### Repeating an option
 
 An array-typed option accumulates every occurrence:

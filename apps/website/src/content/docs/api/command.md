@@ -75,6 +75,7 @@ type Options = Record<string, {
   type?: z.ZodType<any>
   default?: z.infer<Type>
   alias?: Array<string | { alias: string; hidden: boolean }>
+  conflicts?: string[] // options this one cannot be used with
 }>
 ```
 

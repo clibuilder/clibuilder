@@ -9,6 +9,11 @@ describe('formatLookupError()', () => {
 		run() {}
 	})
 
+	it('names both conflicting options', () => {
+		expect(formatLookupError({ type: 'conflicting-options', key: 'full', conflictsWith: 'n' }, cmd)).toBe(
+			'option --full cannot be used with option -n'
+		)
+	})
 	it('names an unknown option', () => {
 		expect(formatLookupError({ type: 'invalid-key', key: 'bogus' }, cmd)).toBe('unknown option --bogus')
 	})
