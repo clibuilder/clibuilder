@@ -57,6 +57,46 @@ The global options — `--help`, `--version`, `--verbose`, `--silent`, `--debug-
 `--version` are answered even when the rest of the command line is invalid, and both exit `0`:
 asking for help is not a usage error.
 
+### Reporting usage errors yourself
+
+To choose the format, the stream, and whether help is printed, pass `onUsageError` to `cli()`.
+clibuilder then prints nothing for usage errors. It calls the handler with the structured errors, the
+matched command, and that command's `ui`:
+
+```ts
+import { cli } from 'clibuilder'
+
+cli({
+  name: 'my-cli',
+  version: '1.0.0',
+  onUsageError(errors, { command }) {
+    const flags = Object.keys(command.options ?? {}).map((k) => `--${k}`)
+    for (const e of errors) {
+      if (e.type === 'invalid-key') {
+        process.stdout.write(`${JSON.stringify({ code: 'unknown-flag', flag: `--${e.key}`, flags })}\n`)
+      } else {
+        process.stdout.write(`${JSON.stringify({ code: e.type })}\n`)
+      }
+    }
+  }
+})
+```
+
+Each error is a `cli.UsageError`, identified by its `type`:
+
+| `type` | Fields |
+| --- | --- |
+| `invalid-key` | `key`: the unknown option, without dashes |
+| `missing-argument` | `name`: the argument |
+| `extra-arguments` | `name`, `values`: the arguments nothing declared |
+| `invalid-value` | `key`, `value`, `message` |
+| `expect-single` | `key`, `value`, `keyType` |
+
+`command` is the command the invocation matched, with its declared `arguments` and `options`. This
+includes commands that plugins add. Call `ui.showHelp()` to print that command's help.
+
+The cli still exits `2`. To exit with another code, return it from the handler.
+
 ## Failing from a command
 
 Throw `CliError` from `run()`. clibuilder prints the message through the command's `ui`, prints the

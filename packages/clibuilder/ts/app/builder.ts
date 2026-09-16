@@ -98,6 +98,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const errors = r.errors.filter((e) => !(e.type === 'invalid-key' && !!lookupOptions(baseCommand, e.key)[0]))
 		if (errors.length > 0) {
 			const ui = createCommandInstance(context, s, r.command, registry).ui
+			if (options.onUsageError) {
+				const code = await options.onUsageError(errors, { command, ui })
+				return context.exit(typeof code === 'number' ? code : exitCodes.usage)
+			}
 			for (const e of errors) ui.error(formatLookupError(e, command))
 			ui.showHelp()
 			return context.exit(exitCodes.usage)

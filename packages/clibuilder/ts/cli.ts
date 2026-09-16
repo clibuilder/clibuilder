@@ -1,7 +1,8 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
-import { context } from './drivers/context.js'
 import type { UI } from './core/ports.js'
+import { context } from './drivers/context.js'
+import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, ValueKey } from './plugins/registry.js'
 import type { z } from './zod.js'
 
@@ -37,7 +38,31 @@ export namespace cli {
 		 * When specified, plugin commands will be available to search for available plugins.
 		 */
 		keywords?: string[]
+		/**
+		 * Takes over how usage errors are reported:
+		 * an unknown option, a missing or extra argument, an invalid value.
+		 *
+		 * When set, clibuilder does not print the errors or the help.
+		 * The handler decides what to write, where, and whether to call `ui.showHelp()`.
+		 *
+		 * The cli exits with `exitCodes.usage` (2),
+		 * unless the handler returns a different exit code.
+		 *
+		 * @param errors the structured errors found while parsing the arguments.
+		 * @param context.command the matched command, including its declared `arguments` and `options`.
+		 * It is the same for commands added by plugins.
+		 * @param context.ui the matched command's `ui`.
+		 */
+		// biome-ignore lint/suspicious/noConfusingVoidType: a handler that returns nothing keeps the usage exit code
+		onUsageError?(errors: UsageError[], context: { command: Command; ui: UI }): void | number | Promise<void | number>
 	}
+
+	/**
+	 * One error found while parsing the arguments.
+	 * `type` tells which kind it is: `invalid-key`, `missing-argument`,
+	 * `extra-arguments`, `invalid-value`, or `expect-single`.
+	 */
+	export type UsageError = lookupCommand.Error
 
 	export type Builder = {
 		readonly name: string
