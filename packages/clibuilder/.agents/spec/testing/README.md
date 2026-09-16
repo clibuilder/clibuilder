@@ -1,5 +1,6 @@
 ---
 spec-type: behavioral
+concept: [test-doubles]
 ---
 
 # Testing support

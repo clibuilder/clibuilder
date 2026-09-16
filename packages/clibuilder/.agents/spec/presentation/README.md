@@ -1,5 +1,6 @@
 ---
 spec-type: behavioral
+concept: [declaration-driven, error-reporting, agent-interface]
 ---
 
 # Presentation

@@ -1,5 +1,6 @@
 ---
 spec-type: behavioral
+concept: [declaration-driven]
 ---
 
 # Command definition

@@ -1,5 +1,6 @@
 ---
 spec-type: behavioral
+concept: [agent-interface, extensibility, config-lifecycle]
 ---
 
 # Built-in commands

@@ -1,5 +1,6 @@
 ---
 spec-type: behavioral
+concept: [declaration-driven, error-reporting, config-lifecycle, extensibility, agent-interface, test-doubles]
 ---
 
 # Execution
