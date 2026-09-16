@@ -289,7 +289,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | source is that file, format from its extension | a candidate file exists in an ancestor | `a config file in an ancestor directory is the source` |
-| the candidate list travels with the source | any lookup, including one that found a file | `the candidate list comes back alongside the source that was found` |
+| the candidate list travels with the source | any lookup, whichever source it settles on | `the candidate list comes back alongside whichever source was found` |
 | source is that package.json property | no file, the property is present | `a package.json property is the source when no config file matches` |
 | source is none | neither exists | `nothing found is reported as a source of its own` |
 
@@ -336,6 +336,7 @@ graph TD
 | case-insensitive platform? — no | only the other case present | `a differently-cased file does not match on a case-sensitive filesystem` |
 | symlink to a file | the match is a symlink to a file | `a symlink pointing at a file counts as a match` |
 | a directory or a dangling symlink | the match is a directory | `a directory sharing a candidate's name is not a match` |
+| a directory or a dangling symlink | the match is a symlink whose target is missing | `a dangling symlink sharing a candidate's name is not a match` |
 | no match | the walk reached the root | `a walk reaching the filesystem root with no match returns nothing` |
 
 ### UC6 — `describeConfigSource`

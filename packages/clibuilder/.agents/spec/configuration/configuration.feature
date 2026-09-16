@@ -13,8 +13,8 @@ Feature: Configuration
     When the config is looked up
     Then the source is that file, carrying the format its extension implies
 
-  Scenario: the candidate list comes back alongside the source that was found
-    Given a candidate file exists in an ancestor
+  Scenario: the candidate list comes back alongside whichever source was found
+    Given a lookup that settles on any source — a file, a package.json property, or none
     When the config is looked up
     Then the result carries the candidate names that were searched as well as the source
 
@@ -150,6 +150,11 @@ Feature: Configuration
     Given a candidate name that is a symlink to a file
     When the walk runs
     Then it is returned as a match
+
+  Scenario: a dangling symlink sharing a candidate's name is not a match
+    Given a candidate name that is a symlink whose target is missing
+    When the walk runs
+    Then it is not returned as a match, unlike a symlink pointing at a file
 
   Scenario: a directory sharing a candidate's name is not a match
     Given a directory named as one of the candidates
