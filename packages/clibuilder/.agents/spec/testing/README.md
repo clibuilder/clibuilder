@@ -44,6 +44,7 @@ would have set on the process.
 | Actor | Reaches this capability | Goal |
 | --- | --- | --- |
 | Command author | calls `testCommand` | assert what their command returned, said, and exited with, without spawning a process |
+| Command author, writing the test's inputs | calls `argv` / `getFixturePath` | say what the user typed and where the test's files are, without hand-building an argv or a path |
 | Plugin author | calls `mockPluginContext` | assert what their `activate` contributes, without a host CLI to run inside |
 | `clibuilder`'s own tests | call `mockContext` | exercise the builder against a substitutable outside world |
 
@@ -108,6 +109,10 @@ directory, a log, and an exit it controls.
 
 ### UC4 — `argv` / `getFixturePath`: the small helpers
 
+**Actor / goal.** A command author writing a test wants to say what the user
+typed, and where the files that test reads live, without restating the two
+leading elements of a real argv or building an absolute path by hand.
+
 | | |
 | --- | --- |
 | Trigger | `argv(input)`, `getFixturePath(target)` |
@@ -165,7 +170,7 @@ graph TD
 
 ```mermaid
 graph TD
-  P[params] --> D{each given?}
+  P[params] --> D{"for each of source, host and registry: given?"}
   D -- no --> DEF[fall back to a default source, host, and fresh registry]
   D -- yes --> USE[use what was passed]
   DEF --> C[build the activation context]
@@ -184,6 +189,18 @@ graph TD
   FD -- no --> TMP[cwd is a fresh temporary directory]
   M --> X[exit] --> REC[record the code] --> RPT[also report it through the ui]
   M --> RC[resolve config] --> FRESH["resolve afresh every time (gap 2)"]
+```
+
+### Sub-graph D — the small helpers, entered by UC4
+
+```mermaid
+graph TD
+  W{which helper?}
+  W -- argv --> PRE["prefix the input with node, so the caller's cli name lands where a real argv's script path is"]
+  PRE --> SPL[split on spaces] --> EMP{an empty piece?}
+  EMP -- yes --> DROP[dropped, so repeated spaces collapse]
+  EMP -- no --> KEEP[kept as one argument]
+  W -- getFixturePath --> FP["resolve the name against a fixtures directory under the working directory"]
 ```
 
 ## Scenario map
@@ -205,11 +222,11 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | addCommand appends | a plugin adding commands | `commands a plugin adds are collected for the test to assert on` |
-| register writes under the source | a plugin registering a value | `a value a plugin registers is stored under the mock's source` |
-| fall back to defaults | no params given | `the mock context takes no arguments in the simple case` |
+| register writes to the registry under the source | a plugin registering a value | `a value a plugin registers is stored under the mock's source` |
+| fall back to a default source, host, and fresh registry | no params given | `the mock context takes no arguments in the simple case` |
 | use what was passed | a source or host given | `a given source and host replace the defaults` |
 | use what was passed | a registry given | `a shared registry lets two plugins be activated against one another` |
-| the result is discarded | a registration that is refused | `a refused registration is dropped silently rather than warned about` |
+| the Registration result is discarded | a registration that is refused | `a refused registration is dropped silently rather than warned about` |
 
 ### UC3 — `mockContext`
 
@@ -225,6 +242,6 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| shaped like a real argv | any invocation string | `an invocation string becomes an argv array shaped like a real one` |
-| repeated spaces collapse | an invocation with repeated spaces | `repeated spaces do not become empty arguments` |
-| an absolute path under fixtures | a fixture name | `a fixture name resolves to an absolute path under the fixtures directory` |
+| prefix the input with node | any invocation string | `an invocation string becomes an argv array shaped like a real one` |
+| dropped, so repeated spaces collapse | an invocation with repeated spaces | `repeated spaces do not become empty arguments` |
+| resolve the name against a fixtures directory | a fixture name | `a fixture name resolves to an absolute path under the fixtures directory` |
