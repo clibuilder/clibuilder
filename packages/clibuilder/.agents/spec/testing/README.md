@@ -126,13 +126,12 @@ leading elements of a real argv or building an absolute path by hand.
 needing one builds the array directly. Repeated spaces collapse rather than
 producing empty arguments.
 
-**On `exit` and its code.** `Context.exit` declares `code?: number`, but every
-call site supplies one — `ts/app/builder.ts` exits with the usage code, the
-error code, or a `CliError`'s own. Nothing reaches the bare form, so it is not
-drawn as a branch: a decision no path takes is not acceptance
-(`sdd:suite-format-governance`). Calling `exit()` directly on the mock does
-produce a bare message, but it lands in the buffered ui and is only visible
-after a `dump()` the mock never issues on its own.
+**Why a codeless exit is not specified.** Every exit a command can drive carries
+a code, so the mock has one branch rather than two. A caller may still invoke
+`exit()` directly with no code, but that message lands in the buffered ui and
+becomes visible only after a `dump()` the mock never issues on its own — so the
+outcome is **unobservable**, and a behavior the capability cannot expose cannot
+be specified (`sdd:suite-format-governance`).
 
 **Fidelity gaps.** Two test doubles differ from what they stand in for. Both are
 filed in this spec's ledger; the suite fixes current behavior.
@@ -212,6 +211,7 @@ graph TD
   LL -- yes --> LLU[the level passed]
   LL -- no --> LLD[info, the level a CLI shows its user before a flag raises it]
   M --> X[exit] --> REC[record the code] --> RPTC[report it through the ui, naming the code]
+  M --> CUI[a ui for a command id] --> CUIN[its messages are captured under that id]
   M --> RC[resolve config] --> FRESH["resolve afresh every time (gap 2)"]
 ```
 
@@ -261,7 +261,7 @@ graph TD
 | cwd is a fresh temporary directory | no fixture directory named | `a context without a fixture gets a temporary directory of its own` |
 | the level passed | a log level given | `a given log level is the one the mock log keeps to` |
 | info, the level a CLI shows its user | no log level given | `a mock context without a log level defaults to info` |
-| a per-command UI on its own named logger | any command id | `each command gets a ui on its own named logger` |
+| its messages are captured under that id | any command id | `each command gets a ui on its own named logger` |
 | record the code | the cli exits | `an exit is recorded rather than taken` |
 | report it through the ui, naming the code | the cli exits | `an exit with a code names the code among the captured messages` |
 | resolve afresh every time | config resolved more than once | `the mock resolves the config afresh on every call` |
