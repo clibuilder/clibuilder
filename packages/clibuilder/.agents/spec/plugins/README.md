@@ -114,7 +114,8 @@ to find what others published, under a policy that makes conflicts visible.
 | --- | --- |
 | a value key is registered twice | the second is refused and told which source owns it — never a silent overwrite |
 | a collection key is registered many times | every contribution is kept, in registration order |
-| a key was never registered | a value key reads as undefined; a collection key reads as an empty list, so a caller can iterate without a null check |
+| a key was never registered, read through `get` | a value key reads as undefined; a collection key reads as an empty list, so a caller can iterate without a null check |
+| a key was never registered, read through `describe` | either kind reads as an empty list — `describe` answers with sources, and no sources is an empty list whatever the key kind |
 
 ### UC4 — `defineKey` / `defineCollectionKey`: declare a typed key
 
