@@ -110,7 +110,7 @@ limit mid-run (resets 16:10 America/Los_Angeles). Re-run it, then take the gate.
 | `plugins` | 28 | **28/28 pass** |
 | `testing` | 26 | **26/26 pass** (after 1 code fix + 2 spec corrections) |
 | `command-definition` | 22 | **22/22 pass** |
-| `presentation` | 68 | **not run** — rate limit |
+| `presentation` | 68 | **68/68 pass** (mutation backstop on the two info-level defect-as-is scenarios) |
 
 Root `spec.md` is `status: draft`, `testing/testing.feature` unfrozen from the
 Clearance re-open; the other seven suites remain `@frozen`. Suite green at 366.
@@ -165,7 +165,9 @@ cleanup discipline.
 
 ### Owed before the gate can be re-approved
 
-1. Re-run `presentation`'s impl judge once the quota resets.
+1. ~~Re-run `presentation`'s impl judge~~ — **done**: 68/68. Two new backlog
+   items on the ledger (untyped string default renders unquoted; a judge given a
+   worktree still probed this checkout).
 2. ~~`testing/` needs a spec-judge re-read~~ — **done**: oracle, builder and
    architect all PASS, ALIGNED, 26/26. Its one observation (the codeless-exit
    note trailed UC4, not UC3) is fixed in `14c82f5`.
