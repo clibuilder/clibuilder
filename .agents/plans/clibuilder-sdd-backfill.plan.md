@@ -82,9 +82,10 @@ session limit before returning.** Only `input-parsing` graded, and it came back
 1. ~~Remediate the `input-parsing` findings~~ — **done** (`857adb2`). All three
    root causes substantiated against the source and fixed; 52 scenarios now.
 2. **Finish the cross-node sweep** (rule 2 of `sdd:remediation-governance`) —
-   see `## Sweep` below. `command-definition` is done (`bdfa975`). Remaining:
-   `builtin-commands`, `configuration`, `execution`, `plugins`,
-   `presentation`, `testing`.
+   see `## Sweep` below. Done: `command-definition` (`bdfa975`), `plugins`
+   (`73d982e`), `builtin-commands` (`0c39c53`), `testing` (`489d213`),
+   `configuration` (`4604116`). **Remaining: `execution`, `presentation`** —
+   the two largest, with 22 and 12 mechanical candidates respectively.
 3. **Re-run the seven ungraded judges.** Their verdicts are unknown — do not
    assume they would have passed. `input-parsing` was one of the strongest
    nodes by the judge's own read, so expect findings elsewhere.
@@ -126,6 +127,25 @@ and found exactly one hit corpus-wide: `plugins` sub-graph A,
   already own; re-derived to the type-level claim this node actually owns.
   `DF{declares default?}` was reachable from one of three option paths and had
   no `no` branch. Ruled out 9 paraphrase candidates. `bdfa975`.
+- **`plugins`** — 5 genuine: the one mechanical R3 hit (`REG` drawn as a
+  decision with a single unlabeled edge), four undrawn surfaces (`get`/`has`/
+  `host` on the context, `has` on the registry, UC4's key kind), the warn/skip
+  paths running to terminal nodes, and a **new defect** — a failed import also
+  trips the not-a-valid-plugin warning, so a broken package is reported twice.
+  Filed in the ledger and specified as-is. `73d982e`.
+- **`builtin-commands`** — 4 genuine, plus the help-seam the plan flagged.
+  **The seam splits:** `getBaseCommand` declares its own `run` calling
+  `showHelp()`, so that scenario is owned here; `pluginsCommand` declares no
+  `run`, so its bare-help *is* `execution/`'s no-`run` fallback and was a
+  duplicate — re-derived to the declaration. Aliases and the three commands'
+  declarations are now sub-graph D. `0c39c53`.
+- **`testing`** — 4 genuine: UC4 had no **Actor / goal** line *and* no
+  sub-graph (three scenarios on nothing), and B's three independent parameter
+  fallbacks were drawn as one all-or-nothing decision. `489d213`.
+- **`configuration`** — 3 genuine, one of each shape: B fanned out of one node
+  into two parallel decisions with undefined order (the `input-parsing`
+  sub-graph D defect again), `CI{case-insensitive?}` had no `no` branch, and
+  UC6 had no sub-graph. `4604116`.
 
 ### Gate mechanics, confirmed this session
 
