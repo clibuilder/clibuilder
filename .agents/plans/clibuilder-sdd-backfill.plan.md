@@ -27,9 +27,9 @@ todos:
   - content: "Sweep the seven other nodes for the same rules (unbound scenario-map edges, malformed decision nodes)"
     status: completed
   - content: "Refactor ts/ to a screaming + clean-architecture layout, behavior-preserving"
-    status: in_progress
+    status: completed
   - content: "Re-home the eight spec nodes onto the refactored layout"
-    status: pending
+    status: completed
   - content: "Re-run all eight node judges — every node changed during the sweep"
     status: pending
 ---
@@ -77,14 +77,88 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The mission pivoted on 2026-08-16: refactor `ts/` first, then re-home the
-spec, then gate.** The Council chose refactor-before-gate with the tradeoff
-stated and accepted — the 262 scenarios will *not* be frozen while the
-refactor runs, so the net is the existing 362-test `*.spec.ts` suite (green at
-`072dff1`, 19 suites, 2.8s) rather than a frozen contract. Keep every refactor
-commit behavior-preserving and re-run `pnpm test` per commit.
+**The refactor is done and the spec is re-homed. The next action is the judge
+run.** All eight `Governs` lines now name the new layout (`cbcbb1f`), every
+referenced path resolves, and all 35 source files are governed with none
+orphaned. Deterministic pre-checks are green: `check-spec-structure`
+blocking[0] with the three standing oversized advisories, `check-suite` OK
+across 8 files, `check-spec-state` OK, fences balanced.
 
-### Why the refactor — the two lenses
+So: **run all eight node judges, then take the gate verdict.** Seven were never
+graded; `input-parsing` failed all three lenses before the sweep and has since
+changed. Do not assume any of them pass.
+
+### The refactor, as landed
+
+Eleven commits. Two bugs fixed, eight refactors, one enforcement:
+
+| | |
+| --- | --- |
+| `072dff1` | fix: `tersify` was a devDependency imported by production code |
+| `30cbe75` | build: `clean` did not remove `tsconfig.tsbuildinfo` |
+| `1f96c9d` | split `commands.ts` into `builtin/` |
+| `f2a9e19` | `UI` / `DisplayLevel` into `core/ports.ts` |
+| `47b998e` | split `ui.ts` into `render/help.ts` + `drivers/logger.ts` |
+| `48fce05` | `Context` declared as a port instead of derived |
+| `854a1a9` | biome boundary rules for `core/` and `render/` |
+| `1a168a5` | `help/` renamed `render/` |
+| `a05b1cd` | `formatLookupError` into `render/error.ts` |
+| `abe1d13` | `drivers/` gathered + the only-drivers-reach-out rule |
+| `c1dcf23` | `config.ts`'s file reading into a driver; rule narrowed to I/O builtins |
+| `2282c57` | remaining modules into capability folders |
+
+Final layout:
+
+```
+ts/  cli.ts index.ts config.ts compile_cache.ts zod.ts
+     core/ ports.ts
+     command/ define.ts internal.ts
+     invocation/ argv.ts lookup.ts
+     app/ builder.ts state.ts errors.ts
+     plugins/ load.ts registry.ts
+     builtin/ base_command.ts plugin_commands/{list,search,group,npm}.ts
+     render/ help.ts error.ts format.ts
+     drivers/ logger.ts context.ts context.mock.ts find_up.ts package_json.ts read_file.ts
+```
+
+### Resolved during the refactor — do not relitigate
+
+- **`core/contract.ts` was attempted and abandoned on evidence.** Splitting the
+  `cli` namespace from the `cli()` function is blocked: a merged
+  function+namespace must be declared in one file, and TS rejects the escape
+  hatch (`TS1269` / `TS1380` — `export import` cannot alias a type-only
+  namespace under `isolatedModules`). The alternative is re-aliasing nine
+  generic types by hand on a **public** API, where one wrong constraint is a
+  silent breaking change. `cli.ts` stays the composition root.
+- **Only two boundary properties are enforceable today**, and both are:
+  `core/**` imports nothing; outside `drivers/**` the I/O builtins,
+  `standard-log` and `tmp` are denied. Four exclusions remain, all structural:
+  `drivers/` itself, the two path-pinned published subpaths
+  (`compile_cache.ts`, `testing/`), and specs.
+- **`node:path` is deliberately allowed outside drivers** — it is string
+  manipulation with no I/O, and denying it forced `test-utils/` onto the
+  exclusion list.
+- **Verify a lint rule by making it fail.** Every boundary rule here was proved
+  with a planted violation, not a clean run.
+- **Verify the public surface by building `.d.ts` from a stash of HEAD** and
+  diffing. Where paths legitimately move, compare the exported *name set* via a
+  type-checking probe instead of bytes.
+- **`pnpm test` inside the package needs a prior `pnpm build`** — two suites
+  spawn real processes against `cjs/`. From the root, `turbo` declares
+  `test dependsOn build`, so CI is unaffected.
+
+### Open, deliberately not done
+
+- **`ts/render/error.ts` ownership.** It implements `execution/`'s UC3 but sits
+  among `presentation/`'s files. Re-partitioning moves 8 scenarios between two
+  suites about to be frozen — a Warden call, filed in the ledger.
+- **zod is still in the core contract** (`cli.Command.Options.Entry` declares
+  `type?: z.ZodType<any>`). The Dependency Rule violation the deferred CR
+  exists to fix; untouched here.
+- **`createUI.UI = ReturnType<typeof createUI>`** is the last
+  port-derived-from-adapter.
+
+### Why the refactor### Why the refactor — the two lenses
 
 **Screaming architecture.** The *spec* nodes mostly scream, but `ts/` is a flat
 pile of 22 modules, which is the layout the governance line "the builder gives
