@@ -11,6 +11,11 @@ Feature: Command definition
 
   # ── UC1 — command(): declare a command and infer its run arguments ──
 
+  Scenario: a default command declaration needs no name
+    Given a default command's declaration carrying a run and no name
+    When the declaration is checked
+    Then it is accepted, unlike the same declaration typed as an ordinary command
+
   Scenario: a declaration with run is accepted as a leaf command
     Given a declaration naming a command
     When it declares a run function
@@ -28,10 +33,10 @@ Feature: Command definition
     Then the declaration is accepted
     And it types no run arguments
 
-  Scenario: a context on a group declaration is accepted and types nothing
+  Scenario: a context on a group declaration is accepted rather than refused
     Given a declaration carrying a commands list and a context, and no run
     When the declaration is checked
-    Then it is accepted and no run signature takes the context
+    Then it is accepted
 
   Scenario: a declaration with neither run nor commands is rejected
     Given a declaration naming a command

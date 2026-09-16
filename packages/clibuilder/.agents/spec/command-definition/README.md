@@ -67,7 +67,7 @@ types.
 | | |
 | --- | --- |
 | Trigger | the author calls `command(cmd)` |
-| Inputs | a declaration literal: `name`, optional `description` / `alias` / `config` / `arguments` / `options`, and either `run`, `commands`, or both |
+| Inputs | a declaration literal: a required `name`, optional `description` / `alias` / `config` / `arguments` / `options`, and either `run`, `commands`, or both |
 | Outcome | the literal is returned unchanged, narrowed to its own shape, with `run`'s `args` parameter typed from the declared `arguments` and `options` |
 
 **Extensions.**
@@ -119,14 +119,15 @@ requiring it:
 
 | Element | Required by | May not combine with |
 | --- | --- | --- |
-| `name` | UC1 | — (absent on a default command, which the application names) |
+| `name` | UC1 | — (required here; the nameless form is the separate `Command.DefaultCommand` type below) |
 | `description`, `alias` | UC1 | — |
 | `config` | UC1 — types `this.config` in `run` | — |
 | `arguments`, `options` | UC1 — types `args` in `run` | — |
 | `run` | UC1 | — (may coexist with `commands`) |
 | `commands` | UC1 | — |
-| `context` | UC1 — types `this.context` in `run` | — (accepted alongside a `commands`-only declaration, where it types nothing) |
+| `context` | UC1 — types `this.context` in `run` | — (a `commands`-only declaration accepts it too) |
 | `parent` | UC2 | — (internal; never author-declared) |
+| `Command.DefaultCommand` | UC1 | — (declares no `name`: the application supplies it) |
 
 ## Control Flow
 
@@ -139,13 +140,16 @@ not interact: a group command simply never reaches the second.
 
 ```mermaid
 graph TD
-  D[declaration literal] --> R{declares run?}
+  D[declaration literal] --> ND{which declaration type?}
+  ND -- "Command" --> R{declares run?}
+  ND -- "Command.DefaultCommand" --> DFC[the same shape without a name: the application names it]
+  DFC --> R
   R -- yes --> RN{also declares commands?}
   RN -- no --> RC[leaf arm: run's `this` typed with ui, config, keywords, cwd, context, registry]
   RN -- yes --> RB[leaf arm still: it runs and nests, and commands are accepted alongside run]
   R -- no --> C{declares commands?}
   C -- yes --> GC[group arm accepted; no run to type]
-  GC --> GCX[a declared context is accepted here, but types nothing: there is no run for it to type]
+  GC --> GCX[a declared context is accepted here rather than refused]
   C -- no --> X[rejected: satisfies neither arm]
   RC --> ARGS[type the run arguments]
   RB --> ARGS
@@ -199,10 +203,11 @@ This node owns only the type that makes both possible.
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
+| the same shape without a name | a default command's declaration | `a default command declaration needs no name` |
 | declares `run`, no `commands` | any | `a declaration with run is accepted as a leaf command` |
 | it runs and nests | `run` and `commands` together | `a declaration with both run and commands is accepted and still types its run` |
 | declares `commands`, no `run` | any | `a declaration with only commands is accepted as a group` |
-| a declared context is accepted here, but types nothing | a group declaration also carrying `context` | `a context on a group declaration is accepted and types nothing` |
+| a declared context is accepted here rather than refused | a group declaration also carrying `context` | `a context on a group declaration is accepted rather than refused` |
 | declares neither | any | `a declaration with neither run nor commands is rejected` |
 | argument has `type` | any | `a typed argument types as its declared type` |
 | argument omits `type` | any | `an untyped argument types as string` |
