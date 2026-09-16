@@ -91,128 +91,76 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The loop was regressing and is STOPPED for a re-plan, per
-`sdd:remediation-governance` rule 4.** Three findings in round 3 named artifacts
-the round-2 commits had changed — `command-definition`'s `context` claim,
-`plugins`' unlanded `describe` split, `presentation`'s expect-single scenario.
-Each is a **regression** by the bar's own definition, and the bar is explicit:
-*any* regression means the loop is no longer converging — stop, report, re-plan,
-and **do not open another remediation round**. Three more rounds were opened
-instead. Do not open a fourth.
+**All eight nodes have been re-derived from source. The next action is one judge
+round across all eight.** The compliance gaps in the earlier re-plan are closed:
+all seven governances are read, the unserved-use-case recovery has run, and the
+suites are derived rather than patched.
 
-**Compliance gaps to close before any further gate work** (audited 2026-09-07):
+Suites after re-derivation — **300 scenarios, from 261 at the gate**:
 
-1. **Four of the seven declared governances were never read** — `spec-format`,
-   `suite-format`, `lifecycle`, `gate-validation`. See the correction under
-   `### Producer governance declaration`. Read them, then re-declare.
-2. **`remediation-governance` rule 3 was violated once** — the "types nothing"
-   claim cleared a finding while contradicting the Oracle strict-invariant bar.
-   Fixed, but the pattern is the risk: clearing a finding is not the test, *is
-   what it now says true* is.
-3. **No `produced-by` frontmatter on any node.** The "absent-not-malformed"
-   reading was inherited and never checked against `combat-log-governance`.
-4. **`classify-edit-class.mts` was never run.** Likely moot (nothing frozen,
-   verdict `change`) but skipped without establishing that.
+| Node | at the gate | now | re-derivation found |
+| --- | --- | --- | --- |
+| `presentation` | 45 | **65** | the two `UI` shapes; five untraced ports |
+| `input-parsing` | 52 | **53** | **nothing — clean** |
+| `execution` | 51 | **47** | `createCommandUI` wiring, wholly unspecified |
+| `configuration` | 30 | **32** | two untraced `ctx` seams; the file-URL import |
+| `builtin-commands` | 24 | **30** | a false alias claim; the npm `context` seam |
+| `plugins` | 25 | **27** | a false permutation; coverage otherwise complete |
+| `testing` | 21 | **27** | `logLevel` undrawn; `exit`'s two forms |
+| `command-definition` | 13 | **19** | `DefaultCommand` mis-stated; option aliases untraced |
 
-**The current action: re-derive one node cold, following SDD properly, and diff
-it against the patched version on disk.** The question the mission cannot
-otherwise answer: after three rounds of judge-driven patching, is the artifact
-what a correctly-run derivation would have produced, or has it converged on
-something else? A clean re-derivation of a single representative node answers
-that at bounded cost.
+### What re-derivation found that three judge rounds could not
 
-**R7's real fix is a derivation rule, not a detection one.** Every R7 instance
-came from deriving a `Then` from its own CFG edge label, which yields something
-true of that edge and often of its sibling too. The rule:
+**The dominant defect is exposed surface absent from the `## Surface trace` —
+six of the eight nodes.** A judge grades the graph and the map it is handed; it
+cannot see an element the spec never mentions. Patching therefore *structurally
+cannot* find this class, however many rounds it runs. Only reading the source
+against the trace does.
 
-> For a decision with arms A and B, the scenarios on A and B must be **mutually
-> exclusive** — a snapshot satisfying `Then_A` must falsify `Then_B`. If one
-> snapshot can satisfy both, one of them is weak.
+The three sharpest instances, none of which any judge reached:
 
-This is the dual of `suite-format-governance`'s pairwise-consistency rule
-(no two scenarios may contradict), scoped to sibling arms, and it is bounded:
-enumerate decisions, not scenarios. Apply it **when deriving**, not only when
-grading.
+- **`execution`** — `builder.ts` wraps `ctx.createCommandUI` before a command
+  runs: the logger is named for the command (falling back to the app name for
+  the nameless base command), the ui inherits the current display level, and
+  `showHelp`/`showVersion` are **bound to that command**. `builtin-commands`
+  already had a scenario resting on this wiring, so the corpus was standing on
+  behavior nothing specified.
+- **`presentation`** — there are **two** `UI` types and the difference is
+  load-bearing. `core/ports.ts` declares `showHelp(): void` with no arguments,
+  which is what a command author programs against; `createUI` returns
+  `showHelp(cliName, command)`. `execution` bridges them. Neither shape was
+  specified, in the node whose `Governs` line names the file.
+- **`command-definition`** — `DefaultCommand` was described as "the same shape
+  without a name". Its `run`'s `this` also carries **no `context`**. Proven with
+  a type probe, since reading the union by eye is exactly how the earlier
+  `context` claim went wrong.
 
-### State at the stop
+**Two factual errors in prose were corrected**, both of which a judge had read
+past: `builtin-commands` claimed all five global options carry short aliases
+(only three do, and its own scenario said so), and `command-definition`'s
+`DefaultCommand` row above.
 
-283 scenarios: `presentation` 63, `input-parsing` 53, `execution` 43,
-`configuration` 31, `plugins` 27, `builtin-commands` 26, `testing` 23,
-`command-definition` 16. Deterministic checks green. Verdict `change`, nothing
-frozen, `status: draft`.
+**`input-parsing` came back clean** — the node with the most judge attention and
+the most remediation needed nothing. Worth recording as the negative half:
+re-derivation is not a formality that always finds something.
 
-Passing verdicts against current disk: `execution`, `testing`, `input-parsing`.
-Owing a verdict: `presentation`, `plugins`, `command-definition`,
-`configuration`, `builtin-commands` — **but do not run them until the re-plan
-above is worked through.**
+**A recurring codebase idiom the corpus was blind to:** exported `ctx` /
+`context` objects used as substitution seams — `config.ts`'s
+`{findPackageJson, getPackageJson}`, `find_up.ts`'s `{platform}`,
+`builtin/npm.ts`'s lazily-imported npm calls declared as each command's
+`context`. Three nodes, none traced. They are how the code is tested and how the
+npm dependencies stay off the startup path.
 
-## The cold re-derivation — `plugins/`, and what it compared to
+### Judge brief for the round
 
-Run 2026-09-07 after reading the four governances that had never been opened.
-`plugins/` was re-derived from `ts/plugins/load.ts` + `registry.ts` **without
-reading the standing spec first**, following `spec-format-governance`'s
-actor-first enumeration and `suite-format-governance`'s `(path class, edge)`
-rule, then diffed against the patched artifact.
+Relay the seven-governance declaration (now truthful). Ask each judge to apply
+the **Oracle backfill clause** explicitly — whether the *unserved* use cases were
+sought, not merely whether the list is tidy — since that clause silently passed
+8/8 in round one and is what the recovery pass finally satisfied.
 
-### The headline: R5, R6 and R7 were already in the bars
-
-Three judge rounds "discovered" empirically what the unread governances already
-state:
-
-| "Found" | Already written, in |
-| --- | --- |
-| **R5** — a drawn branch with no scenario | `suite-format`: *"a kill / reject / guard edge is paired with a positive companion… a lone negative is passed by a do-nothing subject"* |
-| **R7** — a `Then` no wrong subject can fail | `suite-format`: *"the **miss test** — name a plausible wrong subject and check it takes the wrong branch; if none can, the edge is inert"* |
-| **R6** — a stated constraint with no guard | `spec-format`: *"name the elements it may not be combined with… a pair whose combination is contradictory and unstated is a gap"* |
-
-And the procedure itself was named and violated:
-
-> **Backfilling from existing code — derive, don't patch.** … re-derive the whole
-> scenario set from its edges … **Reading the standing suite and filling only the
-> gaps a diff notices is not this procedure** (ADR-0029).
-
-Three remediation rounds did exactly that. The rules were not missing; the file
-was not read.
-
-### What the diff actually showed
-
-**Edge coverage: no gap.** The cold derivation enumerated ~31 `(path class,
-edge)` pairs across `loadPlugins`, the activation context, the registry and the
-key constructors, and every one has a home in the patched 27. The judge-driven
-patching *did* converge on complete coverage. That is the real positive result.
-
-**One false permutation, introduced by the patching.** `register` returns
-`{accepted: true}` with **no** `source` from both the collection-append and the
-value-store paths, but the graph hung that outcome off the value path alone and
-the scenario's `Given` read *"a value key not yet owned"*. `suite-format` is
-explicit that **an over-specific `Given` is a defect** — it *"manufactures a
-false permutation"* by implying a sibling scenario for the other value. Fixed:
-both paths reconverge on the outcome and the `Given` is the reconvergence point.
-
-**One suspected defect refuted — record the negative half.** The two
-`describing an unregistered … key returns an empty list` scenarios looked like a
-false permutation (identical `Then`, differing only by key kind). They are not:
-`describe` branches on kind *first*, so `DC -- no` and `DV -- no` are two
-**distinct drawn edges**, and every edge is owed a row. The collapse rule governs
-paths reconverging on *one* edge, not separate edges with equal outcomes. Both
-stay.
-
-**The backfill actor step was never run, and for this node there is nothing to
-recover.** `spec-format` requires that on a backfill the *unserved* use cases be
-recovered from request history, the issue tracker and recurring workarounds,
-since source yields only the served ones by construction. No session did this
-corpus-wide. Checked for `plugins/`: one commit touches the folder, no
-TODO/FIXME/workaround markers, no issue signal in-repo — so the served
-enumeration is complete **here**. That is a negative result, not a pass by
-default, and it does **not** clear the other seven nodes.
-
-### What this says about the three rounds
-
-The patching reached the right coverage by an illegitimate route, and paid for it
-in rework: every defect the judges found was a rule already written down, and at
-least one "fix" (the over-specific `Given` above, and the pruned `types nothing`
-invariant before it) introduced a new defect that a read of the bar would have
-prevented. **The cheapest step available at any point was reading four files.**
+Deterministic checks green: `check-spec-state` OK, `check-suite` OK across 8
+files, `check-spec-structure` blocking[0] with the three standing oversized
+advisories, fences balanced.
 
 ### Blocking decisions still owed at the gate
 
