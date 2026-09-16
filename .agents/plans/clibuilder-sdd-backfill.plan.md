@@ -191,14 +191,35 @@ case a neighbouring scenario got the assertion right (`get`'s "an empty list …
 so a caller can iterate without checking first"; `invalid-value`'s "names an
 argument rather than an option"), which is what made the weak twin visible.
 
-### On convergence
+### On convergence — read this before deciding to keep looping
 
-Findings are shrinking in severity each round — from "eight scenarios in the
-wrong node" to "this `Then` omits one word" — but they have not stopped, and
-**every round has found something in a node that passed the round before**. That
-is the bar working, not a broken loop; it does mean the gate should not be
-called until a round produces a clean sweep across all eight. Do not approve on
-a partial round.
+Findings per judged node, by round:
+
+| Round | nodes judged | nodes failing | findings |
+| --- | --- | --- | --- |
+| 1 (the gate) | 8 | 6 | ~14 |
+| 2 (re-judge) | 8 | 5 | ~9 |
+| 3 | 3 | 3 | 7 |
+
+**Severity is falling sharply** — from "eight scenarios in the wrong node" and
+"UC4 and UC5 have no sub-graph at all" to "this `Then` omits the word option"
+and "the `no` sink of three decisions shares one unnamed node". But **the rate
+per judged node is not falling**, and every round has failed at least one node
+that passed the round before. Three rounds in, only `execution`, `testing` and
+`input-parsing` hold a passing verdict against current disk.
+
+What the later rounds are finding is a real and consistent property of the
+corpus: **it specifies what happens and under-specifies what does not.** Present
+sections, drawn branches and produced errors are well covered; absent sections,
+`no` sinks and empty results are where the gaps cluster. That is one rule (R5 +
+R7 together), and it has more instances than any single sweep has yet caught.
+
+**A stopping rule is owed, and it is a judgment call, not a mechanical one.**
+The standing bar — no advance with a failing lens — means every node needs a
+passing verdict, which on this trajectory is several more rounds. The
+alternatives are to keep looping to a clean sweep, or to stop at a stated
+quality line and record the residue as known gaps in the ledger for a follow-on
+CR. **Do not silently pick the second by declaring the gate done.**
 
 ### A commit of mine overstated what landed — the same defect as `testing`'s
 
