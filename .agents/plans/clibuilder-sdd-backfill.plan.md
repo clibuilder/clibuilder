@@ -21,7 +21,7 @@ todos:
   - content: "Reference nodes: distribution, tooling — confirm subject-only is complete"
     status: completed
   - content: "Run the spec gate: Draft → Approved, freezing the ten nodes' suites"
-    status: in_progress
+    status: completed
   - content: "Remediate the input-parsing judge findings (UC3, four CFG gaps, sub-graph D)"
     status: completed
   - content: "Sweep the seven other nodes for the same rules (unbound scenario-map edges, malformed decision nodes)"
@@ -45,7 +45,13 @@ todos:
   - content: "Fix the root spec.md placement map (line 28's stale 'validating')"
     status: completed
   - content: "Re-judge all eight nodes — the sweep changed every one"
-    status: in_progress
+    status: completed
+  - content: "Re-derive all eight nodes from source, following the backfill procedure"
+    status: completed
+  - content: "Recover the unserved use cases from the issue tracker"
+    status: completed
+  - content: "Take the spec gate verdict: approve, freeze the eight suites"
+    status: completed
 ---
 
 # clibuilder SDD backfill
@@ -89,64 +95,49 @@ the code, write the four sections, derive the `.feature` 1:1 off the scenario
 map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
-## NEXT — resume here
+## NEXT — the gate is APPROVED; this mission is done
 
-**ALL EIGHT NODES PASS AGAINST CURRENT DISK.** This is the first round in the
-mission where that is true, and it is the standard this brief set and did not
-relax. **The next action is the human gate verdict — it has not been taken, and
-nothing is frozen.**
+**`status: approved`. All eight `.feature` files carry `@frozen`. The durable
+`gate` line is on the ledger, keyed by `cr`, naming the eight frozen files.**
+`approval.spec: { verdict: approve, by: unional }` — a human verdict, so no
+`why` block. `check-spec-state`, `check-suite`, `check-spec-structure` and the
+table-shape check are all green against the approved state: the tuple is legal.
 
-| Node | scenarios | verdict |
-| --- | --- | --- |
-| `presentation` | 68 | pass (3 lenses) |
-| `execution` | 53 | pass |
-| `input-parsing` | 53 | pass |
-| `configuration` | 33 | pass |
-| `builtin-commands` | 31 | pass |
-| `plugins` | 28 | pass |
-| `testing` | 27 | pass |
-| `command-definition` | 22 | pass |
-| **total** | **315** | |
+**315 scenarios**, from 261 when the gate opened — `presentation` 68,
+`execution` 53, `input-parsing` 53, `configuration` 33, `builtin-commands` 31,
+`plugins` 28, `testing` 27, `command-definition` 22.
 
-Deterministic: `check-spec-state` OK · `check-suite` OK across 8 files ·
-`check-spec-structure` blocking[0] (3 standing oversized advisories) ·
-0 ragged tables · fences balanced · no `@frozen`, no `@pinned`, no open markers.
-Diff vs base `3a90891`: 24 files, +4615.
+### What a follow-on mission must know
 
-### Why the verdict was NOT self-asserted
+- **Nine defect-as-is scenarios are now frozen.** Every fix to one is a
+  *narrowing* of a frozen suite and fires **Clearance** at its gate. That is the
+  mechanism working. Brief the fix mission to expect it rather than meet it.
+- **The deferred zod-removal CR now has a spec to be judged against.** It is the
+  reason this backfill existed. `distribution/` records the `z` re-export as
+  current published surface rather than settled design.
+- **Open backlog on the ledger, none of it blocking:** four unserved goals
+  recovered from the tracker (#575 Yarn PnP discovery, #405 TypeScript config,
+  #488 a plugin writing config, #109 name/alias collision, #274 a defaulted
+  option still typing as possibly `undefined`), plus two prose-completeness
+  asymmetries a judge explicitly declined to fail, plus the three oversized
+  nodes.
+- **The three oversized nodes are a Warden call**, unanimously across every
+  round. Clean split seams are recorded per node if one is ever forced.
 
-The ledger records an `auto-spec` leash granted by the user at mission start, and
-no hard floor fires (nothing is frozen, so no Clearance; a spec backfill changes
-no published surface, so no Compatibility). The conductor could self-assert.
+### The one thing worth carrying to the next backfill
 
-**It should not, and did not.** Approving freezes 315 scenarios, nine of which
-specify known defects as current behavior — every later fix then narrows a frozen
-suite and fires Clearance. The leash was granted when the mission was scoped at
-261 scenarios and before the defect-as-is convention was settled. A durable
-authorization from before a scope change is not authorization for what the scope
-became. Present the digest; let the human take it.
+The doctrine was complete and correct the whole time. Every serious defect in
+this mission traced to four governance files that were declared and never read:
+patching instead of re-deriving (`suite-format-governance`, ADR-0029), the
+skipped unserved-use-case recovery (`spec-format-governance`), the regressing
+loop that should have stopped (`remediation-governance` rule 4). The rules were
+not missing.
 
-### What the human is deciding
-
-- **Freezing nine defect-as-is scenarios.** Every judge that read one called it
-  honestly specified, and `plugins`' double-reporting entry was singled out as
-  exemplary. But approving makes each later fix a Clearance event. Brief the fix
-  mission to expect that rather than meet it at the gate.
-- **Three nodes over the 40-scenario ceiling** (`presentation` 68,
-  `execution` 53, `input-parsing` 53). Unanimously a Warden call, never a gate
-  blocker. Clean seams are recorded per node if a split is ever forced.
-- **Nothing is `@pinned`.** No judge asked for a pin across any round.
-
-### If the verdict is `approve`
-
-1. Freeze each of the eight `.feature` files (`@frozen`).
-2. Append a `gate` line to `ledger/clibuilder-sdd-backfill.6a7366.jsonl`
-   (`verdict: approve`, `frozen[]`, keyed by `cr`, no `ts`).
-3. Write `status: approved` and `approval.spec: { verdict: approve, by: <name> }`
-   on the root `spec.md` — a human verdict carries `by: <name>` and **no** `why`.
-4. Re-run `check-spec-state` to confirm the tuple is legal.
-
-The deferred zod-removal CR then has a spec to be judged against.
+And the judges only became reliable once the brief stopped saying *this was
+fixed* and started saying **a previous pass is not a warrant**. `execution` ran
+clean → 1 → 4 → 1 → 0 across five readings on that instruction alone; its first
+clean pass had four uncovered arms sitting under it. Filed as
+`cyberuni/cyber-sdd#3`.
 
 ### Blocking decisions still owed at the gate
 
