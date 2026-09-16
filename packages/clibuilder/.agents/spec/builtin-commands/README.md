@@ -61,6 +61,15 @@ keyword rather than by anything the configuration says.
 | `execution` | installs the base command and the plugins command | have the global options and the plugin commands present on every application |
 | CLI author embedding `plugins list` | reads its return value | reuse the found names without parsing the printed report |
 
+**Unserved goals — recovered from the issue tracker, not from the source.** A
+backfill drawn from code yields only the goals already served, so this was
+recovered separately. **It has no entry point today**, and so appears in neither
+the Control Flow nor the suite:
+
+| Actor | Goal | Provenance |
+| --- | --- | --- |
+| CLI end user | find installed plugins in a project with no `node_modules` — a Yarn PnP install | [#575](https://github.com/clibuilder/clibuilder/issues/575), split from [#327](https://github.com/clibuilder/clibuilder/issues/327). Loading and running plugins under PnP works; only keyword *discovery* fails, because it scans `node_modules` |
+
 ### UC1 — `getBaseCommand`: the global options every application carries
 
 **Actor / goal.** `execution` wants the root command carrying the options a

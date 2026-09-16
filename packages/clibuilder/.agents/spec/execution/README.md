@@ -84,6 +84,13 @@ a version, and a statement of whether it takes configuration or plugins.
 
 ### UC2 — `.command()` / `.default()`: register commands
 
+**Unserved goal — recovered from the issue tracker.** It has no entry point
+today, so it appears in neither the Control Flow nor the suite:
+
+| Actor | Goal | Provenance |
+| --- | --- | --- |
+| CLI author | be warned when a registered command's name or alias collides with an existing one, rather than silently having the first match win | [#109](https://github.com/clibuilder/clibuilder/issues/109) — closed without an implementation; no conflict detection exists in `ts/app/` or `ts/invocation/` |
+
 **Actor / goal.** A CLI author wants their declarations installed into the
 application's tree, with each command's place in that tree recorded.
 

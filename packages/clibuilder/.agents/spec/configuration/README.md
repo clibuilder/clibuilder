@@ -52,6 +52,15 @@ candidate such as `.foorc` carries no format hint, so its content decides.
 | CLI author | declares `config` on the application | let their users configure the CLI without inventing a file format |
 | A user debugging a config that was not picked up *(stakeholder)* | reads the warning and `--show-config` | learn which names were searched and which file won |
 
+**Unserved goals — recovered from the issue tracker, not from the source.**
+Neither has an entry point today, so neither appears in the Control Flow or the
+suite:
+
+| Actor | Goal | Provenance |
+| --- | --- | --- |
+| CLI author | write the config in TypeScript | [#405](https://github.com/clibuilder/clibuilder/issues/405) — the candidate list carries `.cjs .mjs .js .json .jsonc .yml .yaml` and no `.ts` |
+| A plugin | read **and update** the config file | [#488](https://github.com/clibuilder/clibuilder/issues/488) — the reading half is served and publicly exported; nothing writes a config back, and a plugin is not among the actors above |
+
 The debugging user is why the "nothing found" path lists every candidate it
 looked for rather than simply reporting absence, and why the source is returned
 rather than discarded once the value is read.
