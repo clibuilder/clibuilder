@@ -25,8 +25,8 @@ todos:
   - content: "Remediate the input-parsing judge findings (UC3, four CFG gaps, sub-graph D)"
     status: completed
   - content: "Sweep the seven other nodes for the same rules (unbound scenario-map edges, malformed decision nodes)"
-    status: in_progress
-  - content: "Re-run the seven ungraded node judges (command-definition, execution, configuration, plugins, builtin-commands, presentation, testing)"
+    status: completed
+  - content: "Re-run all eight node judges — every node changed during the sweep"
     status: pending
 ---
 
@@ -81,14 +81,16 @@ session limit before returning.** Only `input-parsing` graded, and it came back
 
 1. ~~Remediate the `input-parsing` findings~~ — **done** (`857adb2`). All three
    root causes substantiated against the source and fixed; 52 scenarios now.
-2. **Finish the cross-node sweep** (rule 2 of `sdd:remediation-governance`) —
-   see `## Sweep` below. Done: `command-definition` (`bdfa975`), `plugins`
-   (`73d982e`), `builtin-commands` (`0c39c53`), `testing` (`489d213`),
-   `configuration` (`4604116`). **Remaining: `execution`, `presentation`** —
-   the two largest, with 22 and 12 mechanical candidates respectively.
-3. **Re-run the seven ungraded judges.** Their verdicts are unknown — do not
-   assume they would have passed. `input-parsing` was one of the strongest
-   nodes by the judge's own read, so expect findings elsewhere.
+2. ~~Finish the cross-node sweep~~ — **done**, all eight nodes. See `## Sweep`
+   below for the per-node verdicts. Deterministic pre-checks re-run and green
+   as of `da15604`: `check-spec-state` (root + touched files) OK with the same
+   four known `plugins/` false positives, `check-suite` OK across 8 files,
+   `check-spec-structure` blocking[0] with three oversized advisories.
+3. **Re-run the judges — all eight, not seven.** Every node changed during the
+   sweep, `input-parsing` included, so its earlier FAIL no longer describes
+   what is on disk. Seven verdicts were never taken at all — do not assume they
+   would have passed; `input-parsing` was one of the strongest nodes by the
+   judge's own read and still failed all three lenses.
 4. Only then take the gate verdict.
 
 ## Sweep — the rules the input-parsing findings instantiate
@@ -114,11 +116,19 @@ judge's four findings plus UC3 exactly, which is what validates the method.
 
 R3 is fully mechanical (an edge `X --> Y` whose source `X` is declared `X{...}`)
 and found exactly one hit corpus-wide: `plugins` sub-graph A,
-`ACT --> REG{it registered a key} --> ACC{accepted?}`. Not yet triaged. It does
-**not** catch a decision node missing a branch — that one is by eye, and is how
-`command-definition`'s `DF{declares default?}` was found.
+`ACT --> REG{it registered a key} --> ACC{accepted?}`, since remediated. It does
+**not** catch a decision node missing a branch — that one is by eye, and it is
+the single most common defect in this corpus: **twelve** missing branches
+across five nodes.
 
-### Sweep verdicts so far
+**Add a fence-parity check to any future gate run.** A sweep edit left an
+unclosed ```` ```mermaid ```` in `configuration`, which swallowed the rest of
+the node into a code block. `check-suite` passed it; only
+`check-spec-structure` caught it, reporting the whole `## Scenario map` as
+missing. One line does it:
+`for f in <spec>/*/README.md; do n=$(grep -c '^```' $f); [ $((n % 2)) -ne 0 ] && echo "ODD: $f"; done`
+
+### Sweep verdicts — all eight nodes
 
 - **`input-parsing`** — 4 genuine (accumulation, single-dash `=`, the two
   omitted-type defaults) + UC3; ruled out 11 paraphrase candidates. `857adb2`.
@@ -145,7 +155,41 @@ and found exactly one hit corpus-wide: `plugins` sub-graph A,
 - **`configuration`** — 3 genuine, one of each shape: B fanned out of one node
   into two parallel decisions with undefined order (the `input-parsing`
   sub-graph D defect again), `CI{case-insensitive?}` had no `no` branch, and
-  UC6 had no sub-graph. `4604116`.
+  UC6 had no sub-graph. `4604116`, fence repair in `da15604`.
+- **`presentation`** — 7 genuine, the most of any node. The display-level
+  *reader* was undrawn (only the setter was), which hid why the info-setter
+  no-op is benign; four alias/default rendering scenarios rested on nothing;
+  UC5 (`showVersion`) had neither an **Actor / goal** line nor a sub-graph; and
+  the shared `--format` option was unspecified in the graph. Three missing
+  `no` branches in B. `846bad7`.
+- **`execution`** — the largest gap: **UC4 and UC5 had no sub-graph at all**,
+  so nine scenarios bound to nothing. Drawing them surfaced three uncovered
+  edges now specified (a `CliError` with no help, the first uncached config
+  resolution, the plugin-load cache). Four missing `no` branches in A.
+  `780b23f`.
+
+### What the sweep says about the corpus
+
+The rule the judge found in `input-parsing` was **not** local to it. Every one
+of the eight nodes had at least one instance, and two patterns dominate:
+
+1. **A use case with no drawn sub-graph** — `input-parsing` UC3,
+   `command-definition` UC2, `plugins` UC4, `builtin-commands` UC4, `testing`
+   UC4, `configuration` UC6, `presentation` UC5, `execution` UC4 **and** UC5.
+   Eight nodes, nine use cases, ~30 scenarios that bound to no edge. Three of
+   them (`testing` UC4, `presentation` UC5, `execution` UC4/UC5) had no
+   **Actor / goal** line either. It is nearly always the *last* use case in the
+   node — the small helper written after the main graph was drawn.
+2. **A decision node with only its `yes` branch** — twelve instances. The `no`
+   branch is where the spec asserts by omission that nothing happens, which is
+   rarely what the code does.
+
+Two ownership duplicates were also found and resolved by reasoning from the
+source, not by vote: `command-definition` UC2 duplicated `execution/`'s parent
+linking and `presentation/`'s chain walk, and `builtin-commands` UC4
+duplicated `execution/`'s no-`run` help. Both re-derived to the declaration or
+type each node actually owns. The `getBaseCommand` half of that seam is *not*
+a duplicate — it declares its own `run`.
 
 ### Gate mechanics, confirmed this session
 
