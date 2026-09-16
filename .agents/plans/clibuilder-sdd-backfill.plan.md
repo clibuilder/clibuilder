@@ -166,8 +166,9 @@ cleanup discipline.
 ### Owed before the gate can be re-approved
 
 1. Re-run `presentation`'s impl judge once the quota resets.
-2. `testing/` needs a spec-judge re-read — its `createCommandUI` arm and exit
-   prose changed after the last one (`938d4e7`).
+2. ~~`testing/` needs a spec-judge re-read~~ — **done**: oracle, builder and
+   architect all PASS, ALIGNED, 26/26. Its one observation (the codeless-exit
+   note trailed UC4, not UC3) is fixed in `14c82f5`.
 3. Re-freeze `testing/testing.feature` and restore `status: approved` with
    `approval.spec`, then re-run `check-spec-state`.
 
