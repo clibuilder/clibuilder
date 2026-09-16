@@ -91,66 +91,58 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The post-re-derivation judge round is in progress.** 306 scenarios. Verdicts so
-far — batches 1 and 2 complete, batch 3 dispatched:
+**308 scenarios. Four nodes hold clean verdicts against current disk; four are
+in a re-read round.**
 
-| Node | verdict | since |
-| --- | --- | --- |
-| `input-parsing` | **pass, ALIGNED: true** | unchanged — **this verdict holds** |
-| `execution` | pass, ALIGNED: true | edited after (first-plugin-load) — owes a re-read |
-| `presentation` | fail (builder) → fixed | owes a re-read |
-| `builtin-commands` | fail (builder + architect) → fixed | owes a re-read |
-| `configuration` | fail (builder) → fixed | owes a re-read |
-| `plugins` | fail (builder) → fixed | owes a re-read |
-| `testing` | dispatched | — |
-| `command-definition` | dispatched | — |
+| Node | state |
+| --- | --- |
+| `input-parsing` | **pass — holds** |
+| `testing` | **pass — holds** |
+| `builtin-commands` | **pass — holds** (re-read confirmed both fixes) |
+| `configuration` | **pass — holds** (re-read confirmed both fixes) |
+| `presentation` | failed 3× on one class, fixed — third re-read dispatched |
+| `plugins` | failed, fixed — re-read dispatched |
+| `command-definition` | failed, fixed — re-read dispatched |
+| `execution` | passed, then edited — re-read still owed |
 
-**Next action: collect batch 3, then one re-read round over the six edited
-nodes.** Only `input-parsing` holds a verdict against current disk.
+**Next: collect the three, re-read `execution`, then take the gate verdict.**
+The verdict is `change` until every node holds a pass against current disk.
 
-### What this round established
+### The defect class this gate is actually finding
 
-**The Oracle backfill clause was tested this time, by every judge that has
-reported.** Each was asked to state its conclusion and did. Three judged their
-node's "Unserved goals" table evidence of a real search rather than decoration
-(reasoning from provenance detail — the split-from-parent link on #575, the
-concrete surface gaps behind #405/#488). Two judged an *absent* table correct and
-said why: `plugins`' bordering goal (#575) is properly homed at
-`builtin-commands` per its own non-goals, and `presentation`'s pass came back
-empty rather than unrun. The clause is now genuinely exercised, not nominally
-passed.
+**An uncovered negative arm — a decision whose `yes` branch has a scenario and
+whose `no` branch does not.** It has now been found in **six of the eight
+nodes**, and in `presentation` three times over, once per sub-graph, by three
+different judges. That is not bad luck; it is what an under-derived graph looks
+like when you keep looking. Briefing each judge to sweep negative arms
+*specifically* is what turned it from an occasional finding into a reliable one.
 
-**`input-parsing`'s judge would not take "the producer found nothing" on
-trust**, and its distrust paid. It flagged that the recovery pass left no
-node-specific audit trail for the highest-complaint area and asked for a targeted
-sweep. That sweep found **#274** — an option declaring a `default` still types as
-possibly `undefined` — closed without an implementation, the same shape as #109,
-now recorded against `command-definition`.
+The corollary worth carrying: **adding surface and covering surface are separate
+acts.** Three of this round's failures were on surface the re-derivation itself
+had just added — the option-alias union, the base command's empty `commands`
+list, the `searchByKeywords` seam. The pass that found the gap did not
+automatically close it.
 
-**A methodology bug the sweep exposed:** `gh issue list --search` silently
-returns zero rows in this environment. The first keyword pass came back empty for
-every term and was nearly read as absence. Pulling the full list and filtering
-locally found 13 parsing-relevant issues. Filed as a process ledger entry —
-**an empty `--search` is not evidence of absence.**
+### Tooling added this round
 
-**Uncovered negative arms were the round's dominant defect**, in three of six
-graded nodes: `presentation` (an option with no aliases, one with no default),
-`configuration` (a dangling symlink), and the shape behind `builtin-commands`'
-two. Once the first judge found it, briefing later judges to check negative arms
-specifically is what surfaced the rest.
+`.agents/sdd/tools/check-table-shape.py` — flags a markdown table whose rows
+disagree on column count. It exists because a three-column scenario-map row was
+inserted into a two-column entry-point table and **`check-suite` reported OK**;
+only a human-shaped reader caught it. Two corrections its first run needed, both
+recorded in the docstring: ignore escaped pipes (`T \| undefined`) or every union
+type reads as ragged, and ignore fenced blocks where mermaid pipes are not
+tables. Corpus is clean under it.
 
-### Producer errors this round, recorded rather than smoothed over
+### Method notes from this round
 
-- **`builtin-commands`' two failures sat exactly where my commit claimed
-  coverage.** The empty-`commands`-list scenario had a map row and no graph node,
-  so it derived from prose — the retrofit shape the builder bar names. The
-  `searchByKeywords` context seam went into the surface trace for both commands
-  but was drawn and tested for `list` alone.
-- **I corrupted a table and the checkers passed it.** A fallback match in an edit
-  script selected UC4's `Outcome` row instead of the scenario-map row and
-  inserted a three-column row into a two-column table. `check-suite` reported OK;
-  the harness noticing the file had changed on disk is what caught it. **The
-  checkers do not validate entry-point tables — read the artifact back.**
+- **`gh issue list --search` silently returns zero rows here.** A keyword sweep
+  came back empty for every term and was nearly read as absence. Pull
+  `--limit 100 --json` and filter locally. An empty `--search` is not evidence.
+- **A judge's "I could not verify X" is worth acting on.** `input-parsing`'s
+  judge passed the node but flagged that the tracker recovery had no
+  domain-specific audit trail; the sweep it asked for found #274. `testing`'s
+  judge did the same; its sweep found nothing, and that null result is now
+  recorded rather than assumed.
 
 ### Blocking decisions still owed at the gate
 
