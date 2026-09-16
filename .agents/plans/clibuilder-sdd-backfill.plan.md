@@ -32,7 +32,7 @@ todos:
     status: completed
   - content: "Re-run all eight node judges — every node changed during the sweep"
     status: completed
-  - content: "Decide the four R6 instances: draw the guard, or delete the claim"
+  - content: "Decide each live R6 instance: draw the guard, or delete the claim"
     status: pending
   - content: "Remediate: sweep R5 (under-branched structural twin) corpus-wide"
     status: pending
@@ -704,13 +704,11 @@ they do.
 
 ### Blocking decisions — still owed
 
-- **`presentation`'s `--format` guard.** Is refusing an unsupported `--format`
-  value this node's own behavior (it needs a refusal scenario) or generic
-  option-type validation owned by `input-parsing`/`command-definition` (it is a
-  declared constraint and should not be drawn as this node's edge)? This is an
-  **R6 instance** and must be answered before the graph can be called complete.
-- **Each R6 instance's disposition** — draw the guard, or delete the claim. Four
-  instances, and the answer may differ per instance.
+- ~~**`presentation`'s `--format` guard.**~~ **Resolved from source — delete the
+  claim.** See the `--format` subsection below.
+- **Each remaining R6 instance's disposition** — draw the guard, or delete the
+  claim. The swept candidate set is below; the answer differs per instance and
+  each needs its own source read.
 
 ### The remediation round — the shape it should take
 
@@ -730,6 +728,55 @@ governing the artifact):
    `input-parsing`, `testing` and `command-definition` but not by `plugins`
    (`WI`/`WV`) or `command-definition`'s `DF1`; `builtin-commands`' "installed"
    is undefined against `plugins/`'s "activated".
+
+#### The R6 candidate set — swept, and it is larger than the judges saw
+
+Every node's Surface trace carries a `May not combine with` column. Extracting
+the non-empty cells corpus-wide gives the candidate set below. Cells written
+`— (...)` are annotations, not constraints, and are out of scope. **Each live
+cell needs the same per-instance ruling: is the constraint enforced (draw the
+guard, and the 1:1 binding supplies the scenario), or is it not (delete the
+claim)?**
+
+| Node | Cell | Status |
+| --- | --- | --- |
+| `builtin-commands` | `--show-config` × an app declaring no config | **guarded** — has its own scenario |
+| `builtin-commands` | `--fields` × `plugins list` | unchecked |
+| `command-definition` | `context` × the `commands`-only arm | **judge-flagged, no guard** |
+| `command-definition` | `run` "may coexist with `commands`" | **judge-flagged**, the both-arms shape |
+| `execution` | `.default` with itself — offered once | unchecked |
+| `plugins` | `source` meaningful only when `accepted` is false | unchecked |
+| `presentation` | `toonTable` with a single column | unchecked — reads as a design preference, not an enforced rule |
+| `testing` | `argv` × an argument containing a space | **judge-flagged, no guard** |
+| `input-parsing` | `__` presently unreadable downstream | annotated as gap 1, not a constraint |
+
+Four unchecked cells the judges never reached, in three nodes — including
+`builtin-commands`, which graded **clean**. That is the sweep doing what a
+per-node judge structurally cannot, and it confirms the expectation above:
+**the clean nodes are in scope for this remediation.**
+
+#### `presentation`'s `--format` guard — RESOLVED, delete the claim
+
+The blocking decision is answered from the source, which the conductor (unlike
+the judges) may read. `ts/render/format.ts:17` declares
+
+```ts
+export const formatOption = {
+  type: z.optional(z.enum(['toon', 'text', 'json'])),
+  default: 'toon' as const
+}
+```
+
+So refusing an unsupported `--format` value is **generic schema validation** —
+`input-parsing`'s `SP{schema accepts?}` edge and its `invalid-value` error,
+already specified there. It is **not** `presentation/`'s own decision. Remove
+`FGIV` as a drawn guard in `presentation/` and describe it as a declared
+constraint; do not add a refusal scenario there, which would duplicate
+`input-parsing`.
+
+The same read **confirms the `json` finding stands**: `json` is one of three
+genuinely declared values with `toon` as the default, so its absence from
+sub-graph D is a real uncovered branch, not a value that never reaches the node.
 
 **Expect R5 and R6 to touch the two clean nodes too.** A sweep that finds
 nothing in `builtin-commands` and `configuration` is a result worth recording,
