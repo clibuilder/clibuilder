@@ -1,6 +1,6 @@
 import { execCommand } from '@unional/fixture'
 import { builder } from './builder.js'
-import { mockContext } from './context.mock.js'
+import { mockContext } from './drivers/context.mock.js'
 import { argv } from './test-utils/argv.js'
 import { getFixturePath } from './test-utils/index.js'
 

@@ -1,10 +1,10 @@
 import { createConsoleLogReporter, createStandardLog, logLevels } from 'standard-log'
 import { createColorLogReporter } from 'standard-log-color'
-import type { Command } from './command.internal.types.js'
-import { type ConfigLoadResult, resolveConfig } from './config.js'
-import { loadPlugins } from './plugins.js'
-import type { RegistryOwner } from './registry.js'
-import { type BuilderUI, createBuilderUI, createUI } from './ui.js'
+import type { Command } from '../command.internal.types.js'
+import { type ConfigLoadResult, resolveConfig } from '../config.js'
+import { loadPlugins } from '../plugins.js'
+import type { RegistryOwner } from '../registry.js'
+import { type BuilderUI, createBuilderUI, createUI } from './logger.js'
 
 /**
  * Creates an app context that provides interactions to external system

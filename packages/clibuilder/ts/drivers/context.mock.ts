@@ -2,12 +2,12 @@ import { type LogLevel, logLevels } from 'standard-log'
 import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/testing'
 import tmp from 'tmp'
 import { required } from 'type-plus'
-import { type ConfigLoadResult, resolveConfig } from './config.js'
+import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Context } from './context.js'
-import { loadPlugins } from './plugins.js'
-import type { RegistryOwner } from './registry.js'
-import { getFixturePath } from './test-utils/index.js'
-import { createBuilderUI, createUI } from './ui.js'
+import { loadPlugins } from '../plugins.js'
+import type { RegistryOwner } from '../registry.js'
+import { getFixturePath } from '../test-utils/index.js'
+import { createBuilderUI, createUI } from './logger.js'
 
 export namespace mockContext {
 	export type Params = { fixtureDir?: string; logLevel?: LogLevel }

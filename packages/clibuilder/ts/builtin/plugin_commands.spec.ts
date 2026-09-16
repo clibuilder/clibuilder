@@ -1,7 +1,7 @@
 import { builder } from '../builder.js'
 import { listPluginsCommand } from './plugin_commands/list.js'
 import { searchPluginsCommand } from './plugin_commands/search.js'
-import { mockContext } from '../context.mock.js'
+import { mockContext } from '../drivers/context.mock.js'
 import { argv } from '../test-utils/index.js'
 
 describe('pluginsCommand', () => {

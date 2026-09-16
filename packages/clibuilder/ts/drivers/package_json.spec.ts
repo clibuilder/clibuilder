@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { pathEqual } from 'path-equal'
-import { findPackageJson, getPackageJson } from './platform.js'
-import { getFixturePath } from './test-utils/fixture.js'
+import { findPackageJson, getPackageJson } from './package_json.js'
+import { getFixturePath } from '../test-utils/fixture.js'
 
 describe('findPackageJson()', () => {
 	it('looks up to get the nearest package.json', () => {

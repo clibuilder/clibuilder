@@ -1,6 +1,6 @@
 import { type Logger, logLevels } from 'standard-log'
-import type { Command } from './command.internal.types.js'
-import { generateHelpMessage } from './render/help.js'
+import type { Command } from '../command.internal.types.js'
+import { generateHelpMessage } from '../render/help.js'
 
 /**
  * The framework-facing ui: everything `createUI` offers, plus the `dump` that
