@@ -271,3 +271,25 @@ Feature: Execution
     Given a registered command
     When its run calls showHelp with no arguments
     Then the help rendered is that command's own
+
+  # ── arms whose twins were already covered ──
+
+  Scenario: an application with keywords and no config name loads no config
+    Given an application declaring keywords and no config name
+    When it is assembled
+    Then no config loading is awaited before a command is matched
+
+  Scenario: a config naming no plugins activates none
+    Given a loaded config that names no plugins
+    When the application is assembled
+    Then no plugin activation is attempted and no plugin commands are registered
+
+  Scenario: registering an ordinary command leaves default still available
+    Given a builder that has registered an ordinary command
+    When the returned builder is inspected
+    Then it still offers to register a default, unlike after a default was registered
+
+  Scenario: a config satisfying the command's schema lets the command run
+    Given a command declaring a config schema and a config that satisfies it
+    When the invocation is parsed
+    Then the command runs, and no failing field is reported

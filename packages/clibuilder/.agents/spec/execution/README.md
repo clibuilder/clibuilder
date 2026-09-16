@@ -80,6 +80,8 @@ a version, and a statement of whether it takes configuration or plugins.
 | `config` is set and no keywords are given | the keywords default to the CLI's name, so plugin discovery has something to search for |
 | the application can accept plugins | the built-in `plugins` command is registered, and `parse` is available immediately |
 | the application takes neither config nor keywords | no `plugins` command, and `parse` becomes available only once a command is registered |
+| the application declares keywords but no config name | nothing is loaded; the plugins to search for come from the keywords alone |
+| the loaded config names no plugins | no plugin activation is attempted |
 | a loaded config names plugins | their commands are registered before `parse` proceeds |
 
 ### UC2 — `.command()` / `.default()`: register commands
@@ -311,6 +313,8 @@ callers.
 | no plugins command | neither config nor keywords | `an application that cannot accept plugins gets no plugins command` |
 | start loading config as pending work | a config name | `parse waits for the config started during assembly` |
 | load them and register their commands | the loaded config names plugins | `commands from configured plugins are registered before parse proceeds` |
+| nothing to load; plugins come from keywords alone | keywords declared and no config name | `an application with keywords and no config name loads no config` |
+| no plugins to load | the loaded config names none | `a config naming no plugins activates none` |
 
 ### UC2 — register commands
 
@@ -320,6 +324,7 @@ callers.
 | leave parent unset | a command with no name | `a nameless command records no parent` |
 | link each child to its own parent, recursively | a registered command declaring sub-commands | `nested sub-commands are linked to their own parent, not the root` |
 | remove `.default` | `.default` was called | `the default command may be registered only once` |
+| `.default` stays available | `.command` was called | `registering an ordinary command leaves default still available` |
 | parse exposed on first registration | an application that cannot accept plugins | `registering a command makes the application executable` |
 
 ### UC3 — `parse`: run an invocation
@@ -338,6 +343,7 @@ callers.
 | drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
 | print each, show help, exit usage | an unknown option that is not global | `a usage error is printed with help and exits with the usage code` |
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
+| config valid? — yes | matched command declares config, config valid | `a config satisfying the command's schema lets the command run` |
 | command declares a config schema? — no | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
 | show help | matched command has no `run` | `a group command with nothing to run shows help` |
 | return its value | a runnable command, no errors | `a matched command runs and its value is returned` |
