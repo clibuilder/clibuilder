@@ -43,9 +43,6 @@ export function getBaseCommand(description: string, options?: { config?: boolean
 					}
 				: {})
 		},
-		commands: [],
-		run() {
-			this.ui.showHelp()
-		}
+		commands: []
 	})
 }

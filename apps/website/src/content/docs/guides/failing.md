@@ -52,6 +52,15 @@ unknown option --bogus
 missing required argument <target>
 ```
 
+A command group — a command that has `commands` but no `run`, including a cli with no `default()` —
+is incomplete without a sub command. Invoked bare, it prints its help and exits `2`:
+
+```sh
+$ my-cli send
+Usage: my-cli send <command>
+...
+```
+
 The global options — `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli` and
 `--show-config` — are accepted by every command, so they are never reported as unknown. `--help` and
 `--version` are answered even when the rest of the command line is invalid, and both exit `0`:

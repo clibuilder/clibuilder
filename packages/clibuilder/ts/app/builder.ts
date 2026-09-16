@@ -122,7 +122,12 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			s.config = config
 		}
 		const commandInstance = createCommandInstance(context, s, command, registry)
-		if (!commandInstance.run) return commandInstance.ui.showHelp()
+		if (!commandInstance.run) {
+			// a command without `run` is a group: invoked bare, it is missing its
+			// sub command, so it is a usage error (#609). `--help` is handled above.
+			commandInstance.ui.showHelp()
+			return context.exit(exitCodes.usage)
+		}
 		try {
 			return await commandInstance.run(args as any)
 		} catch (e) {
