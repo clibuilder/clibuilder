@@ -47,6 +47,7 @@ array type; it consumes every remaining positional.
 | --- | --- | --- |
 | CLI end user | types an invocation | reach the command they meant with the values they meant, or be told precisely what was wrong |
 | `execution` | calls `lookupCommand(command, args)` | get a matched command, typed args, and an error list to act on |
+| `execution`, again | calls `lookupOptions(baseCommand, key)` | keep a valid global flag from being reported as a usage error when the sub-command it was typed against declares no options of its own |
 | `presentation` | reads the returned errors | render each failure in the user's terms |
 | CLI author *(stakeholder — never invokes this node)* | — | the types they declared are the types `run` receives |
 
@@ -100,19 +101,33 @@ failure collected.
 | a value cannot be converted to its declared type | `invalid-value`, carrying what the option would have accepted |
 | several values are given for a single-valued option | `expect-single`, and the last value is used |
 
-### UC3 — `lookupOptions`: resolve an option key by name or alias
+### UC3 — `lookupOptions`: decide whether a key names a declared option
 
-**Actor / goal.** A sibling resolving a user-typed key wants the declared option
-it refers to, under its canonical name.
+**Actor / goal.** `execution` holds a key that the matched command reported as
+unknown, and wants to know whether it is in fact one of the application's global
+options — declared on the base command rather than on the sub-command the user
+typed it against. A global flag is always accepted, so answering yes is what
+keeps `--verbose` on a sub-command from being reported as a usage error. The
+declared name comes back with the entry, so a key typed as an alias lands under
+the name its author declared.
 
 | | |
 | --- | --- |
 | Trigger | `lookupOptions(command, key)` |
 | Inputs | a command declaration and a key as the user typed it |
-| Outcome | `[name, entry]` — the canonical name, so an alias-typed key lands under the declared name |
+| Outcome | `[name, entry]` — the declared name and the option it names |
 
-**Extensions.** The command declares no options, or none matching by name or
-alias — an empty tuple is returned, and the caller raises `invalid-key`.
+**Extensions.**
+
+| Cause | Outcome |
+| --- | --- |
+| the command declares no options at all | an empty tuple; the key names nothing here |
+| the command declares options, none matching by name or alias | an empty tuple; the key names nothing here |
+
+The same decision is how UC2 fills an option from argv, so it is drawn once — as
+sub-graph E — and both enter it. What a caller does with an empty tuple is the
+caller's: UC2 raises `invalid-key`, and `execution` keeps the error it already
+had.
 
 **Known gaps.** Three tokenizer/filler decisions below are current behavior that
 the suite fixes as-is; each is filed as a defect in this spec's ledger.
@@ -136,7 +151,7 @@ the suite fixes as-is; each is filed as a defect in this spec's ledger.
 | `parseArgv.Result._` / `.__` | UC1 | — (`__` is presently unreadable downstream — gap 1) |
 | `lookupCommand` | UC2 | — |
 | `lookupCommand.Result.errors` and its five error types | UC2 | — |
-| `lookupOptions` | UC3 | — |
+| `lookupOptions` | UC3, and internally by UC2's filling step | — |
 
 ## Control Flow
 
@@ -147,8 +162,10 @@ graph TD
   T[next token] --> TERM{terminator already open?}
   TERM -- yes --> TR[append raw to __]
   TERM -- no --> OPT{"starts with - and has a word char?"}
-  OPT -- yes --> CLOSE[close any open option] --> DASH{single dash?}
-  DASH -- yes --> SC["cluster: all but last become 'true'; last opens"]
+  OPT -- yes --> CLOSE["close any open option — sub-graph A2"] --> DASH{single dash?}
+  DASH -- yes --> SD{"contains = ?"}
+  SD -- yes --> SCV["cluster: every character but the last becomes 'true'; the last opens with the text after ="]
+  SD -- no --> SC["cluster: every character but the last becomes 'true'; the last opens with no values"]
   DASH -- no --> MC{"contains = ?"}
   MC -- yes --> MCV[key and value split at =]
   MC -- no --> MCO[key opens with no values]
@@ -159,7 +176,23 @@ graph TD
   D -- no --> POS[append to positionals]
   V --> ENDD["a -- here is taken as a value (gap 2)"]
   END[end of tokens] --> C2{option still open?}
-  C2 -- yes --> EO["close it: no values means 'true'"]
+  C2 -- yes --> EO["close it — sub-graph A2"]
+```
+
+Each character a cluster sets to `'true'` is closed through A2 in turn, so a
+repeated character accumulates like any other repeated key.
+
+### Sub-graph A2 — close an option, entered from A
+
+```mermaid
+graph TD
+  CO[the open key and the values collected for it] --> HV{any values collected?}
+  HV -- no --> TRUE["its value is the string 'true'"]
+  HV -- yes --> VALS[its collected values]
+  TRUE --> SEEN{"this key already has values?"}
+  VALS --> SEEN
+  SEEN -- yes --> ACC[append to them: a repeated key accumulates]
+  SEEN -- no --> NEW[start the key's list]
 ```
 
 ### Sub-graph B — match (`matchCommand`), entered by UC2
@@ -183,7 +216,9 @@ Runs in a fixed order: arguments, then options from argv, then defaults.
 
 ```mermaid
 graph TD
-  FA[per declared argument] --> AV{positional available?}
+  FA[per declared argument] --> AT{declares a type?}
+  AT -- yes --> AV{positional available?}
+  AT -- no --> ASTR[treat it as a string] --> AV
   AV -- no --> OPTQ{type optional?}
   OPTQ -- yes --> SKIP[skip, no error]
   OPTQ -- no --> MISS[missing-argument]
@@ -194,12 +229,15 @@ graph TD
   ONE --> CONV
   LEFT -- yes --> EXTRA[extra-arguments]
   FO[per key in tokenized args] --> UK{key is _ ?}
-  UK -- yes --> SKIP2[skip]
+  UK -- yes --> SKIP2[skip: the positionals were already taken as arguments]
   UK -- no --> LD{"key starts with - ?"}
   LD -- yes --> IK[invalid-key]
-  LD -- no --> LU{"resolves by name or alias?"}
+  LD -- no --> LU{"resolves by name or alias? — sub-graph E"}
   LU -- no --> IK
-  LU -- yes --> CONV2[convert] --> SET[set under the canonical name]
+  LU -- yes --> OT{"the resolved option declares a type?"}
+  OT -- yes --> CONV2[convert]
+  OT -- no --> OBOOL[treat it as an optional boolean] --> CONV2
+  CONV2 --> SET[set under the declared name]
   IK --> GAP1["__ lands here (gap 1)"]
   FD[per declared option] --> ALREADY{already set from argv?}
   ALREADY -- yes --> NOOP[leave it]
@@ -212,29 +250,59 @@ graph TD
 
 ### Sub-graph D — convert (`convertValue`), entered from C
 
+Conversion runs in two stages, and every path passes through both. First the raw
+strings are turned into JavaScript values by the declared type's shape; then the
+declared schema itself is asked to accept the result. The second stage is what
+catches a type the first stage has no conversion for — an enum most of all.
+
 ```mermaid
 graph TD
   CV[declared type and raw values] --> OPTU{optional?}
-  OPTU -- yes --> UNWRAP[unwrap and retry on the inner type]
-  OPTU -- no --> K{which type?}
-  K -- boolean --> B{"'true' or 'false'?"}
+  OPTU -- yes --> UNWRAP[unwrap and retry on the inner type] --> OPTU
+  OPTU -- no --> K{"one value expected, or one per element?"}
+  K -- "an array of booleans, numbers or strings" --> EL[convert each element by the element type]
+  K -- "anything else" --> MULTI{"several values given?"}
+  MULTI -- yes --> ES[expect-single] --> LAST
+  MULTI -- no --> LAST[take the last value]
+  LAST --> K2{which type?}
+  K2 -- boolean --> B{"'true' or 'false'?"}
   B -- yes --> BOK[boolean]
   B -- no --> BERR[invalid-value: expected to be boolean]
-  K -- number --> N{numeric?}
+  K2 -- number --> N{numeric?}
   N -- yes --> NOK[number]
   N -- no --> NERR[invalid-value: expected to be number]
-  K -- string --> SOK[the last value]
-  K -- array --> EL[convert each element by the element type]
-  K -- other --> RAW[hand the last value to the schema]
-  K --> MULTI{"several values for a single-valued type?"}
-  MULTI -- yes --> ES[expect-single, and the last value is used]
-  BOK --> SP{schema accepts?}
+  K2 -- string --> SOK[the value as typed]
+  K2 -- "no dedicated conversion" --> RAW[the value unconverted]
+  EL --> SP
+  BOK --> SP
+  NOK --> SP
+  SOK --> SP
   RAW --> SP
-  SP -- yes --> OK[value]
-  SP -- no --> DESC{enum?}
+  BERR --> SP
+  NERR --> SP
+  SP{schema accepts?} -- yes --> OK["the value, with any expect-single still collected"]
+  SP -- no --> ALREADY{"did the conversion already report this value?"}
+  ALREADY -- yes --> ONCE[report nothing further; the value is dropped]
+  ALREADY -- no --> DESC{enum?}
   DESC -- yes --> ENUM["invalid-value listing the accepted values"]
   DESC -- no --> ZMSG["invalid-value carrying the schema's own message"]
 ```
+
+### Sub-graph E — resolve a key (`lookupOptions`), entered by UC3 and from C
+
+```mermaid
+graph TD
+  L[a command declaration and a key] --> ANY{declares any options?}
+  ANY -- no --> NONE[empty tuple: the key names nothing here]
+  ANY -- yes --> NAME{"an option is declared under exactly that key?"}
+  NAME -- yes --> ASNAME[that key and its entry]
+  NAME -- no --> AL{"an option lists it among its aliases?"}
+  AL -- yes --> ASALIAS[the declared name and its entry]
+  AL -- no --> NONE
+```
+
+An alias may be written as a bare string or as `{ alias, hidden }`; both forms
+are matched, and `hidden` affects only how `presentation/` lists it.
 
 ## Scenario map
 
@@ -244,10 +312,10 @@ graph TD
 | --- | --- | --- |
 | key and value split at `=` | long option | `a long option written with = takes the text after it as its value` |
 | key opens with no values | long option, next token is a positional | `a long option takes the following token as its value` |
-| close an open option with no values | option is last, or followed by another option | `an option given no value becomes true` |
-| values accumulate | the same key opened twice | `an option repeated accumulates its values` |
-| cluster: all but last become `'true'` | single dash, several characters | `a single-dash cluster sets every character but the last to true` |
-| cluster with `=` | single dash, several characters, `=` | `a single-dash cluster with = gives its value to the last character` |
+| no values collected: `'true'` (A2) | option is last, or followed by another option | `an option given no value becomes true` |
+| append to them: a repeated key accumulates (A2) | the same key opened twice | `an option repeated accumulates its values` |
+| cluster: every character but the last becomes `'true'` | single dash, several characters | `a single-dash cluster sets every character but the last to true` |
+| cluster with `=`: the last character opens with the text after it | single dash, several characters, `=` | `a single-dash cluster with = gives its value to the last character` |
 | append to positionals | no option awaiting values | `a bare token is a positional` |
 | starts with `-`, no word char | token is a lone dash | `a lone dash is a positional, not an option` |
 | starts with `-`, has a word char | token is a negative number | `a negative number opens an option named by its digits` |
@@ -276,13 +344,14 @@ graph TD
 | `missing-argument` | a required argument with no positional left | `a required argument with nothing left reports it missing` |
 | skip, no error | an optional argument with no positional left | `an optional argument with nothing left is skipped without error` |
 | `extra-arguments` | every declared argument filled, positionals remain | `positionals left over after every argument are reported as extra` |
-| argument omits type | any | `an argument declaring no type is filled as a string` |
-| set under the canonical name | key matches an option name | `an option key matching a declared name is filled` |
-| set under the canonical name | key matches an alias | `an option key matching an alias is filled under the declared name` |
+| treat it as a string | an argument declaring no type | `an argument declaring no type is filled as a string` |
+| skip: the positionals were already taken as arguments | positionals were given | `the positionals key is not reported as an unknown option` |
+| set under the declared name | key matches an option name | `an option key matching a declared name is filled` |
+| set under the declared name | key matches an alias | `an option key matching an alias is filled under the declared name` |
 | `invalid-key` | key matches no name or alias | `an unknown option key is reported as invalid` |
 | `invalid-key` | key retains a leading dash | `an option written with three dashes is reported as invalid` |
 | `invalid-key` | the terminator was used | `an invocation using the terminator reports it as an invalid key` |
-| option omits type | any | `an option declaring no type is filled as an optional boolean` |
+| treat it as an optional boolean | an option declaring no type | `an option declaring no type is filled as an optional boolean` |
 | use the default as declared | a declared option absent from argv | `an absent option falls back to its declared default` |
 | wrap the default in an array | an array-typed option with a scalar default | `a scalar default on an array option is wrapped in an array` |
 | leave it | a declared option present in argv | `an option given in argv is not overwritten by its default` |
@@ -291,22 +360,25 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| boolean accepted | boolean type | `a boolean option accepts true and false` |
+| `'true'` or `'false'?` — yes | boolean type | `a boolean option accepts true and false` |
 | `invalid-value: expected to be boolean` | boolean type | `a boolean option given another word is rejected as not a boolean` |
-| number accepted | number type | `a number option accepts a numeric value` |
+| numeric? — yes | number type | `a number option accepts a numeric value` |
 | `invalid-value: expected to be number` | number type | `a number option given a non-numeric value is rejected as not a number` |
-| the last value | string type | `a string option takes its value as typed` |
-| convert each element | array type | `an array option converts each of its values by the element type` |
-| unwrap and retry | optional type | `an optional option converts by the type it wraps` |
+| the value as typed | string type | `a string option takes its value as typed` |
+| convert each element by the element type | array type | `an array option converts each of its values by the element type` |
+| unwrap and retry on the inner type | optional type | `an optional option converts by the type it wraps` |
 | `expect-single` | any single-valued type | `several values for a single-valued option are reported, and the last one is used` |
-| hand the last value to the schema | a type with no dedicated conversion | `a type the parser cannot convert is handed to its schema unchanged` |
-| `invalid-value` listing accepted values | enum type the schema rejected | `an enum option given an unlisted value is told which values it accepts` |
-| `invalid-value` carrying the schema's message | non-enum type the schema rejected | `a value the schema rejects is reported in the schema's own words` |
+| the value unconverted, then the schema accepts | enum type given a declared value | `an enum option given one of its declared values is accepted as typed` |
+| `invalid-value` listing the accepted values | enum type the schema rejected | `an enum option given an unlisted value is told which values it accepts` |
+| `invalid-value` carrying the schema's own message | non-enum type the schema rejected | `a value the schema rejects is reported in the schema's own words` |
+| report nothing further; the value is dropped | the conversion already rejected the value | `a value the conversion rejected is reported once, not twice` |
 
 ### UC3 — `lookupOptions`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| resolved by name | the command declares the option | `a key matching a declared name resolves to that option` |
-| resolved by alias | the option declares that alias | `a key matching an alias resolves to the option's declared name` |
-| empty tuple | the command declares no matching option | `a key matching nothing resolves to nothing` |
+| an option is declared under exactly that key? — yes | the command declares the option | `a key matching a declared name resolves to that option` |
+| an option lists it among its aliases? — yes | the option declares that alias as a plain string | `a key matching an alias resolves to the option's declared name` |
+| an option lists it among its aliases? — yes | the option declares that alias in its hidden form | `a key matching a hidden alias resolves like any other alias` |
+| empty tuple: the key names nothing here | the command declares no options at all | `a key looked up on a command declaring no options resolves to nothing` |
+| empty tuple: the key names nothing here | the command declares options, none matching | `a key matching neither a name nor an alias resolves to nothing` |

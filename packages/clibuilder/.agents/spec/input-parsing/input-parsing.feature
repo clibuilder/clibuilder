@@ -145,6 +145,11 @@ Feature: Input parsing
     When a positional fills it
     Then its value is that positional unchanged
 
+  Scenario: the positionals key is not reported as an unknown option
+    Given a command whose invocation gives positionals
+    When the options are filled from the tokenized args
+    Then no invalid-key error names the positionals key
+
   Scenario: an option key matching a declared name is filled
     Given a command declaring an option
     When the invocation gives that option by name
@@ -235,10 +240,10 @@ Feature: Input parsing
     Then an expect-single error names the option
     And the last value given is the one used
 
-  Scenario: a type the parser cannot convert is handed to its schema unchanged
-    Given a command declaring an option whose type has no dedicated conversion
-    When the invocation gives it a value
-    Then the raw value is handed to the schema to accept or reject
+  Scenario: an enum option given one of its declared values is accepted as typed
+    Given a command declaring an option with an enum type
+    When the invocation gives it a value the enum lists
+    Then the command runs with that value, and no error is reported
 
   Scenario: an enum option given an unlisted value is told which values it accepts
     Given a command declaring an option with an enum type
@@ -250,7 +255,12 @@ Feature: Input parsing
     When the schema rejects the value and no conversion error was recorded
     Then an invalid-value error carries the schema's own message
 
-  # ── UC3 — lookupOptions: resolve an option key ──
+  Scenario: a value the conversion rejected is reported once, not twice
+    Given a command declaring a number option
+    When the invocation gives it a value that is not a number
+    Then exactly one error is reported for that option
+
+  # ── UC3 — lookupOptions: decide whether a key names a declared option ──
 
   Scenario: a key matching a declared name resolves to that option
     Given a command declaring an option
@@ -258,11 +268,21 @@ Feature: Input parsing
     Then the option and its name are returned
 
   Scenario: a key matching an alias resolves to the option's declared name
-    Given a command declaring an option with an alias
+    Given a command declaring an option with an alias written as a plain string
     When that alias is looked up
     Then the option is returned under its declared name
 
-  Scenario: a key matching nothing resolves to nothing
-    Given a command declaring no option matching the key
+  Scenario: a key matching a hidden alias resolves like any other alias
+    Given a command declaring an option with an alias written in its hidden form
+    When that alias is looked up
+    Then the option is returned under its declared name
+
+  Scenario: a key looked up on a command declaring no options resolves to nothing
+    Given a command declaring no options at all
+    When any key is looked up
+    Then nothing is returned
+
+  Scenario: a key matching neither a name nor an alias resolves to nothing
+    Given a command declaring options, none named or aliased by the key
     When the key is looked up
-    Then nothing is returned, and the caller reports an invalid key
+    Then nothing is returned
