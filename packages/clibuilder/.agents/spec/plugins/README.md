@@ -192,7 +192,7 @@ graph TD
   KIND -- collection --> APP[append the contribution; always accepted]
   KIND -- value --> OWN{already owned?}
   OWN -- yes --> REF[refuse, carrying the owning source]
-  OWN -- no --> TAKE[store it; accepted]
+  OWN -- no --> TAKE[store it; accepted] --> TNS[the result names no owning source]
   G[get key] --> GK{key kind?}
   GK -- collection --> GC{any contributions?}
   GC -- yes --> GCL[the contributions, with their sources]
@@ -250,6 +250,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | store it; accepted | a value key not yet owned | `the first registration of a value key is accepted` |
+| the result names no owning source | a value key not yet owned | `an accepted registration carries no owning source` |
 | refuse, carrying the owning source | a value key already owned | `a second registration of a value key is refused and names the owner` |
 | append the contribution; always accepted | a collection key | `every registration of a collection key is kept, in order` |
 | the value | a registered value key | `reading a registered value key returns its value` |
@@ -260,7 +261,8 @@ graph TD
 | absent | an unregistered key, of either kind | `an unregistered key is reported as absent` |
 | the one owning source | a registered value key | `describing a value key names its single owner` |
 | an empty list | an unregistered value key | `describing an unregistered value key names no one` |
-| every contributing source | a registered collection key | `describing a collection key names every contributor in order` |
+| every contributing source, in order | a registered collection key | `describing a collection key names every contributor in order` |
+| no contributing sources | an unregistered collection key | `describing an unregistered collection key names no one` |
 
 ### UC4 — `defineKey` / `defineCollectionKey`
 

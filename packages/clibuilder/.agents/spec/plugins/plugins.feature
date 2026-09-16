@@ -71,6 +71,11 @@ Feature: Plugins
 
   # ── UC3 — createRegistry ──
 
+  Scenario: an accepted registration carries no owning source
+    Given a value key not yet owned
+    When a source registers it
+    Then the registration names no owning source
+
   Scenario: the first registration of a value key is accepted
     Given a value key nobody has registered
     When a source registers it
@@ -121,6 +126,11 @@ Feature: Plugins
     Given a value key that was registered
     When it is described
     Then the one source owning it is named
+
+  Scenario: describing an unregistered collection key names no one
+    Given a collection key nothing has registered against
+    When it is described
+    Then no source is named
 
   Scenario: describing an unregistered value key names no one
     Given a value key that was never registered
