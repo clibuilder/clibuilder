@@ -91,90 +91,66 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**All eight nodes have been re-derived from source. The judge round is part-run
-and STALLED ON A SESSION RATE LIMIT** (429, quota resets 02:50 America/Los_Angeles).
+**The post-re-derivation judge round is in progress.** 306 scenarios. Verdicts so
+far — batches 1 and 2 complete, batch 3 dispatched:
 
-- **Batch 1 dispatched:** `presentation`, `execution`, `input-parsing`.
-  `presentation`'s judge **died on the rate limit before returning a verdict** —
-  re-run it. The other two may have died the same way; a verdict recorded below
-  is real, a silence is not.
-- **Batch 2 not dispatched:** `configuration`, `builtin-commands`, `plugins`.
-- **Batch 3 not dispatched:** `testing`, `command-definition`.
+| Node | verdict | since |
+| --- | --- | --- |
+| `input-parsing` | **pass, ALIGNED: true** | unchanged — **this verdict holds** |
+| `execution` | pass, ALIGNED: true | edited after (first-plugin-load) — owes a re-read |
+| `presentation` | fail (builder) → fixed | owes a re-read |
+| `builtin-commands` | fail (builder + architect) → fixed | owes a re-read |
+| `configuration` | fail (builder) → fixed | owes a re-read |
+| `plugins` | fail (builder) → fixed | owes a re-read |
+| `testing` | dispatched | — |
+| `command-definition` | dispatched | — |
 
-**Do not relaunch before the quota resets** — the original eight-wide fan-out
-died the same way, and batching in threes has been the standing mitigation. No
-spec content is at risk: everything is committed and the deterministic checks are
-green.
+**Next action: collect batch 3, then one re-read round over the six edited
+nodes.** Only `input-parsing` holds a verdict against current disk.
 
-**The next action is one judge round across all eight.** The compliance gaps in the earlier re-plan are closed:
-all seven governances are read, the unserved-use-case recovery has run, and the
-suites are derived rather than patched.
+### What this round established
 
-Suites after re-derivation — **300 scenarios, from 261 at the gate**:
+**The Oracle backfill clause was tested this time, by every judge that has
+reported.** Each was asked to state its conclusion and did. Three judged their
+node's "Unserved goals" table evidence of a real search rather than decoration
+(reasoning from provenance detail — the split-from-parent link on #575, the
+concrete surface gaps behind #405/#488). Two judged an *absent* table correct and
+said why: `plugins`' bordering goal (#575) is properly homed at
+`builtin-commands` per its own non-goals, and `presentation`'s pass came back
+empty rather than unrun. The clause is now genuinely exercised, not nominally
+passed.
 
-| Node | at the gate | now | re-derivation found |
-| --- | --- | --- | --- |
-| `presentation` | 45 | **65** | the two `UI` shapes; five untraced ports |
-| `input-parsing` | 52 | **53** | **nothing — clean** |
-| `execution` | 51 | **47** | `createCommandUI` wiring, wholly unspecified |
-| `configuration` | 30 | **32** | two untraced `ctx` seams; the file-URL import |
-| `builtin-commands` | 24 | **30** | a false alias claim; the npm `context` seam |
-| `plugins` | 25 | **27** | a false permutation; coverage otherwise complete |
-| `testing` | 21 | **27** | `logLevel` undrawn; `exit`'s two forms |
-| `command-definition` | 13 | **19** | `DefaultCommand` mis-stated; option aliases untraced |
+**`input-parsing`'s judge would not take "the producer found nothing" on
+trust**, and its distrust paid. It flagged that the recovery pass left no
+node-specific audit trail for the highest-complaint area and asked for a targeted
+sweep. That sweep found **#274** — an option declaring a `default` still types as
+possibly `undefined` — closed without an implementation, the same shape as #109,
+now recorded against `command-definition`.
 
-### What re-derivation found that three judge rounds could not
+**A methodology bug the sweep exposed:** `gh issue list --search` silently
+returns zero rows in this environment. The first keyword pass came back empty for
+every term and was nearly read as absence. Pulling the full list and filtering
+locally found 13 parsing-relevant issues. Filed as a process ledger entry —
+**an empty `--search` is not evidence of absence.**
 
-**The dominant defect is exposed surface absent from the `## Surface trace` —
-six of the eight nodes.** A judge grades the graph and the map it is handed; it
-cannot see an element the spec never mentions. Patching therefore *structurally
-cannot* find this class, however many rounds it runs. Only reading the source
-against the trace does.
+**Uncovered negative arms were the round's dominant defect**, in three of six
+graded nodes: `presentation` (an option with no aliases, one with no default),
+`configuration` (a dangling symlink), and the shape behind `builtin-commands`'
+two. Once the first judge found it, briefing later judges to check negative arms
+specifically is what surfaced the rest.
 
-The three sharpest instances, none of which any judge reached:
+### Producer errors this round, recorded rather than smoothed over
 
-- **`execution`** — `builder.ts` wraps `ctx.createCommandUI` before a command
-  runs: the logger is named for the command (falling back to the app name for
-  the nameless base command), the ui inherits the current display level, and
-  `showHelp`/`showVersion` are **bound to that command**. `builtin-commands`
-  already had a scenario resting on this wiring, so the corpus was standing on
-  behavior nothing specified.
-- **`presentation`** — there are **two** `UI` types and the difference is
-  load-bearing. `core/ports.ts` declares `showHelp(): void` with no arguments,
-  which is what a command author programs against; `createUI` returns
-  `showHelp(cliName, command)`. `execution` bridges them. Neither shape was
-  specified, in the node whose `Governs` line names the file.
-- **`command-definition`** — `DefaultCommand` was described as "the same shape
-  without a name". Its `run`'s `this` also carries **no `context`**. Proven with
-  a type probe, since reading the union by eye is exactly how the earlier
-  `context` claim went wrong.
-
-**Two factual errors in prose were corrected**, both of which a judge had read
-past: `builtin-commands` claimed all five global options carry short aliases
-(only three do, and its own scenario said so), and `command-definition`'s
-`DefaultCommand` row above.
-
-**`input-parsing` came back clean** — the node with the most judge attention and
-the most remediation needed nothing. Worth recording as the negative half:
-re-derivation is not a formality that always finds something.
-
-**A recurring codebase idiom the corpus was blind to:** exported `ctx` /
-`context` objects used as substitution seams — `config.ts`'s
-`{findPackageJson, getPackageJson}`, `find_up.ts`'s `{platform}`,
-`builtin/npm.ts`'s lazily-imported npm calls declared as each command's
-`context`. Three nodes, none traced. They are how the code is tested and how the
-npm dependencies stay off the startup path.
-
-### Judge brief for the round
-
-Relay the seven-governance declaration (now truthful). Ask each judge to apply
-the **Oracle backfill clause** explicitly — whether the *unserved* use cases were
-sought, not merely whether the list is tidy — since that clause silently passed
-8/8 in round one and is what the recovery pass finally satisfied.
-
-Deterministic checks green: `check-spec-state` OK, `check-suite` OK across 8
-files, `check-spec-structure` blocking[0] with the three standing oversized
-advisories, fences balanced.
+- **`builtin-commands`' two failures sat exactly where my commit claimed
+  coverage.** The empty-`commands`-list scenario had a map row and no graph node,
+  so it derived from prose — the retrofit shape the builder bar names. The
+  `searchByKeywords` context seam went into the surface trace for both commands
+  but was drawn and tested for `list` alone.
+- **I corrupted a table and the checkers passed it.** A fallback match in an edit
+  script selected UC4's `Outcome` row instead of the scenario-map row and
+  inserted a three-column row into a two-column table. `check-suite` reported OK;
+  the harness noticing the file had changed on disk is what caught it. **The
+  checkers do not validate entry-point tables — read the artifact back.**
 
 ### Blocking decisions still owed at the gate
 
