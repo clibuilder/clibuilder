@@ -755,6 +755,31 @@ Four unchecked cells the judges never reached, in three nodes — including
 per-node judge structurally cannot, and it confirms the expectation above:
 **the clean nodes are in scope for this remediation.**
 
+#### R6 dispositions — all eight cells ruled from source
+
+Each cell was read against the code it claims. **The rulings are not uniform,
+which is the point** — three cells needed nothing, two are genuine guards to
+draw, two are untested positive companions, and one is a claim to delete.
+
+| Cell | Source | Ruling |
+| --- | --- | --- |
+| `builtin-commands` `--show-config` × no-config app | — | **no action** — already guarded by its own scenario |
+| `execution` `.default` offered once | `app/builder.ts:56` `delete (this as any)['default']` | **no action** — guarded, and `the default command may be registered only once` tests it |
+| `input-parsing` `__` | — | **no action** — an annotation of gap 1, not a constraint |
+| `builtin-commands` `--fields` × `plugins list` | `list.ts:9` declares `{ format }` only; `--fields` is `search.ts:19` | **add a scenario** — true by construction and observable, but untested, while its twin `--show-config` has one |
+| `plugins` `source` only when `accepted` is false | `registry.ts:54` returns `{ accepted: true }` with no `source`; `:58` returns `{ accepted: false, source }` | **add a scenario** — the rejection half is tested, the accepted-carries-no-source half is not |
+| `command-definition` `context` × the `commands`-only arm | `cli.ts:83-100` — the second union arm is `{ commands: Command[] }` alone, with no `context` and no `run` | **draw the guard** — genuinely enforced by the type union; a `commands` + `context` declaration with no `run` matches neither arm |
+| `command-definition` `run` **and** `commands` | `cli.ts:83` — the *first* arm carries `commands?: Command[]` alongside `run` | **draw the path** — both together is legal and lands in the run arm: a real third shape, a leaf that also nests, currently untested |
+| `presentation` `toonTable` with a single column | `render/format.ts:59` — accepts any column count and formats it | **delete the claim** — nothing refuses it; it is a token-cost preference, not a rule. Specifying it as a constraint states an enforcement the code does not have |
+
+**`testing` `argv` × an argument containing a space** is its own case.
+`test-utils/argv.ts` is `\`node ${input}\`.split(' ')` — an argument containing a
+space is **not refused, it is silently split into two**. So there is no guard to
+draw and the claim is not decoration either; it is a real observable behavior
+stated as though it were a prohibition. **Reword the cell to what actually
+happens and add the scenario** — deleting it would drop a real behavior, and
+guarding it would specify a refusal that does not exist.
+
 #### `presentation`'s `--format` guard — RESOLVED, delete the claim
 
 The blocking decision is answered from the source, which the conductor (unlike
