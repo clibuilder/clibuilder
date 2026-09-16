@@ -109,6 +109,13 @@ directory, a log, and an exit it controls.
 | the CLI exits | the code is recorded **and** reported through the UI, so the exit is visible in the captured messages as well as assertable on its own |
 | config is resolved more than once | **it is re-resolved each time** — see the fidelity gaps below |
 
+**Why a codeless exit is not specified.** Every exit a command can drive carries
+a code, so the mock has one branch rather than two. A caller may still invoke
+`exit()` directly with no code, but that message lands in the buffered ui and
+becomes visible only after a `dump()` the mock never issues on its own — so the
+outcome is **unobservable**, and a behavior the capability cannot expose cannot
+be specified (`sdd:suite-format-governance`).
+
 ### UC4 — `argv` / `getFixturePath`: the small helpers
 
 **Actor / goal.** A command author writing a test wants to say what the user
@@ -125,13 +132,6 @@ leading elements of a real argv or building an absolute path by hand.
 **containing** a space is not refused — it is silently split into two. A test
 needing one builds the array directly. Repeated spaces collapse rather than
 producing empty arguments.
-
-**Why a codeless exit is not specified.** Every exit a command can drive carries
-a code, so the mock has one branch rather than two. A caller may still invoke
-`exit()` directly with no code, but that message lands in the buffered ui and
-becomes visible only after a `dump()` the mock never issues on its own — so the
-outcome is **unobservable**, and a behavior the capability cannot expose cannot
-be specified (`sdd:suite-format-governance`).
 
 **Fidelity gaps.** Two test doubles differ from what they stand in for. Both are
 filed in this spec's ledger; the suite fixes current behavior.
