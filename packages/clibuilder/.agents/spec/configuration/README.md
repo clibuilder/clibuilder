@@ -190,7 +190,6 @@ graph TD
 
 ### Sub-graph B — search (`findAnyFileUp`), entered by UC5
 
-```mermaid
 Every candidate is tried in the current directory before the walk moves up, so
 the nearest directory wins and candidate order only breaks ties within one.
 
