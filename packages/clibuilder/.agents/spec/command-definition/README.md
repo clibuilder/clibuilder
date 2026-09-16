@@ -58,6 +58,13 @@ by every declaration decision and can invoke none of them, so a shape the author
 can express but the framework cannot render is this node's defect, not
 `presentation/`'s.
 
+**Unserved goal — recovered from the issue tracker.** It has no entry point
+today, so it appears in neither the Control Flow nor the suite:
+
+| Actor | Goal | Provenance |
+| --- | --- | --- |
+| Command author | have an option that declares a default type as present, rather than as possibly `undefined` | [#274](https://github.com/clibuilder/clibuilder/issues/274) — closed without an implementation. `RunArgs` types an option as `z.infer<OT>`, so an optional type stays `T \| undefined` even when a `default` guarantees a value. Verified with a type probe |
+
 ### UC1 — `command()`: declare a command and infer its run arguments
 
 **Actor / goal.** A CLI author wants a command's `run` arguments typed from the

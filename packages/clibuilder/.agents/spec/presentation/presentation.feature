@@ -210,6 +210,16 @@ Feature: Presentation
     When its signature is rendered
     Then the aliases and the name appear together, shortest first, each dashed by its own length
 
+  Scenario: an option with no aliases shows just its name
+    Given an option declaring no aliases
+    When its help entry is rendered
+    Then the entry carries its name alone, with no alias marker appended
+
+  Scenario: an option with no default shows just its description
+    Given an option declaring no default
+    When its help entry is rendered
+    Then the entry carries its description alone, with no default appended
+
   Scenario: a hidden alias is not shown
     Given an option declaring an alias marked hidden
     When its signature is rendered

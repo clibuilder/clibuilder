@@ -446,6 +446,8 @@ graph TD
 | hint shown | a boolean argument | `a boolean argument keeps its type hint, because it must be typed out` |
 | sorted shortest first, each dashed by its own length | an option declaring aliases | `an option's aliases are shown with it, shortest first and dashed by length` |
 | marked hidden: left out | an option declaring a hidden alias | `a hidden alias is not shown` |
+| the name alone | an option declaring no aliases | `an option with no aliases shows just its name` |
+| the description alone | an option declaring no default | `an option with no default shows just its description` |
 | the description, then the default as written | an option declaring a non-string default | `an option's default is named in its description` |
 | the description, then the default in quotes | a string option with a default | `a string default is quoted in the description` |
 
