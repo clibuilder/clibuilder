@@ -169,21 +169,21 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| declares `run` | any | `` `a declaration with run is accepted as a leaf command` `` |
-| declares `commands`, no `run` | any | `` `a declaration with only commands is accepted as a group` `` |
-| declares neither | any | `` `a declaration with neither run nor commands is rejected` `` |
-| argument has `type` | any | `` `a typed argument types as its declared type` `` |
-| argument omits `type` | any | `` `an untyped argument types as string` `` |
-| option has `type` | non-optional type | `` `a typed option types as its declared type` `` |
-| option has `type` | optional type | `` `an optionally-typed option types as its type or undefined` `` |
-| option omits `type` | any | `` `an untyped option types as an optional boolean` `` |
-| `default` accepted unchecked | any — matching or contradicting | `` `an option default is accepted without being checked against its type` `` |
-| implicit `help` added | options omit `help` | `` `help is present on a command that declares no options` `` |
-| declared `help` replaces implicit | options declare `help` | `` `a declared help option replaces the implicit one` `` |
+| declares `run` | any | `a declaration with run is accepted as a leaf command` |
+| declares `commands`, no `run` | any | `a declaration with only commands is accepted as a group` |
+| declares neither | any | `a declaration with neither run nor commands is rejected` |
+| argument has `type` | any | `a typed argument types as its declared type` |
+| argument omits `type` | any | `an untyped argument types as string` |
+| option has `type` | non-optional type | `a typed option types as its declared type` |
+| option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
+| option omits `type` | any | `an untyped option types as an optional boolean` |
+| `default` accepted unchecked | any — matching or contradicting | `an option default is accepted without being checked against its type` |
+| implicit `help` added | options omit `help` | `help is present on a command that declares no options` |
+| declared `help` replaces implicit | options declare `help` | `a declared help option replaces the implicit one` |
 
 ### UC2 — `Command.parent`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| `parent` present | a nested command | `` `a nested command carries its parent` `` |
-| `parent` absent | a root command | `` `a root command carries no parent` `` |
+| `parent` present | a nested command | `a nested command carries its parent` |
+| `parent` absent | a root command | `a root command carries no parent` |

@@ -266,73 +266,73 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| hold it with its level | before `dump` | `` `a message emitted before the level is settled is held rather than printed` `` |
-| replay in order, at its level | `dump` called | `` `dumping replays every held message in order and at its own level` `` |
-| pass it straight through | after `dump` | `` `a message emitted after dumping is printed straight away` `` |
+| hold it with its level | before `dump` | `a message emitted before the level is settled is held rather than printed` |
+| replay in order, at its level | `dump` called | `dumping replays every held message in order and at its own level` |
+| pass it straight through | after `dump` | `a message emitted after dumping is printed straight away` |
 
 ### UC2 — the display level
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| silence the logger | level set to none | `` `setting the level to none silences the logger` `` |
-| raise to debug | level set to debug | `` `setting the level to debug shows debug messages` `` |
-| raise to trace | level set to trace | `` `setting the level to trace shows trace messages` `` |
-| no case matches | level set to info | `` `setting the level to info changes nothing` `` |
-| threshold mapping | any level set | `` `reading the level back reports the level that is in effect` `` |
+| silence the logger | level set to none | `setting the level to none silences the logger` |
+| raise to debug | level set to debug | `setting the level to debug shows debug messages` |
+| raise to trace | level set to trace | `setting the level to trace shows trace messages` |
+| no case matches | level set to info | `setting the level to info changes nothing` |
+| threshold mapping | any level set | `reading the level back reports the level that is in effect` |
 
 ### UC3 — `showHelp`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the name chain | a nested command | `` `usage names the whole chain from the application through every ancestor` `` |
-| append a command placeholder | the command declares sub-commands | `` `usage says a command is expected when the command has sub-commands` `` |
-| angle-bracketed | at least one required argument | `` `usage marks arguments as required when any of them is` `` |
-| square-bracketed | no required argument | `` `usage marks arguments as optional when none of them is required` `` |
-| angle-bracketed | at least one required option | `` `usage marks options as required when any of them is` `` |
-| square-bracketed | no required option | `` `usage marks options as optional when none of them is required` `` |
-| description, when declared | the command declares one | `` `a declared description is shown` `` |
-| commands, with their aliases | sub-commands declared, some with aliases | `` `sub-commands are listed with their aliases` `` |
-| arguments, column-aligned | arguments declared | `` `declared arguments are listed with their descriptions, aligned` `` |
-| options, column-aligned | options declared | `` `declared options are listed with their descriptions, aligned` `` |
-| alias, when declared | the command declares aliases | `` `a command's own aliases are shown` `` |
-| config, rendered as a type | a config schema declared | `` `a declared config schema is shown as a type` `` |
-| drop every empty section | a command declaring almost nothing | `` `a section with nothing to show is left out rather than rendered empty` `` |
+| the name chain | a nested command | `usage names the whole chain from the application through every ancestor` |
+| append a command placeholder | the command declares sub-commands | `usage says a command is expected when the command has sub-commands` |
+| angle-bracketed | at least one required argument | `usage marks arguments as required when any of them is` |
+| square-bracketed | no required argument | `usage marks arguments as optional when none of them is required` |
+| angle-bracketed | at least one required option | `usage marks options as required when any of them is` |
+| square-bracketed | no required option | `usage marks options as optional when none of them is required` |
+| description, when declared | the command declares one | `a declared description is shown` |
+| commands, with their aliases | sub-commands declared, some with aliases | `sub-commands are listed with their aliases` |
+| arguments, column-aligned | arguments declared | `declared arguments are listed with their descriptions, aligned` |
+| options, column-aligned | options declared | `declared options are listed with their descriptions, aligned` |
+| alias, when declared | the command declares aliases | `a command's own aliases are shown` |
+| config, rendered as a type | a config schema declared | `a declared config schema is shown as a type` |
+| drop every empty section | a command declaring almost nothing | `a section with nothing to show is left out rather than rendered empty` |
 
 ### UC4 — the signature format
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| required, argument default | an argument with no declared type | `` `an argument with no type is shown as required` `` |
-| optional, option default | an option with no declared type | `` `an option with no type is shown as optional` `` |
-| square brackets | an optional type | `` `an optional type is shown in square brackets` `` |
-| angle brackets | a non-optional type | `` `a required type is shown in angle brackets` `` |
-| hint shown | a string or number type | `` `a string or number type is hinted beside the name` `` |
-| variadic marker | an array type | `` `an array type is marked variadic` `` |
-| no hint: it is a flag | a boolean option | `` `a boolean option is shown without a type hint, because it is a flag` `` |
-| hint shown | a boolean argument | `` `a boolean argument keeps its type hint, because it must be typed out` `` |
-| aliases shortest first | an option declaring aliases | `` `an option's aliases are shown with it, shortest first and dashed by length` `` |
-| hidden alias left out | an option declaring a hidden alias | `` `a hidden alias is not shown` `` |
-| the description names the default | an option declaring a default | `` `an option's default is named in its description` `` |
-| quoted when a string | a string option with a default | `` `a string default is quoted in the description` `` |
+| required, argument default | an argument with no declared type | `an argument with no type is shown as required` |
+| optional, option default | an option with no declared type | `an option with no type is shown as optional` |
+| square brackets | an optional type | `an optional type is shown in square brackets` |
+| angle brackets | a non-optional type | `a required type is shown in angle brackets` |
+| hint shown | a string or number type | `a string or number type is hinted beside the name` |
+| variadic marker | an array type | `an array type is marked variadic` |
+| no hint: it is a flag | a boolean option | `a boolean option is shown without a type hint, because it is a flag` |
+| hint shown | a boolean argument | `a boolean argument keeps its type hint, because it must be typed out` |
+| aliases shortest first | an option declaring aliases | `an option's aliases are shown with it, shortest first and dashed by length` |
+| hidden alias left out | an option declaring a hidden alias | `a hidden alias is not shown` |
+| the description names the default | an option declaring a default | `an option's default is named in its description` |
+| quoted when a string | a string option with a default | `a string default is quoted in the description` |
 
 ### UC5 — `showVersion`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the version | the application has one | `` `an application with a version prints it` `` |
-| a phrase | the application has none | `` `an application without a version says so rather than printing nothing` `` |
+| the version | the application has one | `an application with a version prints it` |
+| a phrase | the application has none | `an application without a version says so rather than printing nothing` |
 
 ### UC6 — the output helpers
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| quote and escape it | a value containing a comma, quote, or backslash | `` `a value that could read as two entries is quoted and escaped` `` |
-| quote and escape it | a value surrounded by whitespace | `` `a value surrounded by whitespace is quoted` `` |
-| leave it as is | an ordinary value | `` `an ordinary value is left unquoted` `` |
-| one line, carrying the count | an array rendered | `` `a rendered array carries its count, so nothing looks truncated` `` |
-| a header, then one indented row each | a table rendered | `` `a rendered table names its columns and indents one row per entry` `` |
-| a counted one-entry line | a help line rendered | `` `a help line is counted like any other rendered list` `` |
-| say none were found | prose, empty collection | `` `prose for an empty collection names the keywords searched` `` |
-| say one was found | prose, one item | `` `prose for one item describes it in the singular` `` |
-| say several were found | prose, several items | `` `prose for several items lists them under a plural heading` `` |
-| the shared option | any command reporting a collection | `` `every command reporting a collection offers the same three formats and defaults to toon` `` |
+| quote and escape it | a value containing a comma, quote, or backslash | `a value that could read as two entries is quoted and escaped` |
+| quote and escape it | a value surrounded by whitespace | `a value surrounded by whitespace is quoted` |
+| leave it as is | an ordinary value | `an ordinary value is left unquoted` |
+| one line, carrying the count | an array rendered | `a rendered array carries its count, so nothing looks truncated` |
+| a header, then one indented row each | a table rendered | `a rendered table names its columns and indents one row per entry` |
+| a counted one-entry line | a help line rendered | `a help line is counted like any other rendered list` |
+| say none were found | prose, empty collection | `prose for an empty collection names the keywords searched` |
+| say one was found | prose, one item | `prose for one item describes it in the singular` |
+| say several were found | prose, several items | `prose for several items lists them under a plural heading` |
+| the shared option | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |

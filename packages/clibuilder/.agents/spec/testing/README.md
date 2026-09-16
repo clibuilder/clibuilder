@@ -192,39 +192,39 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| collect the return value | a command returning a value | `` `a command's return value comes back from the test helper` `` |
-| collect the captured messages | a command that says something | `` `everything a command said is captured in order` `` |
-| the exit code is undefined | a command that did not fail | `` `a command that did not fail records no exit code` `` |
-| the exit code is the one set | a command that failed | `` `a command that failed records the exit code it set` `` |
-| substitute config loading | a config passed to the helper | `` `a config passed to the helper reaches the command without a file existing` `` |
-| config loading returns nothing | no config passed | `` `a command tested without a config sees none` `` |
-| parse the argv | any invocation | `` `the argv string is parsed as though typed after the cli name` `` |
+| collect the return value | a command returning a value | `a command's return value comes back from the test helper` |
+| collect the captured messages | a command that says something | `everything a command said is captured in order` |
+| the exit code is undefined | a command that did not fail | `a command that did not fail records no exit code` |
+| the exit code is the one set | a command that failed | `a command that failed records the exit code it set` |
+| substitute config loading | a config passed to the helper | `a config passed to the helper reaches the command without a file existing` |
+| config loading returns nothing | no config passed | `a command tested without a config sees none` |
+| parse the argv | any invocation | `the argv string is parsed as though typed after the cli name` |
 
 ### UC2 — `mockPluginContext`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| addCommand appends | a plugin adding commands | `` `commands a plugin adds are collected for the test to assert on` `` |
-| register writes under the source | a plugin registering a value | `` `a value a plugin registers is stored under the mock's source` `` |
-| fall back to defaults | no params given | `` `the mock context takes no arguments in the simple case` `` |
-| use what was passed | a source or host given | `` `a given source and host replace the defaults` `` |
-| use what was passed | a registry given | `` `a shared registry lets two plugins be activated against one another` `` |
-| the result is discarded | a registration that is refused | `` `a refused registration is dropped silently rather than warned about` `` |
+| addCommand appends | a plugin adding commands | `commands a plugin adds are collected for the test to assert on` |
+| register writes under the source | a plugin registering a value | `a value a plugin registers is stored under the mock's source` |
+| fall back to defaults | no params given | `the mock context takes no arguments in the simple case` |
+| use what was passed | a source or host given | `a given source and host replace the defaults` |
+| use what was passed | a registry given | `a shared registry lets two plugins be activated against one another` |
+| the result is discarded | a registration that is refused | `a refused registration is dropped silently rather than warned about` |
 
 ### UC3 — `mockContext`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| cwd is that fixture directory | a fixture directory named | `` `a named fixture directory becomes the working directory` `` |
-| cwd is a fresh temporary directory | no fixture directory named | `` `a context without a fixture gets a temporary directory of its own` `` |
-| record the code | the cli exits | `` `an exit is recorded rather than taken` `` |
-| also report it through the ui | the cli exits | `` `an exit also appears among the captured messages` `` |
-| resolve afresh every time | config resolved more than once | `` `the mock resolves the config afresh on every call` `` |
+| cwd is that fixture directory | a fixture directory named | `a named fixture directory becomes the working directory` |
+| cwd is a fresh temporary directory | no fixture directory named | `a context without a fixture gets a temporary directory of its own` |
+| record the code | the cli exits | `an exit is recorded rather than taken` |
+| also report it through the ui | the cli exits | `an exit also appears among the captured messages` |
+| resolve afresh every time | config resolved more than once | `the mock resolves the config afresh on every call` |
 
 ### UC4 — `argv` / `getFixturePath`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| shaped like a real argv | any invocation string | `` `an invocation string becomes an argv array shaped like a real one` `` |
-| repeated spaces collapse | an invocation with repeated spaces | `` `repeated spaces do not become empty arguments` `` |
-| an absolute path under fixtures | a fixture name | `` `a fixture name resolves to an absolute path under the fixtures directory` `` |
+| shaped like a real argv | any invocation string | `an invocation string becomes an argv array shaped like a real one` |
+| repeated spaces collapse | an invocation with repeated spaces | `repeated spaces do not become empty arguments` |
+| an absolute path under fixtures | a fixture name | `a fixture name resolves to an absolute path under the fixtures directory` |

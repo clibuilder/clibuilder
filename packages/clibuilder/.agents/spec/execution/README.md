@@ -265,76 +265,76 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| config name is that string | `config` is a string | `` `a string config option names the config file` `` |
-| config name is the cli name | `config` is true | `` `config given as true names the config after the cli` `` |
-| no config name | `config` omitted | `` `an application declaring no config has no config name` `` |
-| keywords default to the cli name | config set, keywords omitted | `` `an application with config and no keywords searches under its own name` `` |
-| keywords kept as given | keywords declared | `` `declared keywords are kept as given` `` |
-| register the plugins command; expose parse now | config name or keywords present | `` `an application that can accept plugins gets the built-in plugins command` `` |
-| no plugins command | neither config nor keywords | `` `an application that cannot accept plugins gets no plugins command` `` |
-| start loading config as pending work | a config name | `` `parse waits for the config started during assembly` `` |
-| load them and register their commands | the loaded config names plugins | `` `commands from configured plugins are registered before parse proceeds` `` |
+| config name is that string | `config` is a string | `a string config option names the config file` |
+| config name is the cli name | `config` is true | `config given as true names the config after the cli` |
+| no config name | `config` omitted | `an application declaring no config has no config name` |
+| keywords default to the cli name | config set, keywords omitted | `an application with config and no keywords searches under its own name` |
+| keywords kept as given | keywords declared | `declared keywords are kept as given` |
+| register the plugins command; expose parse now | config name or keywords present | `an application that can accept plugins gets the built-in plugins command` |
+| no plugins command | neither config nor keywords | `an application that cannot accept plugins gets no plugins command` |
+| start loading config as pending work | a config name | `parse waits for the config started during assembly` |
+| load them and register their commands | the loaded config names plugins | `commands from configured plugins are registered before parse proceeds` |
 
 ### UC2 — register commands
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| set its parent | a named command registered | `` `a registered command records its parent` `` |
-| leave parent unset | a command with no name | `` `a nameless command records no parent` `` |
-| link each child recursively | a registered command declaring sub-commands | `` `nested sub-commands are linked to their own parent, not the root` `` |
-| remove `.default` | `.default` was called | `` `the default command may be registered only once` `` |
-| parse exposed on first registration | an application that cannot accept plugins | `` `registering a command makes the application executable` `` |
+| set its parent | a named command registered | `a registered command records its parent` |
+| leave parent unset | a command with no name | `a nameless command records no parent` |
+| link each child recursively | a registered command declaring sub-commands | `nested sub-commands are linked to their own parent, not the root` |
+| remove `.default` | `.default` was called | `the default command may be registered only once` |
+| parse exposed on first registration | an application that cannot accept plugins | `registering a command makes the application executable` |
 
 ### UC3 — `parse`: run an invocation
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| level none, flag removed | `--silent` | `` `silent turns logging off and is not reported as unknown` `` |
-| level debug, flag removed | `--verbose` | `` `verbose raises the log level and is not reported as unknown` `` |
-| level trace, flag removed | `--debug-cli` | `` `debug-cli turns on framework logging and is not reported as unknown` `` |
-| report the config and its source | `--show-config`, config enabled | `` `show-config reports the resolved config and where it came from` `` |
-| falls through to the error path | `--show-config`, config not enabled | `` `show-config on an application without config is an unknown option` `` |
-| show the version | `--version` on the base command | `` `version asked of the application shows its version` `` |
-| show the version | `--version` on the matched command | `` `version asked of a matched command shows the application version` `` |
-| show help | `--help`, with no other error | `` `help asked for shows help and runs nothing` `` |
-| show help | `--help`, with a usage error also present | `` `help is answered even when the invocation is otherwise wrong` `` |
-| drop errors naming a global option | a sub-command declaring no options, given a global flag | `` `a global option given to a sub-command is not reported as unknown` `` |
-| print each, show help, exit usage | an unknown option that is not global | `` `a usage error is printed with help and exits with the usage code` `` |
-| print each failing field, exit error | matched command declares config, config invalid | `` `a config failing the command's schema is reported field by field` `` |
-| skip validation | matched command declares no config schema | `` `a command declaring no config schema does not validate the config` `` |
-| show help | matched command has no `run` | `` `a group command with nothing to run shows help` `` |
-| return its value | a runnable command, no errors | `` `a matched command runs and its value is returned` `` |
-| print and exit with the error's code | `run` throws `CliError` | `` `a command failing with CliError is reported and sets its exit code` `` |
-| propagate | `run` throws anything else | `` `a command throwing anything else propagates to the caller` `` |
+| level none, flag removed | `--silent` | `silent turns logging off and is not reported as unknown` |
+| level debug, flag removed | `--verbose` | `verbose raises the log level and is not reported as unknown` |
+| level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
+| report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
+| falls through to the error path | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
+| show the version | `--version` on the base command | `version asked of the application shows its version` |
+| show the version | `--version` on the matched command | `version asked of a matched command shows the application version` |
+| show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
+| show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
+| drop errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
+| print each, show help, exit usage | an unknown option that is not global | `a usage error is printed with help and exits with the usage code` |
+| print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
+| skip validation | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
+| show help | matched command has no `run` | `a group command with nothing to run shows help` |
+| return its value | a runnable command, no errors | `a matched command runs and its value is returned` |
+| print and exit with the error's code | `run` throws `CliError` | `a command failing with CliError is reported and sets its exit code` |
+| propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |
 
 ### UC4 — `CliError` and the exit codes
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| default exit code | no exit code given | `` `a CliError with no exit code uses the error code` `` |
-| use the given code | an exit code given | `` `a CliError carries the exit code it was given` `` |
-| normalize to a list | help given as one line | `` `a single help line is carried as a list of one` `` |
-| keep the list | help given as several lines | `` `several help lines are carried in order` `` |
-| brand matches | an error from a duplicated copy of the package | `` `an error from a second copy of clibuilder is still recognized` `` |
-| brand absent | a plain Error | `` `an ordinary error is not mistaken for a CliError` `` |
-| the three codes are distinct | any | `` `success, error, and usage are three distinct exit codes` `` |
+| default exit code | no exit code given | `a CliError with no exit code uses the error code` |
+| use the given code | an exit code given | `a CliError carries the exit code it was given` |
+| normalize to a list | help given as one line | `a single help line is carried as a list of one` |
+| keep the list | help given as several lines | `several help lines are carried in order` |
+| brand matches | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
+| brand absent | a plain Error | `an ordinary error is not mistaken for a CliError` |
+| the three codes are distinct | any | `success, error, and usage are three distinct exit codes` |
 
 ### UC3 — describing a usage error
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| single dash | unknown key of one character | `` `an unknown single-character option is described with one dash` `` |
-| double dash | unknown key of several characters | `` `an unknown multi-character option is described with two dashes` `` |
-| missing argument | any | `` `a missing argument is described by its name in angle brackets` `` |
-| pluralized by count | one extra value | `` `one unexpected argument is described in the singular` `` |
-| pluralized by count | several extra values | `` `several unexpected arguments are described in the plural` `` |
-| described as an argument | the key is a declared argument | `` `an invalid value on an argument is described as an argument` `` |
-| described as an option | the key is not a declared argument | `` `an invalid value on an option is described as an option` `` |
-| expect-single | any | `` `too many values are described with the values that were given` `` |
+| single dash | unknown key of one character | `an unknown single-character option is described with one dash` |
+| double dash | unknown key of several characters | `an unknown multi-character option is described with two dashes` |
+| missing argument | any | `a missing argument is described by its name in angle brackets` |
+| pluralized by count | one extra value | `one unexpected argument is described in the singular` |
+| pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
+| described as an argument | the key is a declared argument | `an invalid value on an argument is described as an argument` |
+| described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
+| expect-single | any | `too many values are described with the values that were given` |
 
 ### UC5 — `context`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| return the cached promise | config already being resolved | `` `concurrent config resolution shares one filesystem walk` `` |
-| record the code | `exit` called | `` `exiting records the code rather than ending the process` `` |
+| return the cached promise | config already being resolved | `concurrent config resolution shares one filesystem walk` |
+| record the code | `exit` called | `exiting records the code rather than ending the process` |

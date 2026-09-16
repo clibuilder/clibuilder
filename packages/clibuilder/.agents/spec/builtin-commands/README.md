@@ -188,42 +188,42 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| declare the global options | any | `` `every application declares help, version, and the logging options` `` |
-| aliases | any | `` `the global options carry their conventional short aliases` `` |
-| also declare show-config | the application takes config | `` `an application taking config also declares show-config` `` |
-| do not declare show-config | the application takes no config | `` `an application taking no config does not advertise show-config` `` |
-| show help | the base command is run | `` `running the base command itself shows help` `` |
+| declare the global options | any | `every application declares help, version, and the logging options` |
+| aliases | any | `the global options carry their conventional short aliases` |
+| also declare show-config | the application takes config | `an application taking config also declares show-config` |
+| do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
+| show help | the base command is run | `running the base command itself shows help` |
 
 ### UC2 — `plugins list`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the names as a toon list | plugins installed, default format | `` `installed plugins are listed and point at search for more` `` |
-| name the keywords searched | nothing installed, default format | `` `no installed plugins names the keywords searched and points at search` `` |
-| the payload alone, no help line | JSON requested | `` `JSON output carries the payload and no help line` `` |
-| the payload alone, no help line | JSON requested, nothing installed | `` `JSON output reports an empty result in the same shape as a full one` `` |
-| count-dependent prose | text requested | `` `text output reads as English about how many were found` `` |
-| the return value | any | `` `the found names are the command's return value as well as its output` `` |
-| the `ls` alias | any | `` `plugins list can be invoked as ls` `` |
+| the names as a toon list | plugins installed, default format | `installed plugins are listed and point at search for more` |
+| name the keywords searched | nothing installed, default format | `no installed plugins names the keywords searched and points at search` |
+| the payload alone, no help line | JSON requested | `JSON output carries the payload and no help line` |
+| the payload alone, no help line | JSON requested, nothing installed | `JSON output reports an empty result in the same shape as a full one` |
+| count-dependent prose | text requested, reporting installed plugins | `text output reads as English about how many were found` |
+| the return value | any | `the found names are the command's return value as well as its output` |
+| the `ls` alias | any | `plugins list can be invoked as ls` |
 
 ### UC3 — `plugins search`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| query each keyword separately | several declared keywords | `` `each keyword is searched separately so a package matching any of them is found` `` |
-| union, collecting matching keywords | a package matched by several keywords | `` `a package matched by several keywords is listed once carrying each` `` |
-| report it with guidance | `--fields` names something unrecognized | `` `an unrecognized fields value is reported with guidance and nothing is searched` `` |
-| recognized | `--fields name` | `` `asking for the name field is accepted as a no-op` `` |
-| the names as a toon list | packages found, default format, no extra fields | `` `found packages are listed and point at plugins list` `` |
-| a toon table of name and keywords | packages found, keywords requested | `` `asking for keywords reports a table of name and keywords` `` |
-| name the keywords searched; no help line | nothing found, default format | `` `no packages found names the keywords searched rather than printing an empty list` `` |
-| the names alone | JSON requested, no extra fields | `` `JSON output without extra fields carries the names alone` `` |
-| the full records | JSON requested, keywords requested | `` `JSON output with keywords carries the full records` `` |
-| count-dependent prose | text requested | `` `text output describes the packages found in prose` `` |
+| query each keyword separately | several declared keywords | `each keyword is searched separately so a package matching any of them is found` |
+| union, collecting matching keywords | a package matched by several keywords | `a package matched by several keywords is listed once carrying each` |
+| report it with guidance | `--fields` names something unrecognized | `an unrecognized fields value is reported with guidance and nothing is searched` |
+| recognized | `--fields name` | `asking for the name field is accepted as a no-op` |
+| the names as a toon list | packages found, default format, no extra fields | `found packages are listed and point at plugins list` |
+| a toon table of name and keywords | packages found, keywords requested | `asking for keywords reports a table of name and keywords` |
+| name the keywords searched; no help line | nothing found, default format | `no packages found names the keywords searched rather than printing an empty list` |
+| the names alone | JSON requested, no extra fields | `JSON output without extra fields carries the names alone` |
+| the full records | JSON requested, keywords requested | `JSON output with keywords carries the full records` |
+| count-dependent prose | text requested, reporting search results | `text output describes the packages found in prose` |
 
 ### UC4 — `plugins`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| show help | the group is invoked bare | `` `the plugins group invoked bare shows help` `` |
-| groups its sub-commands | any | `` `the plugins group carries list and search` `` |
+| show help | the group is invoked bare | `the plugins group invoked bare shows help` |
+| groups its sub-commands | any | `the plugins group carries list and search` |

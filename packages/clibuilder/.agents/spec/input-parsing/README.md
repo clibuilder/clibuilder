@@ -242,71 +242,71 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| key and value split at `=` | long option | `` `a long option written with = takes the text after it as its value` `` |
-| key opens with no values | long option, next token is a positional | `` `a long option takes the following token as its value` `` |
-| close an open option with no values | option is last, or followed by another option | `` `an option given no value becomes true` `` |
-| values accumulate | the same key opened twice | `` `an option repeated accumulates its values` `` |
-| cluster: all but last become `'true'` | single dash, several characters | `` `a single-dash cluster sets every character but the last to true` `` |
-| cluster with `=` | single dash, several characters, `=` | `` `a single-dash cluster with = gives its value to the last character` `` |
-| append to positionals | no option awaiting values | `` `a bare token is a positional` `` |
-| starts with `-`, no word char | token is a lone dash | `` `a lone dash is a positional, not an option` `` |
-| starts with `-`, has a word char | token is a negative number | `` `a negative number opens an option named by its digits` `` |
-| open the terminator | no option awaiting values | `` `a terminator collects every following token raw` `` |
-| append token as that option's value | an option is awaiting values | `` `a terminator arriving while an option is open becomes that option's value` `` |
-| append raw to `__` | terminator already open | `` `a token shaped like an option after the terminator is kept raw` `` |
+| key and value split at `=` | long option | `a long option written with = takes the text after it as its value` |
+| key opens with no values | long option, next token is a positional | `a long option takes the following token as its value` |
+| close an open option with no values | option is last, or followed by another option | `an option given no value becomes true` |
+| values accumulate | the same key opened twice | `an option repeated accumulates its values` |
+| cluster: all but last become `'true'` | single dash, several characters | `a single-dash cluster sets every character but the last to true` |
+| cluster with `=` | single dash, several characters, `=` | `a single-dash cluster with = gives its value to the last character` |
+| append to positionals | no option awaiting values | `a bare token is a positional` |
+| starts with `-`, no word char | token is a lone dash | `a lone dash is a positional, not an option` |
+| starts with `-`, has a word char | token is a negative number | `a negative number opens an option named by its digits` |
+| open the terminator | no option awaiting values | `a terminator collects every following token raw` |
+| append token as that option's value | an option is awaiting values | `a terminator arriving while an option is open becomes that option's value` |
+| append raw to `__` | terminator already open | `a token shaped like an option after the terminator is kept raw` |
 
 ### UC2 — `lookupCommand`, matching
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| first positional equals its name | a declared sub-command | `` `an invocation naming a sub-command matches it and consumes its name` `` |
-| first positional equals an alias | a declared sub-command with an alias | `` `an invocation naming a sub-command's alias matches it` `` |
-| none matched | sub-commands declared, none named | `` `an invocation naming no sub-command matches the command itself` `` |
-| sub-command has no name | declared before its named siblings, none of which match | `` `a nameless sub-command matches without consuming a positional` `` |
-| sub-command has no name | declared after its named siblings | `` `a nameless sub-command declared last shadows its named siblings` `` |
-| recurse, deepest match wins | a matched sub-command that itself nests | `` `an invocation naming a nested path matches the deepest command` `` |
-| scan last to first | two sub-commands declared under one name | `` `the later of two sub-commands sharing a name wins` `` |
+| first positional equals its name | a declared sub-command | `an invocation naming a sub-command matches it and consumes its name` |
+| first positional equals an alias | a declared sub-command with an alias | `an invocation naming a sub-command's alias matches it` |
+| none matched | sub-commands declared, none named | `an invocation naming no sub-command matches the command itself` |
+| sub-command has no name | declared before its named siblings, none of which match | `a nameless sub-command matches without consuming a positional` |
+| sub-command has no name | declared after its named siblings | `a nameless sub-command declared last shadows its named siblings` |
+| recurse, deepest match wins | a matched sub-command that itself nests | `an invocation naming a nested path matches the deepest command` |
+| scan last to first | two sub-commands declared under one name | `the later of two sub-commands sharing a name wins` |
 
 ### UC2 — `lookupCommand`, filling
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| consume one | a non-array argument with a positional available | `` `a declared argument takes the next positional` `` |
-| consume every remaining positional | an array-typed argument | `` `an array argument consumes every remaining positional` `` |
-| `missing-argument` | a required argument with no positional left | `` `a required argument with nothing left reports it missing` `` |
-| skip, no error | an optional argument with no positional left | `` `an optional argument with nothing left is skipped without error` `` |
-| `extra-arguments` | every declared argument filled, positionals remain | `` `positionals left over after every argument are reported as extra` `` |
-| argument omits type | any | `` `an argument declaring no type is filled as a string` `` |
-| set under the canonical name | key matches an option name | `` `an option key matching a declared name is filled` `` |
-| set under the canonical name | key matches an alias | `` `an option key matching an alias is filled under the declared name` `` |
-| `invalid-key` | key matches no name or alias | `` `an unknown option key is reported as invalid` `` |
-| `invalid-key` | key retains a leading dash | `` `an option written with three dashes is reported as invalid` `` |
-| `invalid-key` | the terminator was used | `` `an invocation using the terminator reports it as an invalid key` `` |
-| option omits type | any | `` `an option declaring no type is filled as an optional boolean` `` |
-| use the default as declared | a declared option absent from argv | `` `an absent option falls back to its declared default` `` |
-| wrap the default in an array | an array-typed option with a scalar default | `` `a scalar default on an array option is wrapped in an array` `` |
-| leave it | a declared option present in argv | `` `an option given in argv is not overwritten by its default` `` |
+| consume one | a non-array argument with a positional available | `a declared argument takes the next positional` |
+| consume every remaining positional | an array-typed argument | `an array argument consumes every remaining positional` |
+| `missing-argument` | a required argument with no positional left | `a required argument with nothing left reports it missing` |
+| skip, no error | an optional argument with no positional left | `an optional argument with nothing left is skipped without error` |
+| `extra-arguments` | every declared argument filled, positionals remain | `positionals left over after every argument are reported as extra` |
+| argument omits type | any | `an argument declaring no type is filled as a string` |
+| set under the canonical name | key matches an option name | `an option key matching a declared name is filled` |
+| set under the canonical name | key matches an alias | `an option key matching an alias is filled under the declared name` |
+| `invalid-key` | key matches no name or alias | `an unknown option key is reported as invalid` |
+| `invalid-key` | key retains a leading dash | `an option written with three dashes is reported as invalid` |
+| `invalid-key` | the terminator was used | `an invocation using the terminator reports it as an invalid key` |
+| option omits type | any | `an option declaring no type is filled as an optional boolean` |
+| use the default as declared | a declared option absent from argv | `an absent option falls back to its declared default` |
+| wrap the default in an array | an array-typed option with a scalar default | `a scalar default on an array option is wrapped in an array` |
+| leave it | a declared option present in argv | `an option given in argv is not overwritten by its default` |
 
 ### UC2 — `lookupCommand`, converting
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| boolean accepted | boolean type | `` `a boolean option accepts true and false` `` |
-| `invalid-value: expected to be boolean` | boolean type | `` `a boolean option given another word is rejected as not a boolean` `` |
-| number accepted | number type | `` `a number option accepts a numeric value` `` |
-| `invalid-value: expected to be number` | number type | `` `a number option given a non-numeric value is rejected as not a number` `` |
-| the last value | string type | `` `a string option takes its value as typed` `` |
-| convert each element | array type | `` `an array option converts each of its values by the element type` `` |
-| unwrap and retry | optional type | `` `an optional option converts by the type it wraps` `` |
-| `expect-single` | any single-valued type | `` `several values for a single-valued option are reported, and the last one is used` `` |
-| hand the last value to the schema | a type with no dedicated conversion | `` `a type the parser cannot convert is handed to its schema unchanged` `` |
-| `invalid-value` listing accepted values | enum type the schema rejected | `` `an enum option given an unlisted value is told which values it accepts` `` |
-| `invalid-value` carrying the schema's message | non-enum type the schema rejected | `` `a value the schema rejects is reported in the schema's own words` `` |
+| boolean accepted | boolean type | `a boolean option accepts true and false` |
+| `invalid-value: expected to be boolean` | boolean type | `a boolean option given another word is rejected as not a boolean` |
+| number accepted | number type | `a number option accepts a numeric value` |
+| `invalid-value: expected to be number` | number type | `a number option given a non-numeric value is rejected as not a number` |
+| the last value | string type | `a string option takes its value as typed` |
+| convert each element | array type | `an array option converts each of its values by the element type` |
+| unwrap and retry | optional type | `an optional option converts by the type it wraps` |
+| `expect-single` | any single-valued type | `several values for a single-valued option are reported, and the last one is used` |
+| hand the last value to the schema | a type with no dedicated conversion | `a type the parser cannot convert is handed to its schema unchanged` |
+| `invalid-value` listing accepted values | enum type the schema rejected | `an enum option given an unlisted value is told which values it accepts` |
+| `invalid-value` carrying the schema's message | non-enum type the schema rejected | `a value the schema rejects is reported in the schema's own words` |
 
 ### UC3 — `lookupOptions`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| resolved by name | the command declares the option | `` `a key matching a declared name resolves to that option` `` |
-| resolved by alias | the option declares that alias | `` `a key matching an alias resolves to the option's declared name` `` |
-| empty tuple | the command declares no matching option | `` `a key matching nothing resolves to nothing` `` |
+| resolved by name | the command declares the option | `a key matching a declared name resolves to that option` |
+| resolved by alias | the option declares that alias | `a key matching an alias resolves to the option's declared name` |
+| empty tuple | the command declares no matching option | `a key matching nothing resolves to nothing` |

@@ -192,42 +192,42 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| activate one at a time, in the order named | several plugins contributing commands | `` `commands appear in the order the plugins were named` `` |
-| warn with the plugin, cwd, and error | a package that cannot be imported | `` `a plugin that cannot be imported is reported and skipped` `` |
-| warn that it is not a valid plugin | a module with no activate function | `` `a module that is not a plugin is reported and skipped` `` |
-| skip and continue | one broken plugin among working ones | `` `a broken plugin does not stop the others from activating` `` |
-| await activate | a plugin whose activate is asynchronous | `` `an asynchronous activate is awaited before the next plugin` `` |
-| collect the commands it added | a plugin adding commands | `` `the commands a plugin adds are returned to the host` `` |
+| activate one at a time, in the order named | several plugins contributing commands | `commands appear in the order the plugins were named` |
+| warn with the plugin, cwd, and error | a package that cannot be imported | `a plugin that cannot be imported is reported and skipped` |
+| warn that it is not a valid plugin | a module with no activate function | `a module that is not a plugin is reported and skipped` |
+| skip and continue | one broken plugin among working ones | `a broken plugin does not stop the others from activating` |
+| await activate | a plugin whose activate is asynchronous | `an asynchronous activate is awaited before the next plugin` |
+| collect the commands it added | a plugin adding commands | `the commands a plugin adds are returned to the host` |
 
 ### UC2 — the activation context
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| stored under this plugin as the source | a plugin registering a free key | `` `a value a plugin registers is recorded under that plugin as its source` `` |
-| warn, naming the key and the owning source | a plugin registering an owned key | `` `a plugin registering an already-owned key is told which plugin owns it` `` |
-| reads the registry | a plugin activated after another | `` `a plugin can read what an earlier plugin registered` `` |
-| host identity | any | `` `a plugin is told the name and version of the host it is extending` `` |
+| stored under this plugin as the source | a plugin registering a free key | `a value a plugin registers is recorded under that plugin as its source` |
+| warn, naming the key and the owning source | a plugin registering an owned key | `a plugin registering an already-owned key is told which plugin owns it` |
+| reads the registry | a plugin activated after another | `a plugin can read what an earlier plugin registered` |
+| host identity | any | `a plugin is told the name and version of the host it is extending` |
 
 ### UC3 — `createRegistry`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| store it; accepted | a value key not yet owned | `` `the first registration of a value key is accepted` `` |
-| refuse, carrying the owning source | a value key already owned | `` `a second registration of a value key is refused and names the owner` `` |
-| append; always accepted | a collection key | `` `every registration of a collection key is kept, in order` `` |
-| the value | a registered value key | `` `reading a registered value key returns its value` `` |
-| undefined | an unregistered value key | `` `reading an unregistered value key returns nothing` `` |
-| the contributions with their sources | a registered collection key | `` `reading a collection key returns each contribution with its source` `` |
-| an empty list | an unregistered collection key | `` `reading an unregistered collection key returns an empty list rather than nothing` `` |
-| presence | a registered key | `` `a registered key is reported as present` `` |
-| presence | an unregistered key | `` `an unregistered key is reported as absent` `` |
-| the one owning source | a registered value key | `` `describing a value key names its single owner` `` |
-| an empty list | an unregistered value key | `` `describing an unregistered value key names no one` `` |
-| every contributing source | a registered collection key | `` `describing a collection key names every contributor in order` `` |
+| store it; accepted | a value key not yet owned | `the first registration of a value key is accepted` |
+| refuse, carrying the owning source | a value key already owned | `a second registration of a value key is refused and names the owner` |
+| append; always accepted | a collection key | `every registration of a collection key is kept, in order` |
+| the value | a registered value key | `reading a registered value key returns its value` |
+| undefined | an unregistered value key | `reading an unregistered value key returns nothing` |
+| the contributions with their sources | a registered collection key | `reading a collection key returns each contribution with its source` |
+| an empty list | an unregistered collection key | `reading an unregistered collection key returns an empty list rather than nothing` |
+| presence | a registered key | `a registered key is reported as present` |
+| presence | an unregistered key | `an unregistered key is reported as absent` |
+| the one owning source | a registered value key | `describing a value key names its single owner` |
+| an empty list | an unregistered value key | `describing an unregistered value key names no one` |
+| every contributing source | a registered collection key | `describing a collection key names every contributor in order` |
 
 ### UC4 — `defineKey` / `defineCollectionKey`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| value kind | `defineKey` | `` `a key defined as a value takes the single-owner policy` `` |
-| collection kind | `defineCollectionKey` | `` `a key defined as a collection takes the many-contributor policy` `` |
+| value kind | `defineKey` | `a key defined as a value takes the single-owner policy` |
+| collection kind | `defineCollectionKey` | `a key defined as a collection takes the many-contributor policy` |

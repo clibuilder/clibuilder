@@ -241,58 +241,58 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| source is that file | a candidate file exists in an ancestor | `` `a config file in an ancestor directory is the source` `` |
-| source is the package.json property | no file, the property is present | `` `a package.json property is the source when no config file matches` `` |
-| source is none | neither exists | `` `nothing found is reported as a source of its own` `` |
+| source is that file | a candidate file exists in an ancestor | `a config file in an ancestor directory is the source` |
+| source is the package.json property | no file, the property is present | `a package.json property is the source when no config file matches` |
+| source is none | neither exists | `nothing found is reported as a source of its own` |
 
 ### UC2 — `resolveConfig` / `loadConfig`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| read and parse it | the source is a file | `` `a file source is read and parsed into the config value` `` |
-| the property's value is the config | the source is a package.json | `` `a package.json source yields that property's value` `` |
-| warn naming every candidate | the source is none | `` `nothing found warns with the directory and every name searched` `` |
-| the value is undefined | the source is none | `` `nothing found yields an undefined config` `` |
+| read and parse it | the source is a file | `a file source is read and parsed into the config value` |
+| the property's value is the config | the source is a package.json | `a package.json source yields that property's value` |
+| warn naming every candidate | the source is none | `nothing found warns with the directory and every name searched` |
+| the value is undefined | the source is none | `nothing found yields an undefined config` |
 
 ### UC3 — `getConfigFilenames`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the base names, as given | the name begins with a dot | `` `a config name already beginning with a dot is used as given` `` |
-| each base name plus its dotted variant | the name has no leading dot | `` `a plain config name also accepts its dotted variants` `` |
+| the base names, as given | the name begins with a dot | `a config name already beginning with a dot is used as given` |
+| each base name plus its dotted variant | the name has no leading dot | `a plain config name also accepts its dotted variants` |
 
 ### UC4 — `readConfigFile`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the module itself | a module exporting `activate` | `` `a module config exporting activate yields the whole module` `` |
-| its default export | a module without `activate` | `` `a module config without activate yields its default export` `` |
-| parse permissively | a `.json` or `.jsonc` file | `` `a JSON config accepts comments and trailing commas` `` |
-| parse as YAML | a `.yml` or `.yaml` file | `` `a YAML config is parsed as YAML` `` |
-| try JSON, then YAML, then module | an extension-less file holding JSON | `` `an extension-less config holding JSON is parsed as JSON` `` |
-| try JSON, then YAML, then module | an extension-less file holding YAML | `` `an extension-less config holding YAML falls through to YAML` `` |
-| raise it | JSON parsing reported an error | `` `a JSON config the parser could not read raises rather than returning a recovered value` `` |
+| the module itself | a module exporting `activate` | `a module config exporting activate yields the whole module` |
+| its default export | a module without `activate` | `a module config without activate yields its default export` |
+| parse permissively | a `.json` or `.jsonc` file | `a JSON config accepts comments and trailing commas` |
+| parse as YAML | a `.yml` or `.yaml` file | `a YAML config is parsed as YAML` |
+| try JSON, then YAML, then module | an extension-less file holding JSON | `an extension-less config holding JSON is parsed as JSON` |
+| try JSON, then YAML, then module | an extension-less file holding YAML | `an extension-less config holding YAML falls through to YAML` |
+| raise it | JSON parsing reported an error | `a JSON config the parser could not read raises rather than returning a recovered value` |
 
 ### UC5 — `findAnyFileUp` / `findFileUp`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| return its path | a match in the starting directory | `` `a file in the starting directory is found` `` |
-| move to the parent | no match until an ancestor | `` `the walk continues upward until a directory matches` `` |
-| candidate order breaks the tie | two candidates in the same directory | `` `two candidates in one directory are settled by candidate order` `` |
-| the nearest directory wins | candidates in two directories | `` `a later candidate in a nearer directory beats an earlier one further up` `` |
-| skip and continue | a directory cannot be read | `` `an unreadable directory is skipped rather than ending the walk` `` |
-| an exact name wins | case-insensitive platform, both cases present | `` `an exactly-named file wins over a differently-cased one` `` |
-| a lower-cased match is accepted | case-insensitive platform, only the other case present | `` `a differently-cased file matches on a case-insensitive filesystem` `` |
-| case-sensitive platform | only the other case present | `` `a differently-cased file does not match on a case-sensitive filesystem` `` |
-| symlink counts | the match is a symlink to a file | `` `a symlink pointing at a file counts as a match` `` |
-| directory does not count | the match is a directory | `` `a directory sharing a candidate's name is not a match` `` |
-| no match | the walk reached the root | `` `a walk reaching the filesystem root with no match returns nothing` `` |
+| return its path | a match in the starting directory | `a file in the starting directory is found` |
+| move to the parent | no match until an ancestor | `the walk continues upward until a directory matches` |
+| candidate order breaks the tie | two candidates in the same directory | `two candidates in one directory are settled by candidate order` |
+| the nearest directory wins | candidates in two directories | `a later candidate in a nearer directory beats an earlier one further up` |
+| skip and continue | a directory cannot be read | `an unreadable directory is skipped rather than ending the walk` |
+| an exact name wins | case-insensitive platform, both cases present | `an exactly-named file wins over a differently-cased one` |
+| a lower-cased match is accepted | case-insensitive platform, only the other case present | `a differently-cased file matches on a case-insensitive filesystem` |
+| case-sensitive platform | only the other case present | `a differently-cased file does not match on a case-sensitive filesystem` |
+| symlink counts | the match is a symlink to a file | `a symlink pointing at a file counts as a match` |
+| directory does not count | the match is a directory | `a directory sharing a candidate's name is not a match` |
+| no match | the walk reached the root | `a walk reaching the filesystem root with no match returns nothing` |
 
 ### UC6 — `describeConfigSource`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the path | a file source | `` `a file source is described by its path` `` |
-| the path and property | a package.json source | `` `a package.json source names the property as well as the path` `` |
-| a phrase | no source | `` `an absent source is described in words rather than left blank` `` |
+| the path | a file source | `a file source is described by its path` |
+| the path and property | a package.json source | `a package.json source names the property as well as the path` |
+| a phrase | no source | `an absent source is described in words rather than left blank` |
