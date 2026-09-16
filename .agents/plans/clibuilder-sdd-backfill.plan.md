@@ -252,11 +252,31 @@ wording (`presentation`'s `REQ`/`OPT` are each reached from two decisions and al
 four arms are covered).
 
 **What that tells us about convergence.** A mechanical sweep across all eight
-nodes found *one* thing the judges had not already driven out. The R5 family is
-close to exhausted; what the judges are still finding is R7 — a `Then` weaker
-than its map row — which is a semantic judgment the sweep can only approximate
-through the absence heuristic. Expect the remaining rounds to be about assertion
-strength, not missing branches.
+nodes found *one* thing the judges had not already driven out. **The R5 family is
+effectively exhausted.**
+
+**R7 does not mechanise, and two attempts establish why.** Both are recorded so
+nobody rebuilds them:
+
+1. **Edge-vs-`Then` word diff** — flag a scenario whose `Then` omits the content
+   words of its map `Edge`. 48 hits, essentially all false. A *good* `Then`
+   paraphrases the mechanism into an observable outcome: `silence the logger` →
+   `Then nothing is reported` omits every Edge word and is **better** for it,
+   because `suite-format-governance` wants observable behavior, not mechanism
+   names. The check punishes exactly the scenarios it should reward.
+2. **Sibling-`Then` similarity** — flag two scenarios under one decision whose
+   `Then`s barely differ. Also false: it ranks `show-config is among its options`
+   against `show-config is not among its options` as identical, because the
+   contrast lives in a single negation that any stopword list eats, while
+   genuinely parallel scenarios in different contexts (`plugins list` vs
+   `plugins search`) score high and are both correct.
+
+The property under test — *can a plausible wrong subject pass this `Then`* —
+requires knowing what a wrong subject would do, which is semantic. **Hand R7 to
+the judges; that is what a cold reader is for.** The one diagnostic that does
+work is human-applied: the **asymmetric sibling**, where a neighbouring scenario
+asserts the contrast properly and its twin does not. Every R7 instance this
+mission found was caught that way.
 
 ### A commit of mine overstated what landed — the same defect as `testing`'s
 
