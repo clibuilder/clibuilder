@@ -193,6 +193,11 @@ Feature: Execution
     When it is inspected
     Then its exit code is the one given
 
+  Scenario: a CliError with no help carries an empty list
+    Given a CliError constructed with no help
+    When it is inspected
+    Then its help is an empty list
+
   Scenario: a single help line is carried as a list of one
     Given a CliError constructed with one help line
     When it is inspected
@@ -261,6 +266,16 @@ Feature: Execution
     Then it says a single value was expected and lists the values received
 
   # ── UC5 — context ──
+
+  Scenario: the first config resolution starts the walk and keeps its promise
+    Given no config resolution in progress
+    When a caller asks for the config
+    Then the walk is started, and the same resolution answers the next caller
+
+  Scenario: concurrent plugin loading shares one activation pass
+    Given a plugin load already in progress
+    When another caller asks for the plugin commands
+    Then it receives the same load rather than activating the plugins twice
 
   Scenario: concurrent config resolution shares one filesystem walk
     Given a config resolution already in progress

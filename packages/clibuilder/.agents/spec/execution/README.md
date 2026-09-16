@@ -194,15 +194,19 @@ graph TD
   PL -- yes --> PC[register the built-in plugins command; expose parse now]
   PL -- no --> PN[no plugins command; parse exposed on first registration]
   PC --> LC{config name present?}
+  LC -- no --> NOLOAD[nothing to load; plugins come from keywords alone]
   LC -- yes --> LOAD[start loading config as pending work] --> HASP{config names plugins?}
   HASP -- yes --> LP[load them and register their commands]
+  HASP -- no --> NOP2[no plugins to load]
   REG[".command / .default"] --> ADJ{command is named?}
   ADJ -- yes --> PAR[set its parent]
   ADJ -- no --> NOP[leave parent unset]
   PAR --> NEST{declares sub-commands?}
   NEST -- yes --> RECUR[link each child to its own parent, recursively]
+  NEST -- no --> DONE[nothing further to link]
   REG --> DEF{"was it .default?"}
   DEF -- yes --> ONCE[remove .default from the returned builder]
+  DEF -- no --> KEEP[".default stays available"]
 ```
 
 ### Sub-graph B — invocation (`parse`), entered by UC3
@@ -259,6 +263,45 @@ graph TD
   LEN -- no --> TWO[double dash]
 ```
 
+### Sub-graph D — failing on purpose (`CliError`, `exitCodes`), entered by UC4
+
+```mermaid
+graph TD
+  CE2["new CliError(message, options)"] --> XC{"an exitCode given?"}
+  XC -- yes --> XG[use the given code]
+  XC -- no --> XD["default to the error code"]
+  CE2 --> HP{"help given?"}
+  HP -- "not at all" --> H0[an empty list]
+  HP -- "one line" --> H1[a list of that one line]
+  HP -- "several lines" --> HN[the list as given, in order]
+  IS["isCliError(err)"] --> BR{"carries the brand?"}
+  BR -- yes --> BY["a CliError, even from a second copy of the package in the tree"]
+  BR -- no --> BN[not a CliError]
+  XCS[the exit codes] --> THREE["success, error and usage are three distinct values, so a caller can tell the cases apart"]
+```
+
+The brand is a shared symbol rather than the class, which is what makes the
+check survive a duplicated `clibuilder` in the dependency tree — `instanceof`
+would be comparing two different classes there.
+
+### Sub-graph E — the outside world (`context`), entered by UC5
+
+```mermaid
+graph TD
+  RC2[resolve the config] --> CACHE{"already resolving?"}
+  CACHE -- yes --> SAME[return the same promise; one filesystem walk is shared]
+  CACHE -- no --> START[start it, and keep the promise]
+  LPG[load the plugins] --> LCACHE{"already loading?"}
+  LCACHE -- yes --> LSAME[return the same promise]
+  LCACHE -- no --> LSTART[start it, and keep the promise]
+  EX["exit(code)"] --> RECORD["record it as the process exit code"]
+  RECORD --> NOTKILL["the process is never ended on the spot, so buffered output still reaches stdout"]
+```
+
+The cache holds the **promise**, not the resolved value, which is what makes it
+correct for a config that is legitimately falsy as well as for concurrent
+callers.
+
 ## Scenario map
 
 ### UC1 — `cli`: assemble an application
@@ -270,7 +313,7 @@ graph TD
 | no config name | `config` omitted | `an application declaring no config has no config name` |
 | keywords default to the cli name | config set, keywords omitted | `an application with config and no keywords searches under its own name` |
 | keywords kept as given | keywords declared | `declared keywords are kept as given` |
-| register the plugins command; expose parse now | config name or keywords present | `an application that can accept plugins gets the built-in plugins command` |
+| register the built-in plugins command; expose parse now | config name or keywords present | `an application that can accept plugins gets the built-in plugins command` |
 | no plugins command | neither config nor keywords | `an application that cannot accept plugins gets no plugins command` |
 | start loading config as pending work | a config name | `parse waits for the config started during assembly` |
 | load them and register their commands | the loaded config names plugins | `commands from configured plugins are registered before parse proceeds` |
@@ -281,7 +324,7 @@ graph TD
 | --- | --- | --- |
 | set its parent | a named command registered | `a registered command records its parent` |
 | leave parent unset | a command with no name | `a nameless command records no parent` |
-| link each child recursively | a registered command declaring sub-commands | `nested sub-commands are linked to their own parent, not the root` |
+| link each child to its own parent, recursively | a registered command declaring sub-commands | `nested sub-commands are linked to their own parent, not the root` |
 | remove `.default` | `.default` was called | `the default command may be registered only once` |
 | parse exposed on first registration | an application that cannot accept plugins | `registering a command makes the application executable` |
 
@@ -293,31 +336,32 @@ graph TD
 | level debug, flag removed | `--verbose` | `verbose raises the log level and is not reported as unknown` |
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
 | report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
-| falls through to the error path | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
+| show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
 | show the version | `--version` on the base command | `version asked of the application shows its version` |
 | show the version | `--version` on the matched command | `version asked of a matched command shows the application version` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
-| drop errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
+| drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
 | print each, show help, exit usage | an unknown option that is not global | `a usage error is printed with help and exits with the usage code` |
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
-| skip validation | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
+| command declares a config schema? — no | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
 | show help | matched command has no `run` | `a group command with nothing to run shows help` |
 | return its value | a runnable command, no errors | `a matched command runs and its value is returned` |
-| print and exit with the error's code | `run` throws `CliError` | `a command failing with CliError is reported and sets its exit code` |
+| print the message and help lines; exit with the error's code | `run` throws `CliError` | `a command failing with CliError is reported and sets its exit code` |
 | propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |
 
 ### UC4 — `CliError` and the exit codes
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| default exit code | no exit code given | `a CliError with no exit code uses the error code` |
+| default to the error code | no exit code given | `a CliError with no exit code uses the error code` |
 | use the given code | an exit code given | `a CliError carries the exit code it was given` |
-| normalize to a list | help given as one line | `a single help line is carried as a list of one` |
-| keep the list | help given as several lines | `several help lines are carried in order` |
-| brand matches | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
-| brand absent | a plain Error | `an ordinary error is not mistaken for a CliError` |
-| the three codes are distinct | any | `success, error, and usage are three distinct exit codes` |
+| an empty list | no help given | `a CliError with no help carries an empty list` |
+| a list of that one line | help given as one line | `a single help line is carried as a list of one` |
+| the list as given, in order | help given as several lines | `several help lines are carried in order` |
+| carries the brand? — yes | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
+| carries the brand? — no | a plain Error | `an ordinary error is not mistaken for a CliError` |
+| success, error and usage are three distinct values | any | `success, error, and usage are three distinct exit codes` |
 
 ### UC3 — describing a usage error
 
@@ -328,7 +372,7 @@ graph TD
 | missing argument | any | `a missing argument is described by its name in angle brackets` |
 | pluralized by count | one extra value | `one unexpected argument is described in the singular` |
 | pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
-| described as an argument | the key is a declared argument | `an invalid value on an argument is described as an argument` |
+| described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
 | described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
 | expect-single | any | `too many values are described with the values that were given` |
 
@@ -336,5 +380,7 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| return the cached promise | config already being resolved | `concurrent config resolution shares one filesystem walk` |
-| record the code | `exit` called | `exiting records the code rather than ending the process` |
+| return the same promise; one filesystem walk is shared | config already being resolved | `concurrent config resolution shares one filesystem walk` |
+| start it, and keep the promise | config not yet being resolved | `the first config resolution starts the walk and keeps its promise` |
+| return the same promise | plugins already being loaded | `concurrent plugin loading shares one activation pass` |
+| record it as the process exit code | `exit` called | `exiting records the code rather than ending the process` |
