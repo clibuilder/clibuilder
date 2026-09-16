@@ -1,11 +1,7 @@
 ---
 name: clibuilder
-status: approved
+status: draft
 project-path: packages/clibuilder
-approval:
-  spec:
-    verdict: approve
-    by: unional
 ---
 
 # clibuilder

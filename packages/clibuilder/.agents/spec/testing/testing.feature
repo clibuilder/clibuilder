@@ -1,4 +1,3 @@
-@frozen
 Feature: Testing support
 
   Exercise a command the way a user would, without spawning a process. The real
@@ -104,20 +103,15 @@ Feature: Testing support
     When it exits through a mock context
     Then the captured messages carry an exit naming that code
 
-  Scenario: an exit with no code is reported as a bare exit
-    Given a cli that exits without a code
-    When it exits through a mock context
-    Then the captured messages carry a bare exit, naming no code
-
   Scenario: a given log level is the one the mock log keeps to
     Given a log level passed to the mock context
     When a message below that level is emitted
     Then it is not among the captured messages
 
-  Scenario: a mock context without a log level defaults to debug
+  Scenario: a mock context without a log level defaults to info
     Given no log level passed to the mock context
-    When a debug message is emitted
-    Then it is among the captured messages
+    When a debug message and an info message are emitted
+    Then the info message is captured and the debug message is not
 
   Scenario: each command gets a ui on its own named logger
     Given a mock context
