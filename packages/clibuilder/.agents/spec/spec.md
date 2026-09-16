@@ -22,7 +22,7 @@ Strategy: **capability-first**.
 
 | Kind of work | Home |
 | --- | --- |
-| Declaring what a command is — name, alias, arguments, options, nesting | `command-definition/` |
+| Declaring what a command is — name, alias, arguments, options, config, nesting | `command-definition/` |
 | Turning an argv vector into a matched command with typed inputs | `input-parsing/` |
 | Assembling the application and running a matched command | `execution/` |
 | Discovering, reading, and reporting the source of configuration files | `configuration/` |
