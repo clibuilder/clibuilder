@@ -21,6 +21,11 @@ Feature: Command definition
     When the declaration is checked
     Then it is rejected, unlike the same run on an ordinary command
 
+  Scenario: an alias shape outside the union is rejected
+    Given an option declaring an alias as a pair that omits its hidden flag
+    When the declaration is checked
+    Then it is rejected, unlike the two accepted alias shapes
+
   Scenario: an option alias may be declared as a bare string
     Given an option declaring an alias as a bare string
     When the declaration is checked

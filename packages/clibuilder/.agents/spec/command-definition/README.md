@@ -87,6 +87,7 @@ types.
 | an option's `type` is optional | accepted; the inferred type carries `\| undefined` |
 | an option's `default` disagrees with its `type` | **accepted, unchecked** — see the gap below; the option still types as its declared type, so `run` receives a value the declaration says is impossible |
 | the author declares an option named `help` | accepted; the declared type replaces the implicit one rather than colliding with it |
+| an option declares an alias | it is a bare string or a `{ alias, hidden }` pair; any other shape is rejected |
 
 At runtime this use case has **no** extensions — `command()` returns its
 argument and cannot fail. Every row above is a compile-time path.
@@ -184,6 +185,10 @@ graph TD
   O2 --> DF
   DF -- yes --> DF1["default accepted unchecked; the option keeps the type above"]
   DF -- no --> DF2["the option keeps the type above"]
+  ARGS --> ALI{per declared alias}
+  ALI -- "a bare string" --> ALS[accepted]
+  ALI -- "a pair carrying alias and hidden" --> ALP[accepted]
+  ALI -- "any other shape" --> ALX[rejected]
   ARGS --> H{options declare help?}
   H -- no --> H1["implicit help: boolean | undefined added"]
   H -- yes --> H2[declared help replaces the implicit one]
@@ -224,8 +229,9 @@ This node owns only the type that makes both possible.
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |
-| an option's own aliases | an alias declared as a bare string | `an option alias may be declared as a bare string` |
-| an option's own aliases | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |
+| a bare string | an alias declared as a bare string | `an option alias may be declared as a bare string` |
+| a pair carrying alias and hidden | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |
+| any other shape | an alias pair missing its hidden flag | `an alias shape outside the union is rejected` |
 | `default` accepted unchecked; the option keeps the type above | any — matching or contradicting | `an option default is accepted without being checked against its type` |
 | implicit `help` added | options omit `help` | `help is present on a command that declares no options` |
 | declared `help` replaces implicit | options declare `help` | `a declared help option replaces the implicit one` |
