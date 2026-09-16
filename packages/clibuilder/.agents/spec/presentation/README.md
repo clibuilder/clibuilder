@@ -133,6 +133,10 @@ something is required and what kind of value it takes.
 
 ### UC5 — `showVersion`: report the application's version
 
+**Actor / goal.** A user checking which build they are running wants an answer
+either way — including when the application has no version to give, which is
+still information rather than a failure.
+
 | | |
 | --- | --- |
 | Trigger | `showVersion(version)` |
@@ -190,7 +194,16 @@ graph TD
   W -- debug --> LD[raise to debug]
   W -- trace --> LT[raise to trace]
   W -- info --> NOOP[no case matches; nothing changes]
+  RL[read the display level] --> TH{"where is the logger's threshold?"}
+  TH -- "at or below none" --> RN[none]
+  TH -- "at or below info" --> RI[info]
+  TH -- "at or below debug" --> RD2[debug]
+  TH -- above that --> RT[trace]
 ```
+
+The setter and the reader are not symmetric: the reader derives the level from
+the logger's own threshold, which is why a level the setter ignored still reads
+back as whatever the threshold actually is.
 
 ### Sub-graph B — generate help (`showHelp`), entered by UC3
 
@@ -199,11 +212,14 @@ graph TD
   H[cli name and command] --> U[usage: the name chain from the cli through every ancestor]
   U --> SUB{declares sub-commands?}
   SUB -- yes --> UC["append a command placeholder"]
+  SUB -- no --> UN[nothing appended]
   U --> AR{declares arguments?}
+  AR -- no --> UN
   AR -- yes --> ARQ{any required?}
   ARQ -- yes --> ARR[angle-bracketed]
   ARQ -- no --> ARO[square-bracketed]
   U --> OP{declares options?}
+  OP -- no --> UN
   OP -- yes --> OPQ{any required?}
   OPQ -- yes --> OPR[angle-bracketed]
   OPQ -- no --> OPO[square-bracketed]
@@ -243,6 +259,26 @@ graph TD
   HINT -- none --> NOH2[no hint]
 ```
 
+### Sub-graph E — an option's name and description in help, entered by UC4
+
+An argument renders its name alone; an option carries its aliases beside it and
+may name a default. Both then go through sub-graph C for their brackets.
+
+```mermaid
+graph TD
+  K[an option, as declared] --> AL{declares aliases?}
+  AL -- no --> NAME[the name alone]
+  AL -- yes --> HID{"each alias: marked hidden?"}
+  HID -- yes --> LEFT[left out]
+  HID -- no --> KEPT[kept]
+  KEPT --> ORD["sorted shortest first, each dashed by its own length — one dash for a single character, two otherwise"]
+  DE[its description] --> DEF{declares a default?}
+  DEF -- no --> DESC[the description alone]
+  DEF -- yes --> DQ{"is the declared type a string?"}
+  DQ -- yes --> DS["the description, then the default in quotes"]
+  DQ -- no --> DP["the description, then the default as written"]
+```
+
 ### Sub-graph D — render a collection, entered by UC6
 
 ```mermaid
@@ -258,6 +294,20 @@ graph TD
   N -- none --> P0[say none were found, naming the keywords]
   N -- one --> P1[say one was found, and describe it]
   N -- several --> P2[say several were found, then list them]
+  FO["the shared --format option"] --> WF{which format did the reader ask for?}
+  WF -- "nothing given" --> FDEF[toon, the default the option declares]
+  WF -- given --> FGIV["one of toon, text or json — the option accepts no others"]
+  FDEF --> SH
+  FGIV --> SH
+```
+
+### Sub-graph F — report a version (`showVersion`), entered by UC5
+
+```mermaid
+graph TD
+  VS[the version the application was built with] --> HV{is there one?}
+  HV -- yes --> VP[print it]
+  HV -- no --> VN["say the application has no version, rather than printing nothing"]
 ```
 
 ## Scenario map
@@ -267,7 +317,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | hold it with its level | before `dump` | `a message emitted before the level is settled is held rather than printed` |
-| replay in order, at its level | `dump` called | `dumping replays every held message in order and at its own level` |
+| replay every held message, in order, at its level | `dump` called | `dumping replays every held message in order and at its own level` |
 | pass it straight through | after `dump` | `a message emitted after dumping is printed straight away` |
 
 ### UC2 — the display level
@@ -278,13 +328,13 @@ graph TD
 | raise to debug | level set to debug | `setting the level to debug shows debug messages` |
 | raise to trace | level set to trace | `setting the level to trace shows trace messages` |
 | no case matches | level set to info | `setting the level to info changes nothing` |
-| threshold mapping | any level set | `reading the level back reports the level that is in effect` |
+| where is the logger's threshold? | any level set | `reading the level back reports the level that is in effect` |
 
 ### UC3 — `showHelp`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the name chain | a nested command | `usage names the whole chain from the application through every ancestor` |
+| the name chain from the cli through every ancestor | a nested command | `usage names the whole chain from the application through every ancestor` |
 | append a command placeholder | the command declares sub-commands | `usage says a command is expected when the command has sub-commands` |
 | angle-bracketed | at least one required argument | `usage marks arguments as required when any of them is` |
 | square-bracketed | no required argument | `usage marks arguments as optional when none of them is required` |
@@ -302,25 +352,25 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| required, argument default | an argument with no declared type | `an argument with no type is shown as required` |
-| optional, option default | an option with no declared type | `an option with no type is shown as optional` |
+| argument, with no type declared | an argument with no declared type | `an argument with no type is shown as required` |
+| option, with no type declared | an option with no declared type | `an option with no type is shown as optional` |
 | square brackets | an optional type | `an optional type is shown in square brackets` |
 | angle brackets | a non-optional type | `a required type is shown in angle brackets` |
 | hint shown | a string or number type | `a string or number type is hinted beside the name` |
 | variadic marker | an array type | `an array type is marked variadic` |
 | no hint: it is a flag | a boolean option | `a boolean option is shown without a type hint, because it is a flag` |
 | hint shown | a boolean argument | `a boolean argument keeps its type hint, because it must be typed out` |
-| aliases shortest first | an option declaring aliases | `an option's aliases are shown with it, shortest first and dashed by length` |
-| hidden alias left out | an option declaring a hidden alias | `a hidden alias is not shown` |
-| the description names the default | an option declaring a default | `an option's default is named in its description` |
-| quoted when a string | a string option with a default | `a string default is quoted in the description` |
+| sorted shortest first, each dashed by its own length | an option declaring aliases | `an option's aliases are shown with it, shortest first and dashed by length` |
+| marked hidden: left out | an option declaring a hidden alias | `a hidden alias is not shown` |
+| the description, then the default as written | an option declaring a non-string default | `an option's default is named in its description` |
+| the description, then the default in quotes | a string option with a default | `a string default is quoted in the description` |
 
 ### UC5 — `showVersion`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| the version | the application has one | `an application with a version prints it` |
-| a phrase | the application has none | `an application without a version says so rather than printing nothing` |
+| print it | the application has one | `an application with a version prints it` |
+| say the application has no version | the application has none | `an application without a version says so rather than printing nothing` |
 
 ### UC6 — the output helpers
 
@@ -330,9 +380,9 @@ graph TD
 | quote and escape it | a value surrounded by whitespace | `a value surrounded by whitespace is quoted` |
 | leave it as is | an ordinary value | `an ordinary value is left unquoted` |
 | one line, carrying the count | an array rendered | `a rendered array carries its count, so nothing looks truncated` |
-| a header, then one indented row each | a table rendered | `a rendered table names its columns and indents one row per entry` |
+| a header naming the columns, then one indented row each | a table rendered | `a rendered table names its columns and indents one row per entry` |
 | a counted one-entry line | a help line rendered | `a help line is counted like any other rendered list` |
 | say none were found | prose, empty collection | `prose for an empty collection names the keywords searched` |
 | say one was found | prose, one item | `prose for one item describes it in the singular` |
 | say several were found | prose, several items | `prose for several items lists them under a plural heading` |
-| the shared option | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |
+| toon, the default the option declares | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |
