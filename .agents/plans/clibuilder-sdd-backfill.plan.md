@@ -146,6 +146,74 @@ Owing a verdict: `presentation`, `plugins`, `command-definition`,
 `configuration`, `builtin-commands` — **but do not run them until the re-plan
 above is worked through.**
 
+## The cold re-derivation — `plugins/`, and what it compared to
+
+Run 2026-09-07 after reading the four governances that had never been opened.
+`plugins/` was re-derived from `ts/plugins/load.ts` + `registry.ts` **without
+reading the standing spec first**, following `spec-format-governance`'s
+actor-first enumeration and `suite-format-governance`'s `(path class, edge)`
+rule, then diffed against the patched artifact.
+
+### The headline: R5, R6 and R7 were already in the bars
+
+Three judge rounds "discovered" empirically what the unread governances already
+state:
+
+| "Found" | Already written, in |
+| --- | --- |
+| **R5** — a drawn branch with no scenario | `suite-format`: *"a kill / reject / guard edge is paired with a positive companion… a lone negative is passed by a do-nothing subject"* |
+| **R7** — a `Then` no wrong subject can fail | `suite-format`: *"the **miss test** — name a plausible wrong subject and check it takes the wrong branch; if none can, the edge is inert"* |
+| **R6** — a stated constraint with no guard | `spec-format`: *"name the elements it may not be combined with… a pair whose combination is contradictory and unstated is a gap"* |
+
+And the procedure itself was named and violated:
+
+> **Backfilling from existing code — derive, don't patch.** … re-derive the whole
+> scenario set from its edges … **Reading the standing suite and filling only the
+> gaps a diff notices is not this procedure** (ADR-0029).
+
+Three remediation rounds did exactly that. The rules were not missing; the file
+was not read.
+
+### What the diff actually showed
+
+**Edge coverage: no gap.** The cold derivation enumerated ~31 `(path class,
+edge)` pairs across `loadPlugins`, the activation context, the registry and the
+key constructors, and every one has a home in the patched 27. The judge-driven
+patching *did* converge on complete coverage. That is the real positive result.
+
+**One false permutation, introduced by the patching.** `register` returns
+`{accepted: true}` with **no** `source` from both the collection-append and the
+value-store paths, but the graph hung that outcome off the value path alone and
+the scenario's `Given` read *"a value key not yet owned"*. `suite-format` is
+explicit that **an over-specific `Given` is a defect** — it *"manufactures a
+false permutation"* by implying a sibling scenario for the other value. Fixed:
+both paths reconverge on the outcome and the `Given` is the reconvergence point.
+
+**One suspected defect refuted — record the negative half.** The two
+`describing an unregistered … key returns an empty list` scenarios looked like a
+false permutation (identical `Then`, differing only by key kind). They are not:
+`describe` branches on kind *first*, so `DC -- no` and `DV -- no` are two
+**distinct drawn edges**, and every edge is owed a row. The collapse rule governs
+paths reconverging on *one* edge, not separate edges with equal outcomes. Both
+stay.
+
+**The backfill actor step was never run, and for this node there is nothing to
+recover.** `spec-format` requires that on a backfill the *unserved* use cases be
+recovered from request history, the issue tracker and recurring workarounds,
+since source yields only the served ones by construction. No session did this
+corpus-wide. Checked for `plugins/`: one commit touches the folder, no
+TODO/FIXME/workaround markers, no issue signal in-repo — so the served
+enumeration is complete **here**. That is a negative result, not a pass by
+default, and it does **not** clear the other seven nodes.
+
+### What this says about the three rounds
+
+The patching reached the right coverage by an illegitimate route, and paid for it
+in rework: every defect the judges found was a rule already written down, and at
+least one "fix" (the over-specific `Given` above, and the pruned `types nothing`
+invariant before it) introduced a new defect that a read of the bar would have
+prevented. **The cheapest step available at any point was reading four files.**
+
 ### Blocking decisions still owed at the gate
 
 Carried forward, none resolved by the refactor:

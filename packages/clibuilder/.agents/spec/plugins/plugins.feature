@@ -72,9 +72,9 @@ Feature: Plugins
   # ── UC3 — createRegistry ──
 
   Scenario: an accepted registration carries no owning source
-    Given a value key not yet owned
-    When a source registers it
-    Then the registration names no owning source
+    Given a registration that is accepted, on a key of either kind
+    When the result is inspected
+    Then it names no owning source
 
   Scenario: the first registration of a value key is accepted
     Given a value key nobody has registered

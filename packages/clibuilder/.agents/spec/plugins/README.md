@@ -191,7 +191,7 @@ graph TD
 ```mermaid
 graph TD
   R[register source, key, value] --> KIND{key kind?}
-  KIND -- collection --> APP[append the contribution; always accepted]
+  KIND -- collection --> APP[append the contribution; always accepted] --> TNS
   KIND -- value --> OWN{already owned?}
   OWN -- yes --> REF[refuse, carrying the owning source]
   OWN -- no --> TAKE[store it; accepted] --> TNS[the result names no owning source]
@@ -254,7 +254,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | store it; accepted | a value key not yet owned | `the first registration of a value key is accepted` |
-| the result names no owning source | a value key not yet owned | `an accepted registration carries no owning source` |
+| the result names no owning source | any accepted registration, of either key kind | `an accepted registration carries no owning source` |
 | refuse, carrying the owning source | a value key already owned | `a second registration of a value key is refused and names the owner` |
 | append the contribution; always accepted | a collection key | `every registration of a collection key is kept, in order` |
 | the value | a registered value key | `reading a registered value key returns its value` |
