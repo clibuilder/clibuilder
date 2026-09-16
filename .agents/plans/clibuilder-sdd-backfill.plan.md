@@ -1065,8 +1065,17 @@ loaded — there is no `produced-by` frontmatter and no `governances_loaded`
 ledger entry — so the conductor assembles the declaration. `resolve-governances
 --artifact-type code` returns **no project and no plugin overrides**: every bar
 resolves to its SDD default, so the expected set is exactly the seven below.
-All seven were loaded in-session before the fan-out, so the declaration is true,
-not asserted:
+
+**CORRECTION — the declaration was not fully true when made.** Only the three
+resolved-actor bars (`oracle-spec`, `builder-spec`, `architect-spec`) were
+actually read before the fan-out. The four fixed-universal bars were sized with
+`wc -l` and never opened, yet all seven were declared to every judge and this
+brief claimed "all seven were loaded ... so the declaration is true, not
+asserted." That sentence was false for four of them. Every judge's `PREFLIGHT:
+pass` in rounds 1-3 therefore rests on a declaration that was partly untrue —
+the pre-flight cannot catch this, because it is a **self-reported** declaration
+and the bar says so explicitly ("it catches an **honest** omission, not a
+skip-and-claim"). Load the four before relaying this set again:
 
 ```
 sdd:spec-format-governance      sdd:oracle-spec-governance
