@@ -185,6 +185,11 @@ Feature: Presentation
     When its signature is rendered
     Then the name is wrapped in angle brackets
 
+  Scenario: no type declared shows no hint beside the name
+    Given an argument or option declaring no type at all
+    When its signature is rendered
+    Then the name carries no type hint, only its brackets
+
   Scenario: a string or number type is hinted beside the name
     Given an option or argument declaring a string or number type
     When its signature is rendered

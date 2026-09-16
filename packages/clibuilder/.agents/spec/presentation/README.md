@@ -126,6 +126,7 @@ something is required and what kind of value it takes.
 | Cause | Outcome |
 | --- | --- |
 | no type is declared | an argument is treated as required, an option as optional — matching how each is filled |
+| no type is declared | no type hint is shown beside the name, whichever the element is |
 | the type is an array | a variadic marker is shown |
 | the type is a boolean **option** | no type hint — an option is a flag, so `=boolean` would be noise |
 | the type is a boolean **argument** | the hint is shown, because it is a value the user has to type out |
@@ -440,6 +441,7 @@ graph TD
 | option, with no type declared | an option with no declared type | `an option with no type is shown as optional` |
 | square brackets | an optional type | `an optional type is shown in square brackets` |
 | angle brackets | a non-optional type | `a required type is shown in angle brackets` |
+| no hint | no type declared at all | `no type declared shows no hint beside the name` |
 | hint shown | a string or number type | `a string or number type is hinted beside the name` |
 | variadic marker | an array type | `an array type is marked variadic` |
 | no hint: it is a flag | a boolean option | `a boolean option is shown without a type hint, because it is a flag` |
