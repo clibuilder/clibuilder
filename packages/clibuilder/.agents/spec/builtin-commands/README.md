@@ -27,10 +27,13 @@ option that could not do anything.
 
 The plugin commands' output is written for **two readers at once**. A person
 wants prose. A script or an agent wants a shape it can parse without branching
-on how many results there turned out to be — so the structured formats report a
-list of one as a list, and an empty result names the keywords that were searched
-instead of printing an empty array, because an agent that sees `packages[0]:`
-tends to retry with different flags to check it did not filter the answer away.
+on how many results there turned out to be — so both structured formats report a
+list of one as a list. Where they part is the empty result: the **default toon
+format** names the keywords that were searched instead of printing an empty
+array, because an agent that sees `packages[0]:` tends to retry with different
+flags to check it did not filter the answer away, while **json** keeps the same
+shape it always has, an empty list under the usual key, because a `| jq`
+consumer wants one shape to parse rather than prose about why there was nothing.
 
 **Non-goals.** How a command is matched and run belongs to `execution/`. How
 plugin packages are resolved and activated belongs to `plugins/`. The rendering
@@ -40,7 +43,11 @@ which shape, not how the shape is written.
 
 **Key terms.** The **base command** is the nameless root command. A **format**
 is the reader's chosen output shape. A **help line** is the trailing suggestion
-naming the next command to run.
+naming the next command to run. **Installed** means present in the local
+package tree and carrying the application's keywords — what `plugins list`
+reports. It is independent of `plugins/`'s **activation**: a package the
+configuration never named is still installed, and `plugins list` finds it by
+keyword rather than by anything the configuration says.
 
 ## Use Cases
 
@@ -243,6 +250,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | a toon table of name and keywords | packages found, keywords requested | `asking for keywords reports a table of name and keywords` |
 | name the keywords searched; no help line | nothing found, default format | `no packages found names the keywords searched rather than printing an empty list` |
 | the names alone | JSON requested, no extra fields | `JSON output without extra fields carries the names alone` |
+| the names alone | JSON requested, nothing found | `JSON output from search reports nothing found in the same shape as a full result` |
 | the full records | JSON requested, keywords requested | `JSON output with keywords carries the full records` |
 | count-dependent prose | text requested, reporting search results | `text output describes the packages found in prose` |
 

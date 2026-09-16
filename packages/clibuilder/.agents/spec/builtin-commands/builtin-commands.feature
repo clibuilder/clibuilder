@@ -123,6 +123,11 @@ Feature: Built-in commands
     When plugins search is run asking for JSON
     Then the payload carries the package names alone
 
+  Scenario: JSON output from search reports nothing found in the same shape as a full result
+    Given JSON requested and no packages found
+    When the search is reported
+    Then the payload carries an empty list under the same key a full result uses, and no prose about the keywords
+
   Scenario: JSON output with keywords carries the full records
     Given packages found and the keywords field requested
     When plugins search is run asking for JSON
