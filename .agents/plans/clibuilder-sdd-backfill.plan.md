@@ -85,11 +85,15 @@ each batch's verdicts be checkpointed here before the next starts.
 - **Batch 1 — `input-parsing`, `execution`, `presentation`: graded, all three
   `ALIGNED: false`.** See `## Judge verdicts — batch 1` below for the four
   findings, the settled ownership ruling, and the split verdicts.
-- **Batch 2 — `configuration`, `plugins`, `builtin-commands`: dispatched, no
-  verdicts taken.** If this session died before they returned, re-run them.
-- **Batch 3 — `testing`, `command-definition`: not yet dispatched.**
+- **Batch 2 — `builtin-commands`, `configuration`, `plugins`: graded.**
+  `builtin-commands` and `configuration` are **clean** (`ALIGNED: true`, the
+  first two of the run); `plugins` fails the builder lens on one undrawn edge.
+- **Batch 3 — `testing`, `command-definition`: dispatched, no verdicts taken.**
+  If this session died before they returned, re-run them.
 
-**Next action: collect batch 2, dispatch and collect batch 3, then remediate.**
+**Next action: collect batch 3, then run the remediation round.** Read
+`## A rule the gate found` below first — the remediation is a corpus-wide **R5
+sweep**, not four spot fixes.
 The gate verdict cannot be `approve` — batch 1 already fails three lenses across
 three nodes, so this gate ends in **`change`**, and the remediation round runs
 before any re-judge. Do not freeze anything.
@@ -105,9 +109,9 @@ instances rather than one-offs — a scenario that no wrong subject can fail
 (`input-parsing`'s `HASD -- no`) are both worth sweeping corpus-wide the way
 R1–R4 were.
 
-**Assume nothing passes.** Of eight nodes, six had never been graded at all, and
-every one of batch 1's three failed — including `input-parsing`, which the first
-judge called one of the strongest nodes in the corpus.
+**Assume nothing passes.** Six of the eight had never been graded at all. Of the
+six graded so far, four failed — including `input-parsing`, which the first judge
+called one of the strongest nodes in the corpus.
 
 Deterministic pre-checks green as of `e93eadf`: `check-spec-structure`
 blocking[0] with the three standing oversized advisories, `check-suite` OK
@@ -494,6 +498,94 @@ reconciles to 51.
    subject that always emits TOON passes every UC6 scenario.
 4. **`execution` — the 8 UC3 usage-error scenarios and sub-graph C are in the
    wrong node.** See the ruling below.
+
+### Judge verdicts — batch 2 of 3
+
+| Node | oracle | builder | architect | Why |
+| --- | --- | --- | --- | --- |
+| `builtin-commands` | pass | pass | pass | **`ALIGNED: true`** |
+| `configuration` | pass | pass | pass | **`ALIGNED: true`** |
+| `plugins` | pass | **fail** | pass | one undrawn, untested edge |
+
+Pre-flight and conformance passed on all three. The first two are the first
+clean nodes of the run.
+
+**`plugins` — `describe` on a never-registered collection key.** Sub-graph C
+draws `get`'s collection branch with a `GC{any contributions?}` split — the
+documented promise that a collection key reads as an empty list so a caller can
+iterate without a null check — but draws `describe`'s collection branch (`DC`)
+with no such split, even though `describe`'s own *value* branch does branch on
+registered/unregistered. An implementation returning `undefined` instead of `[]`
+passes every scenario in the suite. Fix in the **graph** (add the decision to
+`DC`), and the standing 1:1 binding supplies the scenario.
+
+**Both judges independently confirmed their node's sweep remediation held.**
+`configuration`'s three defects (sub-graph B's parallel fan-out, `CI`'s missing
+`no` branch, UC6's absent sub-graph) are genuinely fixed; so are all five of
+`plugins`'. `builtin-commands`' help-ownership split is correctly on disk, and
+its judge re-derived the split rather than accepting it: `execution/`'s no-`run`
+fallback is worded generically and this node asserts only `pluginsCommand`'s
+declaration, so no duplicate remains.
+
+**The double-reporting defect is specified honestly** — its own bolded
+`Known gap` paragraph naming the mechanism, an explicit "the suite fixes that as
+current behavior", a ledger pointer, a bolded cross-referenced Extensions row,
+and its own correctly-worded scenario rather than being folded silently into the
+first warning's. Nothing is dressed as intent.
+
+### A rule the gate found — the under-branched structural twin
+
+**This is the run's main finding, and it is a rule, not four one-offs.** Four of
+the six nodes graded so far fail or gap on one shape: **a decision drawn on one
+path but not on its structural twin, leaving an outcome untested.**
+
+- `input-parsing` — `HASD{declares a default?}` is drawn, but only the `yes`
+  branch has scenarios; option-absent-and-no-default is untested.
+- `plugins` — `get`'s collection branch splits on `any contributions?`;
+  `describe`'s twin does not.
+- `presentation` — the display-level *setter* gets one scenario per branch; its
+  twin the *reader* gets one tautological scenario for all four.
+- `presentation` — `--format` models `toon` and `text`; its twin `json` is
+  unmodeled.
+
+It is the **successor to the sweep's R3** (a decision node missing its `no`
+branch, twelve instances across five nodes). R3 caught the missing *branch*;
+this catches a branch that is drawn but has no *scenario*, or a decision that is
+drawn on one path and silently omitted on its parallel one. Call it **R5** and
+sweep it corpus-wide in the remediation round rather than fixing the four places
+the judges happened to point.
+
+**The mechanical form:** for each pair of parallel paths out of one dispatch
+node (`get`/`describe`, setter/reader, the arms of a value enumeration), diff the
+decisions drawn on each. An asymmetry is a candidate. Then confirm each drawn
+branch has a scenario that a wrong subject could actually fail.
+
+### Findings outside any node — the root spec.md
+
+`configuration`'s judge found the one defect no node-scoped judge would look
+for: **the root `spec.md` placement map is stale.** Line 28 says `configuration/`
+owns "Discovering, reading, and **validating** configuration files", but the
+node's own non-goals delegate schema validation to `execution/` — and the judge
+verified `execution/` really does own it (`CFG{command declares a config
+schema?}` and its field-by-field scenario). The node is placed correctly; the
+root prose is out of sync with the split the corpus settled on. Fix the root
+spec, not the node.
+
+### Non-blocking content gaps worth folding into the remediation
+
+- **`builtin-commands`** — "installed" is load-bearing in UC2 but defined
+  neither in Key terms nor `glossary.md`, leaving its boundary against
+  `plugins/`'s "activated" implicit.
+- **`configuration`** — the CLI-author actor carries no named use case, and UC3
+  and UC5 frame their actor as an internal mechanism rather than one of the four
+  listed actors. This is the sweep's **R1** resurfacing in a milder form; sweep
+  it with R5.
+- **`plugins`** — UC4's actor is "Whoever owns a contract" rather than a named
+  Actors-table row. Same R1 shape.
+- **`plugins`** — the gap annotation is adequate in substance but inconsistent
+  in form: `input-parsing`, `testing` and `command-definition` tag the CFG node
+  inline with a literal `(gap N)` label; `plugins` leaves `WI`/`WV` untagged and
+  relies on the prose below the diagram. A style nit, not a lens failure.
 
 ### The `execution/` ↔ `presentation/` ownership ruling — now settled
 
