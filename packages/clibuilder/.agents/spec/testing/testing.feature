@@ -98,10 +98,30 @@ Feature: Testing support
     When it exits through a mock context
     Then the code is recorded and the test run is not ended
 
-  Scenario: an exit also appears among the captured messages
-    Given a cli that decides to fail
+  Scenario: an exit with a code names the code among the captured messages
+    Given a cli that decides to fail with a code
     When it exits through a mock context
-    Then the exit is also reported through the ui, so it shows up in the captured messages
+    Then the captured messages carry an exit naming that code
+
+  Scenario: an exit with no code is reported as a bare exit
+    Given a cli that exits without a code
+    When it exits through a mock context
+    Then the captured messages carry a bare exit, naming no code
+
+  Scenario: a given log level is the one the mock log keeps to
+    Given a log level passed to the mock context
+    When a message below that level is emitted
+    Then it is not among the captured messages
+
+  Scenario: a mock context without a log level defaults to debug
+    Given no log level passed to the mock context
+    When a debug message is emitted
+    Then it is among the captured messages
+
+  Scenario: each command gets a ui on its own named logger
+    Given a mock context
+    When a command ui is created for an id
+    Then its messages are captured under that id
 
   # Current behavior, and a known fidelity gap: the real context caches the
   # resolution so concurrent callers share one filesystem walk.
