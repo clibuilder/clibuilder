@@ -91,58 +91,62 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**308 scenarios. Four nodes hold clean verdicts against current disk; four are
-in a re-read round.**
+**ALL EIGHT NODES PASS AGAINST CURRENT DISK.** This is the first round in the
+mission where that is true, and it is the standard this brief set and did not
+relax. **The next action is the human gate verdict — it has not been taken, and
+nothing is frozen.**
 
-| Node | state |
-| --- | --- |
-| `input-parsing` | **pass — holds** |
-| `testing` | **pass — holds** |
-| `builtin-commands` | **pass — holds** (re-read confirmed both fixes) |
-| `configuration` | **pass — holds** (re-read confirmed both fixes) |
-| `presentation` | failed 3× on one class, fixed — third re-read dispatched |
-| `plugins` | failed, fixed — re-read dispatched |
-| `command-definition` | failed, fixed — re-read dispatched |
-| `execution` | passed, then edited — re-read still owed |
+| Node | scenarios | verdict |
+| --- | --- | --- |
+| `presentation` | 68 | pass (3 lenses) |
+| `execution` | 53 | pass |
+| `input-parsing` | 53 | pass |
+| `configuration` | 33 | pass |
+| `builtin-commands` | 31 | pass |
+| `plugins` | 28 | pass |
+| `testing` | 27 | pass |
+| `command-definition` | 22 | pass |
+| **total** | **315** | |
 
-**Next: collect the three, re-read `execution`, then take the gate verdict.**
-The verdict is `change` until every node holds a pass against current disk.
+Deterministic: `check-spec-state` OK · `check-suite` OK across 8 files ·
+`check-spec-structure` blocking[0] (3 standing oversized advisories) ·
+0 ragged tables · fences balanced · no `@frozen`, no `@pinned`, no open markers.
+Diff vs base `3a90891`: 24 files, +4615.
 
-### The defect class this gate is actually finding
+### Why the verdict was NOT self-asserted
 
-**An uncovered negative arm — a decision whose `yes` branch has a scenario and
-whose `no` branch does not.** It has now been found in **six of the eight
-nodes**, and in `presentation` three times over, once per sub-graph, by three
-different judges. That is not bad luck; it is what an under-derived graph looks
-like when you keep looking. Briefing each judge to sweep negative arms
-*specifically* is what turned it from an occasional finding into a reliable one.
+The ledger records an `auto-spec` leash granted by the user at mission start, and
+no hard floor fires (nothing is frozen, so no Clearance; a spec backfill changes
+no published surface, so no Compatibility). The conductor could self-assert.
 
-The corollary worth carrying: **adding surface and covering surface are separate
-acts.** Three of this round's failures were on surface the re-derivation itself
-had just added — the option-alias union, the base command's empty `commands`
-list, the `searchByKeywords` seam. The pass that found the gap did not
-automatically close it.
+**It should not, and did not.** Approving freezes 315 scenarios, nine of which
+specify known defects as current behavior — every later fix then narrows a frozen
+suite and fires Clearance. The leash was granted when the mission was scoped at
+261 scenarios and before the defect-as-is convention was settled. A durable
+authorization from before a scope change is not authorization for what the scope
+became. Present the digest; let the human take it.
 
-### Tooling added this round
+### What the human is deciding
 
-`.agents/sdd/tools/check-table-shape.py` — flags a markdown table whose rows
-disagree on column count. It exists because a three-column scenario-map row was
-inserted into a two-column entry-point table and **`check-suite` reported OK**;
-only a human-shaped reader caught it. Two corrections its first run needed, both
-recorded in the docstring: ignore escaped pipes (`T \| undefined`) or every union
-type reads as ragged, and ignore fenced blocks where mermaid pipes are not
-tables. Corpus is clean under it.
+- **Freezing nine defect-as-is scenarios.** Every judge that read one called it
+  honestly specified, and `plugins`' double-reporting entry was singled out as
+  exemplary. But approving makes each later fix a Clearance event. Brief the fix
+  mission to expect that rather than meet it at the gate.
+- **Three nodes over the 40-scenario ceiling** (`presentation` 68,
+  `execution` 53, `input-parsing` 53). Unanimously a Warden call, never a gate
+  blocker. Clean seams are recorded per node if a split is ever forced.
+- **Nothing is `@pinned`.** No judge asked for a pin across any round.
 
-### Method notes from this round
+### If the verdict is `approve`
 
-- **`gh issue list --search` silently returns zero rows here.** A keyword sweep
-  came back empty for every term and was nearly read as absence. Pull
-  `--limit 100 --json` and filter locally. An empty `--search` is not evidence.
-- **A judge's "I could not verify X" is worth acting on.** `input-parsing`'s
-  judge passed the node but flagged that the tracker recovery had no
-  domain-specific audit trail; the sweep it asked for found #274. `testing`'s
-  judge did the same; its sweep found nothing, and that null result is now
-  recorded rather than assumed.
+1. Freeze each of the eight `.feature` files (`@frozen`).
+2. Append a `gate` line to `ledger/clibuilder-sdd-backfill.6a7366.jsonl`
+   (`verdict: approve`, `frozen[]`, keyed by `cr`, no `ts`).
+3. Write `status: approved` and `approval.spec: { verdict: approve, by: <name> }`
+   on the root `spec.md` — a human verdict carries `by: <name>` and **no** `why`.
+4. Re-run `check-spec-state` to confirm the tuple is legal.
+
+The deferred zod-removal CR then has a spec to be judged against.
 
 ### Blocking decisions still owed at the gate
 
