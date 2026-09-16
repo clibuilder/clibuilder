@@ -35,10 +35,8 @@ reader never has to count entries or wonder whether a list was truncated.
 
 **Non-goals.** Deciding *when* to show help or what to report belongs to
 `execution/` and `builtin-commands/`. What may be declared belongs to
-`command-definition/`. Describing a usage error in words is specified in
-`execution/`, beside the `parse` flow that prints it — though the code is here
-in `ts/render/error.ts`, and whether the scenarios should follow it is an open
-formation question recorded in this spec's ledger.
+`command-definition/`. Describing a usage error in words belongs to
+`execution/`.
 
 **Key terms.** The **display level** is how much the CLI says — none, info,
 debug, or trace. A **signature** is a name as it appears in help, bracketed by
