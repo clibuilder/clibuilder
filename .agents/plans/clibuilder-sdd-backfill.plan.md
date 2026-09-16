@@ -152,6 +152,54 @@ compiles, so the claim was false rather than unguarded) and the shape of
 exercises the *debug* branch; the `info` branch is a ui whose level was never
 set, since `createUI` starts the logger at info).
 
+### Re-judge round — status, and R7
+
+| Node | round 1 | re-judge | now |
+| --- | --- | --- | --- |
+| `execution` | architect fail | **pass** | settled |
+| `testing` | builder+architect fail | **pass** | settled |
+| `input-parsing` | builder fail | **pass** | settled |
+| `presentation` | builder fail | fail ×2 | fixed, 4th pass out |
+| `plugins` | builder fail | fail | fixed, re-judge out |
+| `command-definition` | builder+architect fail | fail | fixed, re-judge out |
+| `configuration` | **pass** | **fail** | fixed, re-judge owed |
+| `builtin-commands` | **pass** | **fail** | fixed, re-judge owed |
+
+**Re-judging the two clean nodes was the right call and is now proven.** Both
+`configuration` and `builtin-commands` passed all three lenses in round 1 and
+**failed a fresh cold read**, on defects that predate this session's edits. A
+first pass is not a warrant.
+
+**R7 — a `Then` no wrong subject can fail.** The third rule this gate found, and
+the one that keeps firing:
+
+- `plugins` ×2 — `Then no source is named`, true of both an empty list and
+  `undefined`, on the exact defect class the sweep existed to close.
+- `configuration` ×2 — a bare universal over a possibly-empty list, and a
+  warning satisfied by naming zero candidates.
+- `presentation` ×1 — **the scenario meant to prove this round's expect-single
+  fix never asserted the thing it fixed.** Its `Then` checked value-count wording
+  only, so a subject reverting to the removed argument arm passed it.
+
+Its sharpest form: **a `Then` that asserts less than its scenario-map row claims
+it tests.** The map says the row covers "described as an option, always" and the
+`Then` never says "option". Mechanically checkable — compare each row's `Edge`
+against what its scenario actually asserts — and worth a sweep of its own.
+
+Note the diagnostic that found three of these: **an asymmetric sibling.** In each
+case a neighbouring scenario got the assertion right (`get`'s "an empty list …
+so a caller can iterate without checking first"; `invalid-value`'s "names an
+argument rather than an option"), which is what made the weak twin visible.
+
+### On convergence
+
+Findings are shrinking in severity each round — from "eight scenarios in the
+wrong node" to "this `Then` omits one word" — but they have not stopped, and
+**every round has found something in a node that passed the round before**. That
+is the bar working, not a broken loop; it does mean the gate should not be
+called until a round produces a clean sweep across all eight. Do not approve on
+a partial round.
+
 ### A commit of mine overstated what landed — the same defect as `testing`'s
 
 `efdf999` is titled "give describe's collection branch the split get's has".
