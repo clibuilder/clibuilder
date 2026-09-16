@@ -96,8 +96,9 @@ the origin to report alongside it.
 
 ### UC3 — `getConfigFilenames`: enumerate the accepted names
 
-**Actor / goal.** The search — and the warning that reports a failed one — needs
-the ordered list of names a config may take.
+**Actor / goal.** The **CLI end user** wants their file found wherever the
+conventions allow them to put it, so UC1's search — and the warning that reports
+a failed one — needs the ordered list of names a config may take.
 
 | | |
 | --- | --- |
@@ -131,8 +132,10 @@ both `foo.json` and `.foo.json` are conventional.
 
 ### UC5 — `findAnyFileUp` / `findFileUp`: walk ancestors for a file
 
-**Actor / goal.** The lookup wants the nearest ancestor directory holding any of
-several filenames, at one directory read per directory.
+**Actor / goal.** The **CLI end user** wants a config placed anywhere above the
+working directory to be found, so UC1's lookup needs the nearest ancestor
+directory holding any of several filenames, at one directory read per
+directory.
 
 | | |
 | --- | --- |

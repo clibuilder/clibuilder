@@ -118,8 +118,9 @@ to find what others published, under a policy that makes conflicts visible.
 
 ### UC4 — `defineKey` / `defineCollectionKey`: declare a typed key
 
-**Actor / goal.** Whoever owns a contract wants a key carrying both its identity
-and the type of what may be stored under it.
+**Actor / goal.** A **plugin author** publishing a contract for **another
+plugin** to build on wants a key carrying both its identity and the type of what
+may be stored under it.
 
 | | |
 | --- | --- |
