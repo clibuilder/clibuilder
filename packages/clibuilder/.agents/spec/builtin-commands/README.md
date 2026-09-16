@@ -64,8 +64,9 @@ user expects of any CLI.
 | Outcome | a nameless command declaring the global options |
 
 **Extensions.** `--show-config` is declared only when the application takes
-configuration. Running the base command itself shows help, since it has no work
-of its own.
+configuration. The base command declares a `run` of its own that shows help —
+it is not falling through `execution/`'s no-`run` path, it is choosing help as
+its work.
 
 ### UC2 — `plugins list`: report the installed plugins
 
@@ -118,8 +119,9 @@ not installed.
 | Inputs | none |
 | Outcome | help listing `list` and `search` |
 
-**Extensions.** The group declares no `run`, so invoking it bare shows help
-rather than doing nothing.
+**Extensions.** The group declares no `run`. What that produces — help, rather
+than nothing — is `execution/`'s decision for any command without a `run`, and
+is specified there; what this node owns is the declaration.
 
 **Surface trace.**
 
@@ -141,11 +143,15 @@ rather than doing nothing.
 ```mermaid
 graph TD
   B[description and config flag] --> G[declare help, version, verbose, silent, debug-cli]
-  G --> CF{application takes config?}
+  G --> AL["give help, version and verbose their short aliases h, v and V"]
+  AL --> CF{application takes config?}
   CF -- yes --> SC[also declare show-config]
   CF -- no --> NS[do not declare show-config]
-  R[the base command is run] --> H[show help]
+  R["the base command's own run"] --> H[show help]
 ```
+
+The base command declares a `run` of its own, so showing help is this node's
+decision rather than `execution/`'s no-`run` fallback.
 
 ### Sub-graph B — report the installed plugins (`plugins list`), entered by UC2
 
@@ -182,17 +188,33 @@ graph TD
   TA --> HL
 ```
 
+### Sub-graph D — what the three plugin commands declare, entered by UC2, UC3 and UC4
+
+The reporting logic above is reached only once a command has been matched; what
+each command *declares* is the decision that gets it matched at all.
+
+```mermaid
+graph TD
+  DC[the plugin commands as declared] --> WH{which one?}
+  WH -- "plugins list" --> DL["name list, alias ls, and a format option"]
+  WH -- "plugins search" --> DS["name search, and a format and fields option"]
+  WH -- "plugins" --> DG["name plugins, sub-commands list and search, and no run of its own"]
+```
+
+Declaring no `run` is what makes the bare group show help — but the showing is
+`execution/`'s decision, so what this node specifies is the declaration.
+
 ## Scenario map
 
 ### UC1 — `getBaseCommand`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| declare the global options | any | `every application declares help, version, and the logging options` |
-| aliases | any | `the global options carry their conventional short aliases` |
+| declare help, version, verbose, silent, debug-cli | any | `every application declares help, version, and the logging options` |
+| give help, version and verbose their short aliases | any | `the global options carry their conventional short aliases` |
 | also declare show-config | the application takes config | `an application taking config also declares show-config` |
 | do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
-| show help | the base command is run | `running the base command itself shows help` |
+| the base command's own run | the application is invoked with no command | `running the base command itself shows help` |
 
 ### UC2 — `plugins list`
 
@@ -203,15 +225,15 @@ graph TD
 | the payload alone, no help line | JSON requested | `JSON output carries the payload and no help line` |
 | the payload alone, no help line | JSON requested, nothing installed | `JSON output reports an empty result in the same shape as a full one` |
 | count-dependent prose | text requested, reporting installed plugins | `text output reads as English about how many were found` |
-| the return value | any | `the found names are the command's return value as well as its output` |
-| the `ls` alias | any | `plugins list can be invoked as ls` |
+| the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
+| name list, alias ls | any | `plugins list can be invoked as ls` |
 
 ### UC3 — `plugins search`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | query each keyword separately | several declared keywords | `each keyword is searched separately so a package matching any of them is found` |
-| union, collecting matching keywords | a package matched by several keywords | `a package matched by several keywords is listed once carrying each` |
+| union by package name, first-seen order, collecting the keywords that matched | a package matched by several keywords | `a package matched by several keywords is listed once carrying each` |
 | report it with guidance | `--fields` names something unrecognized | `an unrecognized fields value is reported with guidance and nothing is searched` |
 | recognized | `--fields name` | `asking for the name field is accepted as a no-op` |
 | the names as a toon list | packages found, default format, no extra fields | `found packages are listed and point at plugins list` |
@@ -225,5 +247,5 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| show help | the group is invoked bare | `the plugins group invoked bare shows help` |
-| groups its sub-commands | any | `the plugins group carries list and search` |
+| no run of its own | any | `the plugins group declares no run of its own` |
+| sub-commands list and search | any | `the plugins group carries list and search` |

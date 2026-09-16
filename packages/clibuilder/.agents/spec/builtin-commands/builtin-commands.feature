@@ -130,10 +130,10 @@ Feature: Built-in commands
 
   # ── UC4 — plugins: group the plugin commands ──
 
-  Scenario: the plugins group invoked bare shows help
-    Given an application with the plugins command
-    When plugins is invoked with no sub-command
-    Then help is shown
+  Scenario: the plugins group declares no run of its own
+    Given the plugins command
+    When its declaration is read
+    Then it declares sub-commands and no run
 
   Scenario: the plugins group carries list and search
     Given an application with the plugins command
