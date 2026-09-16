@@ -95,11 +95,14 @@ the code, write the four sections, derive the `.feature` 1:1 off the scenario
 map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
-## NEXT — the impl phase, 7 of 8 nodes verified
+## NEXT — the impl gate is PASSED and the spec re-approved; this mission is done
 
-**246 of 314 scenarios have now been checked against the running implementation.
-`presentation` (68) is the only node left — its judge died on a session rate
-limit mid-run (resets 16:10 America/Los_Angeles). Re-run it, then take the gate.**
+**314 of 314 scenarios pass against the running implementation.** Root
+`spec.md` is back to `status: approved` (`approval.spec` by unional, recorded
+2026-09-16 after the Clearance re-open), all eight suites carry `@frozen`, and a
+second `gate` line is on the ledger. `check-spec-state` and `check-suite` are
+green. What remains is the follow-on backlog on the ledger and the notes below,
+plus opening the PR for this branch.
 
 | Node | scenarios | impl verdict |
 | --- | --- | --- |
@@ -110,10 +113,7 @@ limit mid-run (resets 16:10 America/Los_Angeles). Re-run it, then take the gate.
 | `plugins` | 28 | **28/28 pass** |
 | `testing` | 26 | **26/26 pass** (after 1 code fix + 2 spec corrections) |
 | `command-definition` | 22 | **22/22 pass** |
-| `presentation` | 68 | **68/68 pass** (mutation backstop on the two info-level defect-as-is scenarios) |
-
-Root `spec.md` is `status: draft`, `testing/testing.feature` unfrozen from the
-Clearance re-open; the other seven suites remain `@frozen`. Suite green at 366.
+| `presentation` | 68 | **68/68 pass** |
 
 ### What the impl gate found that five spec-gate rounds could not
 
@@ -163,7 +163,7 @@ left an orphan that the conductor had to remove. Every tree check came back
 byte-identical, but a fan-out of this shape wants **per-judge worktrees**, not
 cleanup discipline.
 
-### Owed before the gate can be re-approved
+### Owed before the gate could be re-approved — all done
 
 1. ~~Re-run `presentation`'s impl judge~~ — **done**: 68/68. Two new backlog
    items on the ledger (untyped string default renders unquoted; a judge given a
@@ -171,10 +171,10 @@ cleanup discipline.
 2. ~~`testing/` needs a spec-judge re-read~~ — **done**: oracle, builder and
    architect all PASS, ALIGNED, 26/26. Its one observation (the codeless-exit
    note trailed UC4, not UC3) is fixed in `14c82f5`.
-3. Re-freeze `testing/testing.feature` and restore `status: approved` with
-   `approval.spec`, then re-run `check-spec-state`.
+3. ~~Re-freeze `testing/testing.feature` and restore `status: approved`~~ —
+   **done**, checks green.
 
-## NEXT — the gate is APPROVED; this mission is done
+## The first spec-gate approval (before the impl phase)
 
 **`status: approved`. All eight `.feature` files carry `@frozen`. The durable
 `gate` line is on the ledger, keyed by `cr`, naming the eight frozen files.**

@@ -1,6 +1,10 @@
 ---
 name: clibuilder
-status: draft
+status: approved
+approval:
+  spec:
+    verdict: approve
+    by: unional
 project-path: packages/clibuilder
 ---
 
