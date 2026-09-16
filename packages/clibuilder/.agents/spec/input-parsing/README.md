@@ -355,6 +355,7 @@ are matched, and `hidden` affects only how `presentation/` lists it.
 | use the default as declared | a declared option absent from argv | `an absent option falls back to its declared default` |
 | wrap the default in an array | an array-typed option with a scalar default | `a scalar default on an array option is wrapped in an array` |
 | leave it | a declared option present in argv | `an option given in argv is not overwritten by its default` |
+| leave it | a declared option absent from argv that declares no default | `an option with no default absent from argv is left unset` |
 
 ### UC2 — `lookupCommand`, converting
 

@@ -192,6 +192,12 @@ Feature: Input parsing
     When the invocation does not give that option
     Then its value is the default wrapped in an array
 
+  Scenario: an option with no default absent from argv is left unset
+    Given a command declaring an option with no default
+    And an invocation that does not give it
+    When the invocation is matched
+    Then the option's key is absent from the arguments
+
   Scenario: an option given in argv is not overwritten by its default
     Given a command declaring an option with a default
     When the invocation gives that option a value
