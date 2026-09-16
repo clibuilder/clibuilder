@@ -1,4 +1,5 @@
 import { findKey, reduceByKey } from 'type-plus'
+import { type OptionOccurrence, optionOccurrences } from './argv.internal.js'
 import type { parseArgv } from './argv.js'
 import type { cli } from '../cli.js'
 import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from '../zod.js'
@@ -39,9 +40,17 @@ export namespace lookupCommand {
 	}
 }
 
-export function lookupCommand(command: cli.Command, args: parseArgv.Result): lookupCommand.Result {
+/**
+ * @param fallback a command whose options apply to every command (the global options).
+ * It only decides how many following tokens such an option takes.
+ */
+export function lookupCommand(
+	command: cli.Command,
+	args: parseArgv.Result,
+	fallback?: cli.Command
+): lookupCommand.Result {
 	const m = matchCommand(command, args)!
-	return processCommand(m[0], m[1])
+	return processCommand(m[0], assignOptionValues(m[1], m[0], fallback))
 }
 
 function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Command, parseArgv.Result] | undefined {
@@ -60,6 +69,47 @@ function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Com
 		}
 	}
 	return [command, rawArgs]
+}
+
+/**
+ * Gives each option the following tokens its declared type takes, and the rest back to the positionals.
+ *
+ * The parser attaches every token after an option to it, because it does not know the
+ * option's type. A boolean takes none of them (except a literal `true`/`false`), a scalar
+ * takes one, and an array takes them all. An option the command does not declare keeps
+ * them all, so the invalid key is reported with what the caller passed.
+ */
+function assignOptionValues(
+	rawArgs: parseArgv.Result,
+	command: cli.Command,
+	fallback: cli.Command | undefined
+): parseArgv.Result {
+	const occurrences = optionOccurrences.get(rawArgs)
+	if (!occurrences) return rawArgs
+	const values: Record<string, string[]> = {}
+	const positionals: string[] = []
+	for (const o of occurrences) {
+		const entry = lookupOptions(command, o.key)[1] ?? (fallback && lookupOptions(fallback, o.key)[1])
+		const count = countFollowing(entry, o)
+		const taken = o.following.slice(0, count)
+		positionals.push(...o.following.slice(count))
+		const own = o.inline.length + taken.length > 0 ? [...o.inline, ...taken] : ['true']
+		values[o.key] = [...(values[o.key] ?? []), ...own]
+	}
+	const result: parseArgv.Result = { ...rawArgs, _: [...rawArgs._, ...positionals] }
+	// a key missing from `rawArgs` was removed by the caller (`builder` consumes the global flags).
+	for (const key of Object.keys(values)) if (rawArgs[key]) result[key] = values[key]!
+	return result
+}
+
+function countFollowing(entry: cli.Command.Options.Entry | undefined, o: OptionOccurrence) {
+	if (!entry) return o.following.length
+	// an option without a declared type is a boolean, matching `cli.Command.RunArgs`
+	const type = unwrapOptional(entry.type ?? z.boolean())
+	if (isZodArray(type)) return o.following.length
+	if (o.inline.length > 0) return 0
+	if (isZodBoolean(type)) return /^(true|false)$/i.test(o.following[0] ?? '') ? 1 : 0
+	return 1
 }
 
 export type State = {

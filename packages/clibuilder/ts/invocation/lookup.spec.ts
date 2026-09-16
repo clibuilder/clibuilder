@@ -219,8 +219,13 @@ describe('boolean options', () => {
 		expect(args).toEqual({ _: [], help: false, version: true })
 	})
 	test('other strings are invalid', () => {
-		const { errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h x')!
+		const { errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h=x')!
 		a.satisfies(errors, [{ type: 'invalid-value', key: 'h', value: 'x' }])
+	})
+	test('does not take a following token that is not true/false', () => {
+		const { args, errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h x')!
+		expect(args).toEqual({ _: [], help: true })
+		expect(errors).toEqual([{ type: 'extra-arguments', name: '', values: ['x'] }])
 	})
 	test('boolean options with space syntax', () => {
 		const defaultCommand = command({
@@ -496,11 +501,104 @@ describe('enum options', () => {
 	// format they did not ask for, and no way to tell that is what happened.
 	test('a value outside the enum reports invalid-value instead of taking the default', () => {
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --fmt=yaml')!
-		a.satisfies(errors, [
-			{ type: 'invalid-value', key: 'fmt', value: 'yaml', message: 'expected one of: toon, json' }
-		])
+		a.satisfies(errors, [{ type: 'invalid-value', key: 'fmt', value: 'yaml', message: 'expected one of: toon, json' }])
 		// the default still fills the slot, but the error is what the caller acts on:
 		// `builder` reports it and exits before the command ever reads the value.
 		expect(args).toEqual({ _: [], fmt: 'toon' })
+	})
+})
+
+describe('option arity', () => {
+	const readCommand = command({
+		name: 'read',
+		arguments: [{ name: 'pane', description: 'pane', type: z.optional(z.string()) }],
+		options: {
+			lines: { description: 'lines', type: z.optional(z.number()) },
+			name: { description: 'name', type: z.optional(z.string()) },
+			fmt: { description: 'fmt', type: z.optional(z.enum(['toon', 'json'])) },
+			env: { description: 'env', type: z.optional(z.array(z.string())) },
+			full: { description: 'full' }
+		},
+		run() {}
+	})
+	const root = command({ name: '', commands: [readCommand], run() {} })
+
+	test('a number option takes one following token, the rest are positionals', () => {
+		const { cmd, args, errors } = testLookupCommand(root, 'my-cli read --lines 5 %1')
+		expect(cmd).toBe(readCommand)
+		expect(args).toEqual({ _: [], pane: '%1', lines: 5 })
+		expect(errors).toEqual([])
+	})
+	test('a string option takes one following token', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --name x %1')
+		expect(args).toEqual({ _: [], pane: '%1', name: 'x' })
+		expect(errors).toEqual([])
+	})
+	test('an enum option takes one following token', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --fmt json %1')
+		expect(args).toEqual({ _: [], pane: '%1', fmt: 'json' })
+		expect(errors).toEqual([])
+	})
+	test('a scalar option with an inline value takes no following token', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --lines=5 %1')
+		expect(args).toEqual({ _: [], pane: '%1', lines: 5 })
+		expect(errors).toEqual([])
+	})
+	test('a boolean option takes no following token', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --full %1')
+		expect(args).toEqual({ _: [], pane: '%1', full: true })
+		expect(errors).toEqual([])
+	})
+	test('a boolean option takes a following true/false', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --full false %1')
+		expect(args).toEqual({ _: [], pane: '%1', full: false })
+		expect(errors).toEqual([])
+	})
+	test('a boolean option with an inline value takes no following token', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --full=false true')
+		expect(args).toEqual({ _: [], pane: 'true', full: false })
+		expect(errors).toEqual([])
+	})
+	test('a bundled short flag leaves the following token to the last flag', () => {
+		const cmd = command({
+			name: '',
+			arguments: [{ name: 'pane', description: 'pane' }],
+			options: { a: { description: 'a' }, b: { description: 'b' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(cmd, 'my-cli -ab %1')
+		expect(args).toEqual({ _: [], pane: '%1', a: true, b: true })
+		expect(errors).toEqual([])
+	})
+	test('an array option keeps collecting following tokens', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --env A=1 B=2 --env C=3')
+		expect(args).toEqual({ _: [], env: ['A=1', 'B=2', 'C=3'] })
+		expect(errors).toEqual([])
+	})
+	test('positionals keep their order across options', () => {
+		const cmd = command({
+			name: '',
+			arguments: [{ name: 'rest', description: 'rest', type: z.array(z.string()) }],
+			options: { lines: { description: 'lines', type: z.number() }, full: { description: 'full' } },
+			run() {}
+		})
+		const { args, errors } = testLookupCommand(cmd, 'my-cli a --lines 5 b --full c --lines 6 d')
+		expect(args).toEqual({ _: [], rest: ['a', 'b', 'c', 'd'], lines: 6, full: true })
+		a.satisfies(errors, [{ type: 'expect-single', key: 'lines', value: ['5', '6'] }])
+	})
+	test('extra tokens after a scalar option are reported as extra arguments', () => {
+		const { args, errors } = testLookupCommand(root, 'my-cli read --lines 5 %1 %2')
+		expect(args).toEqual({ _: [], pane: '%1', lines: 5 })
+		expect(errors).toEqual([{ type: 'extra-arguments', name: 'read', values: ['%2'] }])
+	})
+	test('an unknown option keeps its following tokens', () => {
+		const { errors } = testLookupCommand(root, 'my-cli read --unknown x')
+		expect(errors).toEqual([{ type: 'invalid-key', key: 'unknown' }])
+	})
+	test('a fallback command resolves the arity of options the command does not declare', () => {
+		const base = getBaseCommand('')
+		const r = lookupCommand(root, parseArgv(argv('my-cli read --verbose %1')), base)
+		expect(r.args).toEqual({ _: [], pane: '%1' })
+		expect(r.errors).toEqual([{ type: 'invalid-key', key: 'verbose' }])
 	})
 })
