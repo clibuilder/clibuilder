@@ -77,6 +77,8 @@ a version, and a statement of whether it takes configuration or plugins.
 | --- | --- |
 | `config` is `true` | the config name is the CLI's own name |
 | `config` is a string | that string is the config name |
+| `config` is omitted | there is no config name, and nothing is loaded for one |
+| keywords are given | they are kept as given rather than defaulted |
 | `config` is set and no keywords are given | the keywords default to the CLI's name, so plugin discovery has something to search for |
 | the application can accept plugins | the built-in `plugins` command is registered, and `parse` is available immediately |
 | the application takes neither config nor keywords | no `plugins` command, and `parse` becomes available only once a command is registered |
@@ -105,7 +107,8 @@ application's tree, with each command's place in that tree recorded.
 **Extensions.** `.default()` may be called only once — the method is removed
 from the builder it returns, so a second call is not offered. A registered
 command's nested sub-commands are linked to their own parent recursively, not
-to the root.
+to the root; a command declaring none has nothing further linked, and the parent
+chain terminates at it.
 
 ### UC3 — `parse`: run an invocation
 
@@ -130,6 +133,8 @@ inputs they gave, or to be told precisely what was wrong.
 | an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
 | any usage error survives that filter | every error is printed, help is shown, and the CLI exits with the usage code |
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
+| the matched command declares no config schema | no validation runs and the command is reached directly |
+| the matched command's `run` returns | its value is returned from `parse` |
 | the matched command has no `run` | help is shown — a group command is not a runnable command |
 | `run` throws a `CliError` | its message and help lines are printed and the CLI exits with the error's own code |
 | `run` throws anything else | it propagates to the caller — a defect in the command is not the framework's to swallow |
@@ -323,6 +328,7 @@ callers.
 | set its parent | a named command registered | `a registered command records its parent` |
 | leave parent unset | a command with no name | `a nameless command records no parent` |
 | link each child to its own parent, recursively | a registered command declaring sub-commands | `nested sub-commands are linked to their own parent, not the root` |
+| nothing further to link | a registered command declaring no sub-commands | `a command with no sub-commands has nothing further linked` |
 | remove `.default` | `.default` was called | `the default command may be registered only once` |
 | `.default` stays available | `.command` was called | `registering an ordinary command leaves default still available` |
 | parse exposed on first registration | an application that cannot accept plugins | `registering a command makes the application executable` |

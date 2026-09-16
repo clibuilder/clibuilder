@@ -293,3 +293,8 @@ Feature: Execution
     Given a command declaring a config schema and a config that satisfies it
     When the invocation is parsed
     Then the command runs, and no failing field is reported
+
+  Scenario: a command with no sub-commands has nothing further linked
+    Given a registered command declaring no sub-commands
+    When it is registered
+    Then nothing further is linked and the parent chain terminates at it
