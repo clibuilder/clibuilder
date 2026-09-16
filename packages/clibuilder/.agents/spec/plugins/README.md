@@ -128,7 +128,6 @@ may be stored under it.
 | Trigger | `defineKey<T>(id)` or `defineCollectionKey<T>(id)` |
 | Inputs | an identifier |
 | Outcome | a key whose kind selects the single-owner or the many-contributor policy |
-| the identifier is the identity | two keys built separately from one id | `two keys sharing an identifier are the same key` |
 
 **Extensions.** None — the call is total: it constructs a key and cannot fail.
 Two keys sharing an id are the same key by design, which is how a plugin reaches
