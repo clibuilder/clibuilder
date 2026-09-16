@@ -5,9 +5,13 @@ concept: [declaration-driven, error-reporting, config-lifecycle, extensibility, 
 
 # Execution
 
-Governs `ts/cli.ts`, `ts/builder.ts`, `ts/context.ts`, `ts/state.ts`, and
-`ts/errors.ts` — assembling an application from its declarations, running the
-matched command with its context, and reporting failure as an exit code.
+Governs `ts/cli.ts`, `ts/app/`, `ts/drivers/context.ts`, and `ts/render/error.ts`
+— assembling an application from its declarations, running the matched command
+with its context, and reporting failure as an exit code.
+
+`ts/render/error.ts` sits among `presentation/`'s files but implements this
+node's UC3 usage-error descriptions. Behaviour decides ownership, not the
+folder — see the note in this spec's ledger.
 
 ## What
 

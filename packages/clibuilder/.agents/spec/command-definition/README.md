@@ -5,8 +5,8 @@ concept: [declaration-driven]
 
 # Command definition
 
-Governs `ts/command.ts` and `ts/command.internal.types.ts` — the shape a command
-author declares: name, alias, description, arguments, options, nested
+Governs `ts/command/` and the `cli` namespace in `ts/cli.ts` — the shape a
+command author declares: name, alias, description, arguments, options, nested
 sub-commands, and the types those declarations produce.
 
 ## What

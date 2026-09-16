@@ -5,9 +5,11 @@ concept: [agent-interface, extensibility, config-lifecycle]
 
 # Built-in commands
 
-Governs `ts/commands.ts` — the commands `clibuilder` ships to every application
-it builds, so a CLI can report on its own plugins without its author writing
-those commands.
+Governs `ts/builtin/` — the commands `clibuilder` ships to every application it
+builds, so a CLI can report on its own plugins without its author writing those
+commands. `base_command.ts` carries the global options every invocation gets;
+`plugin_commands/` is the plugin discovery that only the framework can
+implement.
 
 ## What
 

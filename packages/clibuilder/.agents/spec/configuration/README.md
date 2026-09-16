@@ -5,9 +5,11 @@ concept: [config-lifecycle]
 
 # Configuration
 
-Governs `ts/config.ts`, `ts/find_up.ts`, and `ts/platform.ts` — locating a
-configuration file by the supported filename conventions, reading its format,
-and reporting where the value came from.
+Governs `ts/config.ts`, `ts/drivers/find_up.ts`, `ts/drivers/package_json.ts`
+and `ts/drivers/read_file.ts` — locating a configuration file by the supported
+filename conventions, reading its format, and reporting where the value came
+from. The deciding lives in `config.ts`; every call that touches the filesystem
+is in a driver.
 
 ## What
 
