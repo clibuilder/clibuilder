@@ -2,7 +2,13 @@ import { type Logger, logLevels } from 'standard-log'
 import type { Command } from './command.internal.types.js'
 import { generateHelpMessage } from './help/generate.js'
 
-export function createBuilderUI(ui: createUI.UI) {
+/**
+ * The framework-facing ui: everything `createUI` offers, plus the `dump` that
+ * releases the messages buffered before the display level was known.
+ */
+export type BuilderUI = createUI.UI & { dump(): void }
+
+export function createBuilderUI(ui: createUI.UI): BuilderUI {
 	let pending = true
 	const entries: Array<['debug' | 'info' | 'warn' | 'error', any[]]> = []
 	// istanbul ignore next

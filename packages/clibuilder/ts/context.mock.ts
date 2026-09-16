@@ -20,6 +20,7 @@ export function mockContext(
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
 	const sl = createStandardLogForTest({ logLevel })
 	let exitCode: number | undefined
+	const ui = createBuilderUI(createUI(sl.getLogger('clibuilder')))
 	return {
 		async loadConfig(configName: string) {
 			return (await this.resolveConfig(configName)).config
@@ -36,17 +37,17 @@ export function mockContext(
 		 * so a test can assert the cli failed without failing the test run.
 		 * It is also reported through `ui` so the exit shows up in the log messages.
 		 */
-		exit: function (this: any, code?: number) {
+		exit(code?: number) {
 			exitCode = code
-			this.ui.error(code === undefined ? 'exit' : `exit with ${code}`)
-		} as any,
+			ui.error(code === undefined ? 'exit' : `exit with ${code}`)
+		},
 		get exitCode() {
 			return exitCode
 		},
 		createCommandUI(id: string) {
 			return createUI(sl.getLogger(id))
 		},
-		ui: createBuilderUI(createUI(sl.getLogger('clibuilder'))),
+		ui,
 		sl
 	}
 }

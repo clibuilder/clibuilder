@@ -4,13 +4,13 @@ import type { Command } from './command.internal.types.js'
 import { type ConfigLoadResult, resolveConfig } from './config.js'
 import { loadPlugins } from './plugins.js'
 import type { RegistryOwner } from './registry.js'
-import { createBuilderUI, createUI } from './ui.js'
+import { type BuilderUI, createBuilderUI, createUI } from './ui.js'
 
 /**
  * Creates an app context that provides interactions to external system
  * This
  */
-export function context() {
+export function context(): Context {
 	const cwd = process.cwd()
 	// default log level to debug to capture debug cli logs.
 	// When `--debug-cli` is supplied, the logs will be made to UI.
@@ -57,4 +57,31 @@ export function context() {
 	}
 }
 
-export type Context = ReturnType<typeof context>
+/**
+ * What the framework needs from the outside world: a working directory, the
+ * config and plugin loading it defers, somewhere to log, and a way to end.
+ *
+ * Declared here rather than derived from `context()` with `ReturnType`. A port
+ * taken from one implementation is not a contract — the other implementation
+ * (`context.mock.ts`) then has to chase whatever this one happens to return,
+ * and any change here silently redefines what a test double must be.
+ */
+export type Context = {
+	readonly cwd: string
+	loadConfig(configName: string): Promise<any>
+	/**
+	 * Resolves the config along with where it came from.
+	 */
+	resolveConfig(configName: string): Promise<ConfigLoadResult>
+	loadPlugins(
+		pluginNames: string[],
+		registry: RegistryOwner,
+		host: { name: string; version: string }
+	): Promise<Command[]>
+	/**
+	 * Records the code the cli should exit with, rather than ending the process.
+	 */
+	exit(code?: number): void
+	createCommandUI(id: string): createUI.UI
+	ui: BuilderUI
+}
