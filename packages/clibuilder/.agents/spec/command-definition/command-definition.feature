@@ -73,12 +73,12 @@ Feature: Command definition
 
   # ── UC2 — Command.parent: carry a command's place in the tree ──
 
-  Scenario: a nested command carries its parent
-    Given a command registered beneath another command
-    When the framework reads its internal shape
-    Then the command's parent is reachable from it
+  Scenario: the internal command type lets a reader reach a parent without a cast
+    Given a value typed as the internal command type
+    When a sibling capability reads its parent
+    Then the parent types as a command that may itself be absent
 
-  Scenario: a root command carries no parent
-    Given a command registered at the root of the tree
-    When the framework reads its internal shape
-    Then the command has no parent, and that is not an error
+  Scenario: a declaration writing parent itself is rejected
+    Given an author writing a declaration literal
+    When the literal sets a parent of its own
+    Then the declaration does not type-check

@@ -104,9 +104,15 @@ resolve a name relative to its parent.
 | Inputs | a declared `cli.Command` |
 | Outcome | the internal `Command` type — the declaration plus an optional `parent` link |
 
-**Extensions.** `parent` is absent on a root command; that is the base case, not
-a failure. Nothing else can happen: the type is a structural widening with no
-decision of its own beyond present-or-absent.
+**Extensions.**
+
+| Cause | Outcome |
+| --- | --- |
+| the command is at the root of the tree | `parent` is absent — the base case that ends a walk, not a failure |
+| an author writes `parent` into a declaration | rejected — the author-facing type does not carry it |
+
+Nothing else can happen here: the widening is structural, and *when* a `parent`
+is actually set is `execution/`'s decision rather than this node's.
 
 **Surface trace.** Every element the capability exposes, against the use case
 requiring it:
@@ -156,12 +162,32 @@ graph TD
   O1 -- yes --> O1a["z.infer&lt;Type&gt; | undefined"]
   O1 -- no --> O1b["z.infer&lt;Type&gt;"]
   O -- omits type --> O2["boolean | undefined"]
-  O1b --> DF{declares default?}
-  DF -- yes --> DF1["default accepted unchecked; option keeps its declared type"]
+  O1a --> DF{declares default?}
+  O1b --> DF
+  O2 --> DF
+  DF -- yes --> DF1["default accepted unchecked; the option keeps the type above"]
+  DF -- no --> DF2["the option keeps the type above"]
   ARGS --> H{options declare help?}
   H -- no --> H1["implicit help: boolean | undefined added"]
   H -- yes --> H2[declared help replaces the implicit one]
 ```
+
+### The `parent` widening
+
+Entered by UC2. `parent` is not part of the declaration an author writes — it is
+added by the internal `Command` type, so the one decision is which of the two
+types a reader is holding.
+
+```mermaid
+graph TD
+  T[a command type] --> W{"the internal Command, or the author-facing cli.Command?"}
+  W -- internal --> P["carries parent?: Command — a sibling reads it without a cast"]
+  W -- author-facing --> NP["carries no parent — declaring one is rejected"]
+```
+
+Whether a registered command's `parent` is actually set is `execution/`'s
+decision, and walking the chain to build a usage line is `presentation/`'s.
+This node owns only the type that makes both possible.
 
 ## Scenario map
 
@@ -177,7 +203,7 @@ graph TD
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |
-| `default` accepted unchecked | any — matching or contradicting | `an option default is accepted without being checked against its type` |
+| `default` accepted unchecked; the option keeps the type above | any — matching or contradicting | `an option default is accepted without being checked against its type` |
 | implicit `help` added | options omit `help` | `help is present on a command that declares no options` |
 | declared `help` replaces implicit | options declare `help` | `a declared help option replaces the implicit one` |
 
@@ -185,5 +211,5 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| `parent` present | a nested command | `a nested command carries its parent` |
-| `parent` absent | a root command | `a root command carries no parent` |
+| carries `parent?: Command` | the internal `Command` type | `the internal command type lets a reader reach a parent without a cast` |
+| carries no `parent` | the author-facing `cli.Command` | `a declaration writing parent itself is rejected` |
