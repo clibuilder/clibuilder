@@ -105,10 +105,16 @@ application's tree, with each command's place in that tree recorded.
 | Outcome | the command is registered, its `parent` set, and the builder is executable |
 
 **Extensions.** `.default()` may be called only once — the method is removed
-from the builder it returns, so a second call is not offered. A registered
-command's nested sub-commands are linked to their own parent recursively, not
-to the root; a command declaring none has nothing further linked, and the parent
-chain terminates at it.
+from the builder it returns, so a second call is not offered, while `.command()`
+leaves it in place. A **named** command has its `parent` set; a nameless one is
+left unparented. A registered command's nested sub-commands are linked to their
+own parent recursively, not to the root; a command declaring none has nothing
+further linked, and the parent chain terminates at it.
+
+Registration is also where a command's `ui` is built: on a logger named for the
+command, falling back to the application's name when the command is nameless,
+starting at the application's current display level, and with `showHelp` and
+`showVersion` bound to that command so its `run` calls them with no arguments.
 
 ### UC3 — `parse`: run an invocation
 

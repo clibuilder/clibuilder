@@ -256,13 +256,13 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | name list, alias ls | any | `plugins list can be invoked as ls` |
 | no fields option | any | `plugins list declares no fields option` |
 | findByKeywords declared as its context | `plugins list` | `the discovery call is declared as context so a test can substitute it` |
-| name search, and a format and fields option | any | `plugins search declares both a format and a fields option` |
-| searchByKeywords declared as its context | `plugins search` | `the npm search call is declared as context so a test can substitute it` |
 
 ### UC3 — `plugins search`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
+| name search, and a format and fields option | any | `plugins search declares both a format and a fields option` |
+| searchByKeywords declared as its context | `plugins search` | `the npm search call is declared as context so a test can substitute it` |
 | query each keyword separately | several declared keywords | `each keyword is searched separately so a package matching any of them is found` |
 | union by package name, first-seen order, collecting the keywords that matched | a package matched by several keywords | `a package matched by several keywords is listed once carrying each` |
 | report it with guidance | `--fields` names something unrecognized | `an unrecognized fields value is reported with guidance and nothing is searched` |
