@@ -77,27 +77,42 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**Next action: run the eight cold spec-judges, one per behavioral node, then
-take the gate verdict.** Each judge grades that node's `README.md` + `.feature`
-against the {oracle, builder, architect} lens set, blind to `ts/**` and the
-`*.spec.ts` suite. Nodes and scenario counts: `input-parsing` 52, `execution`
-51, `presentation` 45, `configuration` 30, `plugins` 25, `builtin-commands` 24,
-`testing` 21, `command-definition` 13 — 261 total (counted from the suites, not
-carried forward; an earlier hand-written figure of 262 was wrong).
-`distribution/` and `tooling/` are reference nodes with no suite and are not
-judged.
+**The gate is mid-run. Batch 1 of 3 is graded; batches 2 and 3 are not.** The
+judges are being run in threes rather than all eight at once — the earlier
+eight-wide fan-out died at seven-of-eight on a session limit, and batching lets
+each batch's verdicts be checkpointed here before the next starts.
 
-**Assume nothing passes.** Seven were never graded at all. `input-parsing` was
-graded once, failed all three lenses, and has changed substantially since.
+- **Batch 1 — `input-parsing`, `execution`, `presentation`: graded, all three
+  `ALIGNED: false`.** See `## Judge verdicts — batch 1` below for the four
+  findings, the settled ownership ruling, and the split verdicts.
+- **Batch 2 — `configuration`, `plugins`, `builtin-commands`: dispatched, no
+  verdicts taken.** If this session died before they returned, re-run them.
+- **Batch 3 — `testing`, `command-definition`: not yet dispatched.**
 
-**A previous fan-out of eight judges died at seven-of-eight on a session
-limit.** The Council chose "all eight at once" over batching; if it dies again,
-batching in threes was the alternative and this brief is checkpointed to
-survive it either way.
+**Next action: collect batch 2, dispatch and collect batch 3, then remediate.**
+The gate verdict cannot be `approve` — batch 1 already fails three lenses across
+three nodes, so this gate ends in **`change`**, and the remediation round runs
+before any re-judge. Do not freeze anything.
 
-Deterministic pre-checks green as of `e60a0d0`: `check-spec-structure`
+**Relay the seven-governance declaration** (see below) in every judge brief, or
+the judge fails pre-flight and grades nothing.
+
+**Treat the findings as evidence, not a work order** (`sdd:remediation-governance`):
+substantiate each against the artifact, name the rule it instantiates, and sweep
+for that rule's other instances. Batch 1's findings already look like rule
+instances rather than one-offs — a scenario that no wrong subject can fail
+(`presentation`'s reader), and a drawn branch with no scenario
+(`input-parsing`'s `HASD -- no`) are both worth sweeping corpus-wide the way
+R1–R4 were.
+
+**Assume nothing passes.** Of eight nodes, six had never been graded at all, and
+every one of batch 1's three failed — including `input-parsing`, which the first
+judge called one of the strongest nodes in the corpus.
+
+Deterministic pre-checks green as of `e93eadf`: `check-spec-structure`
 blocking[0] with the three standing oversized advisories, `check-suite` OK
-across 8 files, `check-spec-state` OK, fences balanced.
+across 8 files, `check-spec-state` OK, fences balanced, 261 scenarios counted
+from the suites (24/13/30/51/52/25/45/21).
 
 ### Blocking decisions still owed at the gate
 
@@ -437,7 +452,146 @@ unquoted `$VAR` does *not* word-split. Passing a captured file list as
 `--files $FILES` hands the script one giant newline-joined filename and it
 reports `cannot read file`. Use a literal glob — `--files <spec>/*/*.feature`.
 
-### Judge findings — `input-parsing` (FAIL, all three lenses)
+### Judge verdicts — batch 1 of 3 (the three oversized nodes)
+
+Run against `e93eadf`, each judge cold and blind to `ts/**` + `*.spec.ts`.
+**All three returned `ALIGNED: false`.** `PREFLIGHT` and `CONFORMANCE` passed on
+all three — the seven-governance declaration above works, and every node carries
+its four required behavioral sections.
+
+| Node | oracle | builder | architect | Why |
+| --- | --- | --- | --- | --- |
+| `input-parsing` | pass | **fail** | pass | one uncovered CFG edge |
+| `execution` | pass | pass | **fail** | 8 scenarios in the wrong node |
+| `presentation` | pass | **fail** | pass | a non-discriminating scenario + an unmodeled format |
+
+**Each judge independently verified its node's sweep remediation rather than
+taking it on trust, and in all three cases the remediation held.**
+`input-parsing`'s three prior root causes (UC3, the four undrawn decisions,
+sub-graph D) are confirmed resolved — its earlier FAIL-all-three no longer
+describes what is on disk. `execution`'s UC4/UC5 sub-graphs, its four restored
+`no` branches and its three newly-covered edges are all present, and its count
+reconciles to 51.
+
+**The four findings to remediate:**
+
+1. **`input-parsing` — sub-graph C's `HASD -- no --> NOOP` edge has no
+   scenario.** A declared option that is both absent from argv *and* declares no
+   default. All three existing default scenarios require `a command declaring an
+   option with a default`, so the key-stays-unset outcome is untested — and it is
+   a real decision, not an invariant: a wrong implementation could fill
+   `undefined`, `''` or `false` instead of omitting the key.
+2. **`presentation` — the display-level reader is drawn but not
+   discriminated.** Sub-graph A draws it as a four-branch threshold decision and
+   the prose calls that the load-bearing half of the fix, but the scenario map
+   gives all four branches one scenario whose `Given` never names a level and
+   whose `Then` is a tautology. A subject that echoes back whatever was last set
+   passes it. The sibling *setter* decision gets one scenario per branch — that
+   asymmetry is the tell.
+3. **`presentation` — `json` output is unspecified.** `--format` accepts exactly
+   `toon`/`text`/`json` and `## What` justifies `json` by name, but sub-graph D
+   models only `toon` and `text` and no scenario exercises `format: json`. A
+   subject that always emits TOON passes every UC6 scenario.
+4. **`execution` — the 8 UC3 usage-error scenarios and sub-graph C are in the
+   wrong node.** See the ruling below.
+
+### The `execution/` ↔ `presentation/` ownership ruling — now settled
+
+**Both judges ruled independently, blind to each other, that the 8 scenarios
+belong in `presentation/`.** Recorded as settled on the *reasoning*, not on the
+2-0 count — the guardrail is reason-to-the-answer, not vote-counting. Three
+independent lines of evidence, and the two judges reached it via different ones:
+
+- `input-parsing/README.md:51`'s own Actors table names **`presentation`** — not
+  `execution` — as the actor that reads the returned errors and renders each
+  failure in the user's terms. The node that *produces* the errors already says
+  who renders them.
+- `ts/render/error.ts` sits in the same `render/` folder as `render/help.ts` and
+  `render/format.ts`, which `presentation/` governs the rest of.
+- `execution/README.md`'s own non-goals delegate message rendering to
+  `presentation/` while it keeps the usage-error rendering — an internal
+  self-contradiction, independent of any sibling.
+
+`presentation/`'s non-goal sentence "Describing a usage error in words belongs to
+`execution/`" is the **next instance of the already-corrected mistake** (`3cfa2c1`
+removed its "owns the error types" clause). Both judges say **delete it, do not
+reword it**.
+
+`input-parsing`'s judge is a **third, non-corroborating read** and should not be
+counted as agreement: asked a narrower question, it found no duplication across
+its own seam (production of the five typed errors vs. their rendering are
+complementary) and explicitly left the `execution/`↔`presentation/` call to the
+Warden without ruling.
+
+### The split advisory — all three judges say hold
+
+Unanimous, and one of them supplied the argument that settles it: **moving the 8
+scenarios makes the size problem worse, not better** — `execution` drops to 43
+(still over) and `presentation` rises to 53 (further over). So the move and the
+split are independent decisions, and the ceiling is not an argument against the
+move.
+
+Clean seams recorded so a later Warden need not re-derive them:
+
+- `input-parsing` (52) → sub-graph D, *conversion*, 12 scenarios. Depends only on
+  a declared type plus raw strings and touches none of the three known defects.
+  Leaves 40 behind. Corrects the earlier note: of the three defects only gap 1
+  (the terminator) genuinely straddles the tokenize/match seam; gaps 2 and 3 are
+  pure tokenize concerns.
+- `presentation` (45) → UC6, *collection rendering*, 10 scenarios. Its own
+  sub-graph D and its own Actor line; `builtin-commands` already consumes it as
+  "one house style". Lands both halves under the ceiling.
+- `execution` (51) → assembly (UC1+UC2, 14) vs. invocation+errors (UC3+UC4, 25)
+  vs. context (UC5, 4).
+
+### Seams checked clean — do not re-litigate
+
+- **declaration vs. handling** (`builtin-commands/` declares `--help` /
+  `--version` / the log flags / `--show-config`; `execution/` handles them):
+  complementary, no duplicate found.
+- **display level vs. log flags** (`presentation/` UC2 vs. `execution/` UC3):
+  the expected generic/specific layering, not a paraphrase collision.
+  `presentation/` tests level → logger behavior on a bare `ui`; `execution/`
+  tests flag → level *plus* the not-reported-as-unknown guarantee at invocation
+  scope.
+
+### One open question raised at the gate
+
+`presentation/` sub-graph D draws `FGIV` ("the option accepts no others") as its
+own guard but carries no refusal scenario. Is rejecting an unsupported
+`--format` value this node's behavior, or generic option-type validation owned
+by `input-parsing`/`command-definition`? If the latter, it should be described
+as a declared constraint, not drawn as an edge this node fails to cover.
+
+### Producer governance declaration — relayed to every judge
+
+The judge runs a **governance pre-flight** before any lens: it derives its own
+expected set and fails closed unless that set is a subset of
+`PRODUCER_GOVERNANCES_DECLARED`. Nothing on disk records what the producer
+loaded — there is no `produced-by` frontmatter and no `governances_loaded`
+ledger entry — so the conductor assembles the declaration. `resolve-governances
+--artifact-type code` returns **no project and no plugin overrides**: every bar
+resolves to its SDD default, so the expected set is exactly the seven below.
+All seven were loaded in-session before the fan-out, so the declaration is true,
+not asserted:
+
+```
+sdd:spec-format-governance      sdd:oracle-spec-governance
+sdd:suite-format-governance     sdd:builder-spec-governance
+sdd:lifecycle-governance        sdd:architect-spec-governance
+sdd:gate-validation-governance
+```
+
+Relay this same set to any re-run. A judge returning `PREFLIGHT: { result:
+fail }` on this CR means the declaration was dropped from its brief, not that
+the spec is bad.
+
+### Judge findings — `input-parsing`, the FIRST run (SUPERSEDED by batch 1 above)
+
+**Historical.** Every root cause below was re-verified as resolved by the batch-1
+judge. Kept only for the reasoning it records.
+
+#### The original verdict (FAIL, all three lenses)
 
 `ALIGNED: true`, `CONFORMANCE: ok`, no open markers. Three root causes:
 
