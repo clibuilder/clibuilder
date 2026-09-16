@@ -196,9 +196,10 @@ argument, how many values — rather than as an error record.
 
 **Extensions.** An unknown key is dashed by its length, so a single character
 reads as a short option and several as a long one. An extra-arguments error is
-pluralized by how many values it carries. An invalid value and a too-many-values
-error each name an argument or an option depending on whether the key is a
-declared argument.
+pluralized by how many values it carries. An invalid value names an argument or an option
+depending on whether the key is a declared argument. A too-many-values error
+always names an option: a non-array argument consumes exactly one positional, so
+it can never carry the several values that raise one.
 
 ## Control Flow
 
@@ -314,7 +315,7 @@ graph TD
   SH -- array --> TA[one line, carrying the count]
   SH -- table --> TT[a header naming the columns, then one indented row each, carrying the count]
   SH -- help --> TH2[a counted one-entry line]
-  SH -- prose --> N{how many?}
+  N{how many?}
   N -- none --> P0[say none were found, naming the keywords]
   N -- one --> P1[say one was found, and describe it]
   N -- several --> P2[say several were found, then list them]
@@ -343,11 +344,9 @@ graph TD
   K -- missing-argument --> MA["missing required argument &lt;name&gt;"]
   K -- extra-arguments --> EA[unexpected argument, pluralized by count]
   K -- invalid-value --> IV{is the key a declared argument?}
-  K -- expect-single --> ES{is the key a declared argument?}
+  K -- expect-single --> ESO[described as an option, always: only a repeated option can carry several values]
   IV -- yes --> IVA["described as argument &lt;name&gt;"]
   IV -- no --> IVO[described as an option]
-  ES -- yes --> ESA["described as argument &lt;name&gt;"]
-  ES -- no --> ESO[described as an option]
   IK --> LEN{key is one character?}
   LEN -- yes --> ONE[single dash]
   LEN -- no --> TWO[double dash]
@@ -446,4 +445,4 @@ graph TD
 | pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
 | described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
 | described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
-| expect-single | any | `too many values are described with the values that were given` |
+| described as an option, always | any expect-single error | `too many values are described with the values that were given` |
