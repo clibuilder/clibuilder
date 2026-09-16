@@ -87,6 +87,7 @@ types.
 | an option's `type` is optional | accepted; the inferred type carries `\| undefined` |
 | an option's `default` disagrees with its `type` | **accepted, unchecked** — see the gap below; the option still types as its declared type, so `run` receives a value the declaration says is impossible |
 | the author declares an option named `help` | accepted; the declared type replaces the implicit one rather than colliding with it |
+| a command declares a `config` schema | `run` reads `this.config` at that schema's type; a field the schema omits is refused |
 | an option declares an alias | it is a bare string or a `{ alias, hidden }` pair; any other shape is rejected |
 
 At runtime this use case has **no** extensions — `command()` returns its
@@ -142,8 +143,10 @@ requiring it:
 
 `command()` performs no runtime work, so the graph below is the **type
 resolution** the compiler runs over the declaration literal. It has two
-independent sub-graphs — arm selection, and per-entry input typing — which do
-not interact: a group command simply never reaches the second.
+independent sub-graphs — arm selection, and the typing of what `run` receives —
+which do not interact: a group command simply never reaches the second. The
+second covers three declared surfaces: the arguments and options that become
+`args`, and the `config` schema that becomes `this.config`.
 
 ### Arm selection
 
@@ -185,6 +188,9 @@ graph TD
   O2 --> DF
   DF -- yes --> DF1["default accepted unchecked; the option keeps the type above"]
   DF -- no --> DF2["the option keeps the type above"]
+  ARGS --> CFG{declares a config schema?}
+  CFG -- yes --> CFY["this.config is z.infer of the declared schema, so a field it does not declare is refused"]
+  CFG -- no --> CFN["this.config stays the unconstrained default"]
   ARGS --> ALI{per declared alias}
   ALI -- "a bare string" --> ALS[accepted]
   ALI -- "a pair carrying alias and hidden" --> ALP[accepted]
@@ -229,6 +235,8 @@ This node owns only the type that makes both possible.
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |
+| this.config is z.infer of the declared schema | a command declaring a config schema | `a declared config schema types what run reads from this.config` |
+| this.config stays the unconstrained default | a command declaring no config schema | `a command with no config schema puts no shape on this.config` |
 | a bare string | an alias declared as a bare string | `an option alias may be declared as a bare string` |
 | a pair carrying alias and hidden | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |
 | any other shape | an alias pair missing its hidden flag | `an alias shape outside the union is rejected` |

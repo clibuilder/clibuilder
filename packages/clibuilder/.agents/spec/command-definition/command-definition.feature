@@ -26,6 +26,16 @@ Feature: Command definition
     When the declaration is checked
     Then it is rejected, unlike the two accepted alias shapes
 
+  Scenario: a declared config schema types what run reads from this.config
+    Given a command declaring a config schema
+    When its run reads a field the schema declares
+    Then it types as that field's declared type, and a field the schema omits is refused
+
+  Scenario: a command with no config schema puts no shape on this.config
+    Given a command declaring no config schema
+    When its run reads this.config
+    Then no schema-derived shape constrains it
+
   Scenario: an option alias may be declared as a bare string
     Given an option declaring an alias as a bare string
     When the declaration is checked
