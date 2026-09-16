@@ -26,6 +26,10 @@ todos:
     status: completed
   - content: "Sweep the seven other nodes for the same rules (unbound scenario-map edges, malformed decision nodes)"
     status: completed
+  - content: "Refactor ts/ to a screaming + clean-architecture layout, behavior-preserving"
+    status: in_progress
+  - content: "Re-home the eight spec nodes onto the refactored layout"
+    status: pending
   - content: "Re-run all eight node judges — every node changed during the sweep"
     status: pending
 ---
@@ -72,6 +76,104 @@ map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
+
+**The mission pivoted on 2026-08-16: refactor `ts/` first, then re-home the
+spec, then gate.** The Council chose refactor-before-gate with the tradeoff
+stated and accepted — the 262 scenarios will *not* be frozen while the
+refactor runs, so the net is the existing 362-test `*.spec.ts` suite (green at
+`072dff1`, 19 suites, 2.8s) rather than a frozen contract. Keep every refactor
+commit behavior-preserving and re-run `pnpm test` per commit.
+
+### Why the refactor — the two lenses
+
+**Screaming architecture.** The *spec* nodes mostly scream, but `ts/` is a flat
+pile of 22 modules, which is the layout the governance line "the builder gives
+each use case its own module, so each change stays local" exists to prevent.
+Concrete findings from the code review:
+
+- `commands.ts` (223 lines) mixes two domains — `getBaseCommand` (global
+  options, on every invocation's startup path) and the three plugin-discovery
+  commands (which drag in `find-installed-packages` / `search-packages`). The
+  author already worked around the coupling with lazy dynamic imports and said
+  so in a comment; the split makes the workaround unnecessary.
+- `command.ts` vs `commands.ts` — one letter apart, unrelated things.
+- `cli.ts` (203 lines) is a type hub welded to the entry point: ~10 lines are
+  `cli()`, the rest is the whole `cli` namespace. It value-imports `builder.ts`
+  and `builder.ts` type-imports it back — a cycle through the contract every
+  leaf depends on.
+- `platform.ts` is misnamed; it is `findPackageJson` / `getPackageJson`.
+- `errors.ts` mixes `CliError`/`exitCodes` with `formatLookupError`.
+
+**Clean architecture.** One genuine Dependency Rule violation, plus one
+inversion done backwards:
+
+- **zod is in the core contract.** `cli.Command.Options.Entry` declares
+  `type?: z.ZodType<any>`, so the innermost artifact names an external library
+  and pins every consumer to its major. This is the already-queued deferred CR
+  and the ledger's backlog entry — CA is the principled argument for it, not a
+  new finding. Not fixed in this refactor; zod moves to the edge as a driver.
+- **`Context` is derived from its adapter**: `export type Context =
+  ReturnType<typeof context>`. The port should be declared by the core, with
+  `context.ts` and `context.mock.ts` both implementing it. Fixing this makes
+  `testing/`'s two recorded fidelity gaps checkable rather than incidental.
+
+Already correct, do not "fix": `config.ts` depends on the `UI` *type* from the
+contract rather than a logger (a proper port); `argv.ts`, `registry.ts` and
+`output.ts` have zero external imports; `context.exit` records
+`process.exitCode` instead of calling `process.exit`.
+
+### Resolved decisions for the refactor
+
+- **Capabilities at the top level, ring boundary visible locally.** Not a
+  top-level `adapters/` ring folder (that is the layer-noun anti-pattern), and
+  not rings invisible either — each capability splits policy from driver in its
+  own folder (`config/resolve.ts` + `config/fs.ts`), with only the genuinely
+  cross-cutting drivers (`zod`, logger, context) hoisted into `drivers/`.
+- **`core/contract.ts` is a deliberate exception.** The `cli` namespace spans
+  four domains but is *public API* — consumers write `cli.Command`. Splitting
+  the namespace is a breaking type change, so it stays whole in one file. Fix
+  properly in a major, not here.
+- **File naming stays snake_case**, matching the existing convention
+  (`lookup_command.ts`, `find_up.ts`, `context.mock.ts`). Do not kebab-case.
+- **`index.ts` exports stay byte-identical**, and `package.json#exports`
+  path-pins `./compile-cache` and `./testing` — any move of those two must
+  update the exports map and the `build:cjs` esbuild entry list in the same
+  commit. The public specifier never changes, so it stays non-breaking.
+- **`builder.ts`'s assembly-vs-invocation split is a code change, not a move**,
+  and is deferred to a follow-on so this pass stays behavior-preserving.
+- **Boundary enforcement is part of the job.** `depcheck` cannot express it;
+  wire `dependency-cruiser` or `eslint-plugin-boundaries` into `verify`, or the
+  layout decays within a few PRs.
+
+### Target layout
+
+```
+ts/
+  index.ts                  exports byte-identical
+  compile_cache.ts
+  core/        contract.ts  argv.ts  lookup.ts  registry.ts   (ring 0: pure)
+  app/         cli.ts  builder.ts  state.ts  errors.ts
+  config/      resolve.ts  fs.ts
+  plugins/     load.ts
+  builtin/     base_command.ts  plugin_commands/{list,search,group,report,npm}.ts
+  help/        generate.ts  format.ts  format_error.ts
+  drivers/     logger.ts  context.node.ts  context.mock.ts  zod.ts
+  testing/  test-utils/
+```
+
+Rule to enforce: nothing in `core/` imports anything else; nothing outside
+`drivers/` imports `node:*` or a runtime dependency.
+
+### Found and fixed on the way
+
+**`tersify` was a devDependency imported by production code** (`072dff1`).
+`ts/ui.ts` uses it to render help's `Config:` section. The CJS build bundles
+and inlined it; the ESM build is `tsc` and emits a bare specifier, so an ESM
+consumer declaring a config schema could fail to resolve it. `depcheck` does
+not catch a package in the wrong *section* — worth remembering, it is the same
+blind spot for any future dependency.
+
+## The spec gate — deferred, resume after the refactor
 
 **The spec gate is mid-run and stalled.** Deterministic pre-checks all passed;
 the cold spec-judge was fanned out one per behavioral node (eight judges, each
