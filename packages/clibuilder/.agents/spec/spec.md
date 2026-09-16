@@ -25,7 +25,7 @@ Strategy: **capability-first**.
 | Declaring what a command is — name, alias, arguments, options, nesting | `command-definition/` |
 | Turning an argv vector into a matched command with typed inputs | `input-parsing/` |
 | Assembling the application and running a matched command | `execution/` |
-| Discovering, reading, and validating configuration files | `configuration/` |
+| Discovering, reading, and reporting the source of configuration files | `configuration/` |
 | Discovering and activating third-party command packages | `plugins/` |
 | The commands `clibuilder` itself ships | `builtin-commands/` |
 | Rendering help, messages, and machine-readable output | `presentation/` |
