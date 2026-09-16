@@ -20,6 +20,11 @@ Feature: Plugins
     Then a warning names the plugin, the working directory, and the underlying error
     And that plugin contributes nothing
 
+  Scenario: a plugin that cannot be imported is also reported as not a valid plugin
+    Given a named plugin package that cannot be imported
+    When the plugins are loaded
+    Then a second warning says it is not a valid plugin
+
   Scenario: a module that is not a plugin is reported and skipped
     Given a named package that imports but exports no activate function
     When the plugins are loaded

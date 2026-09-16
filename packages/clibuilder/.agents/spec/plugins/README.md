@@ -73,6 +73,7 @@ down the CLI.
 | Cause | Outcome |
 | --- | --- |
 | a package cannot be imported | a warning names the plugin, the working directory, and the underlying error, and it is skipped |
+| a package cannot be imported | **a second warning also says it is not a valid plugin** — see the gap below |
 | an imported module has no `activate` function | a warning says it is not a valid plugin, and it is skipped |
 | `activate` is asynchronous | it is awaited before the next plugin is activated |
 | several plugins contribute commands | the commands appear in the order the plugins were named |
@@ -145,25 +146,45 @@ a contract it did not declare.
 
 ## Control Flow
 
-### Sub-graph A — load and activate (`loadPlugins`), entered by UC1 and UC2
+### Sub-graph A — load and activate (`loadPlugins`), entered by UC1
+
+Every package is imported at once; activation is then sequential, so the order
+the plugins were named is the order their commands appear in.
 
 ```mermaid
 graph TD
   L[plugin names] --> IMP[import every package concurrently]
-  IMP --> SEQ[then activate one at a time, in the order named]
-  SEQ --> OK{did the import succeed?}
-  OK -- no --> WI[warn with the plugin, cwd, and error; skip]
-  OK -- yes --> VAL{exports an activate function?}
-  VAL -- no --> WV[warn that it is not a valid plugin; skip]
-  VAL -- yes --> ACT[await activate with the context]
-  ACT --> ADD[collect the commands it added]
-  ADD --> NEXT[move to the next plugin] --> SEQ
-  ACT --> REG{it registered a key} --> ACC{accepted?}
-  ACC -- no --> WR[warn, naming the key and the owning source]
-  ACC -- yes --> ST[stored under this plugin as the source]
+  IMP --> OK{did the import succeed?}
+  OK -- no --> WI["warn with the plugin, cwd, and error; nothing is loaded for it"]
+  OK -- yes --> MOD[the loaded module]
+  WI --> SEQ
+  MOD --> SEQ[then activate one at a time, in the order named]
+  SEQ --> VAL{exports an activate function?}
+  VAL -- no --> WV[warn that it is not a valid plugin] --> NEXT
+  VAL -- yes --> ACT["await activate, handing it the context — sub-graph B"]
+  ACT --> ADD[collect the commands it added] --> NEXT[move to the next plugin] --> SEQ
 ```
 
-### Sub-graph B — the registry (`createRegistry`), entered by UC3
+**Known gap — an unimportable plugin is reported twice.** A failed import
+yields nothing, and nothing does not export `activate`, so the same plugin
+takes the `no` branch of both decisions: it is warned about as unloadable and
+then warned about again as not a valid plugin. The suite fixes that as current
+behavior; it is filed as a defect in this spec's ledger.
+
+### Sub-graph B — the activation context, entered by UC2
+
+```mermaid
+graph TD
+  CX[the context handed to activate] --> W{what the plugin reaches for}
+  W -- addCommand --> AC["the command joins the ones A collects for the host"]
+  W -- register --> RG["the registry decides — sub-graph C"] --> ACC{accepted?}
+  ACC -- yes --> ST[stored under this plugin as the source]
+  ACC -- no --> WR[warn, naming the key and the owning source]
+  W -- "get / has" --> RD[it sees what plugins activated before it registered]
+  W -- host --> HI[the name and version of the application it is extending]
+```
+
+### Sub-graph C — the registry (`createRegistry`), entered by UC3 and from B
 
 ```mermaid
 graph TD
@@ -184,6 +205,21 @@ graph TD
   DK -- value --> DV{registered?}
   DV -- yes --> DVS[the one owning source]
   DV -- no --> DE[an empty list]
+  H[has key] --> HR{anything registered under it?}
+  HR -- yes --> HT[present]
+  HR -- no --> HF[absent]
+```
+
+`has` is the one reader whose answer does not depend on the key's kind, so it is
+drawn once rather than split.
+
+### Sub-graph D — declare a key (`defineKey` / `defineCollectionKey`), entered by UC4
+
+```mermaid
+graph TD
+  DEF[an identifier] --> WK{which was called?}
+  WK -- defineKey --> VK["a value key: the single-owner policy of C"]
+  WK -- defineCollectionKey --> CK["a collection key: the many-contributor policy of C"]
 ```
 
 ## Scenario map
@@ -195,7 +231,8 @@ graph TD
 | activate one at a time, in the order named | several plugins contributing commands | `commands appear in the order the plugins were named` |
 | warn with the plugin, cwd, and error | a package that cannot be imported | `a plugin that cannot be imported is reported and skipped` |
 | warn that it is not a valid plugin | a module with no activate function | `a module that is not a plugin is reported and skipped` |
-| skip and continue | one broken plugin among working ones | `a broken plugin does not stop the others from activating` |
+| warn that it is not a valid plugin | a package that cannot be imported | `a plugin that cannot be imported is also reported as not a valid plugin` |
+| move to the next plugin | one broken plugin among working ones | `a broken plugin does not stop the others from activating` |
 | await activate | a plugin whose activate is asynchronous | `an asynchronous activate is awaited before the next plugin` |
 | collect the commands it added | a plugin adding commands | `the commands a plugin adds are returned to the host` |
 
@@ -205,8 +242,8 @@ graph TD
 | --- | --- | --- |
 | stored under this plugin as the source | a plugin registering a free key | `a value a plugin registers is recorded under that plugin as its source` |
 | warn, naming the key and the owning source | a plugin registering an owned key | `a plugin registering an already-owned key is told which plugin owns it` |
-| reads the registry | a plugin activated after another | `a plugin can read what an earlier plugin registered` |
-| host identity | any | `a plugin is told the name and version of the host it is extending` |
+| it sees what plugins activated before it registered | a plugin activated after another | `a plugin can read what an earlier plugin registered` |
+| the name and version of the application it is extending | any | `a plugin is told the name and version of the host it is extending` |
 
 ### UC3 — `createRegistry`
 
@@ -214,13 +251,13 @@ graph TD
 | --- | --- | --- |
 | store it; accepted | a value key not yet owned | `the first registration of a value key is accepted` |
 | refuse, carrying the owning source | a value key already owned | `a second registration of a value key is refused and names the owner` |
-| append; always accepted | a collection key | `every registration of a collection key is kept, in order` |
+| append the contribution; always accepted | a collection key | `every registration of a collection key is kept, in order` |
 | the value | a registered value key | `reading a registered value key returns its value` |
 | undefined | an unregistered value key | `reading an unregistered value key returns nothing` |
 | the contributions with their sources | a registered collection key | `reading a collection key returns each contribution with its source` |
 | an empty list | an unregistered collection key | `reading an unregistered collection key returns an empty list rather than nothing` |
-| presence | a registered key | `a registered key is reported as present` |
-| presence | an unregistered key | `an unregistered key is reported as absent` |
+| present | a registered key, of either kind | `a registered key is reported as present` |
+| absent | an unregistered key, of either kind | `an unregistered key is reported as absent` |
 | the one owning source | a registered value key | `describing a value key names its single owner` |
 | an empty list | an unregistered value key | `describing an unregistered value key names no one` |
 | every contributing source | a registered collection key | `describing a collection key names every contributor in order` |
@@ -229,5 +266,5 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| value kind | `defineKey` | `a key defined as a value takes the single-owner policy` |
-| collection kind | `defineCollectionKey` | `a key defined as a collection takes the many-contributor policy` |
+| a value key: the single-owner policy | `defineKey` | `a key defined as a value takes the single-owner policy` |
+| a collection key: the many-contributor policy | `defineCollectionKey` | `a key defined as a collection takes the many-contributor policy` |
