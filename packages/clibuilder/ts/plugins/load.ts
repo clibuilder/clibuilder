@@ -1,6 +1,6 @@
-import type { cli, PluginActivationContext } from './cli.js'
+import type { cli, PluginActivationContext } from '../cli.js'
 import type { RegistryOwner } from './registry.js'
-import type { createUI } from './drivers/logger.js'
+import type { createUI } from '../drivers/logger.js'
 
 export async function loadPlugins(
 	{

@@ -1,11 +1,11 @@
 import { execCommand } from '@unional/fixture'
-import { builder } from './builder.js'
-import { mockContext } from './drivers/context.mock.js'
-import { argv } from './test-utils/argv.js'
-import { getFixturePath } from './test-utils/index.js'
+import { builder } from '../app/builder.js'
+import { mockContext } from '../drivers/context.mock.js'
+import { argv } from '../test-utils/argv.js'
+import { getFixturePath } from '../test-utils/index.js'
 
 function getPluginUrl(name: string) {
-	return new URL(`../test-fixtures/plugins/${name}`, import.meta.url).href
+	return new URL(`../../test-fixtures/plugins/${name}`, import.meta.url).href
 }
 
 it(`loads no plugin when plugin's activate is not a function`, async () => {

@@ -1,8 +1,8 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
-import { builder } from './builder.js'
+import { builder } from './app/builder.js'
 import { context } from './drivers/context.js'
 import type { UI } from './core/ports.js'
-import type { CollectionKey, Registry, RegistryKey, ValueKey } from './registry.js'
+import type { CollectionKey, Registry, RegistryKey, ValueKey } from './plugins/registry.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable

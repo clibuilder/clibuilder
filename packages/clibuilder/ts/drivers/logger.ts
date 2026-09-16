@@ -1,5 +1,5 @@
 import { type Logger, logLevels } from 'standard-log'
-import type { Command } from '../command.internal.types.js'
+import type { Command } from '../command/internal.js'
 import { generateHelpMessage } from '../render/help.js'
 
 /**

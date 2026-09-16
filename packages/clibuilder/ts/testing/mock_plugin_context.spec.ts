@@ -1,4 +1,4 @@
-import { defineCollectionKey, defineKey } from '../registry.js'
+import { defineCollectionKey, defineKey } from '../plugins/registry.js'
 import { mockPluginContext } from './mock_plugin_context.js'
 
 it('lets plugin tests share registered capabilities and inspect contributed commands', () => {

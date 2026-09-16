@@ -1,8 +1,8 @@
 import { a } from 'assertron'
-import { getBaseCommand } from './builtin/base_command.js'
-import { type cli, command, parseArgv, z } from './index.js'
-import { lookupCommand } from './lookup_command.js'
-import { argv } from './test-utils/index.js'
+import { getBaseCommand } from '../builtin/base_command.js'
+import { type cli, command, parseArgv, z } from '../index.js'
+import { lookupCommand } from './lookup.js'
+import { argv } from '../test-utils/index.js'
 
 function testLookupCommand(command: cli.Command, args: string) {
 	const r = lookupCommand(command, parseArgv(argv(args)))

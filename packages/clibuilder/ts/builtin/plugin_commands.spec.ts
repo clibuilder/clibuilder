@@ -1,4 +1,4 @@
-import { builder } from '../builder.js'
+import { builder } from '../app/builder.js'
 import { listPluginsCommand } from './plugin_commands/list.js'
 import { searchPluginsCommand } from './plugin_commands/search.js'
 import { mockContext } from '../drivers/context.mock.js'

@@ -1,5 +1,5 @@
-import type { cli } from './cli.js'
-import type { z } from './zod.js'
+import type { cli } from '../cli.js'
+import type { z } from '../zod.js'
 
 /**
  * Helper function to define a command.

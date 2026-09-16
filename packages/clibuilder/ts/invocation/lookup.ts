@@ -1,7 +1,7 @@
 import { findKey, reduceByKey } from 'type-plus'
 import type { parseArgv } from './argv.js'
-import type { cli } from './cli.js'
-import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from './zod.js'
+import type { cli } from '../cli.js'
+import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from '../zod.js'
 
 export namespace lookupCommand {
 	export type Result = {

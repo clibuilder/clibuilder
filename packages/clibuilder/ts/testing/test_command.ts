@@ -1,5 +1,5 @@
 import { logLevels } from 'standard-log'
-import { builder } from '../builder.js'
+import { builder } from '../app/builder.js'
 import type { cli } from '../cli.js'
 import { mockContext } from '../drivers/context.mock.js'
 import * as tu from '../test-utils/index.js'

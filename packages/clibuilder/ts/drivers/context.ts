@@ -1,9 +1,9 @@
 import { createConsoleLogReporter, createStandardLog, logLevels } from 'standard-log'
 import { createColorLogReporter } from 'standard-log-color'
-import type { Command } from '../command.internal.types.js'
+import type { Command } from '../command/internal.js'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
-import { loadPlugins } from '../plugins.js'
-import type { RegistryOwner } from '../registry.js'
+import { loadPlugins } from '../plugins/load.js'
+import type { RegistryOwner } from '../plugins/registry.js'
 import { type BuilderUI, createBuilderUI, createUI } from './logger.js'
 
 /**

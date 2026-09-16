@@ -1,7 +1,7 @@
-export * from './argv.js'
+export * from './invocation/argv.js'
 export * from './cli.js'
 export type { DisplayLevel, UI } from './core/ports.js'
-export * from './command.js'
+export * from './command/define.js'
 export {
 	type ConfigFormat,
 	type ConfigLoadResult,
@@ -15,7 +15,7 @@ export {
 	readConfigFile,
 	resolveConfig
 } from './config.js'
-export { CliError, exitCodes, isCliError } from './errors.js'
-export * from './registry.js'
+export { CliError, exitCodes, isCliError } from './app/errors.js'
+export * from './plugins/registry.js'
 export * from './testing/test_command.js'
 export * from './zod.js'

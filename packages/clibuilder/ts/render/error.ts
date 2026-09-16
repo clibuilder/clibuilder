@@ -1,5 +1,5 @@
 import type { cli } from '../cli.js'
-import type { lookupCommand } from '../lookup_command.js'
+import type { lookupCommand } from '../invocation/lookup.js'
 
 /**
  * Describes one `lookupCommand` error in the terms the caller used:

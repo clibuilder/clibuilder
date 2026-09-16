@@ -1,4 +1,4 @@
-import { command } from '../../command.js'
+import { command } from '../../command/define.js'
 import {
 	formatOption,
 	type OutputFormat,
@@ -7,7 +7,7 @@ import {
 	toonArray,
 	toonHelp,
 	toonTable
-} from '../../output.js'
+} from '../../render/format.js'
 import { z } from '../../zod.js'
 import { searchByKeywords } from './npm.js'
 

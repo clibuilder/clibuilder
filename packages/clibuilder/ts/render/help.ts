@@ -3,7 +3,7 @@ import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import type { cli } from '../cli.js'
-import type { Command } from '../command.internal.types.js'
+import type { Command } from '../command/internal.js'
 import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString, type z } from '../zod.js'
 
 /**

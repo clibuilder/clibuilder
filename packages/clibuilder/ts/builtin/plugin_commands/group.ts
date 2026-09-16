@@ -1,4 +1,4 @@
-import { command } from '../../command.js'
+import { command } from '../../command/define.js'
 import { listPluginsCommand } from './list.js'
 import { searchPluginsCommand } from './search.js'
 

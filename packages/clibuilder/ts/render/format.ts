@@ -1,4 +1,4 @@
-import { z } from './zod.js'
+import { z } from '../zod.js'
 
 /**
  * How a command renders a collection it reports.

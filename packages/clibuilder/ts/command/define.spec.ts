@@ -1,5 +1,5 @@
 import { testType } from 'type-plus'
-import { command, z } from './index.js'
+import { command, z } from '../index.js'
 
 test('when no argument and options, args will have help', () => {
 	command({

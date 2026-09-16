@@ -1,4 +1,4 @@
-import { command } from '../command.js'
+import { command } from '../command/define.js'
 import { z } from '../zod.js'
 
 /**
