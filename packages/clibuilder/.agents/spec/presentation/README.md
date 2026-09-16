@@ -343,7 +343,9 @@ graph TD
   F[lookup error] --> K{which type?}
   K -- invalid-key --> IK[unknown option, dashed by key length]
   K -- missing-argument --> MA["missing required argument &lt;name&gt;"]
-  K -- extra-arguments --> EA[unexpected argument, pluralized by count]
+  K -- extra-arguments --> EA{how many values?}
+  EA -- one --> EA1[unexpected argument, singular]
+  EA -- several --> EAP[unexpected arguments, plural]
   K -- invalid-value --> IV{is the key a declared argument?}
   K -- expect-single --> ESO[described as an option, always: only an option can carry several values, by repetition or by swallowing trailing tokens]
   IV -- yes --> IVA["described as argument &lt;name&gt;"]
@@ -442,8 +444,8 @@ graph TD
 | single dash | unknown key of one character | `an unknown single-character option is described with one dash` |
 | double dash | unknown key of several characters | `an unknown multi-character option is described with two dashes` |
 | missing argument | any | `a missing argument is described by its name in angle brackets` |
-| pluralized by count | one extra value | `one unexpected argument is described in the singular` |
-| pluralized by count | several extra values | `several unexpected arguments are described in the plural` |
+| unexpected argument, singular | one extra value | `one unexpected argument is described in the singular` |
+| unexpected arguments, plural | several extra values | `several unexpected arguments are described in the plural` |
 | described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
 | described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
 | described as an option, always | any expect-single error | `too many values are described with the values that were given` |

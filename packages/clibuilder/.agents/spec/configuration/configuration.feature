@@ -13,6 +13,11 @@ Feature: Configuration
     When the config is looked up
     Then the source is that file, carrying the format its extension implies
 
+  Scenario: the candidate list comes back alongside the source that was found
+    Given a candidate file exists in an ancestor
+    When the config is looked up
+    Then the result carries the candidate names that were searched as well as the source
+
   Scenario: a package.json property is the source when no config file matches
     Given no config file matches, and the nearest package.json carries the config name as a property
     When the config is looked up
@@ -38,7 +43,7 @@ Feature: Configuration
   Scenario: nothing found warns with the directory and every name searched
     Given the config resolves to nothing
     When it is loaded
-    Then a warning names the directory searched and every candidate name
+    Then the warning names the directory searched and lists every candidate name, not an empty list
 
   Scenario: nothing found yields an undefined config
     Given the config resolves to nothing
@@ -55,7 +60,7 @@ Feature: Configuration
   Scenario: a plain config name also accepts its dotted variants
     Given a config name with no leading dot
     When the candidate names are enumerated
-    Then each base name is followed by its dotted variant
+    Then the names are the base name and its dotted variant, in that order, and nothing else
 
   # ── UC4 — readConfigFile: parse one file ──
 

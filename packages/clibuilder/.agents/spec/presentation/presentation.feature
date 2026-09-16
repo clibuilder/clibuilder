@@ -309,4 +309,4 @@ Feature: Presentation
   Scenario: too many values are described with the values that were given
     Given an expect-single error
     When it is described
-    Then it says a single value was expected and lists the values received
+    Then it names an option rather than an argument, says a single value was expected, and lists the values received

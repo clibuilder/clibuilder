@@ -227,7 +227,8 @@ exactly-named file win over a differently-cased one rather than the two racing.
 
 ```mermaid
 graph TD
-  L[config name and cwd] --> F{a candidate file found?}
+  L[config name and cwd] --> CN[enumerate the candidate names] --> F{a candidate file found?}
+  CN --> CARR[the candidate list travels with the source, on every outcome]
   F -- yes --> FS[source is that file, format from its extension] --> RF[read and parse it]
   F -- no --> PJ{nearest package.json carries the property?}
   PJ -- yes --> PS[source is that package.json property] --> RV[the property's value is the config]
@@ -277,6 +278,7 @@ graph TD
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | source is that file, format from its extension | a candidate file exists in an ancestor | `a config file in an ancestor directory is the source` |
+| the candidate list travels with the source | any lookup, including one that found a file | `the candidate list comes back alongside the source that was found` |
 | source is that package.json property | no file, the property is present | `a package.json property is the source when no config file matches` |
 | source is none | neither exists | `nothing found is reported as a source of its own` |
 
