@@ -77,16 +77,53 @@ Update this brief's todo status as each node lands.
 
 ## NEXT — resume here
 
-**The refactor is done and the spec is re-homed. The next action is the judge
-run.** All eight `Governs` lines now name the new layout (`cbcbb1f`), every
-referenced path resolves, and all 35 source files are governed with none
-orphaned. Deterministic pre-checks are green: `check-spec-structure`
+**Next action: run the eight cold spec-judges, one per behavioral node, then
+take the gate verdict.** Each judge grades that node's `README.md` + `.feature`
+against the {oracle, builder, architect} lens set, blind to `ts/**` and the
+`*.spec.ts` suite. Nodes and scenario counts: `input-parsing` 52, `execution`
+51, `presentation` 45, `configuration` 30, `plugins` 25, `builtin-commands` 24,
+`testing` 21, `command-definition` 13 — 261 total (counted from the suites, not
+carried forward; an earlier hand-written figure of 262 was wrong).
+`distribution/` and `tooling/` are reference nodes with no suite and are not
+judged.
+
+**Assume nothing passes.** Seven were never graded at all. `input-parsing` was
+graded once, failed all three lenses, and has changed substantially since.
+
+**A previous fan-out of eight judges died at seven-of-eight on a session
+limit.** The Council chose "all eight at once" over batching; if it dies again,
+batching in threes was the alternative and this brief is checkpointed to
+survive it either way.
+
+Deterministic pre-checks green as of `e60a0d0`: `check-spec-structure`
 blocking[0] with the three standing oversized advisories, `check-suite` OK
 across 8 files, `check-spec-state` OK, fences balanced.
 
-So: **run all eight node judges, then take the gate verdict.** Seven were never
-graded; `input-parsing` failed all three lenses before the sweep and has since
-changed. Do not assume any of them pass.
+### Blocking decisions still owed at the gate
+
+Carried forward, none resolved by the refactor:
+
+- **Nothing is `@pinned`.** All 262 scenarios were derived from the CFGs. If a
+  judge wants a behavior pinned as a seed, that is a gate decision.
+- **The suites fix known-defective behavior as current.** Nine defects are
+  specified as-is (see the ledger) rather than as intent. The gate should
+  confirm that is right for a backfill; the alternative fails the impl gate on
+  day one.
+- **Three nodes exceed the 40-scenario ceiling** (`input-parsing` 52,
+  `execution` 51, `presentation` 45). `input-parsing` is graded **hold, do not
+  split**. The other two still need their judge's read.
+- **Approving freezes the defect scenarios.** Every later fix narrows a frozen
+  suite and fires Clearance. Brief the fix mission to expect it.
+
+### Working-method corrections from this session
+
+- **A spec states what is; the ledger records what is open.** Two edits went
+  wrong in opposite directions here before landing: first asserting a false
+  justification, then over-explaining. `## Non-goals` is a scope statement —
+  what the capability is not scoped to do — not a place for implementation
+  detail, file locations, or unresolved questions (`e60a0d0`).
+- **The ledger is append-only.** A wrong entry is superseded by a new one
+  carrying `supersedes`, never rewritten (`d44ac41`).
 
 ### The refactor, as landed
 
@@ -149,9 +186,18 @@ ts/  cli.ts index.ts config.ts compile_cache.ts zod.ts
 
 ### Open, deliberately not done
 
-- **`ts/render/error.ts` ownership.** It implements `execution/`'s UC3 but sits
-  among `presentation/`'s files. Re-partitioning moves 8 scenarios between two
-  suites about to be frozen — a Warden call, filed in the ledger.
+- **`execution/`'s 8 UC3 usage-error scenarios belong to `presentation/`.**
+  Ledger entry 13 supersedes 12: this is a **correction, not a preference**.
+  `presentation/`'s non-goal claimed `execution/` "owns the error types" — it
+  does not; `lookupCommand.Error` is declared in `ts/invocation/lookup.ts` and
+  `input-parsing/` claims it. The false clause is gone (`3cfa2c1`, `e60a0d0`);
+  the scenario move is still the Warden's, since it shifts 8 scenarios between
+  two suites about to be frozen.
+- **`lookupCommand.ExpectSingle.value` is typed `any`** while all four
+  producers pass `string[]`. That loose type is what keeps `toArray()` alive in
+  `ts/render/error.ts` — dead in production, held up by one test. Ledger entry
+  14. Deferred on purpose: narrowing it before the gate would reshape a
+  frozen-candidate scenario instead of firing Clearance at it.
 - **zod is still in the core contract** (`cli.Command.Options.Entry` declares
   `type?: z.ZodType<any>`). The Dependency Rule violation the deferred CR
   exists to fix; untouched here.
@@ -454,7 +500,8 @@ change-coupling to the rest. Worth recording so it is not re-litigated.
 
 253 scenarios across eight suites — execution 48, input-parsing 48,
 presentation 45, configuration 30, builtin-commands 24, plugins 24, testing 21,
-command-definition 13. **No tags anywhere in any `.feature`** — nothing
+command-definition 13. **Superseded: the sweep took it to 261** — see the count
+in `## NEXT`. **No tags anywhere in any `.feature`** — nothing
 `@frozen`, nothing `@pinned`, confirmed by grep. No `<!-- open: -->` markers in
 the tree. No `.agents/universal-plugin.json`, so every production role resolves
 to an SDD default; no `produced-by` frontmatter exists on any node, which is
