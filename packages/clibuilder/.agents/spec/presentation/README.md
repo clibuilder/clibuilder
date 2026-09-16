@@ -199,7 +199,8 @@ reads as a short option and several as a long one. An extra-arguments error is
 pluralized by how many values it carries. An invalid value names an argument or an option
 depending on whether the key is a declared argument. A too-many-values error
 always names an option: a non-array argument consumes exactly one positional, so
-it can never carry the several values that raise one.
+it can never carry the several values that raise one. An option gathers several
+either by being repeated or by swallowing the bare tokens that follow it.
 
 ## Control Flow
 
@@ -344,7 +345,7 @@ graph TD
   K -- missing-argument --> MA["missing required argument &lt;name&gt;"]
   K -- extra-arguments --> EA[unexpected argument, pluralized by count]
   K -- invalid-value --> IV{is the key a declared argument?}
-  K -- expect-single --> ESO[described as an option, always: only a repeated option can carry several values]
+  K -- expect-single --> ESO[described as an option, always: only an option can carry several values, by repetition or by swallowing trailing tokens]
   IV -- yes --> IVA["described as argument &lt;name&gt;"]
   IV -- no --> IVO[described as an option]
   IK --> LEN{key is one character?}
