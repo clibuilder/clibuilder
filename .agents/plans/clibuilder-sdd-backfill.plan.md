@@ -23,7 +23,9 @@ todos:
   - content: "Run the spec gate: Draft → Approved, freezing the ten nodes' suites"
     status: in_progress
   - content: "Remediate the input-parsing judge findings (UC3, four CFG gaps, sub-graph D)"
-    status: pending
+    status: completed
+  - content: "Sweep the seven other nodes for the same rules (unbound scenario-map edges, malformed decision nodes)"
+    status: in_progress
   - content: "Re-run the seven ungraded node judges (command-definition, execution, configuration, plugins, builtin-commands, presentation, testing)"
     status: pending
 ---
@@ -77,14 +79,53 @@ blind to `ts/**` and the `*.spec.ts` suite). **Seven of the eight died on a
 session limit before returning.** Only `input-parsing` graded, and it came back
 **FAIL on all three lenses**. So:
 
-1. **Remediate the `input-parsing` findings** (below) — the producer's job, and
-   the findings are evidence, not a work order (`sdd:remediation-governance`):
-   substantiate each, name the rule it instantiates, and sweep the other seven
-   nodes for the same rule before re-deriving.
-2. **Re-run the seven ungraded judges.** Their verdicts are unknown — do not
+1. ~~Remediate the `input-parsing` findings~~ — **done** (`857adb2`). All three
+   root causes substantiated against the source and fixed; 52 scenarios now.
+2. **Finish the cross-node sweep** (rule 2 of `sdd:remediation-governance`) —
+   see `## Sweep` below. `command-definition` is done (`bdfa975`). Remaining:
+   `builtin-commands`, `configuration`, `execution`, `plugins`,
+   `presentation`, `testing`.
+3. **Re-run the seven ungraded judges.** Their verdicts are unknown — do not
    assume they would have passed. `input-parsing` was one of the strongest
    nodes by the judge's own read, so expect findings elsewhere.
-3. Only then take the gate verdict.
+4. Only then take the gate verdict.
+
+## Sweep — the rules the input-parsing findings instantiate
+
+Four rules, each swept corpus-wide rather than fixed where the judge pointed:
+
+- **R1 — every use case's actor is in the Actors table, and its goal states the
+  actor's result, not the mechanism.** (`spec-format-governance`: "where the
+  goal restates the function name, the use case has not been found yet".)
+- **R2 — every scenario-map `Edge` names a decision actually drawn in
+  `## Control Flow`.** ("a scenario with no nameable edge is not acceptance".)
+- **R3 — a `{decision}` node's outgoing edges are labeled and exhaustive, and a
+  stage every path passes through is reachable from every path.**
+- **R4 — a `Then` asserts an observable artifact, and one scenario asserts one
+  behavior.**
+
+**The R2 candidate sweep is mechanical but over-reports** — it flags any `Edge`
+cell that is not a verbatim substring of the node's mermaid text, so a
+legitimate paraphrase ("boolean accepted" for `B -- yes --> BOK[boolean]`)
+shows up as a candidate. Each candidate needs a read against the graph. Run it
+from `packages/clibuilder/.agents/spec`; on `input-parsing` it reproduced the
+judge's four findings plus UC3 exactly, which is what validates the method.
+
+R3 is fully mechanical (an edge `X --> Y` whose source `X` is declared `X{...}`)
+and found exactly one hit corpus-wide: `plugins` sub-graph A,
+`ACT --> REG{it registered a key} --> ACC{accepted?}`. Not yet triaged. It does
+**not** catch a decision node missing a branch — that one is by eye, and is how
+`command-definition`'s `DF{declares default?}` was found.
+
+### Sweep verdicts so far
+
+- **`input-parsing`** — 4 genuine (accumulation, single-dash `=`, the two
+  omitted-type defaults) + UC3; ruled out 11 paraphrase candidates. `857adb2`.
+- **`command-definition`** — 2 genuine. UC2 (`Command.parent`) rested on no
+  drawn decision *and* duplicated behavior `execution/` and `presentation/`
+  already own; re-derived to the type-level claim this node actually owns.
+  `DF{declares default?}` was reachable from one of three option paths and had
+  no `no` branch. Ruled out 9 paraphrase candidates. `bdfa975`.
 
 ### Gate mechanics, confirmed this session
 
