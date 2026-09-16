@@ -29,6 +29,46 @@
 					"style": {}
 				}
 			}
+		},
+		{
+			"includes": ["packages/clibuilder/ts/core/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["**"],
+										"message": "core/ holds the contracts every other layer depends on, so it must import nothing. Add the type here, or put the file outside core/."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/clibuilder/ts/help/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["node:*", "standard-log", "standard-log/**", "standard-log-color"],
+										"message": "help/ turns a declaration into a string and stays pure. Reaching a logger, the filesystem or the process belongs to a driver."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
 		}
 	]
 }
