@@ -95,6 +95,51 @@ the code, write the four sections, derive the `.feature` 1:1 off the scenario
 map, then commit that node alone (Conventional Commits, `docs(clibuilder):`).
 Update this brief's todo status as each node lands.
 
+## NEXT — the impl phase, started
+
+**The spec gate is approved and frozen (below). The impl phase asks the next
+question: does the implementation honor the frozen contract?**
+
+### The bridge does not exist, and that is the honest starting position
+
+`sdd:verify-scenarios` defines the scenario→test bridge the impl-judge reads:
+tests wrapped in `describe('spec:<node>')`, leaf titles matching the frozen
+scenario name verbatim, wired through `.agents/sdd/scenario-bridge.toml`.
+
+Measured state:
+
+- **315 frozen scenarios, 0 bound.**
+- **0** tests carry a `spec:<node>` describe wrapper.
+- **No** `scenario-bridge.toml`.
+- Baseline otherwise healthy: `pnpm build` OK, **366 tests pass** (3 skipped, 1
+  todo) across 20 suites.
+
+Building the full bridge means reconciling 366 existing tests — written
+independently, with their own titles — against 315 scenario-named leaves. That is
+a mission of its own, not a step inside this one.
+
+### What is being run instead, and why it is the right first cut
+
+The bridge *mechanizes* the question; it is not the question. This spec was
+derived by **reading** the source and never by running it — a few claims were
+settled with type probes, but most scenarios have never been executed against the
+implementation. So the highest-value impl work is the impl-judge's primary duty
+(ADR-0016): **treat each frozen scenario as the specified oracle, derive its
+expected behavior from `Given`/`When`/`Then`, and confirm independently that the
+implementation does that.**
+
+Cold impl-judges run per node. Unlike the spec gate they **read `ts/**`** — that
+is the point of this gate — and may run the existing suite as reference.
+
+**Two things they are told that an ordinary impl gate would not say:**
+
+1. **Nine scenarios specify known defects as current behavior.** Those must
+   **pass** — the code really does the buggy thing. One that *fails* means the
+   spec mis-described the defect, a finding about the spec's accuracy.
+2. **The `.feature` is frozen.** It is the bar, never the thing to adjust. A
+   behavior-changing gap is a `BLOCKER`, not an edit
+   (`sdd:ownership-governance`).
+
 ## NEXT — the gate is APPROVED; this mission is done
 
 **`status: approved`. All eight `.feature` files carry `@frozen`. The durable
