@@ -176,7 +176,7 @@ every command that reports one, in whichever format the reader asked for.
 | `debug` / `info` / `warn` / `error` | UC1, UC2 | — |
 | `showHelp` | UC3, UC4 | — |
 | `showVersion` | UC5 | — |
-| `toonValue` / `toonArray` / `toonTable` / `toonHelp` | UC6 | `toonTable` with a single column — it says what `toonArray` says for more tokens |
+| `toonValue` / `toonArray` / `toonTable` / `toonHelp` | UC6 | — (`toonTable` accepts a single column; preferring `toonArray` there is a token-cost choice, not a rule) |
 | `reportProse` | UC6 | — |
 | `formatOption` / `OutputFormat` | UC6 | — |
 | `OutputUI` | UC6 | — |
@@ -288,7 +288,10 @@ graph TD
   V[a value] --> AMB{"contains a comma, quote, or backslash, or is surrounded by whitespace?"}
   AMB -- yes --> Q[quote and escape it]
   AMB -- no --> RAW[leave it as is]
-  C[a collection] --> SH{which helper?}
+  C[a collection] --> FMT{which format?}
+  FMT -- toon --> SH{which helper?}
+  FMT -- text --> N
+  FMT -- json --> J["the payload as JSON, with no help line"]
   SH -- array --> TA[one line, carrying the count]
   SH -- table --> TT[a header naming the columns, then one indented row each, carrying the count]
   SH -- help --> TH2[a counted one-entry line]
@@ -298,9 +301,9 @@ graph TD
   N -- several --> P2[say several were found, then list them]
   FO["the shared --format option"] --> WF{which format did the reader ask for?}
   WF -- "nothing given" --> FDEF[toon, the default the option declares]
-  WF -- given --> FGIV["one of toon, text or json — the option accepts no others"]
-  FDEF --> SH
-  FGIV --> SH
+  WF -- given --> FGIV["the format asked for; a value outside the three never reaches here, refused by the option's own schema"]
+  FDEF --> FMT
+  FGIV --> FMT
 ```
 
 ### Sub-graph F — report a version (`showVersion`), entered by UC5
@@ -330,7 +333,11 @@ graph TD
 | raise to debug | level set to debug | `setting the level to debug shows debug messages` |
 | raise to trace | level set to trace | `setting the level to trace shows trace messages` |
 | no case matches | level set to info | `setting the level to info changes nothing` |
-| where is the logger's threshold? | any level set | `reading the level back reports the level that is in effect` |
+| none | the level set to none | `reading the level back after silencing reports none` |
+| debug | the level set to debug | `reading the level back after raising to debug reports debug` |
+| trace | the level set to trace | `reading the level back after raising to trace reports trace` |
+| info | a ui whose level has not been set | `a ui reports info before any level is set` |
+| no case matches | the level set to info on a ui already raised | `setting the level to info leaves a level already raised where it was` |
 
 ### UC3 — `showHelp`
 
@@ -388,3 +395,4 @@ graph TD
 | say one was found | prose, one item | `prose for one item describes it in the singular` |
 | say several were found | prose, several items | `prose for several items lists them under a plural heading` |
 | toon, the default the option declares | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |
+| the payload as JSON, with no help line | json asked for | `json output carries the payload alone` |

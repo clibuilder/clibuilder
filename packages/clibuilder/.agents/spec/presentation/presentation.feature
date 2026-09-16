@@ -46,10 +46,30 @@ Feature: Presentation
     When its display level is set to info
     Then the level is unchanged, because no case matches
 
-  Scenario: reading the level back reports the level that is in effect
-    Given a ui whose level has been set
-    When its display level is read
-    Then it reports the level currently in effect
+  Scenario: a ui reports info before any level is set
+    Given a ui whose level has not been set
+    When the level is read back
+    Then it reports info
+
+  Scenario: reading the level back after silencing reports none
+    Given a ui whose level has been set to none
+    When the level is read back
+    Then it reports none
+
+  Scenario: reading the level back after raising to debug reports debug
+    Given a ui whose level has been set to debug
+    When the level is read back
+    Then it reports debug
+
+  Scenario: reading the level back after raising to trace reports trace
+    Given a ui whose level has been set to trace
+    When the level is read back
+    Then it reports trace
+
+  Scenario: setting the level to info leaves a level already raised where it was
+    Given a ui whose level has been set to debug
+    When the level is set to info
+    Then reading the level back still reports debug
 
   # ── UC3 — showHelp: render help from the declaration ──
 
@@ -238,6 +258,11 @@ Feature: Presentation
     Given prose output and a collection of several
     When it is reported
     Then a plural heading is followed by the items, one per line
+
+  Scenario: json output carries the payload alone
+    Given json asked for
+    When a collection is reported
+    Then the output is the payload as JSON with no help line
 
   Scenario: every command reporting a collection offers the same three formats and defaults to toon
     Given any command that reports a collection
