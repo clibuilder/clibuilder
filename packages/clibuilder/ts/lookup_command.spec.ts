@@ -1,5 +1,5 @@
 import { a } from 'assertron'
-import { getBaseCommand } from './commands.js'
+import { getBaseCommand } from './builtin/base_command.js'
 import { type cli, command, parseArgv, z } from './index.js'
 import { lookupCommand } from './lookup_command.js'
 import { argv } from './test-utils/index.js'

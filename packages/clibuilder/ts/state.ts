@@ -1,7 +1,7 @@
 import type { RequiredPick } from 'type-plus'
 import type { cli, DisplayLevel } from './cli.js'
 import type { Command } from './command.internal.types.js'
-import { getBaseCommand } from './commands.js'
+import { getBaseCommand } from './builtin/base_command.js'
 
 export namespace state {
 	export type Result = {
