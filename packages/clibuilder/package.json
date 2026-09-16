@@ -59,7 +59,7 @@
 		"build:cjs": "esbuild ts/index.ts ts/compile_cache.ts ts/testing/index.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
-		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm",
+		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm tsconfig.tsbuildinfo",
 		"coverage": "vitest run --coverage",
 		"depcheck": "depcheck",
 		"nuke": "run-s clean && rimraf node_modules",
