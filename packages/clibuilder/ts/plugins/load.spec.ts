@@ -9,21 +9,25 @@ function getPluginUrl(name: string) {
 }
 
 it(`loads no plugin when plugin's activate is not a function`, async () => {
-	const { stderr } = await execCommand({
+	// the fixture cli has no default command, so running it bare is a usage error (#609)
+	const { stderr, exitCode } = await execCommand({
 		caseType: 'folder',
 		caseName: 'fixtures/bad-plugin',
 		casePath: getFixturePath('bad-plugin')
-	})
+	}).catch((e) => e)
+	expect(exitCode).toBe(2)
 	expect(stderr).toContain('not a valid plugin')
 	expect(stderr).toContain('bad-plugin')
 })
 
 it('loads no plugin when plugin has no index.js', async () => {
-	const { stderr } = await execCommand({
+	// the fixture cli has no default command, so running it bare is a usage error (#609)
+	const { stderr, exitCode } = await execCommand({
 		caseType: 'folder',
 		caseName: 'fixtures/bad-plugin-no-index',
 		casePath: getFixturePath('bad-plugin-no-index')
-	})
+	}).catch((e) => e)
+	expect(exitCode).toBe(2)
 	expect(stderr).toContain('not a valid plugin')
 	expect(stderr).toContain('bad-plugin-no-index')
 })

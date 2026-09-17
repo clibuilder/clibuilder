@@ -175,7 +175,8 @@ Arguments:
 			run() {}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+		expect(ctx.exitCode).toBe(2)
+		expect(ctx.sl.reporter.getLogMessage()).toContain(`
 Usage: test-cli <command> [options]
 
 Commands:
@@ -855,6 +856,37 @@ describe('usage errors', () => {
 			})
 			.parse(argv('show-config'))
 		expect(ctx.exitCode).toBe(1)
+	})
+})
+
+describe('command group invoked without a sub command (#609)', () => {
+	const group = {
+		name: 'send',
+		commands: [{ name: 'mail', run: () => expect.fail('should not reach') }]
+	}
+	it('shows the group help and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.command(group).parse(argv('test-cli send'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli send <command>')
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('exits with success when help is asked for explicitly', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.command(group).parse(argv('test-cli send --help'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli send <command>')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	it('treats a cli with only sub commands as a group', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.command(group).parse(argv('test-cli'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli <command>')
+		expect(ctx.exitCode).toBe(2)
+	})
+	it('exits with success when help is asked for the cli explicitly', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.command(group).parse(argv('test-cli -h'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli <command>')
+		expect(ctx.exitCode).toBeUndefined()
 	})
 })
 

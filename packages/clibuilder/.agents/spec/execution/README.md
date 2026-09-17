@@ -144,7 +144,7 @@ inputs they gave, or to be told precisely what was wrong.
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
 | the matched command declares no config schema | no validation runs and the command is reached directly |
 | the matched command's `run` returns | its value is returned from `parse` |
-| the matched command has no `run` | help is shown — a group command is not a runnable command |
+| the matched command has no `run` | help is shown and the CLI exits with the usage code — a group command is not a runnable command, so invoking it bare is missing its sub-command ([#609](https://github.com/clibuilder/clibuilder/issues/609)). This includes an application with no default command. `--help` on a group is answered earlier and exits with success |
 | `run` throws a `CliError` | its message and help lines are printed and the CLI exits with the error's own code |
 | `run` throws anything else | it propagates to the caller — a defect in the command is not the framework's to swallow |
 
@@ -311,7 +311,7 @@ graph TD
   VAL -- no --> CE[print each failing field, show help, exit with the error code]
   VAL -- yes --> RUNQ
   CFG -- no --> RUNQ{command has run?}
-  RUNQ -- no --> GH[show help]
+  RUNQ -- no --> GH[show help, exit with the usage code]
   RUNQ -- yes --> RUN[run it]
   RUN --> THR{did it throw?}
   THR -- no --> RET[return its value]
@@ -432,7 +432,7 @@ callers.
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
 | config valid? — yes | matched command declares config, config valid | `a config satisfying the command's schema lets the command run` |
 | command declares a config schema? — no | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
-| show help | matched command has no `run` | `a group command with nothing to run shows help` |
+| show help, exit with the usage code | matched command has no `run` | `a group command invoked bare shows help and exits with the usage code` |
 | return its value | a runnable command, no errors | `a matched command runs and its value is returned` |
 | print the message and help lines; exit with the error's code | `run` throws `CliError` | `a command failing with CliError is reported and sets its exit code` |
 | propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |

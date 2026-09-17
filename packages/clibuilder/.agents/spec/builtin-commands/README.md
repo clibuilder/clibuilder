@@ -82,9 +82,10 @@ user expects of any CLI.
 | Outcome | a nameless command declaring the global options |
 
 **Extensions.** `--show-config` is declared only when the application takes
-configuration. The base command declares a `run` of its own that shows help —
-it is not falling through `execution/`'s no-`run` path, it is choosing help as
-its work.
+configuration. The base command declares no `run`, so an application with no
+default command is a group like any other: invoked bare, it takes
+`execution/`'s no-`run` path, which shows help and exits with the usage code
+([#609](https://github.com/clibuilder/clibuilder/issues/609)).
 
 ### UC2 — `plugins list`: report the installed plugins
 
@@ -170,11 +171,12 @@ graph TD
   CF -- no --> NS[do not declare show-config]
   SC --> EC[declare an empty commands list, so plugin commands can be added to it]
   NS --> EC
-  R["the base command's own run"] --> H[show help]
+  EC --> NR[declare no run, so a bare application is a group]
 ```
 
-The base command declares a `run` of its own, so showing help is this node's
-decision rather than `execution/`'s no-`run` fallback.
+The base command declares no `run`. What a bare application then does is
+`execution/`'s decision for any command without a `run`; what this node owns is
+the declaration.
 
 ### Sub-graph B — report the installed plugins (`plugins list`), entered by UC2
 
@@ -241,7 +243,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | `--silent` and `--debug-cli` carry none | any | `silent and debug-cli carry no short alias` |
 | also declare show-config | the application takes config | `an application taking config also declares show-config` |
 | do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
-| the base command's own run | the application is invoked with no command | `running the base command itself shows help` |
+| declare no run | any | `the base command declares no run of its own` |
 
 ### UC2 — `plugins list`
 
