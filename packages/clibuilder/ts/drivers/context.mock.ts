@@ -3,10 +3,10 @@ import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/
 import tmp from 'tmp'
 import { required } from 'type-plus'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
-import type { Context } from './context.js'
 import { loadPlugins } from '../plugins/load.js'
 import type { RegistryOwner } from '../plugins/registry.js'
 import { getFixturePath } from '../test-utils/index.js'
+import type { Context } from './context.js'
 import { createBuilderUI, createUI } from './logger.js'
 
 export namespace mockContext {

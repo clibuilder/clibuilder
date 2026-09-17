@@ -199,6 +199,11 @@ export namespace cli {
 				type?: Type
 				default?: z.infer<Type>
 				alias?: Alias[]
+				/**
+				 * Names of the options this one cannot be used with.
+				 * Passing both is a usage error. A default value does not count as passed.
+				 */
+				conflicts?: string[]
 			}
 
 			export type Alias = string | { alias: string; hidden: boolean }

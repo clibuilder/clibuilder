@@ -1,8 +1,8 @@
 import { a } from 'assertron'
 import { getBaseCommand } from '../builtin/base_command.js'
 import { type cli, command, parseArgv, z } from '../index.js'
-import { lookupCommand } from './lookup.js'
 import { argv } from '../test-utils/index.js'
+import { lookupCommand } from './lookup.js'
 
 function testLookupCommand(command: cli.Command, args: string) {
 	const r = lookupCommand(command, parseArgv(argv(args)))
@@ -600,5 +600,55 @@ describe('option arity', () => {
 		const r = lookupCommand(root, parseArgv(argv('my-cli read --verbose %1')), base)
 		expect(r.args).toEqual({ _: [], pane: '%1' })
 		expect(r.errors).toEqual([{ type: 'invalid-key', key: 'verbose' }])
+	})
+})
+
+describe('conflicting options', () => {
+	const defaultCommand = command({
+		name: '',
+		options: {
+			full: { description: 'full output', alias: ['f'], conflicts: ['lines'] },
+			lines: { description: 'line count', type: z.optional(z.number()), alias: ['n'], default: 10 }
+		},
+		run() {}
+	})
+
+	test('passing one of them is fine', () => {
+		const { errors } = testLookupCommand(defaultCommand, 'my-cli --full')!
+		expect(errors).toEqual([])
+	})
+
+	test('a default value does not count as passed', () => {
+		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --full')!
+		expect(args).toEqual({ _: [], full: true, lines: 10 })
+		expect(errors).toEqual([])
+	})
+
+	test('passing both reports conflicting-options', () => {
+		const { errors } = testLookupCommand(defaultCommand, 'my-cli --full --lines=3')!
+		expect(errors).toEqual([{ type: 'conflicting-options', key: 'full', conflictsWith: 'lines' }])
+	})
+
+	test('the conflict is reported from either side, once', () => {
+		const { errors } = testLookupCommand(defaultCommand, 'my-cli --lines=3 --full')!
+		expect(errors).toEqual([{ type: 'conflicting-options', key: 'full', conflictsWith: 'lines' }])
+	})
+
+	test('works through aliases, naming the keys as typed', () => {
+		const { errors } = testLookupCommand(defaultCommand, 'my-cli -f -n 3')!
+		expect(errors).toEqual([{ type: 'conflicting-options', key: 'f', conflictsWith: 'n' }])
+	})
+
+	test('a pair declared on both sides is reported once', () => {
+		const cmd = command({
+			name: '',
+			options: {
+				env: { description: 'env', type: z.optional(z.string()), conflicts: ['template'] },
+				template: { description: 'template', type: z.optional(z.string()), conflicts: ['env'] }
+			},
+			run() {}
+		})
+		const { errors } = testLookupCommand(cmd, 'my-cli --env=a --template=b')!
+		expect(errors).toEqual([{ type: 'conflicting-options', key: 'env', conflictsWith: 'template' }])
 	})
 })

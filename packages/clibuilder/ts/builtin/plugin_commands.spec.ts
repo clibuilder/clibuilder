@@ -1,8 +1,8 @@
 import { builder } from '../app/builder.js'
-import { listPluginsCommand } from './plugin_commands/list.js'
-import { searchPluginsCommand } from './plugin_commands/search.js'
 import { mockContext } from '../drivers/context.mock.js'
 import { argv } from '../test-utils/index.js'
+import { listPluginsCommand } from './plugin_commands/list.js'
+import { searchPluginsCommand } from './plugin_commands/search.js'
 
 describe('pluginsCommand', () => {
 	describe('list', () => {
@@ -349,7 +349,9 @@ describe('searchPluginsCommand', () => {
 		})
 
 		test('annotates the prose in --format text', async () => {
-			expect(await search(mockContext(), 'string-bin search --format text --fields keywords')).toContain(`  pkg-a (keyword-a)
+			expect(
+				await search(mockContext(), 'string-bin search --format text --fields keywords')
+			).toContain(`  pkg-a (keyword-a)
   pkg-both (keyword-a, keyword-b)
   pkg-b (keyword-b)`)
 		})

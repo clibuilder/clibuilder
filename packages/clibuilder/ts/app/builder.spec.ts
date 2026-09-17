@@ -1,9 +1,9 @@
 import { a } from 'assertron'
 import { assertType, type IsExtend, required, testType } from 'type-plus'
-import { builder } from './builder.js'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, z } from '../index.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
+import { builder } from './builder.js'
 
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
 	const opt = required({ name: 'test-cli', version: '1.0.0' }, options)
@@ -612,6 +612,21 @@ Options:
 }
 
 describe('usage errors', () => {
+	it('names conflicting options and exits with the usage code', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			options: {
+				full: { description: 'full output', conflicts: ['lines'] },
+				lines: { description: 'line count', type: z.optional(z.number()), default: 10 }
+			},
+			run() {
+				expect.fail('should not reach')
+			}
+		})
+		await cli.parse(argv('test-cli --full --lines=3'))
+		expect(ctx.sl.reporter.getLogMessage()).toContain('option --full cannot be used with option --lines')
+		expect(ctx.exitCode).toBe(2)
+	})
 	it('names an unknown option and exits with the usage code', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })

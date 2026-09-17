@@ -1,5 +1,12 @@
 import { command } from '../../command/define.js'
-import { formatOption, type OutputFormat, type OutputUI, reportProse, toonArray, toonHelp } from '../../render/format.js'
+import {
+	formatOption,
+	type OutputFormat,
+	type OutputUI,
+	reportProse,
+	toonArray,
+	toonHelp
+} from '../../render/format.js'
 import { findByKeywords } from './npm.js'
 
 export const listPluginsCommand = command({

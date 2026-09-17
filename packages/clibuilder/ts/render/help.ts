@@ -116,7 +116,7 @@ function generateOptionsSection(command: Command) {
 	for (const key in command.options) {
 		const value = command.options[key]
 		const optionStr = formatKeyValue(key, value)
-		const description = formatDescription(value)
+		const description = formatDescription(value, conflictsOf(key, command.options))
 		entries.push([optionStr, description])
 		maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
 	}
@@ -170,9 +170,21 @@ function formatTypeHint(zodType: z.ZodTypeAny | undefined, booleanIsFlag: boolea
 	return `=${typeName}`
 }
 
-function formatDescription(value: cli.Command.Options.Entry) {
+function formatDescription(value: cli.Command.Options.Entry, conflicts: string[]) {
 	const d = value.type && isZodString(value.type) ? `'${value.default}'` : value.default
-	return value.default ? `${value.description} (default ${d})` : value.description
+	const description = value.default ? `${value.description} (default ${d})` : value.description
+	if (conflicts.length === 0) return description
+	return `${description} (conflicts with ${conflicts.map((c) => (c.length === 1 ? `-${c}` : `--${c}`)).join(', ')})`
+}
+
+/**
+ * The options `key` cannot be used with.
+ * A conflict is enforced both ways, so it is listed on both sides even when only one declares it.
+ */
+function conflictsOf(key: string, options: cli.Command.Options) {
+	return Object.keys(options).filter(
+		(k) => k !== key && (options[key].conflicts?.includes(k) || options[k].conflicts?.includes(key))
+	)
 }
 function generateAliasSection(command: Command) {
 	if (!command.alias) return ''

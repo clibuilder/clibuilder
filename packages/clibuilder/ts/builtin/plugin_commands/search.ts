@@ -105,7 +105,12 @@ function reportPackages(
 			ui.info(line)
 		})
 	} else {
-		ui.info(toonArray('packages', packages.map((p) => p.name)))
+		ui.info(
+			toonArray(
+				'packages',
+				packages.map((p) => p.name)
+			)
+		)
 	}
 	ui.info(toonHelp('Run `plugins list` to see which of them are installed'))
 }

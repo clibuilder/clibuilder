@@ -1,8 +1,8 @@
 import { findKey, reduceByKey } from 'type-plus'
-import { type OptionOccurrence, optionOccurrences } from './argv.internal.js'
-import type { parseArgv } from './argv.js'
 import type { cli } from '../cli.js'
 import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from '../zod.js'
+import { type OptionOccurrence, optionOccurrences } from './argv.internal.js'
+import type { parseArgv } from './argv.js'
 
 export namespace lookupCommand {
 	export type Result = {
@@ -12,7 +12,13 @@ export namespace lookupCommand {
 		} & Record<string, string[]>
 		errors: Error[]
 	}
-	export type Error = InvalidKey | InvalidValueType | ExpectSingle | ExtraArguments | MissingArgument
+	export type Error =
+		| InvalidKey
+		| InvalidValueType
+		| ExpectSingle
+		| ExtraArguments
+		| MissingArgument
+		| ConflictingOptions
 	export type InvalidKey = {
 		type: 'invalid-key'
 		key: string
@@ -33,6 +39,15 @@ export namespace lookupCommand {
 		type: 'extra-arguments'
 		name: string
 		values: string[]
+	}
+	/**
+	 * Two options that declare a conflict were both passed.
+	 * `key` and `conflictsWith` are the keys as the caller typed them.
+	 */
+	export type ConflictingOptions = {
+		type: 'conflicting-options'
+		key: string
+		conflictsWith: string
 	}
 	export type MissingArgument = {
 		type: 'missing-argument'
@@ -120,7 +135,7 @@ export type State = {
 }
 function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
 	const state: State = { command, rawArgs, args: { _: [] }, errors: [] }
-	return fillDefaultOptions(fillInputOptions(fillArguments(state)))
+	return fillDefaultOptions(checkConflicts(fillInputOptions(fillArguments(state))))
 }
 
 function fillArguments(state: State) {
@@ -173,6 +188,32 @@ function fillInputOptions(state: State) {
 		},
 		state
 	)
+}
+
+/**
+ * Reports each pair of passed options where either side declares the other in `conflicts`.
+ * Runs before the defaults are filled, so a default never counts as passed.
+ */
+function checkConflicts(state: State) {
+	const options = state.command.options
+	if (!options) return state
+	// option name -> key as typed, in the order the caller passed them
+	const passed = new Map<string, string>()
+	for (const key of Object.keys(state.rawArgs)) {
+		const [name] = lookupOptions(state.command, key)
+		if (name && !passed.has(name)) passed.set(name, key)
+	}
+	const names = [...passed.keys()]
+	for (let i = 0; i < names.length; i++) {
+		for (let j = i + 1; j < names.length; j++) {
+			const [a, b] = [names[i], names[j]]
+			if (!options[a].conflicts?.includes(b) && !options[b].conflicts?.includes(a)) continue
+			// name the side that declares the conflict first, so the message reads the way it was declared
+			const [key, other] = options[a].conflicts?.includes(b) ? [a, b] : [b, a]
+			state.errors.push({ type: 'conflicting-options', key: passed.get(key)!, conflictsWith: passed.get(other)! })
+		}
+	}
+	return state
 }
 
 function fillDefaultOptions(state: State) {

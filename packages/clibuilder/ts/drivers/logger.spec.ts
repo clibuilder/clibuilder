@@ -361,6 +361,27 @@ Options:
   <--abc=string>         desc (default 'miku')
 `)
 		})
+		test('with conflicts', () => {
+			const { ui, reporter } = testUI()
+			ui.showHelp(
+				'cli',
+				command({
+					name: 'cmd',
+					options: {
+						full: { description: 'full output', conflicts: ['lines'] },
+						lines: { description: 'line count', type: z.optional(z.number()), alias: ['n'], default: 10 }
+					},
+					run() {}
+				})
+			)
+			expect(reporter.getLogMessage()).toEqual(`
+Usage: cli cmd [options]
+
+Options:
+  [--full]               full output (conflicts with --lines)
+  [-n|--lines=number]    line count (default 10) (conflicts with --full)
+`)
+		})
 		test('options with single string alias', () => {
 			const { ui, reporter } = testUI()
 			ui.showHelp(
