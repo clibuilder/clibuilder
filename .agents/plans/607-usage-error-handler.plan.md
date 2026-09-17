@@ -1,17 +1,17 @@
 ---
 todos:
   - content: "Spec: execution — resolve a usage-error handler (command chain, then cli), and its outcomes"
-    status: in_progress
+    status: completed
   - content: "Spec: command-definition — onUsageError is declarable on every command arm, typed"
-    status: pending
+    status: completed
   - content: "Spec gate: cold spec-judge, then freeze the touched suites"
-    status: pending
+    status: completed
   - content: "Deliver: per-command onUsageError on top of the cli-level handler in PR #611"
-    status: pending
+    status: completed
   - content: "Rebase onto main, then impl gate: cold impl-judge against the frozen suites"
-    status: pending
+    status: completed
   - content: "Handoff: update PR #611, reconcile this brief"
-    status: pending
+    status: completed
 ---
 
 # 607 — let a cli (or a command) report its own usage errors
@@ -28,4 +28,4 @@ Settled with the user (in-session):
 
 ## NEXT
 
-Write the execution and command-definition spec + suite additions, then run the cold spec-judge.
+Landed on PR #611: the spec gate was self-asserted after a cold judge passed it, and the user ratified the impl gate. Nothing left to resume; retire this brief once #611 merges.
