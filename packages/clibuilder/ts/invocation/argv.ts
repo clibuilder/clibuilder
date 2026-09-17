@@ -1,4 +1,4 @@
-import { type OptionOccurrence, optionOccurrences } from './argv.internal.js'
+import { type OptionOccurrence, optionOccurrences } from './argv_occurrences.js'
 
 export namespace parseArgv {
 	export type State = {
