@@ -1,7 +1,8 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
-import { builder } from './builder.js'
-import { context } from './context.js'
-import type { CollectionKey, Registry, RegistryKey, ValueKey } from './registry.js'
+import { builder } from './app/builder.js'
+import { context } from './drivers/context.js'
+import type { UI } from './core/ports.js'
+import type { CollectionKey, Registry, RegistryKey, ValueKey } from './plugins/registry.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
@@ -172,18 +173,6 @@ export namespace cli {
 				: never
 			: never
 	}
-}
-
-export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
-
-export type UI = {
-	displayLevel: DisplayLevel
-	info(...args: any[]): void
-	warn(...args: any[]): void
-	error(...args: any[]): void
-	debug(...args: any[]): void
-	showHelp(): void
-	showVersion(): void
 }
 
 export type PluginActivationContext = {

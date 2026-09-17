@@ -1,5 +1,5 @@
 import type { cli, PluginActivationContext } from '../cli.js'
-import { createRegistry, type RegistryOwner } from '../registry.js'
+import { createRegistry, type RegistryOwner } from '../plugins/registry.js'
 
 export namespace mockPluginContext {
 	export type Params = {

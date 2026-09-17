@@ -42,7 +42,7 @@
 	"scripts": {
 		"build": "tsc",
 		"build:watch": "tsc --watch",
-		"clean": "rimraf .turbo coverage esm",
+		"clean": "rimraf .turbo coverage esm tsconfig.tsbuildinfo",
 		"coverage": "vitest run --coverage",
 		"depcheck": "depcheck",
 		"nuke": "run-s clean && rimraf node_modules",

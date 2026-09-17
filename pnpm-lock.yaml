@@ -123,6 +123,9 @@ importers:
       standard-log-color:
         specifier: ^13.2.0
         version: 13.2.0(standard-log@13.2.0(typescript@5.9.3))
+      tersify:
+        specifier: ^4.0.6
+        version: 4.0.6
       tmp:
         specifier: ^0.2.7
         version: 0.2.7
@@ -199,9 +202,6 @@ importers:
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
-      tersify:
-        specifier: ^4.0.6
-        version: 4.0.6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -6586,7 +6586,7 @@ snapshots:
       magicast: 0.5.4
       obug: 2.1.4
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.20.2)(jiti@2.7.0)(yaml@2.9.0))
+      vitest: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -6602,7 +6602,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.20.2)(jiti@2.7.0)(yaml@2.9.0))
+      vitest: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
     optional: true
 
   '@vitest/expect@4.1.11':

@@ -29,6 +29,88 @@
 					"style": {}
 				}
 			}
+		},
+		{
+			"includes": ["packages/clibuilder/ts/core/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["**"],
+										"message": "core/ holds the contracts every other layer depends on, so it must import nothing. Add the type here, or put the file outside core/."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/clibuilder/ts/render/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["node:*", "standard-log", "standard-log/**", "standard-log-color"],
+										"message": "render/ turns framework data into the text a person reads, and stays pure. Reaching a logger, the filesystem or the process belongs to a driver."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"packages/clibuilder/ts/**",
+				"!packages/clibuilder/ts/drivers/**",
+				"!packages/clibuilder/ts/compile_cache.ts",
+				"!packages/clibuilder/ts/testing/**",
+				"!packages/clibuilder/ts/**/*.spec.ts",
+				"!packages/clibuilder/ts/state.unit.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"node:fs",
+											"node:fs/*",
+											"node:url",
+											"node:os",
+											"node:module",
+											"node:child_process",
+											"node:process",
+											"node:net",
+											"node:http",
+											"node:https",
+											"standard-log",
+											"standard-log/**",
+											"standard-log-color",
+											"tmp"
+										],
+										"message": "Only drivers/ reaches outside the process. Put the filesystem, logger or process call in a driver and depend on it through a port."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
 		}
 	]
 }
