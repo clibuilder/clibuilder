@@ -74,7 +74,7 @@ types.
 | | |
 | --- | --- |
 | Trigger | the author calls `command(cmd)` |
-| Inputs | a declaration literal: a required `name`, optional `description` / `alias` / `config` / `arguments` / `options`, and either `run`, `commands`, or both |
+| Inputs | a declaration literal: a required `name`, optional `description` / `alias` / `config` / `arguments` / `options` / `onUsageError`, and either `run`, `commands`, or both |
 | Outcome | the literal is returned unchanged, narrowed to its own shape, with `run`'s `args` parameter typed from the declared `arguments` and `options` |
 
 **Extensions.**
@@ -89,6 +89,8 @@ types.
 | the author declares an option named `help` | accepted; the declared type replaces the implicit one rather than colliding with it |
 | a command declares a `config` schema | `run` reads `this.config` at that schema's type; a field the schema omits is refused |
 | an option declares an alias | it is a bare string or a `{ alias, hidden }` pair; any other shape is rejected |
+| a command declares `onUsageError` | accepted on a leaf, a group, and a default command alike; its parameters are typed as the list of usage errors and a context carrying the matched command and a `ui` |
+| an `onUsageError` returns something other than nothing or a number | rejected — the only result the framework reads is an exit code |
 
 At runtime this use case has **no** extensions — `command()` returns its
 argument and cannot fail. Every row above is a compile-time path.
@@ -138,13 +140,15 @@ requiring it:
 | `parent` | UC2 | — (internal; never author-declared) |
 | `Command.DefaultCommand` | UC1 | — (declares no `name`, and its `run` reaches no `context`) |
 | `Options.Entry.alias` and `Options.Alias` | UC1 — an option's own aliases | — (either a bare string or a `{ alias, hidden }` pair) |
+| `onUsageError` | UC1 — lets a command report its own usage errors; *which* handler runs is `execution/`'s UC6 | — (declarable on every arm; typed by the one `cli.UsageErrorHandler` signature `cli()` options also use) |
 
 ## Control Flow
 
 `command()` performs no runtime work, so the graph below is the **type
-resolution** the compiler runs over the declaration literal. It has two
-independent sub-graphs — arm selection, and the typing of what `run` receives —
-which do not interact: a group command simply never reaches the second. The
+resolution** the compiler runs over the declaration literal. It has three
+independent sub-graphs — arm selection, the typing of what `run` receives, and
+the typing of a usage-error handler — which do not interact: a group command
+simply never reaches the second, and every arm reaches the third. The
 second covers three declared surfaces: the arguments and options that become
 `args`, and the `config` schema that becomes `this.config`.
 
@@ -200,6 +204,22 @@ graph TD
   H -- yes --> H2[declared help replaces the implicit one]
 ```
 
+### Usage-error handler typing
+
+Entered from arm selection on every arm: the field is part of the declaration a
+leaf, a group, and a default command share. Which handler actually runs is
+`execution/`'s decision; this node owns only what may be declared.
+
+```mermaid
+graph TD
+  D2[declaration literal, any arm] --> UH{declares onUsageError?}
+  UH -- yes --> UHT["accepted; errors typed as cli.UsageError[], context as the matched command and a ui"]
+  UH -- no --> UHN[nothing to type; the field is optional]
+  UHT --> UR{"what does it return?"}
+  UR -- "nothing or a number, possibly in a promise" --> URA[accepted]
+  UR -- "anything else" --> URX[rejected]
+```
+
 ### The `parent` widening
 
 Entered by UC2. `parent` is not part of the declaration an author writes — it is
@@ -241,6 +261,10 @@ This node owns only the type that makes both possible.
 | a pair carrying alias and hidden | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |
 | any other shape | an alias pair missing its hidden flag | `an alias shape outside the union is rejected` |
 | `default` accepted unchecked; the option keeps the type above | any — matching or contradicting | `an option default is accepted without being checked against its type` |
+| accepted; errors typed as `cli.UsageError[]`, context as the matched command and a ui | a leaf, a group, or a default declaration | `a usage-error handler is declarable on every kind of command and its parameters are typed` |
+| nothing to type; the field is optional | any declaration omitting it | `a declaration without a usage-error handler is still accepted` |
+| accepted | a handler returning a number | `a usage-error handler may return an exit code` |
+| rejected | a handler returning a string | `a usage-error handler returning anything but an exit code is rejected` |
 | implicit `help` added | options omit `help` | `help is present on a command that declares no options` |
 | declared `help` replaces implicit | options declare `help` | `a declared help option replaces the implicit one` |
 

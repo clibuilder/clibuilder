@@ -51,7 +51,9 @@ options; every application has one. **Assembly** is everything before `parse`;
 | Actor | Reaches this capability | Goal |
 | --- | --- | --- |
 | CLI author | `cli(options)`, `.command()`, `.default()`, `parse(argv)` | assemble an application from declarations and hand it argv |
+| CLI author | `cli({ onUsageError })` | report every wrong invocation in one format of their choosing — for example a coded line an agent can read — instead of the framework's message and help |
 | Command author | throws `CliError` from `run` | fail the CLI with a message the user can act on, and a chosen exit code |
+| Command author, including a plugin author | declares `onUsageError` on a command | have a wrong invocation of their commands reported in their own format, whichever application hosts them |
 | CLI end user | invokes the built program | reach the command they meant, or be told what was wrong and how to fix it |
 | Agent or script driving the CLI through a shell | reads the process exit code | tell "it worked" from "it failed" from "I called it wrong" without parsing prose |
 | `configuration` / `plugins` | are called during assembly and parse | be asked for their work once, at the right moment |
@@ -68,7 +70,7 @@ a version, and a statement of whether it takes configuration or plugins.
 | | |
 | --- | --- |
 | Trigger | `cli(options)` |
-| Inputs | `name`, `version`, optional `description`, `config`, `keywords` |
+| Inputs | `name`, `version`, optional `description`, `config`, `keywords`, `onUsageError` |
 | Outcome | a builder; when the application can accept plugins, it is already executable |
 
 **Extensions.**
@@ -137,7 +139,8 @@ inputs they gave, or to be told precisely what was wrong.
 | `--version` on the base command or the matched one | the version is shown, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
 | an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
-| any usage error survives that filter | every error is printed, help is shown, and the CLI exits with the usage code |
+| any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code |
+| any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
 | the matched command declares no config schema | no validation runs and the command is reached directly |
 | the matched command's `run` returns | its value is returned from `parse` |
@@ -178,6 +181,47 @@ re-resolved on every call. `exit` **records** `process.exitCode` rather than
 calling `process.exit`, which would end the process on the spot and truncate
 whatever is still buffered on stdout.
 
+### UC6 — `onUsageError`: take over how usage errors are reported
+
+**Actor / goal.** A CLI author, or the author of a command (a plugin's commands
+included), wants a wrong invocation reported in a fixed format of their own —
+on the stream they choose, with or without help — so a caller such as an agent
+reads the same shape for every failure.
+
+| | |
+| --- | --- |
+| Trigger | `parse(argv)` finds a usage error that survives the global-option filter (UC3) |
+| Inputs | a handler declared on the matched command, on one of the commands enclosing it, or on `cli()`'s options |
+| Outcome | the handler receives the errors, the matched command, and that command's `ui`; the framework prints nothing of its own; the CLI exits with the usage code |
+
+A **usage error** is one entry of the list the parser produces; its kinds and
+fields are defined by `input-parsing/` (UC2, `lookupCommand`). The **matched command**
+is passed whole, so the handler can read the arguments and options it declares.
+
+**Which handler.** The rule is one ordered lookup, first match wins:
+
+1. the matched command's own handler;
+2. otherwise the nearest enclosing command's, walking up the parent links;
+3. otherwise the handler on `cli()`'s options;
+4. otherwise none — the default report of UC3 applies.
+
+A command a plugin adds is linked into the tree at registration like any other
+(UC2), so the lookup treats it the same way: a handler on a plugin's group
+command covers that group's sub-commands. A nameless command records no parent
+(UC2), so the lookup goes from it straight to step 3. The **most specific handler
+wins** because the command's author knows its options and codes; an application
+wanting one format everywhere declares it on `cli()` and leaves commands bare.
+
+**Extensions.**
+
+| Cause | Outcome |
+| --- | --- |
+| no handler is found | the default report of UC3: every error printed, help shown, usage code |
+| the handler returns nothing | the CLI exits with the usage code |
+| the handler returns a number | the CLI exits with that number |
+| the handler throws | the failure propagates to the caller — nothing is printed and no exit code is recorded |
+| the handler calls its `ui`'s `showHelp` | the matched command's help is shown; help is the handler's choice, not the framework's |
+
 **Surface trace.**
 
 | Element | Required by | May not combine with |
@@ -186,6 +230,9 @@ whatever is still buffered on stdout.
 | `cli.Options.description` | UC1 (help text) | — |
 | `cli.Options.config` | UC1, UC3 (`--show-config`) | — |
 | `cli.Options.keywords` | UC1 (plugin discovery) | — |
+| `cli.Options.onUsageError` | UC6 — the application-wide handler | — (a command's own handler takes precedence) |
+| a command's `onUsageError` | UC6 — the per-command handler; its declaration is `command-definition/`'s | — (the nearest one in the chain is the only one called) |
+| `cli.UsageError`, `cli.UsageErrorHandler` | UC6 — the handler's error entries and its signature, shared by both places it is declared | — |
 | `.command` / `.default` | UC2 | `.default` with itself — offered once |
 | `parse` | UC3 | — |
 | `exitCodes` | UC4 | — |
@@ -256,7 +303,9 @@ graph TD
   HLP -- yes --> SH[show help; stop]
   HLP -- no --> FILT[drop unknown-option errors naming a global option]
   FILT --> ERR{any error left?}
-  ERR -- yes --> UE[print each, show help, exit with the usage code]
+  ERR -- yes --> RES[resolve a usage-error handler — sub-graph F]
+  RES -- none found --> UE[print each, show help, exit with the usage code]
+  RES -- found --> HND[hand the errors to it — sub-graph F]
   ERR -- no --> CFG{command declares a config schema?}
   CFG -- yes --> VAL{config valid?}
   VAL -- no --> CE[print each failing field, show help, exit with the error code]
@@ -269,6 +318,32 @@ graph TD
   THR -- "CliError" --> CER[print the message and help lines; exit with the error's code]
   THR -- "anything else" --> PROP[propagate to the caller]
 ```
+
+### Sub-graph F — a usage-error handler, entered by UC6
+
+```mermaid
+graph TD
+  E[usage errors left after the filter] --> M{matched command declares a handler?}
+  M -- yes --> HM[use the matched command's]
+  M -- no --> UP{an enclosing command declares one?}
+  UP -- yes --> HP[use the nearest enclosing command's]
+  UP -- no --> CL{cli options declare one?}
+  CL -- yes --> HC[use the cli's]
+  CL -- no --> DEF[none found: the default report of sub-graph B]
+  HM --> CALL[call it with the errors, the matched command, and its ui; print nothing]
+  HP --> CALL
+  HC --> CALL
+  CALL --> OUT{how does the handler finish?}
+  OUT -- "returns nothing" --> XU[exit with the usage code]
+  OUT -- "returns a number" --> XN[exit with that number]
+  OUT -- throws --> XP[propagate to the caller]
+  CALL --> SHQ{handler calls showHelp on its ui?}
+  SHQ -- yes --> SHY[the matched command's help is shown]
+  SHQ -- no --> SHN[no help is shown]
+```
+
+"Enclosing" follows the parent links set at registration (UC2), so a command a
+plugin adds, and its sub-commands, resolve exactly like the application's own.
 
 ### Sub-graph D — failing on purpose (`CliError`, `exitCodes`), entered by UC4
 
@@ -353,7 +428,7 @@ callers.
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
 | drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
-| print each, show help, exit usage | an unknown option that is not global | `a usage error is printed with help and exits with the usage code` |
+| none found: print each, show help, exit usage | an unknown option that is not global, and no handler declared anywhere | `a usage error is printed with help and exits with the usage code` |
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
 | config valid? — yes | matched command declares config, config valid | `a config satisfying the command's schema lets the command run` |
 | command declares a config schema? — no | matched command declares no config schema | `a command declaring no config schema does not validate the config` |
@@ -393,3 +468,18 @@ callers.
 | start the activation pass, and keep the promise | plugins not yet being loaded | `the first plugin load starts the activation pass and keeps its promise` |
 | return the same promise | plugins already being loaded | `concurrent plugin loading shares one activation pass` |
 | record it as the process exit code | `exit` called | `exiting records the code rather than ending the process` |
+
+### UC6 — `onUsageError`
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| use the matched command's | the matched command, its enclosing command, and the cli each declare a handler | `the matched command's own handler takes over its usage errors` |
+| use the nearest enclosing command's | the matched command declares none; its enclosing command and the cli each declare one | `an enclosing command's handler takes over its sub-command's usage errors` |
+| use the nearest enclosing command's | the matched command was added by a plugin under a group declaring a handler | `a handler on a plugin's group takes over its sub-command's usage errors` |
+| use the cli's | only the cli declares a handler | `the cli's handler takes over when no command in the chain declares one` |
+| call it with the errors, the matched command, and its ui; print nothing | any handler found | `a handler receives each error and the matched command, and the framework prints nothing` |
+| exit with the usage code | the handler returns nothing | `a handler that returns nothing leaves the usage exit code` |
+| exit with that number | the handler returns a number | `a handler that returns an exit code sets it` |
+| propagate to the caller | the handler throws | `a handler that throws propagates to the caller` |
+| the matched command's help is shown | the handler calls showHelp | `a handler that asks for help gets the matched command's help` |
+| no help is shown | the handler reports and returns | `a handler that does not ask for help shows none` |

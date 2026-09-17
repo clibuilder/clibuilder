@@ -299,3 +299,69 @@ Feature: Execution
     Given a registered command declaring no sub-commands
     When it is registered
     Then nothing further is linked and the parent chain terminates at it
+
+  # ── UC6 — onUsageError: take over how usage errors are reported ──
+
+  Scenario: the matched command's own handler takes over its usage errors
+    Given an application declaring a usage-error handler
+    And a group command declaring a usage-error handler
+    And a sub-command of that group declaring its own usage-error handler
+    When the sub-command is invoked with an unknown option
+    Then only the sub-command's handler is called
+
+  Scenario: an enclosing command's handler takes over its sub-command's usage errors
+    Given an application declaring a usage-error handler
+    And a group command declaring a usage-error handler
+    And a sub-command of that group declaring none
+    When the sub-command is invoked with an unknown option
+    Then only the group's handler is called
+    And it receives the sub-command as the matched command
+
+  Scenario: a handler on a plugin's group takes over its sub-command's usage errors
+    Given an application declaring a usage-error handler
+    And a plugin adding a group command that declares a usage-error handler
+    And a sub-command of that group declaring none
+    When the sub-command is invoked with an unknown option
+    Then only the plugin group's handler is called
+
+  Scenario: the cli's handler takes over when no command in the chain declares one
+    Given an application declaring a usage-error handler
+    And a group command and its sub-command declaring none
+    When the sub-command is invoked with an unknown option
+    Then the application's handler is called
+    And it receives the sub-command as the matched command
+
+  Scenario: a handler receives each error and the matched command, and the framework prints nothing
+    Given a command declaring a required argument and a named option
+    And an application declaring a usage-error handler that records what it receives and writes nothing
+    When the command is invoked with an unknown option and without its argument
+    Then the handler receives an unknown-option error naming that option and a missing-argument error naming that argument
+    And the matched command it receives lists the declared named option
+    And the output is empty
+
+  Scenario: a handler that returns nothing leaves the usage exit code
+    Given a usage-error handler that returns no value
+    When an invocation with an unknown option reaches it
+    Then the cli exits with the usage code
+
+  Scenario: a handler that returns an exit code sets it
+    Given a usage-error handler that returns an exit code other than the usage code
+    When an invocation with an unknown option reaches it
+    Then the cli exits with the returned code
+
+  Scenario: a handler that throws propagates to the caller
+    Given a usage-error handler that throws an error
+    When an invocation with an unknown option reaches it
+    Then parse rejects with that error
+    And no exit code is recorded
+
+  Scenario: a handler that asks for help gets the matched command's help
+    Given a sub-command whose usage-error handler calls showHelp on the ui it receives
+    When the sub-command is invoked with an unknown option
+    Then the output shows the sub-command's usage line
+
+  Scenario: a handler that does not ask for help shows none
+    Given a usage-error handler that writes one line through the ui it receives and returns
+    When an invocation with an unknown option reaches it
+    Then the output is that one line and carries no usage line
+
