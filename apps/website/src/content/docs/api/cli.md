@@ -25,6 +25,7 @@ namespace cli {
     description?: string
     config?: string | boolean
     keywords?: string[]
+    onUsageError?: UsageErrorHandler
   }
 }
 ```
@@ -36,6 +37,7 @@ namespace cli {
 | `description` | `string` | A short summary shown at the top of the help message. |
 | `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
 | `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. |
+| `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 
 Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI.
 

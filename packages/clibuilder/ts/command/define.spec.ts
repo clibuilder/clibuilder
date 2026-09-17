@@ -1,5 +1,5 @@
 import { testType } from 'type-plus'
-import { command, z } from '../index.js'
+import { type cli, command, type UI, z } from '../index.js'
 
 test('when no argument and options, args will have help', () => {
 	command({
@@ -144,5 +144,33 @@ it('pass array default values options to the run function', () => {
 			testType.equal<typeof arrayValues, string[]>(true)
 			expect(arrayValues).toEqual(['a', 'b'])
 		}
+	})
+})
+
+describe('onUsageError', () => {
+	it('is declarable on a leaf, a group, and a default command, with typed parameters', () => {
+		const onUsageError: cli.UsageErrorHandler = (errors, context) => {
+			testType.equal<typeof errors, cli.UsageError[]>(true)
+			testType.equal<typeof context.command, cli.Command>(true)
+			testType.equal<typeof context.ui, UI>(true)
+		}
+		command({ name: 'leaf', onUsageError, run() {} })
+		command({ name: 'group', onUsageError, commands: [] })
+		const defaults: cli.Command.DefaultCommand[] = [
+			{ onUsageError, run() {} },
+			{ onUsageError, commands: [] }
+		]
+		expect(defaults).toHaveLength(2)
+	})
+	it('is optional', () => {
+		command({ name: 'leaf', run() {} })
+	})
+	it('may return an exit code', () => {
+		command({ name: 'leaf', onUsageError: () => 64, run() {} })
+		command({ name: 'leaf', onUsageError: async () => 64, run() {} })
+	})
+	it('may not return anything but an exit code', () => {
+		// @ts-expect-error a string is not an exit code
+		command({ name: 'leaf', onUsageError: () => 'failed', run() {} })
 	})
 })

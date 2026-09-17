@@ -1,0 +1,1 @@
+{"ts":"2026-09-17T00:27:14Z","kind":"correction","cr":"607-usage-error-handler","correction-kind":"judge-iteration","cause":"governance-preflight-missing","cause-candidate":true,"note":"the spec-judge pre-flight found gate-validation-governance undeclared because the conductor never loaded it; loaded it and re-ran a fresh judge"}

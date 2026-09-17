@@ -34,6 +34,8 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | Export | Purpose |
 | --- | --- |
 | [`cli.Options`](/clibuilder/api/cli/#options) | Options accepted by `cli()` |
+| [`cli.UsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | One usage error found while parsing, as passed to `onUsageError` |
+| [`cli.UsageErrorHandler`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | The signature of `onUsageError`, on `cli()` options and on a command |
 | [`cli.Command`](/clibuilder/api/command/#clicommand) | The shape of a command |
 | [`cli.Command.Argument`](/clibuilder/api/command/#arguments) | A positional argument declaration |
 | [`cli.Command.Options`](/clibuilder/api/command/#options) | The options record declaration |

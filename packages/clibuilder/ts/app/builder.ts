@@ -98,6 +98,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const errors = r.errors.filter((e) => !(e.type === 'invalid-key' && !!lookupOptions(baseCommand, e.key)[0]))
 		if (errors.length > 0) {
 			const ui = createCommandInstance(context, s, r.command, registry).ui
+			const onUsageError = findUsageErrorHandler(command) ?? options.onUsageError
+			if (onUsageError) {
+				const code = await onUsageError(errors, { command, ui })
+				return context.exit(typeof code === 'number' ? code : exitCodes.usage)
+			}
 			for (const e of errors) ui.error(formatLookupError(e, command))
 			ui.showHelp()
 			return context.exit(exitCodes.usage)
@@ -151,6 +156,15 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		}
 		const errors = r.error.flatten().fieldErrors
 		return { errors }
+	}
+}
+
+/**
+ * The matched command's own usage-error handler, else the nearest enclosing command's.
+ */
+function findUsageErrorHandler(command: Command | undefined): cli.UsageErrorHandler | undefined {
+	for (let c = command; c; c = c.parent) {
+		if (c.onUsageError) return c.onUsageError
 	}
 }
 

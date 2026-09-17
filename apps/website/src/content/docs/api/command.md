@@ -39,6 +39,7 @@ Commands passed inline to `.command()` or `.default()` are inferred without it â
 | `config` | `z.ZodTypeAny` | The schema this command's [config](/clibuilder/guides/configuration/) must satisfy. Declaring it triggers the config load. |
 | `context` | `Record<string, any>` | Arbitrary values handed back on `this.context` â€” the seam for injecting I/O in [tests](/clibuilder/guides/testing/). |
 | `commands` | `Command[]` | Sub-commands. |
+| `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported for this command and its sub-commands. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `run` | `function` | What the command does. |
 
 A command must have **either** a `run` or a `commands`. A command with `commands` and no `run` is a

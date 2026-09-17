@@ -117,6 +117,27 @@ Feature: Command definition
     When that help option declares a string type
     Then the run arguments type help as a string rather than as the implicit boolean
 
+  Scenario: a usage-error handler is declarable on every kind of command and its parameters are typed
+    Given a leaf, a group, and a default command declaration, each carrying a usage-error handler
+    When the declarations are checked
+    Then each is accepted
+    And each handler's first parameter types as a list of usage errors and its second carries the matched command and a ui
+
+  Scenario: a declaration without a usage-error handler is still accepted
+    Given a leaf declaration carrying a run and no usage-error handler
+    When the declaration is checked
+    Then it is accepted
+
+  Scenario: a usage-error handler may return an exit code
+    Given a command declaration whose usage-error handler returns a number
+    When the declaration is checked
+    Then it is accepted
+
+  Scenario: a usage-error handler returning anything but an exit code is rejected
+    Given a command declaration whose usage-error handler returns a string
+    When the declaration is checked
+    Then it is rejected, unlike the same handler returning a number
+
   # ── UC2 — Command.parent: carry a command's place in the tree ──
 
   Scenario: the internal command type lets a reader reach a parent without a cast

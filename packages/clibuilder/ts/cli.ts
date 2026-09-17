@@ -1,7 +1,8 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
-import { context } from './drivers/context.js'
 import type { UI } from './core/ports.js'
+import { context } from './drivers/context.js'
+import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, ValueKey } from './plugins/registry.js'
 import type { z } from './zod.js'
 
@@ -37,7 +38,46 @@ export namespace cli {
 		 * When specified, plugin commands will be available to search for available plugins.
 		 */
 		keywords?: string[]
+		/**
+		 * Takes over how usage errors are reported for every command
+		 * that does not declare its own `onUsageError`.
+		 *
+		 * @see UsageErrorHandler
+		 */
+		onUsageError?: UsageErrorHandler
 	}
+
+	/**
+	 * Takes over how usage errors are reported:
+	 * an unknown option, a missing or extra argument, an invalid value.
+	 *
+	 * When one applies, clibuilder does not print the errors or the help.
+	 * The handler decides what to write, where, and whether to call `ui.showHelp()`.
+	 *
+	 * The handler used is the matched command's own,
+	 * else the nearest enclosing command's,
+	 * else the one on `cli()` options.
+	 * Commands added by plugins resolve the same way.
+	 *
+	 * The cli exits with `exitCodes.usage` (2),
+	 * unless the handler returns a different exit code.
+	 *
+	 * @param errors the structured errors found while parsing the arguments.
+	 * @param context.command the matched command, including its declared `arguments` and `options`.
+	 * @param context.ui the matched command's `ui`.
+	 */
+	export type UsageErrorHandler = (
+		errors: UsageError[],
+		context: { command: Command; ui: UI }
+		// biome-ignore lint/suspicious/noConfusingVoidType: a handler that returns nothing keeps the usage exit code
+	) => void | number | Promise<void | number>
+
+	/**
+	 * One error found while parsing the arguments.
+	 * `type` tells which kind it is: `invalid-key`, `missing-argument`,
+	 * `extra-arguments`, `invalid-value`, or `expect-single`.
+	 */
+	export type UsageError = lookupCommand.Error
 
 	export type Builder = {
 		readonly name: string
@@ -78,6 +118,12 @@ export namespace cli {
 		config?: ConfigType
 		arguments?: A
 		options?: O
+		/**
+		 * Takes over how usage errors are reported for this command and its sub-commands.
+		 *
+		 * @see UsageErrorHandler
+		 */
+		onUsageError?: UsageErrorHandler
 	} & (
 		| {
 				commands?: Command[]
@@ -111,6 +157,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					onUsageError?: UsageErrorHandler
 					commands?: Command[]
 					run(
 						this: {
@@ -129,6 +176,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					onUsageError?: UsageErrorHandler
 					commands: Command[]
 			  }
 

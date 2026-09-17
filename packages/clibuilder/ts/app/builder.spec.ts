@@ -681,6 +681,149 @@ describe('usage errors', () => {
 		})
 		expect(await cli.parse(argv('test-cli --bogus'))).toBeUndefined()
 	})
+	describe('onUsageError', () => {
+		// the mock context reports the exit it records; that line is not the cli's output
+		function output(ctx: { sl: { reporter: { getLogMessage(): string } } }) {
+			return ctx.sl.reporter.getLogMessage().replace(/\n?exit with \d+$/, '')
+		}
+		function recorder(label: string, calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }>) {
+			return (errors: cli.UsageError[], { command }: { command: cli.Command }) => {
+				calls.push({ label, errors, command })
+			}
+		}
+		it("uses the matched command's own handler over its group's and the cli's", async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const [builder] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.command({
+					name: 'orders',
+					onUsageError: recorder('group', calls),
+					commands: [command({ name: 'ship', onUsageError: recorder('leaf', calls), run() {} })]
+				})
+				.parse(argv('test-cli orders ship --bogus'))
+			expect(calls.map((c) => c.label)).toEqual(['leaf'])
+		})
+		it("uses the nearest enclosing command's handler over the cli's", async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const [builder] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.command({
+					name: 'orders',
+					onUsageError: recorder('group', calls),
+					commands: [command({ name: 'ship', run() {} })]
+				})
+				.parse(argv('test-cli orders ship --bogus'))
+			expect(calls.map((c) => c.label)).toEqual(['group'])
+			expect(calls[0].command.name).toBe('ship')
+		})
+		it("uses the handler on a plugin's group for its sub-commands", async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const ctx = mockContext({ fixtureDir: 'one-plugin' })
+			ctx.loadPlugins = async () => [
+				{
+					name: 'weather',
+					onUsageError: recorder('plugin', calls),
+					commands: [command({ name: 'forecast', run() {} })]
+				}
+			]
+			await builder(ctx, { name: 'test-cli', version: '1.0.0', config: true, onUsageError: recorder('cli', calls) })
+				.default({ run() {} })
+				.parse(argv('test-cli weather forecast --bogus'))
+			expect(calls.map((c) => c.label)).toEqual(['plugin'])
+			expect(calls[0].command.name).toBe('forecast')
+		})
+		it("uses the cli's handler when no command in the chain declares one", async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const [builder] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.command({ name: 'orders', commands: [command({ name: 'ship', run() {} })] })
+				.parse(argv('test-cli orders ship --bogus'))
+			expect(calls.map((c) => c.label)).toEqual(['cli'])
+			expect(calls[0].command.name).toBe('ship')
+		})
+		it("uses the cli's handler for a command a plugin adds", async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const [builder, ctx] = setupBuilderTest(
+				{ fixtureDir: 'one-plugin' },
+				{ config: true, onUsageError: recorder('cli', calls) }
+			)
+			await builder.default({ run() {} }).parse(argv('test-cli one echo --bogus'))
+			expect(calls.map((c) => c.label)).toEqual(['cli'])
+			expect(calls[0].command.name).toBe('echo')
+			expect(ctx.exitCode).toBe(2)
+		})
+		it('receives each error and the matched command, and the framework prints nothing', async () => {
+			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
+			const [builder, ctx] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.command({
+					name: 'sub',
+					arguments: [{ name: 'abc', description: 'arg abc' }],
+					options: { flag: { description: 'a flag' } },
+					run() {
+						expect.fail('should not reach')
+					}
+				})
+				.parse(argv('test-cli sub --bogus'))
+			expect(calls).toHaveLength(1)
+			expect(calls[0].errors).toEqual(
+				expect.arrayContaining([
+					{ type: 'invalid-key', key: 'bogus' },
+					{ type: 'missing-argument', name: 'abc' }
+				])
+			)
+			expect(Object.keys(calls[0].command.options!)).toContain('flag')
+			expect(output(ctx)).toBe('')
+		})
+		it('does not see the global options as errors', async () => {
+			const onUsageError = vi.fn()
+			const [builder] = setupBuilderTest(undefined, { onUsageError })
+			await builder.command({ name: 'sub', run() {} }).parse(argv('test-cli sub --silent'))
+			expect(onUsageError).not.toHaveBeenCalled()
+		})
+		it('leaves the usage exit code when the handler returns nothing', async () => {
+			const [builder, ctx] = setupBuilderTest(undefined, { onUsageError() {} })
+			await builder.default({ run() {} }).parse(argv('test-cli --bogus'))
+			expect(ctx.exitCode).toBe(2)
+		})
+		it('uses the exit code the handler returns', async () => {
+			const [builder, ctx] = setupBuilderTest(undefined, { onUsageError: async () => 64 })
+			await builder.default({ run() {} }).parse(argv('test-cli --bogus'))
+			expect(ctx.exitCode).toBe(64)
+		})
+		it('propagates an error the handler throws', async () => {
+			const boom = new Error('boom')
+			const [builder, ctx] = setupBuilderTest(undefined, {
+				onUsageError() {
+					throw boom
+				}
+			})
+			await expect(builder.default({ run() {} }).parse(argv('test-cli --bogus'))).rejects.toBe(boom)
+			expect(ctx.exitCode).toBeUndefined()
+		})
+		it("shows the matched command's help when the handler asks for it", async () => {
+			const [builder, ctx] = setupBuilderTest()
+			await builder
+				.command({
+					name: 'ship',
+					onUsageError(_errors, { ui }) {
+						ui.showHelp()
+					},
+					run() {}
+				})
+				.parse(argv('test-cli ship --bogus'))
+			expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli ship')
+		})
+		it('shows no help when the handler does not ask for it', async () => {
+			const [builder, ctx] = setupBuilderTest(undefined, {
+				onUsageError(errors, { ui }) {
+					ui.info(JSON.stringify({ code: errors[0].type }))
+				}
+			})
+			await builder.default({ run() {} }).parse(argv('test-cli --bogus'))
+			expect(output(ctx)).toBe('{"code":"invalid-key"}')
+		})
+	})
 	it('leaves the exit code alone on success', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.default({ run() {} }).parse(argv('test-cli'))
