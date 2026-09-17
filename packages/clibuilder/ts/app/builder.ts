@@ -85,7 +85,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
 
-		const r = lookupCommand(s.command, rawArgs)
+		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
 
 		if (baseArgs.version || args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()

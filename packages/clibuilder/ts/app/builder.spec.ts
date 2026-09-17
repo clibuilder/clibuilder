@@ -968,3 +968,34 @@ describe('--show-config (#317)', () => {
 		expect(ctx.sl.reporter.getLogMessage()).not.toContain('show-config')
 	})
 })
+
+describe('option arity', () => {
+	function setupReadCli() {
+		const [builder, context] = setupBuilderTest()
+		const cli = builder.command({
+			name: 'read',
+			arguments: [{ name: 'pane', description: 'pane', type: z.optional(z.string()) }],
+			options: {
+				lines: { description: 'lines', type: z.optional(z.number()) },
+				full: { description: 'full' }
+			},
+			run(args) {
+				return args
+			}
+		})
+		return [cli, context] as const
+	}
+	it('passes a positional after a number option', async () => {
+		const [cli] = setupReadCli()
+		a.satisfies(await cli.parse(argv('test-cli read --lines 5 %1')), { pane: '%1', lines: 5 })
+	})
+	it('passes a positional after a boolean option', async () => {
+		const [cli] = setupReadCli()
+		a.satisfies(await cli.parse(argv('test-cli read --full %1')), { pane: '%1', full: true })
+	})
+	it('passes a positional after a global flag', async () => {
+		const [cli, context] = setupReadCli()
+		a.satisfies(await cli.parse(argv('test-cli read --verbose %1')), { pane: '%1' })
+		expect(context.ui.displayLevel).toBe('debug')
+	})
+})
