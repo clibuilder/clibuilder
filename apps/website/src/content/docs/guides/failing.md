@@ -59,9 +59,9 @@ asking for help is not a usage error.
 
 ### Reporting usage errors yourself
 
-To choose the format, the stream, and whether help is printed, pass `onUsageError` to `cli()`.
+To choose the format, the stream, and whether help is printed, declare an `onUsageError` handler.
 clibuilder then prints nothing for usage errors. It calls the handler with the structured errors, the
-matched command, and that command's `ui`:
+matched command, and that command's `ui`. To cover the whole cli, pass the handler to `cli()`:
 
 ```ts
 import { cli } from 'clibuilder'
@@ -92,10 +92,38 @@ Each error is a `cli.UsageError`, identified by its `type`:
 | `invalid-value` | `key`, `value`, `message` |
 | `expect-single` | `key`, `value`, `keyType` |
 
-`command` is the command the invocation matched, with its declared `arguments` and `options`. This
-includes commands that plugins add. Call `ui.showHelp()` to print that command's help.
+`command` is the command the invocation matched, with its declared `arguments` and `options`. Call
+`ui.showHelp()` to print that command's help.
 
-The cli still exits `2`. To exit with another code, return it from the handler.
+A command can declare its own handler. It covers that command and its sub-commands. clibuilder calls
+exactly one handler, the first it finds in this order:
+
+1. the matched command's own handler;
+2. the handler of the nearest command that contains it;
+3. the handler passed to `cli()`.
+
+If none is found, clibuilder prints the errors and the help as described above.
+
+This is how a plugin keeps its error format in any cli that loads it. Declare the handler on the
+plugin's group command:
+
+```ts
+import type { PluginActivationContext } from 'clibuilder'
+import { list, send } from './commands.js'
+
+export function activate(ctx: PluginActivationContext) {
+  ctx.addCommand({
+    name: 'mux',
+    onUsageError(errors) {
+      for (const e of errors) process.stdout.write(`${JSON.stringify({ code: e.type })}\n`)
+    },
+    commands: [send, list]
+  })
+}
+```
+
+The cli still exits `2`. To exit with another code, return it from the handler. If the handler throws,
+`parse()` rejects with that error.
 
 ## Failing from a command
 

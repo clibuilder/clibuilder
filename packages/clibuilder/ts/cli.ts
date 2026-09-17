@@ -39,23 +39,38 @@ export namespace cli {
 		 */
 		keywords?: string[]
 		/**
-		 * Takes over how usage errors are reported:
-		 * an unknown option, a missing or extra argument, an invalid value.
+		 * Takes over how usage errors are reported for every command
+		 * that does not declare its own `onUsageError`.
 		 *
-		 * When set, clibuilder does not print the errors or the help.
-		 * The handler decides what to write, where, and whether to call `ui.showHelp()`.
-		 *
-		 * The cli exits with `exitCodes.usage` (2),
-		 * unless the handler returns a different exit code.
-		 *
-		 * @param errors the structured errors found while parsing the arguments.
-		 * @param context.command the matched command, including its declared `arguments` and `options`.
-		 * It is the same for commands added by plugins.
-		 * @param context.ui the matched command's `ui`.
+		 * @see UsageErrorHandler
 		 */
-		// biome-ignore lint/suspicious/noConfusingVoidType: a handler that returns nothing keeps the usage exit code
-		onUsageError?(errors: UsageError[], context: { command: Command; ui: UI }): void | number | Promise<void | number>
+		onUsageError?: UsageErrorHandler
 	}
+
+	/**
+	 * Takes over how usage errors are reported:
+	 * an unknown option, a missing or extra argument, an invalid value.
+	 *
+	 * When one applies, clibuilder does not print the errors or the help.
+	 * The handler decides what to write, where, and whether to call `ui.showHelp()`.
+	 *
+	 * The handler used is the matched command's own,
+	 * else the nearest enclosing command's,
+	 * else the one on `cli()` options.
+	 * Commands added by plugins resolve the same way.
+	 *
+	 * The cli exits with `exitCodes.usage` (2),
+	 * unless the handler returns a different exit code.
+	 *
+	 * @param errors the structured errors found while parsing the arguments.
+	 * @param context.command the matched command, including its declared `arguments` and `options`.
+	 * @param context.ui the matched command's `ui`.
+	 */
+	export type UsageErrorHandler = (
+		errors: UsageError[],
+		context: { command: Command; ui: UI }
+		// biome-ignore lint/suspicious/noConfusingVoidType: a handler that returns nothing keeps the usage exit code
+	) => void | number | Promise<void | number>
 
 	/**
 	 * One error found while parsing the arguments.
@@ -103,6 +118,12 @@ export namespace cli {
 		config?: ConfigType
 		arguments?: A
 		options?: O
+		/**
+		 * Takes over how usage errors are reported for this command and its sub-commands.
+		 *
+		 * @see UsageErrorHandler
+		 */
+		onUsageError?: UsageErrorHandler
 	} & (
 		| {
 				commands?: Command[]
@@ -136,6 +157,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					onUsageError?: UsageErrorHandler
 					commands?: Command[]
 					run(
 						this: {
@@ -154,6 +176,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					onUsageError?: UsageErrorHandler
 					commands: Command[]
 			  }
 
