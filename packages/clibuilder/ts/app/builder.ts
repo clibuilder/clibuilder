@@ -1,17 +1,17 @@
 import { forEachKey, type RequiredPick } from 'type-plus'
-import { parseArgv } from '../invocation/argv.js'
-import type { cli } from '../cli.js'
-import type { Command } from '../command/internal.js'
 import { getBaseCommand } from '../builtin/base_command.js'
 import { pluginsCommand } from '../builtin/plugin_commands/group.js'
+import type { cli } from '../cli.js'
+import type { Command } from '../command/internal.js'
 import { describeConfigSource } from '../config.js'
 import type { Context } from '../drivers/context.js'
-import { exitCodes, isCliError } from './errors.js'
-import { formatLookupError } from '../render/error.js'
+import { parseArgv } from '../invocation/argv.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
-import { state } from './state.js'
+import { formatLookupError } from '../render/error.js'
 import type { z } from '../zod.js'
+import { exitCodes, isCliError } from './errors.js'
+import { state } from './state.js'
 
 export function builder(
 	context: Context,
