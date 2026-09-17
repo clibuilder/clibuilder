@@ -374,6 +374,20 @@ describe('numeric options', () => {
 		expect(cmd).toBe(defaultCommand)
 		expect(args).toEqual({ _: [], abc: 123 })
 	})
+	test.each([
+		['0 over a number default', z.number(), 123, 'my-cli --abc 0', 0],
+		['false over a boolean default', z.boolean(), true, 'my-cli --abc false', false],
+		['false (=) over a boolean default', z.boolean(), true, 'my-cli --abc=false', false],
+		['an empty string over a string default', z.string(), 'x', 'my-cli --abc=', '']
+	])('passed %s is kept', (_, type, defaultValue, input, expected) => {
+		const defaultCommand = command({
+			name: '',
+			options: { abc: { type: z.optional(type), default: defaultValue, description: 'a' } },
+			run() {}
+		})
+		const { args } = testLookupCommand(defaultCommand, input)!
+		expect(args).toEqual({ _: [], abc: expected })
+	})
 	test('singular options pass in multiple values gets the last value and emit warning', () => {
 		const defaultCommand = command({
 			name: '',

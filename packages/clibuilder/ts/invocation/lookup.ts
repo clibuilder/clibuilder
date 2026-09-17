@@ -221,7 +221,7 @@ function fillDefaultOptions(state: State) {
 	return reduceByKey(
 		optionsMap,
 		(p, key) => {
-			if (p.args[key]) return p
+			if (p.args[key] !== undefined) return p
 
 			const options = optionsMap[key]
 			if (typeof options === 'string' || options.default === undefined) return p
