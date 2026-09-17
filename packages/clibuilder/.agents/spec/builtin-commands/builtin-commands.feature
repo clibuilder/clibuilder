@@ -49,10 +49,10 @@ Feature: Built-in commands
     When its base command is built
     Then show-config is not among its options
 
-  Scenario: running the base command itself shows help
-    Given an application invoked with no command
-    When the base command runs
-    Then help is shown
+  Scenario: the base command declares no run of its own
+    Given an application's base command
+    When its declaration is read
+    Then it declares no run
 
   # ── UC2 — plugins list: report the installed plugins ──
 

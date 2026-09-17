@@ -161,10 +161,11 @@ Feature: Execution
     When it is invoked
     Then no config validation happens and the command runs
 
-  Scenario: a group command with nothing to run shows help
+  Scenario: a group command invoked bare shows help and exits with the usage code
     Given a matched command declaring sub-commands and no run
-    When it is invoked
+    When it is invoked without a sub-command
     Then help is shown
+    And the cli exits with the usage code
 
   Scenario: a matched command runs and its value is returned
     Given a matched runnable command and an invocation carrying no errors
