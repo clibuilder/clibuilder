@@ -1,5 +1,51 @@
 # Change Log
 
+## 11.2.0
+
+### Minor Changes
+
+- 240fd18: A command group invoked without a sub command now exits with `exitCodes.usage` (2).
+
+  A command that has `commands` but no `run` — and a cli with sub commands but no `default()` — still prints its help, but no longer exits `0`: a caller must add a sub command, so a bare call is a usage error. Asking for help explicitly (`my-cli send --help`) still exits `0`.
+
+- 5ffa775: Add `conflicts` to an option entry to declare options that cannot be used together.
+  Passing both is a usage error (exit code 2), reported as a `conflicting-options` entry in the `lookupCommand` error list.
+  A default value does not count as passed, aliases are resolved, and the help message lists the conflict on both options.
+- 82e017c: Add `onUsageError(errors, { command, ui })` to report usage errors in your own format.
+  Usage errors are an unknown option, a missing or extra argument, and an invalid value.
+
+  Declare it on `cli()` options for the whole cli, or on a command for that command and its sub-commands.
+  This includes commands that plugins add.
+  clibuilder calls the matched command's handler, else the nearest enclosing command's, else the `cli()` one.
+  The handler gets the structured errors and the matched command, and chooses what to print and whether to show help.
+  The cli still exits `2` unless the handler returns another exit code.
+
+### Patch Changes
+
+- da51ad2: Take only as many tokens after an option as its type allows, so `<cmd> --flag value <positional>` works.
+
+  A string, number, or enum option takes one following token.
+  A boolean option takes none, unless the token is `true` or `false`.
+  An array option still takes every following token.
+  The other tokens are positionals.
+  Before, `read --lines 5 %1` failed with `--lines expects a single value`, and `read --full %1` failed with `expected to be boolean`.
+
+- 36be9c9: Declare `tersify` as a runtime dependency.
+
+  `ts/ui.ts` imports `tersify` to render the `Config:` section of help, but it was listed
+  under `devDependencies`. The CJS build bundles with esbuild, so CJS consumers had it
+  inlined and never saw the problem. The ESM build is plain `tsc`, which emits a bare
+  specifier:
+
+  ```js
+  // esm/ui.js
+  import { tersify } from "tersify";
+  ```
+
+  So an ESM consumer whose command declares a `config` schema could fail to resolve
+  `tersify` when help was rendered — it only worked where the package manager happened to
+  hoist it transitively. No API change; the dependency is simply declared where it is used.
+
 ## 11.1.0
 
 ### Minor Changes
