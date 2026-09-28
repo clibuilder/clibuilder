@@ -580,7 +580,7 @@ describe('loadConfig()', () => {
 			.parse(argv('single-bin'))
 		const msg = ctx.sl.reporter.getLogMessage()
 		expect(msg).toContain('no config found')
-		expect(actual).toEqual(undefined)
+		expect(actual).toBe(exitCodes.error)
 	})
 })
 
@@ -695,7 +695,7 @@ describe('usage errors', () => {
 				expect.fail('should not reach')
 			}
 		})
-		expect(await cli.parse(argv('test-cli --bogus'))).toBeUndefined()
+		expect(await cli.parse(argv('test-cli --bogus'))).toBe(exitCodes.usage)
 	})
 	describe('onUsageError', () => {
 		// the mock context reports the exit it records; that line is not the cli's output
@@ -926,7 +926,7 @@ describe('CliError', () => {
 				throw new CliError('cannot reach the registry')
 			}
 		})
-		expect(await cli.parse(argv('test-cli'))).toBeUndefined()
+		expect(await cli.parse(argv('test-cli'))).toBe(exitCodes.error)
 		expect(ctx.sl.reporter.getLogMessage()).toContain('cannot reach the registry')
 		expect(ctx.exitCode).toBe(1)
 	})
@@ -1044,5 +1044,50 @@ describe('option arity', () => {
 		const [cli, context] = setupReadCli()
 		a.satisfies(await cli.parse(argv('test-cli read --verbose %1')), { pane: '%1' })
 		expect(context.ui.displayLevel).toBe('debug')
+	})
+})
+
+describe('parse() resolves to the exit code it records', () => {
+	it('on an unknown option', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		expect(await builder.default({ run() {} }).parse(argv('test-cli --bogus'))).toBe(exitCodes.usage)
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+	it('on an unknown command', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		expect(await builder.command({ name: 'cmd', run() {} }).parse(argv('test-cli nope'))).toBe(exitCodes.usage)
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+	it('on the code a usage error handler returns', async () => {
+		const [builder] = setupBuilderTest(undefined, { onUsageError: () => 64 })
+		expect(await builder.default({ run() {} }).parse(argv('test-cli --bogus'))).toBe(64)
+	})
+	it('on a group invoked without a sub command', async () => {
+		const [builder] = setupBuilderTest()
+		const group = { name: 'send', commands: [{ name: 'mail', run() {} }] }
+		expect(await builder.command(group).parse(argv('test-cli send'))).toBe(exitCodes.usage)
+	})
+	it('on a config that fails validation', async () => {
+		const ctx = mockContext({ fixtureDir: 'has-json-config' })
+		const code = await builder(ctx, { name: 'show-config', version: '1.0.0' })
+			.default({ config: z.object({ b: z.string() }), run() {} })
+			.parse(argv('show-config'))
+		expect(code).toBe(exitCodes.error)
+	})
+	it('on a thrown CliError', async () => {
+		const [builder] = setupBuilderTest()
+		const code = await builder
+			.default({
+				run() {
+					throw new CliError('nope', { exitCode: 3 })
+				}
+			})
+			.parse(argv('test-cli'))
+		expect(code).toBe(3)
+	})
+	it('and to what run() returns on success', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		expect(await builder.default({ run: () => 'done' }).parse(argv('test-cli'))).toBe('done')
+		expect(ctx.exitCode).toBeUndefined()
 	})
 })

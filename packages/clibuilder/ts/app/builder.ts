@@ -101,11 +101,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			const onUsageError = findUsageErrorHandler(command) ?? options.onUsageError
 			if (onUsageError) {
 				const code = await onUsageError(errors, { command, ui })
-				return context.exit(typeof code === 'number' ? code : exitCodes.usage)
+				return exit(typeof code === 'number' ? code : exitCodes.usage)
 			}
 			for (const e of errors) ui.error(formatLookupError(e, command))
 			ui.showHelp()
-			return context.exit(exitCodes.usage)
+			return exit(exitCodes.usage)
 		}
 
 		if (command.config) {
@@ -117,7 +117,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				context.ui.error('config fails validation:')
 				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
 				createCommandInstance(context, s, r.command, registry).ui.showHelp()
-				return context.exit(exitCodes.error)
+				return exit(exitCodes.error)
 			}
 			s.config = config
 		}
@@ -126,7 +126,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			// a command without `run` is a group: invoked bare, it is missing its
 			// sub command, so it is a usage error (#609). `--help` is handled above.
 			commandInstance.ui.showHelp()
-			return context.exit(exitCodes.usage)
+			return exit(exitCodes.usage)
 		}
 		try {
 			return await commandInstance.run(args as any)
@@ -136,7 +136,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			if (!isCliError(e)) throw e
 			commandInstance.ui.error(e.message)
 			for (const h of e.help) commandInstance.ui.error(h)
-			return context.exit(e.exitCode)
+			return exit(e.exitCode)
 		}
 	}
 
@@ -152,6 +152,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const ui = createCommandUI(context, s, s.command)
 		ui.info(`config: ${describeConfigSource(source)}`)
 		if (source.type !== 'none') ui.info(JSON.stringify(config, undefined, 2))
+	}
+
+	function exit(code: number) {
+		context.exit(code)
+		return code
 	}
 
 	function parseConfig(configType: z.ZodTypeAny, config: any) {
