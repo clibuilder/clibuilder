@@ -1,5 +1,11 @@
 # Change Log
 
+## 11.3.1
+
+### Patch Changes
+
+- 2f403eb: Update `type-plus` to `8.0.0-beta.12`, and `standard-log`, `standard-log-color`, `tersify`, `find-installed-packages`, and `search-packages` to their latest releases.
+
 ## 11.3.0
 
 ### Minor Changes
