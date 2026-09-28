@@ -45,7 +45,7 @@ export namespace CliError {
  * Throw this from a command's `run()` to fail the cli.
  *
  * The message and the help lines are printed through the command's `ui`,
- * and the cli exits with `exitCode`. `parse()` resolves to `undefined`
+ * and the cli exits with `exitCode`. `parse()` resolves to that `exitCode`
  * instead of rejecting, so the failure is reported rather than surfacing
  * as an unhandled rejection with a stack trace.
  *

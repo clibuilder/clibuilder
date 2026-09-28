@@ -103,6 +103,14 @@ export namespace cli {
 	}
 
 	export type Executable = {
+		/**
+		 * Runs the command matched by `argv`.
+		 *
+		 * Resolves to what the command's `run()` returns.
+		 * When the cli fails instead (a usage error, a config that fails validation,
+		 * a `CliError`), it resolves to the exit code it records on the process,
+		 * so a caller can assign the result without reading `process.exitCode`.
+		 */
 		parse<R = any>(argv: string[]): Promise<R>
 	}
 
