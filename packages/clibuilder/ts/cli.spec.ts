@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { assertType, testType } from 'type-plus'
+import { testType } from 'type-plus'
 import { cli, z } from './index.js'
 
 it('needs name and version', () => {
@@ -54,7 +54,7 @@ it('can specify type of the arguments and options. The command will receive the 
 			oosm: { type: z.optional(z.array(z.string())), description: 'a' }
 		},
 		run(args) {
-			assertType<{
+			args satisfies {
 				a: string
 				b: boolean
 				c: number[]
@@ -71,7 +71,7 @@ it('can specify type of the arguments and options. The command will receive the 
 				oos: string | undefined
 				oosm: string[] | undefined
 				help: boolean | undefined
-			}>(args)
+			}
 		}
 	})
 })

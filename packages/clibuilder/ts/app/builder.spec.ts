@@ -1,5 +1,5 @@
 import { a } from 'assertron'
-import { assertType, type IsExtend, required, testType } from 'type-plus'
+import { required, testType } from 'type-plus'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, z } from '../index.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
@@ -228,7 +228,7 @@ describe('--silent', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				testType.false<IsExtend<typeof args, { silent: any }>>(true)
+				testType.canAssign<typeof args, { silent: any }>(false)
 				return args
 			}
 		})
@@ -262,7 +262,7 @@ describe('verbose', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				testType.false<IsExtend<typeof args, { verbose: any }>>(true)
+				testType.canAssign<typeof args, { verbose: any }>(false)
 				return args
 			}
 		})
@@ -273,7 +273,7 @@ describe('verbose', () => {
 		const [builder] = setupBuilderTest()
 		const cli = builder.default({
 			run(args) {
-				testType.false<IsExtend<typeof args, { V: any }>>(true)
+				testType.canAssign<typeof args, { V: any }>(false)
 				return args
 			}
 		})
@@ -502,7 +502,7 @@ describe('loadConfig()', () => {
 		}).default({
 			config: z.object({ a: z.number() }),
 			run() {
-				assertType<{ a: number }>(this.config)
+				this.config satisfies { a: number }
 				return this.config
 			}
 		})
