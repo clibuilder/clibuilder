@@ -1,5 +1,6 @@
 import type { cli, PluginActivationContext } from '../cli.js'
 import type { createUI } from '../drivers/logger.js'
+import { resolvePlugin } from '../drivers/resolve_plugin.js'
 import type { RegistryOwner } from './registry.js'
 
 export async function loadPlugins(
@@ -52,7 +53,7 @@ async function activatePlugins(
 // istanbul ignore next
 async function loadModule(cwd: string, ui: createUI.UI, name: string) {
 	try {
-		return await import(name)
+		return await import(resolvePlugin(cwd, name))
 	} catch (e: any) {
 		ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
 		ui.warn(`cwd: ${cwd}`)

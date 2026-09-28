@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { execCommand } from '@unional/fixture'
 import { builder } from '../app/builder.js'
 import { mockContext } from '../drivers/context.mock.js'
@@ -67,4 +69,26 @@ it('lets a command consume capabilities and content contributed by a later plugi
 	})
 	expect(context.sl.reporter.getLogMessage()).toContain('could not register clibuilder:test-capability')
 	expect(context.sl.reporter.getLogMessage()).toContain('already registered by')
+})
+
+// A plugin is a dependency of the project the cli runs in, not of the cli itself.
+// A cli that inlines clibuilder into its own bundle, or is run through `npx` or a global install,
+// sits where the project's `node_modules` is out of reach, so the plugin has to resolve from `cwd`.
+// The plugin exposes only an `import` condition, as an ESM-only package does.
+it('loads a plugin installed in cwd that the cli itself cannot reach', async () => {
+	const context = mockContext()
+	const pluginDir = join(context.cwd, 'node_modules', 'cwd-only-plugin')
+	mkdirSync(pluginDir, { recursive: true })
+	writeFileSync(
+		join(pluginDir, 'package.json'),
+		JSON.stringify({ name: 'cwd-only-plugin', type: 'module', exports: { '.': { import: './index.js' } } })
+	)
+	writeFileSync(
+		join(pluginDir, 'index.js'),
+		`export function activate({ addCommand }) { addCommand({ name: 'cwd-only', run() { return 'from cwd' } }) }`
+	)
+	context.loadConfig = async () => ({ plugins: ['cwd-only-plugin'] })
+	const app = builder(context, { name: 'test-cli', version: '1.0.0', config: true }).default({ run() {} })
+
+	expect(await app.parse(argv('test-cli cwd-only'))).toEqual('from cwd')
 })
