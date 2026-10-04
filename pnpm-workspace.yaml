@@ -34,6 +34,7 @@ minimumReleaseAgeExclude:
   - storybook-addon-vis
   - vitest-plugin-vis
   - node-supported-releases
+  - '@clibuilder/*'
   - '@just-func/*'
   - '@just-web/*'
   - '@mocktomata/*'
