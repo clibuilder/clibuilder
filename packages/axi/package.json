@@ -1,6 +1,6 @@
 {
 	"name": "@clibuilder/axi",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Agent-facing output conventions (AXI) for clibuilder CLIs",
 	"keywords": [
 		"agent",
