@@ -1,0 +1,85 @@
+{
+	"name": "@clibuilder/axi",
+	"version": "0.0.0",
+	"description": "Agent-facing output conventions (AXI) for clibuilder CLIs",
+	"keywords": [
+		"agent",
+		"axi",
+		"cli",
+		"clibuilder",
+		"output",
+		"toon"
+	],
+	"homepage": "https://github.com/clibuilder/clibuilder/tree/main/packages/axi",
+	"bugs": {
+		"url": "https://github.com/clibuilder/clibuilder/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/clibuilder/clibuilder.git",
+		"directory": "packages/axi"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./esm/index.d.ts",
+			"import": "./esm/index.js",
+			"require": "./cjs/index.js",
+			"default": "./cjs/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"main": "./cjs/index.js",
+	"types": "./esm/index.d.ts",
+	"files": [
+		"cjs",
+		"esm",
+		"ts",
+		"!**/*.internal.*",
+		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+	],
+	"scripts": {
+		"build": "run-p build:cjs build:esm",
+		"build:cjs": "esbuild ts/index.ts --bundle --platform=node --packages=external --outdir=cjs && ncp package.cjs.json cjs/package.json",
+		"build:esm": "tsc",
+		"build:watch": "tsc --watch",
+		"clean": "rimraf .turbo coverage cjs esm tsconfig.tsbuildinfo",
+		"coverage": "vitest run --coverage",
+		"depcheck": "depcheck",
+		"nuke": "run-s clean && rimraf node_modules",
+		"test": "vitest run",
+		"watch": "vitest",
+		"w": "pnpm watch"
+	},
+	"dependencies": {
+		"@toon-format/toon": "^4.1.1"
+	},
+	"devDependencies": {
+		"@types/node": "^24.12.2",
+		"@vitest/coverage-istanbul": "^4.1.11",
+		"clibuilder": "workspace:*",
+		"depcheck": "^1.4.3",
+		"esbuild": "^0.20.0",
+		"ncp": "^2.0.0",
+		"npm-run-all2": "^6.2.6",
+		"rimraf": "^5.0.10",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.11"
+	},
+	"peerDependencies": {
+		"clibuilder": "^11.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">= 20.19"
+	}
+}
