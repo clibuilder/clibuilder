@@ -142,6 +142,13 @@ Feature: Execution
     When it is invoked with a global option
     Then that option is not reported as unknown
 
+  Scenario: a malformed value on a global option given to a sub-command is a usage error
+    Given a sub-command declaring no options of its own
+    When it is invoked with a global option carrying a value of the wrong type
+    Then the invalid value is reported as it is for the root command
+    And the sub-command does not run
+    And the cli exits with the usage code
+
   Scenario: a usage error is printed with help and exits with the usage code
     Given an invocation carrying an unknown option that is not global
     When it is run

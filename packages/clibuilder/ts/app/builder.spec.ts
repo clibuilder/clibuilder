@@ -916,6 +916,39 @@ describe('global options are accepted by every command', () => {
 		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli')
 		expect(ctx.exitCode).toBeUndefined()
 	})
+	it('runs a sub command given a well-formed global flag', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({ commands: [command({ name: 'sub', run: () => 'ran' })] })
+		expect(await cli.parse(argv('test-cli sub --verbose'))).toBe('ran')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+})
+
+describe('a malformed global option value under a sub command (#614)', () => {
+	it.each([
+		['--verbose=notabool', 'invalid value for option --verbose: expected to be boolean, received "notabool"'],
+		['--silent=nope', 'invalid value for option --silent: expected to be boolean, received "nope"'],
+		['--help=nope', 'invalid value for option --help: expected to be boolean, received "nope"']
+	])('rejects `sub %s` as the root command does', async (flag, message) => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			commands: [command({ name: 'sub', run: () => expect.fail('should not reach') })]
+		})
+		expect(await cli.parse(argv(`test-cli sub ${flag}`))).toBe(exitCodes.usage)
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg).toContain(message)
+		expect(msg).not.toContain('unknown option')
+		expect(msg).toContain('Usage: test-cli sub')
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+	it('matches the root command error for the same input', async () => {
+		const [rootBuilder, rootCtx] = setupBuilderTest()
+		await rootBuilder.default({ run: () => expect.fail('should not reach') }).parse(argv('test-cli --verbose=notabool'))
+		expect(rootCtx.sl.reporter.getLogMessage()).toContain(
+			'invalid value for option --verbose: expected to be boolean, received "notabool"'
+		)
+		expect(rootCtx.exitCode).toBe(exitCodes.usage)
+	})
 })
 
 describe('CliError', () => {

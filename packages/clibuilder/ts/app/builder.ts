@@ -67,7 +67,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
 		const baseCommand = getBaseCommand(s.description, { config: !!s.configName })
-		const { args: baseArgs } = lookupCommand(baseCommand, rawArgs)
+		const { args: baseArgs, errors: baseErrors } = lookupCommand(baseCommand, rawArgs)
 		if (baseArgs.silent) {
 			delete rawArgs.silent
 			s.displayLevel = 'none'
@@ -94,8 +94,13 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		if (baseArgs.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
 
 		// the global options live on the base command, so a sub command that declares
-		// no options of its own reports them as unknown. They are always accepted.
-		const errors = r.errors.filter((e) => !(e.type === 'invalid-key' && !!lookupOptions(baseCommand, e.key)[0]))
+		// no options of its own reports them as unknown. They are always accepted,
+		// but a malformed value on one is still a usage error: the base command's
+		// lookup reports it, so that error stands in for the unknown-option one (#614).
+		const errors = r.errors.flatMap((e) => {
+			if (e.type !== 'invalid-key' || !lookupOptions(baseCommand, e.key)[0]) return [e]
+			return baseErrors.filter((b) => 'key' in b && b.key === e.key)
+		})
 		if (errors.length > 0) {
 			const ui = createCommandInstance(context, s, r.command, registry).ui
 			const onUsageError = findUsageErrorHandler(command) ?? options.onUsageError
