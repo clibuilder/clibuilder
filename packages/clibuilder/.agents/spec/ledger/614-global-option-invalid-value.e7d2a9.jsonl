@@ -1,0 +1,1 @@
+{"kind": "leash", "cr": "614-global-option-invalid-value", "leash": "auto-spec", "by": "derived", "approach": ["a malformed value on a global option under a sub-command reports the base command's invalid-value error instead of dropping it", "one scenario added to the frozen execution suite, closing the backfill follow-up on node execution"]}

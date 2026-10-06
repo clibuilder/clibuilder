@@ -139,6 +139,7 @@ inputs they gave, or to be told precisely what was wrong.
 | `--version` on the base command or the matched one | the version is shown, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
 | an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
+| an unknown-option error names a global option whose value the base command rejected | the base command's invalid-value error is reported in its place, so a malformed global flag fails under a sub-command as it does on the root (#614) |
 | any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code |
 | any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
@@ -301,7 +302,7 @@ graph TD
   VER -- yes --> SV[show the version; stop]
   VER -- no --> HLP{help asked for?}
   HLP -- yes --> SH[show help; stop]
-  HLP -- no --> FILT[drop unknown-option errors naming a global option]
+  HLP -- no --> FILT[drop unknown-option errors naming a global option, keeping the base command's invalid-value error for it]
   FILT --> ERR{any error left?}
   ERR -- yes --> RES[resolve a usage-error handler — sub-graph F]
   RES -- none found --> UE[print each, show help, exit with the usage code]
@@ -428,6 +429,7 @@ callers.
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
 | drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
+| keep the base command's invalid-value error | a sub-command declaring no options, given a global flag with a malformed value | `a malformed value on a global option given to a sub-command is a usage error` |
 | none found: print each, show help, exit usage | an unknown option that is not global, and no handler declared anywhere | `a usage error is printed with help and exits with the usage code` |
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
 | config valid? — yes | matched command declares config, config valid | `a config satisfying the command's schema lets the command run` |
