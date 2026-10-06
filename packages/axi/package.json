@@ -74,7 +74,7 @@
 		"vitest": "^4.1.11"
 	},
 	"peerDependencies": {
-		"clibuilder": "^11.0.0"
+		"clibuilder": "^11.2.0"
 	},
 	"publishConfig": {
 		"access": "public"

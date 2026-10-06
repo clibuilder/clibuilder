@@ -22,7 +22,12 @@ Strategy: **capability-first**.
 | Kind of work | Home |
 | --- | --- |
 | The `--format` option, encoding a result, and writing it to stdout | `output/` |
+| Errors, usage errors, next-step hints, truncation, counts, empty states, and the home header | `output/` |
 | Package entry points, supported runtimes, and published artifacts | `distribution/` |
 
-**Non-goals.** Display choices that belong to one tool — such as collapsing the
-home directory out of a path — stay in that tool.
+**Non-goals.** Display choices that belong to one tool stay in that tool.
+Collapsing the home directory out of a path used to be one; four repos
+re-implemented it and upstream AXI ships it for the home view, so it moved in.
+
+The findings this package was completed from, and the decisions taken where the
+repos disagreed, are in [`docs/findings/`](../../docs/findings/README.md).
