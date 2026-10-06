@@ -34,6 +34,29 @@ describe('@clibuilder/axi', () => {
 		expect(write).toHaveBeenCalledWith('{"plugins":["a","b"]}\n')
 	})
 
+	it('fails with a structured error on stdout and the exit code it carries', async () => {
+		const write = vi.fn()
+		const show = command({
+			name: 'show',
+			options: { format: formatOption },
+			run(args) {
+				throw createOutput(args.format, { stdout: { write } }).error({
+					message: 'no plugin named foo',
+					code: 'not-found',
+					help: 'Run `list` to see the installed plugins'
+				})
+			}
+		})
+		const { exitCode, messages } = await testCommand(show, 'show --format json')
+		expect(exitCode).toBe(exitCodes.error)
+		expect(write).toHaveBeenCalledWith(
+			'{"error":"no plugin named foo","code":"not-found","help":["Run `list` to see the installed plugins"]}\n'
+		)
+		// clibuilder also logs the message as a diagnostic; the help is on stdout only.
+		expect(messages).toContain('no plugin named foo')
+		expect(messages).not.toContain('Run `list`')
+	})
+
 	it('rejects an unknown format as a usage error before the command runs', async () => {
 		const write = vi.fn()
 		const { exitCode } = await testCommand(listCommand(write), 'list --format yaml')
