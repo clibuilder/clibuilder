@@ -1,6 +1,6 @@
 {
 	"name": "@clibuilder/axi",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Agent-facing output conventions (AXI) for clibuilder CLIs",
 	"keywords": [
 		"agent",
@@ -74,7 +74,7 @@
 		"vitest": "^4.1.11"
 	},
 	"peerDependencies": {
-		"clibuilder": "^11.2.0"
+		"clibuilder": "^11.3.3"
 	},
 	"publishConfig": {
 		"access": "public"
