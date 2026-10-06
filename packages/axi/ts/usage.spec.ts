@@ -64,6 +64,32 @@ describe('createUsageErrorHandler', () => {
 		expect(report.error).toBe('unknown option --stat; missing required argument <repo>')
 		expect(report.help).toHaveLength(2)
 	})
+
+	it('writes toon on stdout by default', () => {
+		const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+		try {
+			const code = createUsageErrorHandler()([{ type: 'invalid-key', key: 'x' }], {
+				command: command({ name: 'bare', run() {} }),
+				ui: {} as never
+			})
+			expect(code).toBe(exitCodes.usage)
+			expect(stdout).toHaveBeenCalledWith(
+				'error: unknown option -x\ncode: unknown-option\nhelp[1]: `bare` takes no options (--help always allowed)\n'
+			)
+		} finally {
+			stdout.mockRestore()
+		}
+	})
+
+	it('writes nothing for no errors, keeping the usage exit code', () => {
+		const write = vi.fn()
+		const code = createUsageErrorHandler({ stdout: { write } })([], {
+			command: command({ name: 'bare', run() {} }),
+			ui: {} as never
+		})
+		expect(code).toBe(exitCodes.usage)
+		expect(write).not.toHaveBeenCalled()
+	})
 })
 
 describe('describeUsageError', () => {
@@ -103,6 +129,12 @@ describe('describeUsageError', () => {
 			message: 'option --limit expects a single value, received: 1, 2',
 			help: []
 		})
+	})
+
+	it('reports a single value that should have been one', () => {
+		expect(
+			describeUsageError({ type: 'expect-single', key: 'limit', keyType: z.number(), value: 3 }, cmd).message
+		).toBe('option --limit expects a single value, received: 3')
 	})
 
 	it('says when a command takes no arguments', () => {
