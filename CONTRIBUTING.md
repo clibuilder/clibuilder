@@ -1,5 +1,18 @@
 # Contributing
 
+## Setup
+
+Node and pnpm are pinned in `mise.toml` and managed by [mise](https://mise.jdx.dev):
+
+```sh
+mise install  # node 24 + pnpm 12 at the pinned versions
+pnpm install
+pnpm verify   # lint + build + coverage + depcheck + size
+```
+
+CI does not read `mise.toml`: it takes node from `.node-version` and pnpm from
+`packageManager` in `package.json`. Keep the three in step.
+
 ## Poking at a real CLI
 
 To try a change by hand, run one of the dummy CLIs in [`test-apps`](./test-apps):
