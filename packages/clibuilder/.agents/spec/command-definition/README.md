@@ -5,7 +5,7 @@ concept: [declaration-driven]
 
 # Command definition
 
-Governs `ts/command/` and the `cli` namespace in `ts/cli.ts` — the shape a
+Governs `src/command/` and the `cli` namespace in `src/cli.ts` — the shape a
 command author declares: name, alias, description, arguments, options, nested
 sub-commands, and the types those declarations produce.
 

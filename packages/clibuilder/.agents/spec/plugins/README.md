@@ -5,7 +5,7 @@ concept: [extensibility]
 
 # Plugins
 
-Governs `ts/plugins/` — resolving the plugin packages a configuration names,
+Governs `src/plugins/` — resolving the plugin packages a configuration names,
 activating them, and accepting the commands and other contributions they
 register.
 

@@ -11,10 +11,10 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"outDir": "esm",
-		"rootDir": "ts",
+		"rootDir": "src",
 		"strict": true,
 		"target": "ES2020",
 		"types": ["node", "vitest/globals"]
 	},
-	"include": ["ts", "typings"]
+	"include": ["src", "typings"]
 }

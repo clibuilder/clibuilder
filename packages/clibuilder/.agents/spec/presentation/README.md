@@ -5,8 +5,8 @@ concept: [declaration-driven, error-reporting, agent-interface]
 
 # Presentation
 
-Governs `ts/render/help.ts`, `ts/render/format.ts`, `ts/render/error.ts`,
-`ts/drivers/logger.ts` and `ts/core/ports.ts` — rendering help and usage,
+Governs `src/render/help.ts`, `src/render/format.ts`, `src/render/error.ts`,
+`src/drivers/logger.ts` and `src/core/ports.ts` — rendering help and usage,
 describing a usage error in words, emitting messages at their log level, and
 serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.

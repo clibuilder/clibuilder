@@ -5,7 +5,7 @@ concept: [test-doubles]
 
 # Testing support
 
-Governs `ts/testing/`, `ts/test-utils/`, and `ts/drivers/context.mock.ts` — the
+Governs `src/testing/`, `src/test-utils/`, and `src/drivers/context.mock.ts` — the
 helpers a command author uses to exercise a command and assert on its result
 and messages without spawning a process.
 

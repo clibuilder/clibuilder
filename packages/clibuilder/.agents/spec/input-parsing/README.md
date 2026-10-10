@@ -5,7 +5,7 @@ concept: [declaration-driven, error-reporting]
 
 # Input parsing
 
-Governs `ts/invocation/` — classifying an argv vector, matching it against the
+Governs `src/invocation/` — classifying an argv vector, matching it against the
 declared command tree, and coercing and validating each raw string into the
 declared argument and option types.
 
