@@ -55,6 +55,22 @@ deno add args-minus
 bun add args-minus
 ```
 
+## Supported runtimes
+
+| Runtime | Supported |
+| --- | --- |
+| Node.js | 20 and later |
+| Deno | 2 and later |
+| Bun | 1 and later |
+| Browsers and workers | current evergreen versions |
+
+The package is ESM only, has no dependencies, and uses no Node API, so any
+runtime that loads ES modules works. The `exports` map has one entry, `.`, with
+`types`, `import` and `default` conditions pointing at the same files in `esm/`.
+CI builds the package and imports it by name in Node, Deno and Bun on every
+pull request. There is no CommonJS build; on Node, `require()` of an ES module
+works from Node 22.12.
+
 ## Usage
 
 ```ts
