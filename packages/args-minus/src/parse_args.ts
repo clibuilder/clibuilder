@@ -8,7 +8,14 @@ export type MultipleArgsValue = string[] | number[] | boolean[]
  */
 export type OptionType = 'boolean' | 'number' | 'string'
 
-export type OptionDeclaration = { type: OptionType }
+export type OptionDeclaration = {
+	type: OptionType
+	/**
+	 * Other names for this option, without dashes (e.g. `'n'` for `--name`).
+	 * Parsed output always uses the declared (canonical) key.
+	 */
+	alias?: string | readonly string[]
+}
 
 export type OptionDeclarations = Record<string, OptionDeclaration>
 
@@ -81,6 +88,7 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 ): ParsedArgs<O> {
 	const tokens = tokenizeArgs(config.args)
 	const declarations: OptionDeclarations | undefined = config.options
+	const canonical = canonicalNames(declarations)
 	const options = Object.create(null)
 	const _: string[] = []
 	const __: string[] = []
@@ -95,9 +103,17 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 			}
 			case 'option': {
 				const names = token.dashes === 1 ? Array.from(token.name) : [token.name]
-				names.forEach((name, i) => {
+				names.forEach((raw, i) => {
 					const isLast = i === names.length - 1
+					const name = canonical.get(raw) ?? raw
 					const declaration = declarations?.[name]
+					if (!isLast && declaration && declaration.type !== 'boolean') {
+						throw new ParseArgsError(
+							`Invalid option group '${token.raw}': '${raw}' takes a value, so it can only be the last option in a group`,
+							name,
+							token.raw
+						)
+					}
 					const value = isLast ? (token.value ?? takeFollowingValue(declaration, remainingTokens)) : undefined
 					options[name] = convert(declaration, name, value, token)
 				})
@@ -113,6 +129,27 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 	const result: ParsedArgs<O> = { _, __, options }
 	if (config.tokens) result.tokens = tokens
 	return result
+}
+
+/**
+ * Maps every declared name and alias to its canonical name.
+ * Throws if two options claim the same name.
+ */
+function canonicalNames(declarations: OptionDeclarations | undefined) {
+	const map = new Map<string, string>()
+	if (!declarations) return map
+	for (const name of Object.keys(declarations)) map.set(name, name)
+	for (const [name, declaration] of Object.entries(declarations)) {
+		const alias = declaration.alias
+		for (const a of alias === undefined ? [] : Array.isArray(alias) ? alias : [alias]) {
+			const owner = map.get(a)
+			if (owner !== undefined && owner !== name) {
+				throw new Error(`Alias '${a}' of option '${name}' is already used by option '${owner}'`)
+			}
+			map.set(a, name)
+		}
+	}
+	return map
 }
 
 /**
