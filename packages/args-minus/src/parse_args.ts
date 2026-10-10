@@ -8,18 +8,52 @@ export type MultipleArgsValue = string[] | number[] | boolean[]
  */
 export type OptionType = 'boolean' | 'number' | 'string'
 
-export type OptionDeclaration = {
-	type: OptionType
+type DeclarationOf<T extends OptionType, V> = {
+	type: T
 	/**
 	 * Other names for this option, without dashes (e.g. `'n'` for `--name`).
 	 * Parsed output always uses the declared (canonical) key.
 	 */
 	alias?: string | readonly string[]
-}
+} & (
+	| {
+			/**
+			 * Repeat policy. `false` (the default) is last-wins.
+			 */
+			multiple?: false
+			/**
+			 * Value used when the option is absent.
+			 */
+			default?: V
+	  }
+	| {
+			/**
+			 * Collect every occurrence, in source order, into an array.
+			 */
+			multiple: true
+			/**
+			 * Values used when the option is absent.
+			 */
+			default?: readonly V[]
+	  }
+)
+
+export type OptionDeclaration =
+	| DeclarationOf<'boolean', boolean>
+	| DeclarationOf<'number', number>
+	| DeclarationOf<'string', string>
 
 export type OptionDeclarations = Record<string, OptionDeclaration>
 
-type ValueOf<T extends OptionType> = T extends 'boolean' ? boolean : T extends 'number' ? number : string
+type BaseValue<T extends OptionType> = T extends 'boolean' ? boolean : T extends 'number' ? number : string
+
+type ValueOf<D extends OptionDeclaration> = D extends { multiple: true } ? BaseValue<D['type']>[] : BaseValue<D['type']>
+
+type DeclaredOptions<O extends OptionDeclarations> = {
+	[K in keyof O as O[K] extends { default: unknown } ? K : never]: ValueOf<O[K]>
+} & {
+	[K in keyof O as O[K] extends { default: unknown } ? never : K]?: ValueOf<O[K]>
+}
 
 /**
  * Thrown when a declared option receives a value it cannot convert.
@@ -52,10 +86,11 @@ export type ParsedArgs<O extends OptionDeclarations = OptionDeclarations> = {
 	__: string[]
 	/**
 	 * Parsed options.
-	 * Declared options have the type of their declaration;
-	 * undeclared options are `string | true`.
+	 * Declared options have the type of their declaration (an array when `multiple`);
+	 * a declared option with a `default` is always present.
+	 * Undeclared options are `string | true`.
 	 */
-	options: { [K in keyof O]?: ValueOf<O[K]['type']> } & Record<string, ArgsValue>
+	options: DeclaredOptions<O> & Record<string, ArgsValue | MultipleArgsValue>
 	/**
 	 * Parsed tokens. Only returned if `config` includes `tokens: true`.
 	 */
@@ -115,7 +150,9 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 						)
 					}
 					const value = isLast ? (token.value ?? takeFollowingValue(declaration, remainingTokens)) : undefined
-					options[name] = convert(declaration, name, value, token)
+					const converted = convert(declaration, name, value, token)
+					if (declaration?.multiple) (options[name] ??= []).push(converted)
+					else options[name] = converted
 				})
 				break
 			}
@@ -124,6 +161,11 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 				remainingTokens.length = 0
 				break
 			}
+		}
+	}
+	for (const [name, declaration] of Object.entries(declarations ?? {})) {
+		if (declaration.default !== undefined && options[name] === undefined) {
+			options[name] = Array.isArray(declaration.default) ? [...declaration.default] : declaration.default
 		}
 	}
 	const result: ParsedArgs<O> = { _, __, options }

@@ -1,5 +1,5 @@
 import { testType } from 'type-plus'
-import { type ArgsValue, ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
+import { type ArgsValue, type MultipleArgsValue, ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
 
 it('passes positional arguments into _ ', () => {
 	expect(parseArgs({ args: ['a', 'b'] })._).toEqual(['a', 'b'])
@@ -51,7 +51,7 @@ it('returns the last value if the option is specified multiple times', () => {
 
 it('returns option type as ArgsValue (string | number | boolean)', () => {
 	const r = parseArgs({ args: [] })
-	testType.equal<(typeof r.options)['p'], ArgsValue>(true)
+	testType.equal<(typeof r.options)['p'], ArgsValue | MultipleArgsValue>(true)
 	testType.equal<ArgsValue, string | number | boolean>(true)
 })
 
@@ -192,11 +192,6 @@ describe('specifying boolean options', () => {
 		).toThrow(/Invalid value for option 'bool': abc/)
 	})
 	it.todo('can override convertion logic')
-	it.todo('can define default value')
-	it.todo('can define default value as function')
-	it.todo('can support multiple values')
-	it.todo('infers type from default value')
-	it.todo('throws if one of the multiple values is invalid')
 })
 
 it('can specify the type of options', () => {
@@ -216,9 +211,6 @@ it.todo('throws error when unknown option is provided when options is specified'
 
 it.todo('allows unknown option when strict is false')
 
-it.todo('can specify option to accept multiple values through multiple: true')
-
-it.todo('infers option type and multiple from default value')
 // single dash is reserved for shortcuts
 
 it.todo('can override the option modifier from dash to something else')
@@ -328,5 +320,79 @@ describe('aliases and short groups', () => {
 
 	it('leaves the tokenizer independent of declarations', () => {
 		expect(tokenizeArgs(['-vn', 'Ada'])[0]).toMatchObject({ kind: 'option', name: 'vn', dashes: 1 })
+	})
+})
+
+describe('repeated options', () => {
+	it('is last-wins by default and with multiple: false', () => {
+		const options = { a: { type: 'string', multiple: false } } as const
+		expect(parseArgs({ args: ['--a=1', '--a=2'], options }).options).toEqual({ a: '2' })
+	})
+
+	it('collects values in source order with multiple: true', () => {
+		const options = { inc: { type: 'string', multiple: true, alias: 'i' } } as const
+		const r = parseArgs({ args: ['--inc=a', '-i', 'b', '--inc', 'c', 'x'], options })
+		expect(r.options).toEqual({ inc: ['a', 'b', 'c'] })
+		expect(r._).toEqual(['x'])
+		testType.equal<typeof r.options.inc, string[] | undefined>(true)
+	})
+
+	it('converts each value', () => {
+		const options = { n: { type: 'number', multiple: true }, b: { type: 'boolean', multiple: true } } as const
+		expect(parseArgs({ args: ['--n=1', '--n', '2', '--b', '--b=false', '-b=0'], options }).options).toEqual({
+			n: [1, 2],
+			b: [true, false, false]
+		})
+		expect(() => parseArgs({ args: ['--n=1', '--n=x'], options })).toThrow(/option 'n'/)
+	})
+
+	it('leaves a multiple option absent without a default', () => {
+		expect(parseArgs({ args: [], options: { n: { type: 'number', multiple: true } } }).options).toEqual({})
+	})
+})
+
+describe('defaults', () => {
+	const options = {
+		n: { type: 'number', default: 5 },
+		s: { type: 'string', default: 'x' },
+		b: { type: 'boolean', default: false },
+		inc: { type: 'string', multiple: true, default: ['d'] },
+		none: { type: 'string' }
+	} as const
+
+	it('applies defaults when the option is absent', () => {
+		const r = parseArgs({ args: [], options })
+		expect(r.options).toEqual({ n: 5, s: 'x', b: false, inc: ['d'] })
+		testType.equal<typeof r.options.n, number>(true)
+		testType.equal<typeof r.options.inc, string[]>(true)
+		testType.equal<typeof r.options.none, string | undefined>(true)
+	})
+
+	it('does not apply defaults when the option is given', () => {
+		expect(parseArgs({ args: ['--n=1', '-s', 'y', '--b', '--inc=a'], options }).options).toEqual({
+			n: 1,
+			s: 'y',
+			b: true,
+			inc: ['a']
+		})
+	})
+
+	it('applies defaults through aliases', () => {
+		const o = { name: { type: 'string', alias: 'n', default: 'x' } } as const
+		expect(parseArgs({ args: ['-n', 'y'], options: o }).options).toEqual({ name: 'y' })
+		expect(parseArgs({ args: [], options: o }).options).toEqual({ name: 'x' })
+	})
+
+	it('does not share default arrays between calls', () => {
+		const a = parseArgs({ args: [], options }).options.inc
+		a.push('mutated')
+		expect(parseArgs({ args: [], options }).options.inc).toEqual(['d'])
+	})
+
+	it('rejects a default of the wrong type', () => {
+		// @ts-expect-error number option with a string default
+		parseArgs({ args: [], options: { n: { type: 'number', default: 'x' } } })
+		// @ts-expect-error scalar option with an array default
+		parseArgs({ args: [], options: { n: { type: 'number', default: [1] } } })
 	})
 })
