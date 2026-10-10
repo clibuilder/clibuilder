@@ -31,7 +31,7 @@
 
 ## 2. How it works today
 
-Read from `packages/clibuilder/ts/app/builder.ts` at `72a18a6`.
+Read from `packages/clibuilder/ts/app/builder.ts` at `e4afa97`.
 
 1. `parse()` first awaits `pending`, which is the config load and every plugin activation. Nothing else can happen before that.
 2. `parseArgv` tokenizes; `lookupCommand` runs on the **base command** (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and then on the matched command. Only the base lookup's results are read for `--silent`, `--verbose` and `--debug-cli`.
