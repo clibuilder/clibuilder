@@ -1,6 +1,7 @@
 # RFC: slim clibuilder's runtime dependencies for the next major
 
 - **Status:** Proposed. Research and design only; nothing is implemented yet.
+- **Amended 2026-10-10:** [section 9](#9-amendment-move-all-plugin-support-out-of-core) moves plugin loading out of core as well as discovery. It supersedes section 5.3 and closes Q3.
 - **Target:** `clibuilder@12` (breaking)
 - **Related:** [#639](https://github.com/clibuilder/clibuilder/issues/639) (AXI-native clibuilder), `@clibuilder/axi` (#630, #636)
 - **Scope:** what `clibuilder` installs, and the public API changes that follow from removing it. Not the #639 behaviour changes, though section 7 checks the plan against them.
@@ -20,12 +21,12 @@ clibuilder itself unpacks to 1.7 MB, mainly because the CJS build bundles every 
 
 **Recommendation.**
 
-- **Core `clibuilder@12` should have zero required runtime dependencies.** Zero, or one if plugin loading stays in core (section 5.3).
+- **Core `clibuilder@12` should have zero required runtime dependencies.** Plugin loading moves out with discovery (section 9).
 - **Options:** replace zod with **built-in type descriptors** that also implement [Standard Schema](https://standardschema.dev). Option (c) below.
 - **Validation:** accept any Standard Schema validator (zod ≥ 3.24, zod 4, valibot, arktype, …) for extra validation and for `config`.
 - **Logging:** replace standard-log with a small built-in `UI` over injectable `stdout`/`stderr` streams.
 - **Small helpers:** inline them.
-- **Plugin discovery:** move the `plugins list` / `plugins search` builtins to a separate package. The heavy dependencies leave the default install.
+- **Plugins:** move all plugin support (loading, keywords, the activation context, and the `plugins list` / `plugins search` builtins) to `@clibuilder/plugins`, attached through a new `use()` hook. The registry stays in core (section 9).
 
 ## 2. Inventory
 
@@ -44,7 +45,7 @@ Footprint numbers come from installing each dependency alone with `npm install -
 | `tslib` ^2.5 | nowhere (no `importHelpers`; target ES2020) | none | no | 1 | 128 KB | **remove** (it is also listed in `devDependencies`) |
 | `js-yaml` 4.x | `config.ts` | `.yaml` / `.yml` config files | only when a cli sets `config` | 2 | 1.2 MB | optional peer (section 5.2) |
 | `jsonc-parser` 3.3.1 | `config.ts` | `.json` / `.jsonc` / `rc` config files with comments | only when a cli sets `config` | 1 | 256 KB | core, optional peer, or a tiny internal parser (open question Q4) |
-| `import-meta-resolve` 4.2.0 | `drivers/resolve_plugin.ts` | resolves plugin specifiers from the project cwd using ESM rules (`import.meta.resolve(spec, parent)` is still flagged in Node) | only when `config.plugins` is set | 1 | 140 KB | keep, wherever plugin loading lives (section 5.3) |
+| `import-meta-resolve` 4.2.0 | `drivers/resolve_plugin.ts` | resolves plugin specifiers from the project cwd using ESM rules (`import.meta.resolve(spec, parent)` is still flagged in Node) | only when `config.plugins` is set | 1 | 140 KB | move to `@clibuilder/plugins` with plugin loading (section 9) |
 | `find-installed-packages` 4.0.1 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins list` | no | **18** | 704 KB | move to `@clibuilder/plugins` |
 | `search-packages` 2.2.3 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins search` | no | 1 | 120 KB | move to `@clibuilder/plugins` |
 
@@ -170,6 +171,8 @@ For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) a
 
 ### 5.3 Plugins
 
+> **Superseded by section 9.** Loading moves out of core too. The text below is the original proposal.
+
 - **Loading** (`config.plugins` → `import()` → `activate`): needs only `import-meta-resolve` (0 deps, 140 KB). repobuddy/buddy treats `config: true` plugin loading as load-bearing. **Keep loading in core**, with `import-meta-resolve` as core's single dependency. Alternatively, move it out with discovery (Q3).
 - **Discovery** (`plugins list` / `plugins search` builtins): ships as a new `@clibuilder/plugins` package that owns `find-installed-packages` (18 packages) and `search-packages`. A CLI opts in with `.command(pluginsCommand)` or equivalent. Without it, core no longer injects the `plugins` group automatically when `config` or `keywords` is set.
 
@@ -181,8 +184,8 @@ For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) a
 
 | Package | `dependencies` | optional `peerDependencies` | install (est.) |
 |---|---|---|---|
-| `clibuilder@12` | `import-meta-resolve` (or none, under Q3) | `js-yaml`, (`jsonc-parser` under Q4) | **2 packages, ~0.5 MB**, down from 43 packages and ~54 MB |
-| `@clibuilder/plugins` (new) | `find-installed-packages`, `search-packages` | — | opt-in |
+| `clibuilder@12` | none | `js-yaml`, (`jsonc-parser` under Q4) | **1 package, ~0.4 MB**, down from 43 packages and ~54 MB |
+| `@clibuilder/plugins` (new) | `import-meta-resolve`, `find-installed-packages`, `search-packages` | `clibuilder ^12` | opt-in |
 | `@clibuilder/axi` | `@toon-format/toon` (0 deps, ~120 KB) | `clibuilder ^12` | unchanged weight |
 
 ## 6. Comparable libraries
@@ -237,6 +240,7 @@ Common to all six:
 
 1. **v11 minor (non-breaking prep).**
    - Add `t` descriptors, the `schema:` field, Standard Schema `config`, and `cli({ streams })` alongside the zod path.
+   - Add the `use()` hook and publish `@clibuilder/plugins` against it, so a CLI can switch to `.use(plugins())` before v12 (section 9.6).
    - Mark the `z` re-export and the root `testCommand` export `@deprecated`.
    - Fix the `parseConfig` output bug.
    - Users can migrate at their own pace and get v4-compatible validation early.
@@ -244,7 +248,7 @@ Common to all six:
 3. **v12 major.**
    - Remove zod, standard-log, standard-log-color, type-plus, tersify, pad-right, wordwrap, tmp and tslib.
    - Make `js-yaml` an optional peer.
-   - Move plugin discovery to `@clibuilder/plugins`.
+   - Remove plugin loading, `keywords` and the automatic `plugins` group from core (section 9).
    - Optionally drop CJS.
    - Ship together with the #639 breaks so users take one major, not two.
 4. **Release `@clibuilder/axi`** with peer `clibuilder ^12` in the same release train.
@@ -253,9 +257,134 @@ Common to all six:
 
 1. **Descriptor naming.** `t`, `arg`, or keep the name `z` as a compatible subset? Keeping `z` makes most downstream code compile untouched. It also misleads readers into assuming full zod, and it collides with a user's own `import { z } from 'zod'`. The recommendation is `t` plus the codemod.
 2. **Bare Standard Schema as `type`.** Should a non-descriptor schema be allowed as `type` at all, with shape from `~standard.jsonSchema` or a fallback to a single string? Or must shape always come from a descriptor, with the schema only in `schema:`? The second is stricter and clearer.
-3. **Plugin loading.** Should it stay in core, keeping `import-meta-resolve` (recommended, because repobuddy/buddy relies on it), or move entirely to `@clibuilder/plugins` for a zero-dependency core?
+3. ~~**Plugin loading.** Should it stay in core, keeping `import-meta-resolve`, or move entirely to `@clibuilder/plugins` for a zero-dependency core?~~ **Resolved by section 9:** it moves out.
 4. **JSONC.** Keep `jsonc-parser`, make it an optional peer, or use an internal stripper? YAML as an optional peer: acceptable friction for CLIs whose users write YAML config?
 5. **`ui.info` routing under #639.** Should it go to stdout (today's behaviour) or stderr, once a result channel owns stdout?
 6. **Drop the CJS build in v12?** `engines >= 20.19` already guarantees `require(esm)`.
 7. **toon in core.** If #639 makes `--format` (toon/json/text) built in, does `@toon-format/toon` (0 deps, ~120 KB) become a core dependency? The alternatives are that core keeps its hand-rolled toon for flat collections, or that core only exposes a formatter hook and toon stays in `@clibuilder/axi`.
 8. **`args-minus`.** Should core's argv tokenizer move onto the in-house `args-minus` (0 deps) as part of the same rewrite of `invocation/lookup.ts`, or stay separate work?
+
+## 9. Amendment: move all plugin support out of core
+
+*Added 2026-10-10. Supersedes section 5.3 and resolves Q3.*
+
+Section 5.3 moved only discovery out of core and kept loading in, because repobuddy/buddy relies on `config: true` loading plugins. This amendment moves loading out as well. repobuddy/buddy still works after adding one call.
+
+### 9.1 Why
+
+- **Concept cost, not only install cost.** Today, setting `config` or `keywords` turns on plugin loading and adds a `plugins` command group without the CLI author asking for either. Someone comparing clibuilder with commander or citty meets a plugin system before their first command runs. Core should be the parser, help, config and `run()`, and nothing that is not asked for.
+- **Plugins are tied to config only because of where the list is stored.** A CLI cannot have plugins without a config file, and core reserves a `plugins` key inside the user's own config schema. Moving plugins out lets the plugin list come from other places (section 9.6). Config then goes back to being the user's data.
+- **Plugin needs change at their own pace.** Discovery modes, trust rules and activation options can change in `@clibuilder/plugins` without a core major.
+- **Zero dependencies.** `import-meta-resolve` leaves core, so `clibuilder@12` installs nothing (section 5.5).
+
+### 9.2 What moves and what stays
+
+| Piece | Today (`packages/clibuilder/ts/…`) | v12 |
+|---|---|---|
+| Loading: resolve, import, activate (`loadPlugins`) | `plugins/load.ts`, `drivers/resolve_plugin.ts`, `drivers/context.ts` | `@clibuilder/plugins` |
+| `PluginActivationContext` type | `cli.ts` | `@clibuilder/plugins`. Core keeps a deprecated copy for v12 (section 9.5) |
+| `keywords` option, and its default of `name` when `config` is set | `cli.ts`, `app/state.ts` | becomes an option of `plugins()` |
+| `this.keywords` on the run context | `cli.ts` | removed. The `plugins` command reads its keywords from the extension's options |
+| Automatic `plugins` group when `config` or `keywords` is set | `app/builder.ts` | removed. `plugins()` adds the group unless told not to |
+| `plugins list` / `plugins search` | `builtin/plugin_commands/` | `@clibuilder/plugins` |
+| The `plugins` key in config | read by `app/builder.ts` | read by `plugins()` through `resolveConfig`. Core no longer reserves it |
+| Registry: `createRegistry`, `defineKey`, `defineCollectionKey`, `this.registry` | `plugins/registry.ts` | **stays in core** |
+| Config resolution (`resolveConfig`, `lookupConfig`, …) | `config.ts` | stays in core |
+
+The registry stays because it is not specific to plugins. It is how any extension shares values with the host's commands. It has no dependencies and is about 70 lines. Keeping it in core means `this.registry` keeps working, and `@clibuilder/axi` or any other extension can use it too.
+
+### 9.3 Core's new hook: `use()`
+
+Core gains one general hook that adds commands and registry entries before `parse()` picks the command to run:
+
+```ts
+type Extension = (context: ExtensionContext) => void | Promise<void>
+
+type ExtensionContext = {
+  readonly host: { readonly name: string; readonly version: string }
+  readonly cwd: string
+  readonly ui: UI
+  readonly registry: RegistryOwner
+  addCommand(command: cli.Command): void
+  /** The cli's config and where it came from; `source.type` is 'none' when the cli sets no `config`. */
+  resolveConfig(): Promise<ConfigLoadResult>
+}
+
+cli({ name: 'my-cli', version: '1.0.0' })
+  .use(extension)
+  .parse(process.argv)
+```
+
+- Extensions run in the order `.use()` was called. Each one is awaited before the next starts, so the command order is the same on every run. This is the same rule `loadPlugins` follows today.
+- Commands added by extensions come after the host's own `.command()` and `.default()` commands.
+- `.use()` makes `.parse()` available with no commands of its own, as `config` and `keywords` do today, because an extension may supply all of them.
+- `--version` returns before any extension runs. This is the fast path #639 asks for (item 8). `--help` waits for extensions, because it has to list their commands.
+
+The hook is not plugin-specific. It is also the natural seam for lazy commands and for `@clibuilder/axi`.
+
+### 9.4 `@clibuilder/plugins`
+
+```ts
+import { cli } from 'clibuilder'
+import { plugins } from '@clibuilder/plugins'
+
+cli({ name: 'my-cli', version: '1.0.0', config: true })
+  .use(plugins({ keywords: ['my-cli-plugin'] }))
+  .parse(process.argv)
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `keywords` | `[host.name]`, matching today's default (Q9.1) | the npm keywords `plugins list` and `plugins search` look for, and that the `dependencies` source matches |
+| `include` | `[]` | plugin packages the CLI author ships with the CLI (section 9.6) |
+| `dependencies` | `false` | load the project's direct dependencies that carry a keyword (section 9.6) |
+| `config` | `true` | read the `plugins` key from the cli's resolved config |
+| `command` | `true` | add the `plugins list` / `plugins search` group |
+
+Dependencies are `import-meta-resolve`, `find-installed-packages` and `search-packages`, with `clibuilder ^12` as a peer. The two discovery packages are still imported lazily, so a CLI that never runs `plugins list` or `plugins search` never loads them.
+
+Exports: `plugins`, `PluginActivationContext`, `loadPlugins` (for hosts that build their own loading), and `pluginsCommand` (for hosts that want the command group without loading).
+
+### 9.5 The plugin author's side
+
+`activate(context)` and `PluginActivationContext` keep exactly their current shape: `addCommand`, `register`, `get`, `has` and `host`. A plugin built for clibuilder 11 loads unchanged under `@clibuilder/plugins`.
+
+Only the type's import path moves. A plugin imports it from `@clibuilder/plugins`, as a type-only dev dependency. So that existing plugins compile without changes during v12, core keeps a structural copy of the type, marked `@deprecated`, and removes it in v13. The copy has no runtime cost, and the registry types it refers to stay in core anyway.
+
+### 9.6 Plugin sources beyond config
+
+Moving plugins out of core is also the chance to remove the main friction: today, installing a plugin does nothing until the user also edits a config file. `plugins()` combines up to three sources:
+
+1. **`include`: plugins the CLI author ships.** These are listed in code and installed as the CLI's own dependencies. No user config is needed. This is the main case for CLIs assembled from plugin packages. It adds no trust risk, because the author already chose those dependencies.
+2. **`dependencies`: opt-in loading of the project's direct dependencies.** `plugins()` reads the nearest `package.json` and checks the packages listed under `dependencies` and `devDependencies`. It loads those carrying any of `keywords`. Packages pulled in by other packages are never checked, which keeps the rule that a package does not add commands unless someone chose to install it. The cost is one `package.json` read per direct dependency, not a scan of `node_modules`.
+3. **`config`: the `plugins` key, as today.** It can add plugins, exclude one from the other sources with a `!` prefix (`"!my-cli-plugin-git"`), and set the order.
+
+Plugins load in the order `include`, then `dependencies` (in `package.json` order), then config. A package named by more than one source loads once, at its first position. Config can reorder by naming packages explicitly.
+
+Trade-offs of `dependencies`:
+
+- A direct dependency that adds the keyword in a later version starts adding commands without the user doing anything. This is why the source is opt-in.
+- Under Yarn PnP, reading a dependency's `package.json` needs PnP-aware resolution. That is the same gap as #575 (`plugins list` finds nothing under Yarn PnP), and one resolver should fix both.
+
+### 9.7 Downstream impact
+
+Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.keywords`, `defineKey` or `defineCollectionKey`.
+
+| Package | Uses | Change |
+|---|---|---|
+| repobuddy/buddy | `config: true` loads its plugins | add `@clibuilder/plugins` and `.use(plugins())` |
+| repobuddy/typescript | `import type { PluginActivationContext } from 'clibuilder'` | none in v12 (deprecated copy). Change the import path before v13 |
+| cyber-mux | `import type { PluginActivationContext } from 'clibuilder'` | same as repobuddy/typescript |
+| others in section 7 | no plugin use | none |
+
+### 9.8 Migration
+
+- **v11 minor.** Add `use()`. Publish `@clibuilder/plugins` with a peer range of `clibuilder ^11.<that minor> || ^12`. When a `plugins()` extension is present, core skips its own config-driven loading and its automatic `plugins` group, so nothing loads twice. A CLI can switch early.
+- **v12.** Remove core's loading, `keywords`, `this.keywords` and the automatic `plugins` group. A CLI that sets `config` and has a `plugins` key in its config, but no `plugins()` extension, gets a one-time warning naming `@clibuilder/plugins`. Without it, the plugins would silently stop loading.
+- **v13.** Remove the deprecated `PluginActivationContext` copy from core.
+
+### 9.9 Open questions
+
+1. **Default keyword.** Keep `[host.name]` to match today, or default to `` `${host.name}-plugin` ``, the convention the plugins guide recommends? The second is better on npm, but it changes which packages a CLI's existing `plugins search` finds.
+2. **`dependencies` in the first release?** It could ship in the first version of `@clibuilder/plugins`, or follow once #575's resolver exists. `include` has no such dependency.
+3. **Name collisions.** Today a host command and a plugin command with the same name are resolved silently by load order. Should `use()` warn, as the registry does for a value key that is already owned?
