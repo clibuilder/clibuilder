@@ -31,7 +31,7 @@
 			}
 		},
 		{
-			"includes": ["packages/clibuilder/ts/core/**"],
+			"includes": ["packages/clibuilder/src/core/**"],
 			"linter": {
 				"rules": {
 					"style": {
@@ -51,7 +51,7 @@
 			}
 		},
 		{
-			"includes": ["packages/clibuilder/ts/render/**"],
+			"includes": ["packages/clibuilder/src/render/**"],
 			"linter": {
 				"rules": {
 					"style": {
@@ -72,12 +72,12 @@
 		},
 		{
 			"includes": [
-				"packages/clibuilder/ts/**",
-				"!packages/clibuilder/ts/drivers/**",
-				"!packages/clibuilder/ts/compile_cache.ts",
-				"!packages/clibuilder/ts/testing/**",
-				"!packages/clibuilder/ts/**/*.spec.ts",
-				"!packages/clibuilder/ts/state.unit.ts"
+				"packages/clibuilder/src/**",
+				"!packages/clibuilder/src/drivers/**",
+				"!packages/clibuilder/src/compile_cache.ts",
+				"!packages/clibuilder/src/testing/**",
+				"!packages/clibuilder/src/**/*.spec.ts",
+				"!packages/clibuilder/src/state.unit.ts"
 			],
 			"linter": {
 				"rules": {

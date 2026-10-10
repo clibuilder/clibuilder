@@ -5,7 +5,7 @@ concept: [declaration-driven, error-reporting, config-lifecycle, extensibility, 
 
 # Execution
 
-Governs `ts/cli.ts`, `ts/app/`, and `ts/drivers/context.ts`
+Governs `src/cli.ts`, `src/app/`, and `src/drivers/context.ts`
 — assembling an application from its declarations, running the matched command
 with its context, and reporting failure as an exit code.
 
@@ -95,7 +95,7 @@ today, so it appears in neither the Control Flow nor the suite:
 
 | Actor | Goal | Provenance |
 | --- | --- | --- |
-| CLI author | be warned when a registered command's name or alias collides with an existing one, rather than silently having the first match win | [#109](https://github.com/clibuilder/clibuilder/issues/109) — closed without an implementation; no conflict detection exists in `ts/app/` or `ts/invocation/` |
+| CLI author | be warned when a registered command's name or alias collides with an existing one, rather than silently having the first match win | [#109](https://github.com/clibuilder/clibuilder/issues/109) — closed without an implementation; no conflict detection exists in `src/app/` or `src/invocation/` |
 
 **Actor / goal.** A CLI author wants their declarations installed into the
 application's tree, with each command's place in that tree recorded.

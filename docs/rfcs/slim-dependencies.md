@@ -32,7 +32,7 @@ clibuilder itself unpacks to 1.7 MB, mainly because the CJS build bundles every 
 
 Footprint numbers come from installing each dependency alone with `npm install --ignore-scripts` on 2026-10-06. "pkgs" counts the dependency itself plus its transitive dependencies.
 
-| Dependency | Used in (`packages/clibuilder/ts/…`) | Why | Hot path? | pkgs | node_modules | Plan |
+| Dependency | Used in (`packages/clibuilder/src/…`) | Why | Hot path? | pkgs | node_modules | Plan |
 |---|---|---|---|---|---|---|
 | `zod` ^3.22 (3.25.76) | `zod.ts`, `cli.ts` (all public command types), `invocation/lookup.ts`, `render/help.ts`, `app/builder.ts` (`config` validation), `builtin/base_command.ts`, `render/format.ts`, `builtin/plugin_commands/search.ts` | option, argument and config types; argv conversion by introspection; help rendering | **yes**, every parse | 1 | 5.1 MB | **remove**: built-in descriptors plus Standard Schema (section 3) |
 | `standard-log` 13.3.1 | `drivers/context.ts`, `drivers/logger.ts`, `drivers/context.mock.ts` (`standard-log/testing`), `testing/test_command.ts` | level filtering for `ui`, console reporter, capturing messages in `testCommand` | **yes**, imported at startup | 10 | 44 MB (via type-plus → typescript) | **remove**: built-in UI (section 4) |
@@ -108,7 +108,7 @@ options: {
 - **Schema without descriptor (convenience):** if `type` is itself a Standard Schema that is not a clibuilder descriptor, the shape comes from `~standard.jsonSchema` when the vendor implements it. Otherwise the option is a single string value. Open question Q2.
 - **`config`:** takes any `StandardSchemaV1`, or a descriptor object. Validation uses `~standard.validate`, and the validator's **output** is stored, which fixes the dropped-defaults bug. The help `Config:` section is generated from `~standard.jsonSchema` when available and omitted otherwise. That removes `tersify`.
 - **Errors:** issues from a foreign schema are mapped into clibuilder's own `invalid-value` usage error code. Following axi's rule, a dependency's text is never forwarded raw. `keyType` becomes a descriptor kind string (`'boolean' | 'number' | …`) instead of a schema object.
-- **Types:** `@standard-schema/spec`'s interfaces are vendored into `ts/standard_schema.ts` (the spec explicitly allows copying), so there is no dependency at all.
+- **Types:** `@standard-schema/spec`'s interfaces are vendored into `src/standard_schema.ts` (the spec explicitly allows copying), so there is no dependency at all.
 
 **zod v3 vs v4.** Under (c), both majors work as `schema:` or `config:` values: zod ≥ 3.24 implements `~standard`, and zod 4 does natively. Inference uses `~standard.types`, so clibuilder's typings no longer import any zod type. CLIs that keep zod pick their own major.
 
@@ -279,7 +279,7 @@ Section 5.3 moved only discovery out of core and kept loading in, because repobu
 
 ### 9.2 What moves and what stays
 
-| Piece | Today (`packages/clibuilder/ts/…`) | v12 |
+| Piece | Today (`packages/clibuilder/src/…`) | v12 |
 |---|---|---|
 | Loading: resolve, import, activate (`loadPlugins`) | `plugins/load.ts`, `drivers/resolve_plugin.ts`, `drivers/context.ts` | `@clibuilder/plugins` |
 | `PluginActivationContext` type | `cli.ts` | `@clibuilder/plugins`. Core keeps a deprecated copy for v12 (section 9.5) |

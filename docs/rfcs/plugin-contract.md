@@ -3,7 +3,7 @@
 - **Status:** Proposed — awaiting Council decision
 - **Issue:** [#551](https://github.com/clibuilder/clibuilder/issues/551)
 - **Prior art:** [#191](https://github.com/clibuilder/clibuilder/issues/191) (closed)
-- **Affects:** `PluginActivationContext` (`packages/clibuilder/ts/cli.ts:186`), `activatePlugin` (`packages/clibuilder/ts/plugins.ts:56`)
+- **Affects:** `PluginActivationContext` (`packages/clibuilder/src/cli.ts:186`), `activatePlugin` (`packages/clibuilder/src/plugins.ts:56`)
 - **Scope:** the plugin registration channel only. Not command anchor points, not a DI container, not plugin discovery.
 
 ## 1. Summary
@@ -26,14 +26,14 @@ Everything here is additive. Existing plugins compile and run unchanged. Ship as
 ## 2. The problem, restated from the code
 
 ```ts
-// packages/clibuilder/ts/cli.ts:186
+// packages/clibuilder/src/cli.ts:186
 export type PluginActivationContext = {
   addCommand<...>(command: cli.Command<...>): void
 }
 ```
 
 ```ts
-// packages/clibuilder/ts/plugins.ts:56
+// packages/clibuilder/src/plugins.ts:56
 function activatePlugin(m: { activate: (context: PluginActivationContext) => void }) {
   const commands: cli.Command[] = []
   m.activate({ addCommand: (cmd) => commands.push(cmd) })
@@ -400,7 +400,7 @@ not a contradiction: **A can be shipped and a manifest layer added on top later*
 
 ## 9. Delivery plan, if approved
 
-1. `RegistryKey`/`defineKey`/`defineCollectionKey` + the registry, exported from `ts/index.ts`.
+1. `RegistryKey`/`defineKey`/`defineCollectionKey` + the registry, exported from `src/index.ts`.
 2. Widen `PluginActivationContext`; construct the registry in `activatePlugins` and thread it through
    `activatePlugin` (`plugins.ts`).
 3. `for...of` + `await` over entries, replacing the `forEach` (`plugins.ts:28`).
