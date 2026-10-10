@@ -207,10 +207,6 @@ it('can specify the type of options', () => {
 	})
 })
 
-it.todo('throws error when unknown option is provided when options is specified')
-
-it.todo('allows unknown option when strict is false')
-
 // single dash is reserved for shortcuts
 
 it.todo('can override the option modifier from dash to something else')
@@ -394,5 +390,60 @@ describe('defaults', () => {
 		parseArgs({ args: [], options: { n: { type: 'number', default: 'x' } } })
 		// @ts-expect-error scalar option with an array default
 		parseArgs({ args: [], options: { n: { type: 'number', default: [1] } } })
+	})
+})
+
+describe('unknown option policy', () => {
+	const options = { name: { type: 'string', alias: 'n' }, v: { type: 'boolean' } } as const
+
+	it('is permissive by default and keeps unknown options and tokens', () => {
+		const r = parseArgs({ args: ['--x=1', '-y', 'p'], options, tokens: true })
+		expect(r.options).toEqual({ x: '1', y: true })
+		expect(r._).toEqual(['p'])
+		expect(r.tokens).toEqual(tokenizeArgs(['--x=1', '-y', 'p']))
+	})
+
+	it('strict reports an unknown option with its input form', () => {
+		const run = () => parseArgs({ args: ['--nope=1'], options, strict: true })
+		expect(run).toThrow(ParseArgsError)
+		expect(run).toThrow("Unknown option 'nope' (from '--nope=1')")
+	})
+
+	it('strict accepts declared names and aliases, long and short', () => {
+		expect(parseArgs({ args: ['--name=a', '-n', 'b', '-v'], options, strict: true }).options).toEqual({
+			name: 'b',
+			v: true
+		})
+	})
+
+	it('strict checks every option in a short group', () => {
+		expect(() => parseArgs({ args: ['-vx'], options, strict: true })).toThrow(/Unknown option 'x' \(from '-vx'\)/)
+	})
+
+	it('strict does not check input after the terminator', () => {
+		expect(parseArgs({ args: ['--', '--nope'], options, strict: true })).toEqual({
+			_: [],
+			__: ['--nope'],
+			options: {}
+		})
+	})
+
+	it('strict without declarations rejects every option', () => {
+		expect(() => parseArgs({ args: ['--a'], strict: true })).toThrow(/Unknown option 'a'/)
+	})
+
+	it('allowPositionals: false rejects positionals before and after the terminator', () => {
+		expect(() => parseArgs({ args: ['a'], allowPositionals: false })).toThrow(/Unexpected positional argument 'a'/)
+		expect(() => parseArgs({ args: ['--', 'b'], allowPositionals: false })).toThrow(/positional argument 'b'/)
+	})
+
+	it('allowPositionals: false still allows values consumed by options', () => {
+		expect(parseArgs({ args: ['--name', 'Ada'], options, allowPositionals: false }).options).toEqual({ name: 'Ada' })
+	})
+
+	it('positional policy is independent of the unknown-option policy', () => {
+		expect(parseArgs({ args: ['a', '--x'], options, strict: false }).options).toEqual({ x: true })
+		expect(() => parseArgs({ args: ['a'], options, strict: true })).not.toThrow()
+		expect(() => parseArgs({ args: ['--x'], options, allowPositionals: false })).not.toThrow()
 	})
 })

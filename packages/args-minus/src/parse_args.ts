@@ -62,11 +62,12 @@ export class ParseArgsError extends Error {
 	constructor(
 		message: string,
 		/**
-		 * The option name as declared.
+		 * The option name as declared (or as given, for an unknown option).
+		 * `undefined` for an unexpected positional.
 		 */
-		public readonly option: string,
+		public readonly option: string | undefined,
 		/**
-		 * The input form that caused the error, e.g. `--count=abc`.
+		 * The input form that caused the error, e.g. `--count=abc`, or the positional value.
 		 */
 		public readonly input: string
 	) {
@@ -109,6 +110,19 @@ export type ParseArgsConfig<O extends OptionDeclarations = OptionDeclarations> =
 	 */
 	options?: O
 	/**
+	 * Report undeclared options as a `ParseArgsError` instead of accepting them.
+	 * Names and aliases are both checked, including each option in a short group.
+	 * **Default: `false`** (permissive: unknown options are kept in `options`).
+	 */
+	strict?: boolean
+	/**
+	 * Accept positional arguments, before and after the terminator.
+	 * When `false`, a positional throws a `ParseArgsError`.
+	 * Independent of `strict`. A value consumed by an option is not a positional.
+	 * **Default: `true`.**
+	 */
+	allowPositionals?: boolean
+	/**
 	 * Return the parsed tokens.
 	 * **Default: `false`.**
 	 */
@@ -133,6 +147,7 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 		const token = remainingTokens.shift()!
 		switch (token.kind) {
 			case 'positional': {
+				checkPositional(config, token.value)
 				_.push(token.value)
 				break
 			}
@@ -142,6 +157,9 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 					const isLast = i === names.length - 1
 					const name = canonical.get(raw) ?? raw
 					const declaration = declarations?.[name]
+					if (config.strict && !declaration) {
+						throw new ParseArgsError(`Unknown option '${raw}' (from '${token.raw}')`, raw, token.raw)
+					}
 					if (!isLast && declaration && declaration.type !== 'boolean') {
 						throw new ParseArgsError(
 							`Invalid option group '${token.raw}': '${raw}' takes a value, so it can only be the last option in a group`,
@@ -157,6 +175,7 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 				break
 			}
 			case 'option-terminator': {
+				for (const rest of remainingTokens) checkPositional(config, (rest as PositionalToken).value)
 				__.push(...remainingTokens.map((token) => (token as PositionalToken).value))
 				remainingTokens.length = 0
 				break
@@ -177,6 +196,12 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
  * Maps every declared name and alias to its canonical name.
  * Throws if two options claim the same name.
  */
+function checkPositional(config: { allowPositionals?: boolean }, value: string) {
+	if (config.allowPositionals === false) {
+		throw new ParseArgsError(`Unexpected positional argument '${value}'`, undefined, value)
+	}
+}
+
 function canonicalNames(declarations: OptionDeclarations | undefined) {
 	const map = new Map<string, string>()
 	if (!declarations) return map
