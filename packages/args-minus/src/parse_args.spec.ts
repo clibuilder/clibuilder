@@ -216,13 +216,10 @@ it.todo('throws error when unknown option is provided when options is specified'
 
 it.todo('allows unknown option when strict is false')
 
-it.todo('throws when combined shortcut options is not boolean except the last one')
-
 it.todo('can specify option to accept multiple values through multiple: true')
 
 it.todo('infers option type and multiple from default value')
 // single dash is reserved for shortcuts
-// support alias?
 
 it.todo('can override the option modifier from dash to something else')
 
@@ -283,5 +280,53 @@ describe('options that consume the following argument', () => {
 		expect(parseArgs({ args: ['--name', 'Ada'], options, tokens: true }).tokens).toEqual(
 			tokenizeArgs(['--name', 'Ada'])
 		)
+	})
+})
+
+describe('aliases and short groups', () => {
+	const options = {
+		name: { type: 'string', alias: 'n' },
+		verbose: { type: 'boolean', alias: ['v', 'loud'] },
+		count: { type: 'number', alias: 'c' }
+	} as const
+
+	it('reports aliases under the canonical key', () => {
+		expect(parseArgs({ args: ['-n', 'Ada'], options }).options).toEqual({ name: 'Ada' })
+		expect(parseArgs({ args: ['--n=Ada'], options }).options).toEqual({ name: 'Ada' })
+		expect(parseArgs({ args: ['--loud'], options }).options).toEqual({ verbose: true })
+		expect(parseArgs({ args: ['--name=Ada'], options }).options).toEqual({ name: 'Ada' })
+	})
+
+	it('converts through the alias declaration', () => {
+		expect(parseArgs({ args: ['-v=false'], options }).options).toEqual({ verbose: false })
+		expect(() => parseArgs({ args: ['-c=x'], options })).toThrow(/option 'count'/)
+	})
+
+	it('resolves a group against declarations, ending in a value option', () => {
+		expect(parseArgs({ args: ['-vn', 'Ada'], options }).options).toEqual({ verbose: true, name: 'Ada' })
+		expect(parseArgs({ args: ['-vc=3'], options }).options).toEqual({ verbose: true, count: 3 })
+	})
+
+	it('rejects a value option that is not last in a group', () => {
+		const run = () => parseArgs({ args: ['-nv'], options })
+		expect(run).toThrow(ParseArgsError)
+		expect(run).toThrow(/Invalid option group '-nv': 'n' takes a value/)
+	})
+
+	it('keeps undeclared short options expanding as booleans', () => {
+		expect(parseArgs({ args: ['-vxy'], options }).options).toEqual({ verbose: true, x: true, y: true })
+	})
+
+	it('rejects an alias used by two options', () => {
+		expect(() =>
+			parseArgs({ args: [], options: { a: { type: 'boolean', alias: 'x' }, b: { type: 'boolean', alias: 'x' } } })
+		).toThrow(/Alias 'x' of option 'b' is already used by option 'a'/)
+		expect(() =>
+			parseArgs({ args: [], options: { a: { type: 'boolean' }, b: { type: 'boolean', alias: 'a' } } })
+		).toThrow(/already used/)
+	})
+
+	it('leaves the tokenizer independent of declarations', () => {
+		expect(tokenizeArgs(['-vn', 'Ada'])[0]).toMatchObject({ kind: 'option', name: 'vn', dashes: 1 })
 	})
 })
