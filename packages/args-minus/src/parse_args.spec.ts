@@ -209,10 +209,6 @@ it('can specify the type of options', () => {
 
 // single dash is reserved for shortcuts
 
-it.todo('can override the option modifier from dash to something else')
-
-it.todo('can override the option terminator from double dash to something else')
-
 describe('options that consume the following argument', () => {
 	const options = { name: { type: 'string' }, n: { type: 'number' }, b: { type: 'boolean' } } as const
 
@@ -445,5 +441,48 @@ describe('unknown option policy', () => {
 		expect(parseArgs({ args: ['a', '--x'], options, strict: false }).options).toEqual({ x: true })
 		expect(() => parseArgs({ args: ['a'], options, strict: true })).not.toThrow()
 		expect(() => parseArgs({ args: ['--x'], options, allowPositionals: false })).not.toThrow()
+	})
+})
+
+describe('custom grammar', () => {
+	it('uses another modifier for options', () => {
+		const r = parseArgs({ args: ['/a', '//name=Ada', '-x', 'p'], grammar: { modifiers: '/' } })
+		expect(r.options).toEqual({ a: true, name: 'Ada' })
+		expect(r._).toEqual(['-x', 'p'])
+	})
+
+	it('accepts several modifiers and counts them together', () => {
+		const r = parseArgs({ args: ['+ab', '--long', '-+mix'], grammar: { modifiers: ['-', '+'] } })
+		expect(r.options).toEqual({ a: true, b: true, long: true, mix: true })
+	})
+
+	it('uses another terminator', () => {
+		const r = parseArgs({ args: ['--a', '::', '--b'], grammar: { terminator: '::' } })
+		expect(r).toEqual({ _: [], __: ['--b'], options: { a: true } })
+	})
+
+	it('treats the default terminator as an option when a custom one is set', () => {
+		expect(parseArgs({ args: ['--', 'x'], grammar: { terminator: '::' } })._).toEqual(['--', 'x'])
+	})
+
+	it('keeps source indexes and raw text in tokens', () => {
+		expect(tokenizeArgs(['/a', '::', '/b'], { modifiers: '/', terminator: '::' })).toEqual([
+			{ kind: 'option', index: 0, name: 'a', dashes: 1, raw: '/a', value: undefined },
+			{ kind: 'option-terminator', index: 1 },
+			{ kind: 'positional', index: 2, value: '/b' }
+		])
+	})
+
+	it('rejects ambiguous grammar', () => {
+		expect(() => tokenizeArgs([], { modifiers: '' })).toThrow(/At least one modifier/)
+		expect(() => tokenizeArgs([], { modifiers: '=' })).toThrow(/Invalid modifier/)
+		expect(() => tokenizeArgs([], { modifiers: ['--'] })).toThrow(/Invalid modifier/)
+		expect(() => tokenizeArgs([], { terminator: '' })).toThrow(/terminator must not be empty/)
+	})
+
+	it('keeps the default grammar when none is given', () => {
+		expect(tokenizeArgs(['--a', '--', '-b'])).toEqual(
+			tokenizeArgs(['--a', '--', '-b'], { modifiers: '-', terminator: '--' })
+		)
 	})
 })

@@ -1,4 +1,4 @@
-import { type OptionToken, type PositionalToken, type Token, tokenizeArgs } from './tokenize_args.js'
+import { type Grammar, type OptionToken, type PositionalToken, type Token, tokenizeArgs } from './tokenize_args.js'
 
 export type ArgsValue = string | number | boolean
 export type MultipleArgsValue = string[] | number[] | boolean[]
@@ -123,6 +123,13 @@ export type ParseArgsConfig<O extends OptionDeclarations = OptionDeclarations> =
 	 */
 	allowPositionals?: boolean
 	/**
+	 * Option modifiers and terminator, as accepted by `tokenizeArgs`.
+	 * One modifier character starts a short group, two or more start a long option,
+	 * whatever the characters are; `ParsedArgs.tokens` holds the raw source text.
+	 * **Default: `{ modifiers: '-', terminator: '--' }`.**
+	 */
+	grammar?: Grammar
+	/**
 	 * Return the parsed tokens.
 	 * **Default: `false`.**
 	 */
@@ -135,7 +142,7 @@ export type ParseArgsConfig<O extends OptionDeclarations = OptionDeclarations> =
 export function parseArgs<const O extends OptionDeclarations = OptionDeclarations>(
 	config: ParseArgsConfig<O>
 ): ParsedArgs<O> {
-	const tokens = tokenizeArgs(config.args)
+	const tokens = tokenizeArgs(config.args, config.grammar)
 	const declarations: OptionDeclarations | undefined = config.options
 	const canonical = canonicalNames(declarations)
 	const options = Object.create(null)
