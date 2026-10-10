@@ -15,5 +15,5 @@ it('supports options with 3 or more dashes', () => {
 
 it('does not export the removed argsStrictParser', async () => {
 	const api = await import('./index.js')
-	expect(Object.keys(api).sort()).toEqual(['parseArgs', 'tokenizeArgs'])
+	expect(Object.keys(api).sort()).toEqual(['ParseArgsError', 'parseArgs', 'tokenizeArgs'])
 })
