@@ -94,14 +94,13 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 				break
 			}
 			case 'option': {
-				if (token.dashes === 1) {
-					const names = Array.from(token.name)
-					names.forEach((k, i) => {
-						options[k] = convert(declarations?.[k], k, i === names.length - 1 ? token.value : undefined, token)
-					})
-				} else {
-					options[token.name] = convert(declarations?.[token.name], token.name, token.value, token)
-				}
+				const names = token.dashes === 1 ? Array.from(token.name) : [token.name]
+				names.forEach((name, i) => {
+					const isLast = i === names.length - 1
+					const declaration = declarations?.[name]
+					const value = isLast ? (token.value ?? takeFollowingValue(declaration, remainingTokens)) : undefined
+					options[name] = convert(declaration, name, value, token)
+				})
 				break
 			}
 			case 'option-terminator': {
@@ -114,6 +113,28 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 	const result: ParsedArgs<O> = { _, __, options }
 	if (config.tokens) result.tokens = tokens
 	return result
+}
+
+/**
+ * A declared `number` or `string` option consumes the next token as its value
+ * when it has no inline value.
+ * The next token is taken only when it is a positional,
+ * or (for `number`) an option-like token that is a valid number such as `-5`.
+ * Otherwise nothing is consumed and conversion reports the missing value.
+ */
+function takeFollowingValue(option: OptionDeclaration | undefined, remaining: Token[]): string | undefined {
+	if (!option || option.type === 'boolean') return undefined
+	const next = remaining[0]
+	if (!next) return undefined
+	if (next.kind === 'positional') {
+		remaining.shift()
+		return next.value
+	}
+	if (next.kind === 'option' && option.type === 'number' && Number.isFinite(toNumber(next.raw))) {
+		remaining.shift()
+		return next.raw
+	}
+	return undefined
 }
 
 function convert(

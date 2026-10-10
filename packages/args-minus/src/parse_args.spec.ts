@@ -218,8 +218,6 @@ it.todo('allows unknown option when strict is false')
 
 it.todo('throws when combined shortcut options is not boolean except the last one')
 
-it.todo('gets value from positional?')
-
 it.todo('can specify option to accept multiple values through multiple: true')
 
 it.todo('infers option type and multiple from default value')
@@ -229,3 +227,61 @@ it.todo('infers option type and multiple from default value')
 it.todo('can override the option modifier from dash to something else')
 
 it.todo('can override the option terminator from double dash to something else')
+
+describe('options that consume the following argument', () => {
+	const options = { name: { type: 'string' }, n: { type: 'number' }, b: { type: 'boolean' } } as const
+
+	it('consumes the next argument for a long option', () => {
+		expect(parseArgs({ args: ['--name', 'Ada'], options })).toEqual({ _: [], __: [], options: { name: 'Ada' } })
+	})
+
+	it('consumes the next argument for a short option and the last option of a group', () => {
+		expect(parseArgs({ args: ['-n', '3'], options }).options).toEqual({ n: 3 })
+		expect(parseArgs({ args: ['-bn', '3'], options }).options).toEqual({ b: true, n: 3 })
+	})
+
+	it('still accepts the inline value', () => {
+		expect(parseArgs({ args: ['--name=Ada', 'x'], options })).toEqual({ _: ['x'], __: [], options: { name: 'Ada' } })
+	})
+
+	it('keeps positionals in order around the consumed value', () => {
+		expect(parseArgs({ args: ['a', '--name', 'Ada', 'b', '--', 'c'], options })).toEqual({
+			_: ['a', 'b'],
+			__: ['c'],
+			options: { name: 'Ada' }
+		})
+	})
+
+	it('does not consume for boolean or undeclared options', () => {
+		expect(parseArgs({ args: ['--b', 'true'], options })).toEqual({ _: ['true'], __: [], options: { b: true } })
+		expect(parseArgs({ args: ['--x', 'y'] })).toEqual({ _: ['y'], __: [], options: { x: true } })
+	})
+
+	it('treats an option-like next argument as a missing value', () => {
+		expect(() => parseArgs({ args: ['--name', '--b'], options })).toThrow(/option 'name': a value is required/)
+		expect(() => parseArgs({ args: ['--name', '-x'], options })).toThrow(/option 'name': a value is required/)
+	})
+
+	it('treats the terminator as a missing value', () => {
+		expect(() => parseArgs({ args: ['--name', '--', 'Ada'], options })).toThrow(/option 'name': a value is required/)
+	})
+
+	it('reports a missing value at the end of input', () => {
+		expect(() => parseArgs({ args: ['--n'], options })).toThrow(/option 'n': a number is required/)
+	})
+
+	it('lets a value that looks like an option be given inline', () => {
+		expect(parseArgs({ args: ['--name=--b'], options }).options).toEqual({ name: '--b' })
+	})
+
+	it('accepts a negative number as the following value of a number option', () => {
+		expect(parseArgs({ args: ['--n', '-5'], options }).options).toEqual({ n: -5 })
+		expect(parseArgs({ args: ['--n', '-5.5'], options }).options).toEqual({ n: -5.5 })
+	})
+
+	it('keeps the raw tokens unchanged', () => {
+		expect(parseArgs({ args: ['--name', 'Ada'], options, tokens: true }).tokens).toEqual(
+			tokenizeArgs(['--name', 'Ada'])
+		)
+	})
+})
