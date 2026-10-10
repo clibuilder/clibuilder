@@ -1,5 +1,5 @@
 import { testType } from 'type-plus'
-import { type ArgsValue, parseArgs, tokenizeArgs } from './index.js'
+import { type ArgsValue, ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
 
 it('passes positional arguments into _ ', () => {
 	expect(parseArgs({ args: ['a', 'b'] })._).toEqual(['a', 'b'])
@@ -49,10 +49,69 @@ it('returns the last value if the option is specified multiple times', () => {
 	expect(parseArgs({ args: ['-ab=1', '-cb=2'] }).options).toEqual({ a: true, b: '2', c: true })
 })
 
-it('returns option type as ArgsValue (string | boolean)', () => {
+it('returns option type as ArgsValue (string | number | boolean)', () => {
 	const r = parseArgs({ args: [] })
 	testType.equal<(typeof r.options)['p'], ArgsValue>(true)
-	testType.equal<ArgsValue, string | boolean>(true)
+	testType.equal<ArgsValue, string | number | boolean>(true)
+})
+
+describe('value conversion', () => {
+	const options = { n: { type: 'number' }, b: { type: 'boolean' }, s: { type: 'string' } } as const
+
+	it('types declared options by their declaration', () => {
+		const r = parseArgs({ args: [], options })
+		testType.equal<typeof r.options.n, number | undefined>(true)
+		testType.equal<typeof r.options.b, boolean | undefined>(true)
+		testType.equal<typeof r.options.s, string | undefined>(true)
+	})
+
+	it('converts numbers', () => {
+		expect(parseArgs({ args: ['--n=1.5'], options }).options.n).toBe(1.5)
+		expect(parseArgs({ args: ['--n=-3'], options }).options.n).toBe(-3)
+		expect(parseArgs({ args: ['--n=0x10'], options }).options.n).toBe(16)
+	})
+
+	it.each(['abc', '', ' ', 'NaN', 'Infinity', '1x'])('rejects invalid number %j', (v) => {
+		expect(() => parseArgs({ args: [`--n=${v}`], options })).toThrow(ParseArgsError)
+		expect(() => parseArgs({ args: [`--n=${v}`], options })).toThrow(/option 'n'/)
+	})
+
+	it('rejects a number option without a value', () => {
+		expect(() => parseArgs({ args: ['--n'], options })).toThrow(/Invalid value for option 'n': a number is required/)
+	})
+
+	it('rejects a string option without a value', () => {
+		expect(() => parseArgs({ args: ['--s'], options })).toThrow(/Invalid value for option 's': a value is required/)
+	})
+
+	it('converts booleans in short groups', () => {
+		expect(parseArgs({ args: ['-b=false'], options }).options.b).toBe(false)
+		expect(parseArgs({ args: ['-sb=0'], options: { s: { type: 'boolean' }, b: { type: 'boolean' } } }).options).toEqual(
+			{
+				s: true,
+				b: false
+			}
+		)
+	})
+
+	it('converts the last short option by its declaration', () => {
+		expect(parseArgs({ args: ['-n=2'], options }).options.n).toBe(2)
+		expect(() => parseArgs({ args: ['-n=x'], options })).toThrow(/option 'n'/)
+	})
+
+	it('reports the option and the input form in the error', () => {
+		const error = (() => {
+			try {
+				parseArgs({ args: ['--n=abc'], options })
+			} catch (e) {
+				return e as ParseArgsError
+			}
+		})()
+		expect(error).toBeInstanceOf(ParseArgsError)
+		expect(error?.option).toBe('n')
+		expect(error?.input).toBe('--n=abc')
+		expect(error?.message).toBe("Invalid value for option 'n': abc (from '--n=abc')")
+	})
 })
 
 it('returns tokens when tokens is true', () => {
