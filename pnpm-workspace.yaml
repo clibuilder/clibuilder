@@ -1,6 +1,10 @@
 autoInstallPeers: true
 strictPeerDependencies: false
 
+# pnpm 11+ reads this map; `pnpm.onlyBuiltDependencies` is ignored there.
+allowBuilds:
+  esbuild: true
+
 # Packages we maintain ourselves, so the cooling-off period buys nothing.
 #
 # The soak exists to stop a COMPROMISED THIRD-PARTY release being pulled into a build
