@@ -44,14 +44,15 @@ for (const [name, args] of runtimes) {
 	const result = spawnSync(name, args, { cwd, encoding: 'utf8' })
 	if (result.error?.code === 'ENOENT') {
 		if (name === 'node' || process.env.ARGS_MINUS_RUNTIMES === 'all') fail(`${name} is not installed`)
-		else console.log(`skip ${name} (not installed)`)
+		else process.stdout.write(`skip ${name} (not installed)` + '\n')
 		continue
 	}
-	if (result.status !== 0 || result.stdout.trim() !== 'ok') fail(`${name} could not import the package:\n${result.stderr}`)
-	else console.log(`ok ${name}`)
+	if (result.status !== 0 || result.stdout.trim() !== 'ok')
+		fail(`${name} could not import the package:\n${result.stderr}`)
+	else process.stdout.write(`ok ${name}` + '\n')
 }
 
 if (failures.length) {
-	console.error(failures.join('\n'))
+	process.stderr.write(failures.join('\n') + '\n')
 	process.exit(1)
 }

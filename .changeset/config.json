@@ -11,7 +11,5 @@
 		"version": false,
 		"tag": false
 	},
-	"ignore": [
-		"ts-app"
-	]
+	"ignore": ["ts-app"]
 }
