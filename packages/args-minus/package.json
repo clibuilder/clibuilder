@@ -1,8 +1,7 @@
 {
 	"name": "args-minus",
 	"version": "0.0.0",
-	"private": true,
-	"description": "A less-is-more `parseArgs`",
+	"description": "A less-is-more `parseArgs`: runtime-neutral command-line tokenizer and parser",
 	"keywords": [
 		"cli",
 		"command",
@@ -30,17 +29,20 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
-		"types": "./esm/index.d.ts",
-		"import": "./esm/index.js"
+		".": {
+			"types": "./esm/index.d.ts",
+			"import": "./esm/index.js",
+			"default": "./esm/index.js"
+		},
+		"./package.json": "./package.json"
 	},
 	"files": [
 		"esm",
-		"src",
-		"!**/*.internal.*",
-		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+		"!**/*.map",
+		"!**/*.{spec,unit}.*"
 	],
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc && node scripts/verify-dist.mjs",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .turbo coverage esm tsconfig.tsbuildinfo",
 		"coverage": "vitest run --coverage",
@@ -62,6 +64,11 @@
 		"vitest": "^4.1.11"
 	},
 	"engines": {
-		"node": ">= 8"
+		"node": ">=20"
+	},
+	"main": "./esm/index.js",
+	"types": "./esm/index.d.ts",
+	"publishConfig": {
+		"access": "public"
 	}
 }
