@@ -20,7 +20,7 @@ export namespace context {
 export function context(options: context.Options = {}): Context {
 	const cwd = process.cwd()
 	const sinks = createSinks(options.streams ?? { stdout: process.stdout, stderr: process.stderr })
-	const output = options.output ?? 'console'
+	const output = options.output ?? 'axi'
 	// the resolution is cached as a promise so concurrent callers share one filesystem walk,
 	// and so a config that is legitimately falsy is not re-resolved on every call.
 	let resolvingConfig: Promise<ConfigLoadResult>

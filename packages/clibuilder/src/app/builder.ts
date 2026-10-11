@@ -33,7 +33,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	// context.ui.displayLevel = 'trace'
 	const s = state(options)
 	const format = options.format ?? 'toon'
-	const output = options.output ?? 'console'
+	const output = options.output ?? 'axi'
 	if (!formats.includes(format)) {
 		throw new TypeError(`cli({ format }) must be one of ${formats.join(', ')}, received ${String(format)}`)
 	}
@@ -130,7 +130,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		const baseCommand = getBaseCommand(s.description, { config: !!s.configName, format: s.globalFormat })
+		const baseCommand = getBaseCommand(s.description, { config: !!s.configName, format })
 		// the global options are read from the base command alone, before the matched
 		// command's usage errors are looked at (axi-native RFC section 3.2).
 		// A bad `--format` falls back to the `cli({ format })` default, so its usage error is reported in that.
@@ -317,7 +317,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	}
 
 	function adjust<C extends Command>(base: Command, command: C): C {
-		return adjustCommand(base, command, !!s.globalFormat)
+		return adjustCommand(base, command)
 	}
 }
 
@@ -406,7 +406,7 @@ function createCommandInstance(
 	command: cli.Command,
 	registry: ReturnType<typeof createRegistry>,
 	format: cli.Format = 'toon',
-	output: cli.Output = 'console'
+	output: cli.Output = 'axi'
 ) {
 	return {
 		...command,
@@ -434,16 +434,16 @@ function createCommandUI(ctx: Context, state: state.Result, command: cli.Command
 /**
  * Links a command and its sub-commands to their parents.
  *
- * @param globalFormat whether the global `--format` is active: a command's own `format` option
- * then gives way to it, on a copy of the command, or fails the cli (see `yieldToGlobalFormat()`).
+ * A command's own `format` option gives way to the global `--format`, on a copy of the command,
+ * or fails the cli (see `yieldToGlobalFormat()`).
  */
-function adjustCommand<C extends Command>(base: Command, command: C, globalFormat: boolean): C {
-	if (globalFormat) command = yieldToGlobalFormat(command)
+function adjustCommand<C extends Command>(base: Command, command: C): C {
+	command = yieldToGlobalFormat(command)
 	if (command.name) {
 		command.parent = base
 	}
 	if (command.commands) {
-		command.commands = command.commands.map((c) => adjustCommand(command, c, globalFormat))
+		command.commands = command.commands.map((c) => adjustCommand(command, c))
 	}
 	return command
 }

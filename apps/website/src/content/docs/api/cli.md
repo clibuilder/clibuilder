@@ -26,7 +26,7 @@ namespace cli {
     config?: string | boolean
     onUsageError?: UsageErrorHandler
     streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
-    output?: 'console' | 'axi'
+    output?: 'axi' | 'console'
     format?: 'toon' | 'json' | 'text'
   }
 }
@@ -40,8 +40,8 @@ namespace cli {
 | `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
-| `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages and errors go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
-| `format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The CLI's default format. Defaults to `'toon'`. Setting it, or `output: 'axi'`, turns on the [global `--format` option](#the-global---format-option). With `output: 'axi'`, a thrown [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) is encoded in the resolved format. Any other value throws when `cli()` is called. |
+| `output` | `'axi' \| 'console'` | **v12, unreleased.** How the CLI writes its answers, errors and [`ui`](/clibuilder/api/ui/) messages. Defaults to `'axi'`. `'console'` keeps the `clibuilder` 11 output. See [Streams and output](#streams-and-output). |
+| `format` | `'toon' \| 'json' \| 'text'` | **v12, unreleased.** The CLI's default format, the default of the [global `--format` option](#the-global---format-option). Defaults to `'toon'`. Answers and errors are encoded in the resolved format. Any other value throws when `cli()` is called. |
 
 `config` loads the config for the commands only. It does not load plugins.
 
@@ -57,7 +57,8 @@ becomes an option of `plugins()`, and `this.keywords` is removed. A CLI that wan
 ## Streams and output
 
 :::caution[Unreleased]
-`streams` and `output` are on `main` for the next `clibuilder` 11 minor, which is not published yet.
+`streams` and `output` are on `main` and ship in `clibuilder` 12. In 11.5.0 there is no `output`
+option, and the CLI behaves as `output: 'console'` does.
 :::
 
 `streams` sends everything the CLI writes to the two streams you pass, such as when you embed the
@@ -75,28 +76,26 @@ const capture = new Writable({
 })
 
 await cli({ name: 'app', version: '1.0.0', streams: { stdout: capture, stderr: process.stderr } })
-  .default({ run() { this.ui.info('hello') } })
+  .default({ run() { return 'hello' } })
   .parse(process.argv)
 // text === 'hello\n'
 ```
 
-`output` picks where each [`ui`](/clibuilder/api/ui/) message goes:
+`output` picks one of two modes. Both are permanent, and neither is deprecated.
 
-| Method | `output: 'console'` (default) | `output: 'axi'` |
+| | `output: 'axi'` (default) | `output: 'console'` |
 | --- | --- | --- |
-| `ui.info`, `ui.debug` | stdout | stderr |
+| Value returned from `run()` | stdout, encoded (see [The result channel](#the-result-channel)) | not printed |
+| Thrown `CliError` | stdout, encoded once (see [Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)) | message and help on stderr |
+| Usage error | stdout, the top-ranked one, coded, exit 2 (see [Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors-with-output-axi)) | prose and the full help, exit 2 |
+| `--help`, `--version` | stdout, as answers (see [below](#--help-and---version-with-output-axi)) | stdout |
+| `ui.info`, `ui.debug` | stderr | stdout |
 | `ui.warn`, `ui.error` | stderr | stderr |
-| `ui.showHelp`, `ui.showVersion`, `--help`, `--version` | stdout | stdout, as answers (see [below](#--help-and---version-with-output-axi)) |
 
 With `'axi'`, stdout is left for answers, so an agent or a script reading it never gets diagnostics
-mixed in. With `'axi'`, a `CliError` thrown from `run()` is also an answer: it is rendered once on
-stdout in the CLI's `format`, and nothing is written to stderr for it (see
-[Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)). So is a value
-returned from `run()`: it is printed once on stdout (see [The result channel](#the-result-channel)).
-So is a usage error: the top-ranked one is one coded error on stdout, with no help (see
-[Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors-with-output-axi)).
-`'axi'` becomes the default in v12. Both modes
-are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
+mixed in. `'console'` writes what `clibuilder` 11.5.0 wrote, byte for byte, except that its help
+lists the [global `--format` option](#the-global---format-option). See the
+[v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
 
 In both modes the CLI writes through its built-in UI:
 
@@ -123,7 +122,7 @@ output and exits with code 0 instead of crashing on `EPIPE`. This applies whenev
 This is on `main` and ships in `clibuilder` 12. It is not in a published release yet.
 :::
 
-With `output: 'axi'`, the CLI owns `--help` and `--version`. Both are answers: they are written on
+With `output: 'axi'`, the default, the CLI owns `--help` and `--version`. Both are answers: they are written on
 stdout, even with `--silent`, nothing is written on stderr, and the CLI exits 0.
 
 `--help` follows [`--format`](#the-global---format-option). `--format text` prints the help message,
@@ -172,8 +171,9 @@ $ app deploy --version --format json
 ```
 
 A command that calls `this.ui.showHelp()` from `run()` gets the same answer as `--help`, in
-`this.format`, and `this.ui.showVersion()` prints the plain version. Both are deprecated and leave
-`ui` in v12; return the answer from `run()` instead (see [UI](/clibuilder/api/ui/#showhelp)).
+`this.format`, and `this.ui.showVersion()` prints the plain version. Both are deprecated. They stay
+on `ui` in 12 and are removed in a later major. Return the answer from `run()` instead (see
+[UI](/clibuilder/api/ui/#showhelp)).
 
 With `output: 'console'`, `--help`, `--version`, `ui.showHelp()` and `ui.showVersion()` print what
 they printed before. Source:
@@ -182,14 +182,13 @@ they printed before. Source:
 ## The global `--format` option
 
 :::caution[Unreleased]
-The global `--format` and `this.format` are on `main` for the next `clibuilder` 11 minor, which is
-not published yet.
+The global `--format` and `this.format` are on `main` and ship in `clibuilder` 12. They are not in a
+published release yet.
 :::
 
-With `output: 'axi'`, or when `format` is set, every command accepts `--format <toon|json|text>`.
-Help lists it once, with the other global options. There is no `-f` alias, because `-f` is often a
-command's own `--force` or `--file`. Without `output: 'axi'` and without `format`, there is no
-global `--format`, and the CLI behaves as before.
+Every command accepts `--format <toon|json|text>`, in both output modes. Help lists it once, with
+the other global options. There is no `-f` alias, because `-f` is often a command's own `--force`
+or `--file`.
 
 Like the other global options, it may come before the command, after it, or between a group and its
 sub-command: `app --format json list` and `app list --format json` are the same. It takes only its
@@ -200,11 +199,11 @@ value, so the next word still names the command. See
 `'toon'` by default. The format is the same on a terminal and in a pipe.
 
 ```ts
-cli({ name: 'app', version: '1.0.0', output: 'axi' })
+cli({ name: 'app', version: '1.0.0' })
   .command({
     name: 'list',
     run() {
-      this.ui.info(`answering in ${this.format}`)
+      return { format: this.format }
     }
   })
   .parse(process.argv)
@@ -212,7 +211,7 @@ cli({ name: 'app', version: '1.0.0', output: 'axi' })
 
 ```sh
 $ app list --format json
-answering in json
+{"format":"json"}
 ```
 
 The same value is the `format` of the [`onUsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself)
@@ -224,17 +223,20 @@ in the CLI's default format, never in the bad one:
 
 ```sh
 $ app list --format yaml
-invalid value for option --format: expected one of: toon, json, text, received "yaml"
+error: "invalid value for option --format: expected one of 'toon', 'json', 'text', received \"yaml\""
+code: invalid-value
+option: "--format"
+value: yaml
+help[2]: "Usage: app list","allowed for --format: toon, json, text (received \"yaml\")"
 ```
 
-With `output: 'axi'` it is a [coded error on stdout](/clibuilder/guides/failing/#usage-errors-with-output-axi),
-with `allowed for --format: toon, json, text (received "yaml")` in its `help`.
+With `output: 'console'` it is the prose error on stderr, followed by the help.
 
 An `onUsageError` handler gets the error with `allowed: ['toon', 'json', 'text']`.
 
 ### A command's own `format` option
 
-While the global option is on, a command that declares its own `format` option fails the CLI when
+A command that declares its own `format` option fails the CLI when
 the command is added, or when a plugin or an extension adds it. Two options with the same name would
 shadow each other. To migrate, delete the local declaration and read `this.format`:
 
@@ -258,19 +260,19 @@ This includes `formatOption` and `defineFormatOption()` from
 ## The result channel
 
 :::caution[Unreleased]
-The result channel, `result()`, `document()`, `empty()` and `this.output` are on `main` for the next
-`clibuilder` 11 minor, which is not published yet.
+The result channel, `result()`, `document()`, `empty()` and `this.output` are on `main` and ship in
+`clibuilder` 12. They are not in a published release yet.
 :::
 
-With `output: 'axi'`, `run()` returns the answer and the CLI prints it: once, on stdout, in
-[`this.format`](#the-global---format-option), with nothing on stderr. `parse()` still resolves to the
-value, so tests and programmatic callers see no change. With the default `output: 'console'`, nothing
-is printed for a returned value, as before.
+With `output: 'axi'`, the default, `run()` returns the answer and the CLI prints it: once, on
+stdout, in [`this.format`](#the-global---format-option), with nothing on stderr. `parse()` still
+resolves to the value, so tests and programmatic callers see no change. With `output: 'console'`,
+nothing is printed for a returned value, as in `clibuilder` 11.
 
 ```ts
 import { cli, document, empty, result } from 'clibuilder'
 
-cli({ name: 'app', version: '1.0.0', output: 'axi' })
+cli({ name: 'app', version: '1.0.0' })
   .command({
     name: 'list',
     run() {
@@ -318,7 +320,7 @@ Every answer ends on one newline.
 `empty()`, in either output. A warning the reader must see belongs in the returned data:
 `ui.warn` is a diagnostic on stderr.
 
-`run()` reads the output mode as `this.output`, `'console'` by default. Source:
+`run()` reads the output mode as `this.output`, `'axi'` by default. Source:
 [axi-native section 3.5](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#35-no-result-channel-6395).
 
 ## `Builder`
@@ -343,7 +345,7 @@ Defines the command that runs when no sub-command is named. Takes a
 cli({ name: 'app', version: '1.0.0' }).default({
   description: 'do the thing',
   run() {
-    this.ui.info('running')
+    return 'done'
   }
 })
 ```
@@ -446,8 +448,10 @@ executable from the start.
 :::
 
 `parse()` does **not** reject for usage problems. An unknown flag, a missing required argument, a
-value that fails its schema, or a config that fails validation all cause the help message to be
-printed and the promise to resolve. Only an error thrown by your own `run()` rejects.
+value that fails its check, or a config that fails validation are reported and the promise resolves
+to the exit code. With `output: 'axi'` the report is one coded error on stdout; with
+`output: 'console'` it is the error followed by the help message. A thrown `CliError` is reported
+the same way. Any other error thrown by your own `run()` rejects.
 
 ## Full example
 
@@ -465,7 +469,7 @@ cli({
   .default({
     config: z.object({ presets: z.string() }),
     run() {
-      this.ui.info(`presets: ${this.config.presets}`)
+      return { presets: this.config.presets }
     }
   })
   .command(
@@ -474,7 +478,7 @@ cli({
       description: 'build the project',
       options: { watch: { description: 'rebuild on change', alias: ['w'] } },
       run(args) {
-        this.ui.info(args.watch ? 'watching' : 'building once')
+        return args.watch ? 'watching' : 'building once'
       }
     })
   )

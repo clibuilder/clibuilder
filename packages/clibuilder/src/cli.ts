@@ -58,22 +58,26 @@ export namespace cli {
 		 */
 		streams?: Streams
 		/**
-		 * Where `ui` messages go.
+		 * How the cli writes its output.
 		 *
-		 * - `'console'` (default): `info` and `debug` on stdout, `warn` and `error` on stderr.
-		 * - `'axi'`: every `ui` message is a diagnostic on stderr, so stdout carries only answers.
+		 * - `'axi'` (default): stdout carries only answers. A value `run()` returns is printed in `this.format`,
+		 *   a thrown `CliError` and a usage error are reported once, encoded, and `--help` follows `--format`.
+		 *   Every `ui` message is a diagnostic on stderr.
+		 * - `'console'`: the clibuilder 11 layout. Returned values are not printed,
+		 *   a `CliError` and a usage error go to stderr as prose, a usage error is followed by the full help,
+		 *   `info` and `debug` are on stdout, `warn` and `error` on stderr.
 		 *
-		 * Both modes are permanent. The default becomes `'axi'` in v12.
+		 * Both modes are permanent.
 		 */
 		output?: Output
 		/**
 		 * The cli's default format: `'toon'` (default), `'json'` or `'text'`.
 		 *
-		 * Setting it, or `output: 'axi'`, turns on the global `--format <toon|json|text>` option.
-		 * The caller's `--format` then overrides this default for one invocation, and `run()` reads it as `this.format`.
+		 * Every cli has the global `--format <toon|json|text>` option, in either output mode.
+		 * The caller's `--format` overrides this default for one invocation, and `run()` reads it as `this.format`.
 		 * A command that declares its own `format` option conflicts with the global one and fails the cli at startup.
 		 *
-		 * With `output: 'axi'`, a `CliError` thrown from `run()` is rendered in the resolved format on stdout.
+		 * With `output: 'axi'`, the default, answers and reports are encoded in the resolved format on stdout.
 		 */
 		format?: Format
 	}
@@ -84,7 +88,7 @@ export namespace cli {
 	export type Streams = StreamsPort
 
 	/**
-	 * Where `ui` messages go: `'axi'` or `'console'`.
+	 * How the cli writes its output: `'axi'` (default) or `'console'`.
 	 *
 	 * @see Options.output
 	 */
@@ -111,8 +115,8 @@ export namespace cli {
 	 * @param errors the structured errors found while parsing the arguments.
 	 * @param context.command the matched command, including its declared `arguments` and `options`.
 	 * @param context.ui the matched command's `ui`.
-	 * @param context.format the format the cli reports in: the caller's `--format` when the global option is active and
-	 * the value is valid, else the `cli({ format })` value, `toon` by default.
+	 * @param context.format the format the cli reports in: the caller's `--format` when the value is valid,
+	 * else the `cli({ format })` value, `toon` by default.
 	 * @param context.exitCode the code the cli exits with when the handler returns none: `exitCodes.usage`.
 	 */
 	export type UsageErrorHandler = (
@@ -137,8 +141,7 @@ export namespace cli {
 		ui: UI
 		/**
 		 * The format the cli reports in, resolved with the global options before the handler runs:
-		 * the caller's `--format` when the global option is active (under `output: 'axi'` or when `cli({ format })` is set),
-		 * else the `cli({ format })` value, `toon` by default.
+		 * the caller's `--format`, else the `cli({ format })` value, `toon` by default.
 		 * A bad `--format` value is itself a usage error, reported with the default format here.
 		 *
 		 * clibuilder always sets it. It is optional only so that code calling a handler itself keeps compiling.
@@ -261,12 +264,12 @@ export namespace cli {
 						context: Context
 						registry: Registry
 						/**
-						 * The format to answer in: the caller's `--format` when the global option is active,
+						 * The format to answer in: the caller's `--format`,
 						 * else the `cli({ format })` value, `toon` by default.
 						 */
 						format: Format
 						/**
-						 * The cli's output mode, `cli({ output })`: `'console'` by default.
+						 * The cli's output mode, `cli({ output })`: `'axi'` by default.
 						 * Under `'axi'` the value `run()` returns is printed (see `result()`).
 						 */
 						output: Output
@@ -309,12 +312,12 @@ export namespace cli {
 							cwd: string
 							registry: Registry
 							/**
-							 * The format to answer in: the caller's `--format` when the global option is active,
+							 * The format to answer in: the caller's `--format`,
 							 * else the `cli({ format })` value, `toon` by default.
 							 */
 							format: Format
 							/**
-							 * The cli's output mode, `cli({ output })`: `'console'` by default.
+							 * The cli's output mode, `cli({ output })`: `'axi'` by default.
 							 * Under `'axi'` the value `run()` returns is printed (see `result()`).
 							 */
 							output: Output

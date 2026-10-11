@@ -1,7 +1,6 @@
 import { command, exitCodes, t } from 'clibuilder'
 import { testCommand } from 'clibuilder/testing'
 import { describe, expect, it, vi } from 'vitest'
-import { formatOption } from './format.js'
 import { createUsageErrorHandler, describeUsageError } from './usage.js'
 
 function listCommand(write: (chunk: string) => void, format?: 'json') {
@@ -9,7 +8,7 @@ function listCommand(write: (chunk: string) => void, format?: 'json') {
 		name: 'list',
 		description: 'list tasks',
 		arguments: [{ name: 'repo', description: 'the repo', type: t.string() }],
-		options: { format: formatOption, state: { type: t.string().optional(), description: 'the state' } },
+		options: { state: { type: t.string().optional(), description: 'the state' } },
 		onUsageError: createUsageErrorHandler({ format, stdout: { write } }),
 		run() {
 			return 'ran'
@@ -28,7 +27,7 @@ describe('createUsageErrorHandler', () => {
 				[
 					'error: unknown option --stat',
 					'code: unknown-option',
-					'help[1]: "valid options for `list`: --format, --state (--help always allowed)"',
+					'help[1]: "valid options for `list`: --state (--help always allowed)"',
 					''
 				].join('\n')
 			]
@@ -53,7 +52,7 @@ describe('createUsageErrorHandler', () => {
 		expect(JSON.parse(write.mock.calls[0]?.[0])).toEqual({
 			error: 'unknown option --stat',
 			code: 'unknown-option',
-			help: ['valid options for `list`: --format, --state (--help always allowed)']
+			help: ['valid options for `list`: --state (--help always allowed)']
 		})
 	})
 

@@ -69,10 +69,9 @@ change the result of the first run.
 
 ## Output modes: `axi` is the default
 
-**On `main`:** `cli({ output: 'axi' | 'console' })` and both modes. **Pending:** `axi` as the
-default.
+**On `main`.**
 
-**What changed.** `clibuilder` 12 has two output modes, and `axi` becomes the default. Both modes
+**What changed.** `clibuilder` 12 has two output modes, and `axi` is the default. Both modes
 are permanent, and neither is deprecated. `axi` makes stdout carry only answers, in a format an
 agent or a script can read. `console` is how `clibuilder` 11 behaves.
 
@@ -97,13 +96,25 @@ cli({ name: 'my-cli', version: '1.0.0' })
 cli({ name: 'my-cli', version: '1.0.0', output: 'console' })
 ```
 
+In `console` mode the output is the `clibuilder` 11.5.0 output byte for byte, with one exception:
+the help lists the global [`--format`](#--format-is-global) option, which every CLI has in 12. A
+spec in the repository runs the same invocations against 11.5.0 and against 12 to keep it so.
+
+`testCommand` follows the default too. Its `messages` now include the printed answer, such as a
+returned value or a `CliError` report. To test a CLI that sets `output: 'console'`, pass the same
+mode as the fourth argument:
+
+```ts
+const { messages } = await testCommand(cmd, 'cmd', undefined, { output: 'console' })
+```
+
 Source: [axi-native section 3.10](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#310-output-modes-and-stream-routing).
 
 ## `ui.*` writes to stderr
 
-**On `main`** under `output: 'axi'`. **Pending:** as the default.
+**On `main`.**
 
-**What changed.** In `axi` mode every `ui` call is a diagnostic on stderr, including `ui.info`.
+**What changed.** In `axi` mode, the default, every `ui` call is a diagnostic on stderr, including `ui.info`.
 Answers go to stdout.
 
 **Who is affected.** A CLI whose output a script reads, when the command prints it with
@@ -127,9 +138,9 @@ Source: [axi-native section 3.10](https://github.com/clibuilder/clibuilder/blob/
 
 ## Returned values are printed
 
-**On `main`** under `output: 'axi'`. **Pending:** as the default.
+**On `main`.**
 
-**What changed.** A value other than `undefined` returned from `run()` is printed on stdout, encoded
+**What changed.** In `axi` mode, the default, a value other than `undefined` returned from `run()` is printed on stdout, encoded
 in the resolved [format](#--format-is-global). `parse()` still resolves to the value, so tests and
 programmatic callers see no change. Three helpers control the printed form:
 
@@ -162,8 +173,7 @@ See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
 ## `CliError` carries a code and details
 
-**On `main`:** the fields, and the rendering under `output: 'axi'`. **Pending:** the rendering as
-the default.
+**On `main`.**
 
 **What changed.** `new CliError(message, { code, details, help, exitCode })` is the structured
 report of a failure. In `axi` mode core renders it once, on stdout, in the resolved format, under
@@ -193,9 +203,9 @@ See [Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output
 
 ## Usage errors are ranked and coded
 
-**On `main`** under `output: 'axi'`. **Pending:** as the default.
+**On `main`.**
 
-**What changed.** In `axi` mode only the top-ranked usage error is reported, on stdout, in the
+**What changed.** In `axi` mode, the default, only the top-ranked usage error is reported, on stdout, in the
 resolved format, with exit code 2. It has a `code`: `unknown-option`, `conflicting-options`,
 `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`. Its `help` lines hold the
 command's usage line and, for `invalid-value`, the allowed values or the violated constraint. The
@@ -221,10 +231,11 @@ See [Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors
 
 ## `--format` is global
 
-**On `main`** under `output: 'axi'` or `cli({ format })`. **Pending:** on for every CLI.
+**On `main`.**
 
-**What changed.** Every command accepts `--format <toon|json|text>`, and `run()` reads the resolved
-value from `this.format`. The default is `toon`; change it with `cli({ format: 'text' })`. `-f` is
+**What changed.** Every command accepts `--format <toon|json|text>`, in both output modes, and
+`run()` reads the resolved value from `this.format`. The help lists it with the other global
+options. The default is `toon`; change it with `cli({ format: 'text' })`. `-f` is
 not reserved. A bad value is a usage error with code `invalid-value` and exit code 2. A command that
 declares its own `format` option is a startup error.
 
@@ -257,13 +268,17 @@ See [The global `--format` option](/clibuilder/api/cli/#the-global---format-opti
 
 ## `--help` and `--version` belong to core
 
-**On `main`:** `--help` and `--version` as answers under `output: 'axi'`, command `examples`, and
-structured help. `ui.showHelp()` and `ui.showVersion()` are deprecated. **Pending:** their removal
-from `ui`.
+**On `main`.**
 
-**What changed.** Core answers `--help` on stdout, following `--format`: text help under `text`,
-and the structured help under `toon` and `json`. `--version` is plain text in every format.
-`showHelp` and `showVersion` leave `ui`, which now carries only diagnostics.
+**What changed.** In `axi` mode, the default, core answers `--help` on stdout, following
+`--format`: text help under `text`, and the structured help under `toon` and `json`. `--version` is
+plain text in every format. Commands can show `examples` in their help.
+
+`ui.showHelp()` and `ui.showVersion()` are deprecated, but they stay on `ui` in 12, so a command
+that shows its own help keeps working. Called from `run()` in `axi` mode, `showHelp()` answers like
+`--help`, in `this.format`, and `showVersion()` writes the version like `--version`. In `console`
+mode they write the text help and the version on stdout, as in 11. They are removed in a later
+major.
 
 **Who is affected.** A command that calls `this.ui.showHelp()` or `this.ui.showVersion()`. The
 codemod flags each call.

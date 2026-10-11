@@ -55,6 +55,14 @@ $ greet world
 hello, world
 ```
 
+:::note[v12, unreleased]
+In `clibuilder` 12 every `ui` line is a diagnostic on stderr, so it still shows in the terminal but
+not in a pipe. The answer a script or an agent reads is what `run()` returns:
+`return \`hello, ${args.name}\`` prints `hello, world` on stdout. See
+[The result channel](/clibuilder/api/cli/#the-result-channel), and
+[`output: 'console'`](/clibuilder/api/cli/#streams-and-output) to keep the 11 behaviour.
+:::
+
 ## 3. Take an option
 
 Options are named and declared as a record. Without a `type` they are `boolean | undefined`.
@@ -120,7 +128,9 @@ $ greet repo create my-project
 creating my-project
 ```
 
-A command with `commands` but no `run` is a group: invoking it prints its help.
+A command with `commands` but no `run` is a group: invoking it prints its help. In `clibuilder` 12
+(unreleased) it is a [usage error](/clibuilder/guides/failing/#usage-errors) that lists the group's
+commands.
 
 ## 5. What you get for free
 
@@ -133,6 +143,7 @@ Every CLI answers these without you writing them:
 | `--verbose` | `-V` | Raise the display level to `debug` |
 | `--silent` | | Suppress all UI output |
 | `--debug-cli` | | Raise the display level to `trace`, including clibuilder's own messages |
+| `--format` | | **v12, unreleased.** The format to answer in: `toon`, `json` or `text` |
 
 The help message is generated from the `description` fields on the CLI, its commands, arguments, and
 options — which is why they are worth writing carefully.

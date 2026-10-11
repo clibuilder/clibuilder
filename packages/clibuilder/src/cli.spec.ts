@@ -144,28 +144,32 @@ describe('streams and output', () => {
 			}
 		})
 
-	it('writes the ui to the given streams in console mode by default', async () => {
+	it('writes the ui to the given streams in console mode', async () => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
-		const result = await app({ streams: { stdout, stderr } }).parse(['node', 'app'])
+		const result = await app({ output: 'console', streams: { stdout, stderr } }).parse(['node', 'app'])
 		expect(result).toBe('result')
 		expect(stdout.text).toBe('info\n')
 		expect(stderr.text).toBe('warn\nerror\n')
 	})
 
-	it('writes every ui message to stderr in axi mode', async () => {
+	it.each([
+		{ output: 'axi' },
+		{}
+	] as const)('writes every ui message to stderr in axi mode, the default: %j', async (options) => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
-		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app'])
+		const result = await app({ ...options, streams: { stdout, stderr } }).parse(['node', 'app'])
+		expect(result).toBe('result')
 		// only the answer, the returned value, is on stdout
 		expect(stdout.text).toBe('result\n')
 		expect(stderr.text).toBe('info\nwarn\nerror\n')
 	})
 
-	it('writes the framework messages and help through the same streams', async () => {
+	it('writes the framework messages and help through the same streams in console mode', async () => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
-		const code = await app({ streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
+		const code = await app({ output: 'console', streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
 		expect(code).toBe(2)
 		expect(stderr.text).toBe('unknown option --bogus\n')
 		expect(stdout.text).toMatch(/^\nUsage: app/)
@@ -175,10 +179,12 @@ describe('streams and output', () => {
 	it('follows --verbose and --silent', async () => {
 		const verbose = { stdout: memoryStream(), stderr: memoryStream() }
 		await app({ streams: verbose }).parse(['node', 'app', '--verbose'])
-		expect(verbose.stdout.text).toContain('argv: node app --verbose')
+		expect(verbose.stderr.text).toContain('argv: node app --verbose')
 		const silent = { stdout: memoryStream(), stderr: memoryStream() }
 		await app({ streams: silent }).parse(['node', 'app', '--silent'])
-		expect(silent.stdout.text + silent.stderr.text).toBe('')
+		// `--silent` quiets the ui, not the answer
+		expect(silent.stdout.text).toBe('result\n')
+		expect(silent.stderr.text).toBe('')
 	})
 
 	it('writes --version and --help to the given stdout in both modes', async () => {
@@ -193,10 +199,10 @@ describe('streams and output', () => {
 		}
 	})
 
-	it('writes a usage error as one coded error on stdout and nothing on stderr in axi mode', async () => {
+	it('writes a usage error as one coded error on stdout and nothing on stderr in axi mode, the default', async () => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
-		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
+		await app({ streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
 		expect(stderr.text).toBe('')
 		expect(stdout.text).toMatch(/^error: unknown option --bogus\ncode: unknown-option\n/)
 		process.exitCode = undefined
@@ -221,14 +227,14 @@ describe('streams and output', () => {
 			process.env.NO_COLOR = '1'
 			const stderr = memoryStream(true)
 			await app({ streams: { stdout: memoryStream(true), stderr } }).parse(['node', 'app'])
-			expect(stderr.text).toBe('warn\nerror\n')
+			expect(stderr.text).toBe('info\nwarn\nerror\n')
 		})
 
 		it('never colours a stream that is not a TTY, even with FORCE_COLOR', async () => {
 			process.env.FORCE_COLOR = '3'
 			const stderr = memoryStream()
 			await app({ streams: { stdout: memoryStream(), stderr } }).parse(['node', 'app'])
-			expect(stderr.text).toBe('warn\nerror\n')
+			expect(stderr.text).toBe('info\nwarn\nerror\n')
 		})
 	})
 })

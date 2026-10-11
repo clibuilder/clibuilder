@@ -216,7 +216,7 @@ agent reading stdout wants only answers there. Design: axi-native RFC sections
 
 | | |
 | --- | --- |
-| Trigger | `cli({ streams })` or `cli({ output: 'axi' })` |
+| Trigger | `cli({ streams })` or `cli({ output })` |
 | Inputs | two writable streams (the process streams by default) and an output mode |
 | Outcome | each `ui` message written as one line to the stream its method routes to |
 
@@ -224,12 +224,12 @@ agent reading stdout wants only answers there. Design: axi-native RFC sections
 
 | Cause | Outcome |
 | --- | --- |
-| `output: 'console'` (default) | `info` and `debug` on stdout, `warn` and `error` on stderr |
-| `output: 'axi'` | every `ui` message on stderr |
+| `output: 'axi'` (default) | every `ui` message on stderr |
+| `output: 'console'` | `info` and `debug` on stdout, `warn` and `error` on stderr, as in v11 |
 | `showHelp` / `showVersion` | stdout in either output: `--help` and `--version` are answers |
 | the stream is not a TTY | no colour, whatever `FORCE_COLOR` says |
 | the stream is a TTY | `FORCE_COLOR` decides when set (`0` or `false` is off), else a non-empty `NO_COLOR` turns colour off, else the terminal decides |
-| neither `streams` nor `output: 'axi'` is given | the built-in ui writes to `process.stdout` and `process.stderr` in `console` mode; it is the only engine since v12 removed standard-log |
+| no `streams` is given | the built-in ui writes to `process.stdout` and `process.stderr`, routed by the output mode (`axi` by default); it is the only engine since v12 removed standard-log |
 
 The routing table behind each mode is internal; it is not a `cli()` option.
 A line is the arguments joined by spaces with objects inspected and no printf
@@ -516,7 +516,7 @@ graph TD
 | --- | --- | --- |
 | write to the given streams | `streams` passed | `the ui writes to the streams the cli was given` |
 | info and debug to stdout, warn and error to stderr | `output: 'console'` | `console output writes info and debug to stdout and warn and error to stderr` |
-| every message to stderr | `output: 'axi'` | `axi output writes every ui message to stderr` |
+| every message to stderr | `output: 'axi'`, or no `output` | `axi output, the default, writes every ui message to stderr` |
 | follow the display level | `--silent`, nothing, `--verbose` | `the built-in ui follows the display level` |
 | help and version to the given stdout | `--help` or `--version` | `help and version are answers, written to the given stdout in either output` |
 | join with spaces, inspect objects | several arguments | `a line is its arguments joined by spaces, with objects inspected` |
@@ -524,7 +524,7 @@ graph TD
 | no colour | not a TTY | `a stream that is not a TTY is never coloured` |
 | no colour | TTY with `NO_COLOR` | `NO_COLOR turns colour off on a TTY` |
 | colour unless 0 or false | TTY with `FORCE_COLOR` | `FORCE_COLOR decides colour on a TTY` |
-| built-in ui on the process streams | neither `streams` nor `axi` | `without streams or axi output the built-in ui writes to the process streams` |
+| built-in ui on the process streams | no `streams` | `without streams the built-in ui writes to the process streams by the output mode` |
 
 ### UC10 — encode an answer
 

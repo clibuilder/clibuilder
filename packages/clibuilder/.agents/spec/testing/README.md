@@ -55,8 +55,8 @@ would, and assert on the outcome as values.
 
 | | |
 | --- | --- |
-| Trigger | `testCommand(command, argv, config)` |
-| Inputs | the command declaration, the argv as a string, and optionally a config |
+| Trigger | `testCommand(command, argv, config, { output })` |
+| Inputs | the command declaration, the argv as a string, and optionally a config and an output mode |
 | Outcome | the command's return value, the captured messages, and the recorded exit code |
 
 **Extensions.**
@@ -68,6 +68,8 @@ would, and assert on the outcome as values.
 | a config is passed | the command sees it, without a config file existing anywhere |
 | no config is passed | the command sees no config |
 | the command says things on stdout and on stderr | both streams are in-memory and share one buffer, so the messages keep the order they were said in, one line each, and nothing reaches the process streams |
+| no output mode is given | the CLI runs in the default `axi` output, so the messages also hold the printed answer: a returned value encoded in `toon`, or a `CliError` report |
+| `{ output: 'console' }` is given | the CLI runs in `console` output, as a CLI that sets it does: a returned value is not printed, and a `CliError` is its message and help lines |
 
 ### UC2 — `mockPluginContext`: exercise a plugin's activation
 
@@ -96,7 +98,7 @@ directory, a log, and an exit it controls.
 | | |
 | --- | --- |
 | Trigger | `mockContext(params)` |
-| Inputs | optionally a fixture directory and streams |
+| Inputs | optionally a fixture directory, streams, and an output mode |
 | Outcome | a context whose exit is recorded rather than taken |
 
 **Extensions.**
@@ -107,7 +109,7 @@ directory, a log, and an exit it controls.
 | none is named | the working directory is a fresh temporary directory, so a test cannot see another's files |
 | streams are given | the ui writes to those streams; `messages` and `stdout` stay empty |
 | none are given | the ui's lines are captured in `messages`, in the order they were said, and what is written to stdout in `stdout` |
-| any case | the ui is the built-in one in `console` mode, at info, matching what a CLI shows its user before `--verbose` raises it |
+| any case | the ui is the built-in one at info, matching what a CLI shows its user before `--verbose` raises it, routed by the `output` param (`axi` by default, as `cli()`) |
 | the CLI exits | the code is recorded **and** reported through the UI, so the exit is visible in the captured messages as well as assertable on its own |
 | config is resolved more than once | **it is re-resolved each time** — see the fidelity gaps below |
 
@@ -152,11 +154,13 @@ filed in this spec's ledger; the suite fixes current behavior.
 | Element | Required by | May not combine with |
 | --- | --- | --- |
 | `testCommand` | UC1 | — |
+| `testCommand`'s `{ output }` argument | UC1 — test a CLI that sets `output: 'console'` | — |
 | `mockPluginContext` and its params | UC2 | — |
 | `mockContext` and its params | UC3 | — |
 | `mockContext.exitCode` | UC3 | — |
 | `mockContext.messages` | UC3 — the lines the ui wrote, which a caller reads the messages from | `streams` |
 | `mockContext` `streams` param | UC1 — the in-memory streams `testCommand` captures through | — |
+| `mockContext` `output` param | UC1 — the output mode `testCommand` passes on, so the ui routes as the cli under test does | — |
 | `mockContext.createCommandUI` | UC3 — a per-command UI writing to the same capture | — |
 | `argv` | UC4 | — (an argument containing a space is split, not refused) |
 | `getFixturePath` | UC4 | — |
@@ -245,6 +249,8 @@ graph TD
 | parse the argv | any invocation | `the argv string is parsed as though typed after the cli name` |
 | one buffer for stdout and stderr | a command saying things on both streams | `messages written to stdout and stderr are captured in the order they were said` |
 | in-memory streams | any command | `the test helper writes through in-memory streams, not the process streams` |
+| print the answer | no output mode given, a command returning a value | `the test helper runs in axi output by default, so the messages hold the printed answer` |
+| print no answer | `{ output: 'console' }`, a command returning a value | `the test helper runs in console output when asked, as a cli that sets it` |
 
 ### UC2 — `mockPluginContext`
 

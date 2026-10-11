@@ -5,15 +5,15 @@ import { describe, expect, it, vi } from 'vitest'
 import * as axi from './index.js'
 import { createOutput, exitCodes, formatOption } from './index.js'
 
-// The option and the helper are meant to be used together inside a real command, so this suite runs
-// them through clibuilder rather than calling them in isolation.
+// The helper is meant to be used inside a real command, so this suite runs it through clibuilder
+// rather than calling it in isolation. Since clibuilder 12 the format comes from the global `--format`
+// as `this.format`: a command that declares `formatOption` fails at startup.
 function listCommand(write: (chunk: string) => void) {
 	return command({
 		name: 'list',
 		description: 'list plugins',
-		options: { format: formatOption },
-		run(args) {
-			return createOutput(args.format, { stdout: { write } }).result({ plugins: ['a', 'b'] })
+		run() {
+			return createOutput(this.format, { stdout: { write } }).result({ plugins: ['a', 'b'] })
 		}
 	})
 }
@@ -51,9 +51,8 @@ describe('@clibuilder/axi', () => {
 		const write = vi.fn()
 		const show = command({
 			name: 'show',
-			options: { format: formatOption },
-			run(args) {
-				throw createOutput(args.format, { stdout: { write } }).error({
+			run() {
+				throw createOutput(this.format, { stdout: { write } }).error({
 					message: 'no plugin named foo',
 					code: 'not-found',
 					help: 'Run `list` to see the installed plugins'
@@ -77,15 +76,15 @@ describe('@clibuilder/axi', () => {
 		expect(write).not.toHaveBeenCalled()
 	})
 
-	// clibuilder's global `--format` is active under `output: 'axi'` or `cli({ format })`, and a command's own
-	// `format` option conflicts with it. The migration is to delete the local option and read `this.format`.
-	it('conflicts with the global --format of clibuilder under output axi', () => {
-		const app = cli({ name: 'app', version: '1.0.0', output: 'axi' })
-		expect(() => app.command(listCommand(vi.fn()))).toThrow(/declares its own option 'format'/)
-	})
-
-	it('keeps working in the default console output of clibuilder', () => {
-		const app = cli({ name: 'app', version: '1.0.0' })
-		expect(() => app.command(listCommand(vi.fn()))).not.toThrow()
+	// clibuilder 12 declares the global `--format` in every cli, and a command's own `format` option
+	// conflicts with it. The migration is to delete the local option and read `this.format`.
+	it.each([
+		['the default output', {}],
+		['output axi', { output: 'axi' }],
+		['output console', { output: 'console' }]
+	] as const)('formatOption conflicts with the global --format of clibuilder in %s', (_, options) => {
+		const app = cli({ name: 'app', version: '1.0.0', ...options })
+		const local = command({ name: 'list', options: { format: formatOption }, run() {} })
+		expect(() => app.command(local)).toThrow(/declares its own option 'format'/)
 	})
 })

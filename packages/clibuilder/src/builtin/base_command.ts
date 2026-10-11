@@ -22,9 +22,7 @@ export const defersToGlobalFormat = Symbol.for('clibuilder.defers-to-global-form
  * @param options.config whether the cli accepts configuration.
  * `--show-config` is only offered when it does, so a cli without config
  * does not advertise an option that could never do anything.
- * @param options.format the cli's default format when the global `--format` is active:
- * under `output: 'axi'` or when `cli({ format })` is set.
- * Without it, the base command declares no `--format`, as in clibuilder 11.5.
+ * @param options.format the default of the global `--format`: the `cli({ format })` value, `toon` by default.
  */
 export function getBaseCommand(description: string, options?: { config?: boolean; format?: cli.Format | undefined }) {
 	return command({
@@ -62,7 +60,7 @@ export function getBaseCommand(description: string, options?: { config?: boolean
 						}
 					}
 				: {}),
-			...(options?.format ? { format: formatEntry(options.format) } : {})
+			format: formatEntry(options?.format ?? 'toon')
 		},
 		commands: []
 	})
@@ -92,7 +90,7 @@ export function isGlobalFormatEntry(entry: cli.Command.Options.Entry | undefined
 }
 
 /**
- * Checks a command's own `format` option against the global `--format` while it is active.
+ * Checks a command's own `format` option against the global `--format`.
  *
  * An option that defers to the global one is dropped, on a copy, so `run()` reads `this.format`.
  * Any other is a startup error: two options named `format` would shadow each other

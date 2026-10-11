@@ -4,7 +4,7 @@ enableCompileCache()
 
 // `import` compiles the whole graph before this module runs, so the cache would
 // come too late. `await import` keeps clibuilder out of that graph.
-const { CliError, cli } = await import('clibuilder')
+const { CliError, cli, document } = await import('clibuilder')
 const { plugins } = await import('@clibuilder/plugins')
 
 const app = cli({
@@ -14,6 +14,7 @@ const app = cli({
 })
 	.default({
 		run() {
+			// every ui message is a diagnostic on stderr in the default axi output
 			this.ui.error('some error message')
 			this.ui.info('some info message')
 		}
@@ -22,7 +23,8 @@ const app = cli({
 		name: 'echo',
 		arguments: [{ name: 'value', description: 'value to echo back' }],
 		run({ value }) {
-			this.ui.info(`echoing: ${value}`)
+			// the answer is returned, and printed on stdout: verbatim, as a document
+			return document(`echoing: ${value}`)
 		}
 	})
 	.command({
@@ -30,7 +32,8 @@ const app = cli({
 		arguments: [{ name: 'name', description: 'config property name' }],
 		run({ name }) {
 			if (!this.config) throw new CliError(`cannot read '${name}': no test-cli config found`, { code: 'no-config' })
-			this.ui.info(`${name}: ${this.config[name]}`)
+			// a returned value is printed on stdout in this.format, toon by default
+			return { [name]: this.config[name] }
 		}
 	})
 	// loads the plugins the config names and adds the `plugins` group,

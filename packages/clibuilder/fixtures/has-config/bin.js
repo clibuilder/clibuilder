@@ -1,4 +1,4 @@
-const { cli } = require('clibuilder')
+const { cli, document } = require('clibuilder')
 
 const app = cli({
 	name: 'test-cli',
@@ -6,7 +6,7 @@ const app = cli({
 	config: true
 }).default({
 	run() {
-		return this.ui.info(JSON.stringify(this.config))
+		return document(JSON.stringify(this.config))
 	}
 })
 

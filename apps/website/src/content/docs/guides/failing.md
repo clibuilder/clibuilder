@@ -33,48 +33,26 @@ are never truncated — node exits with the recorded code once your cli is done.
 
 ## Usage errors
 
-Anything the parser cannot reconcile with the command's `arguments` and `options` is reported by
-name, followed by the command's help message, and the cli exits `2`:
+Anything the parser cannot reconcile with the command's `arguments` and `options` is a usage error,
+and the cli exits `2`. How it is reported depends on the
+[output mode](/clibuilder/api/cli/#streams-and-output).
 
-```sh
-$ my-cli deploy --dyr-run
-unknown option --dyr-run
+A command group is a command that has `commands` but no `run`, including a cli with no `default()`.
+It is incomplete without a sub command, so invoking it bare is a usage error too.
 
-Usage: my-cli deploy <arguments> [options]
-...
-```
-
-Every problem found is reported, not just the first:
-
-```sh
-$ my-cli deploy --bogus
-unknown option --bogus
-missing required argument <target>
-```
-
-A command group — a command that has `commands` but no `run`, including a cli with no `default()` —
-is incomplete without a sub command. Invoked bare, it prints its help and exits `2`:
-
-```sh
-$ my-cli send
-Usage: my-cli send <command>
-...
-```
-
-The global options — `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli` and
-`--show-config` — are accepted by every command, so they are never reported as unknown. `--help` and
+The global options are `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli`, `--format` and
+`--show-config`. They are accepted by every command, so they are never reported as unknown. `--help` and
 `--version` are answered even when the rest of the command line is invalid, and both exit `0`:
 asking for help is not a usage error.
 
 ### Usage errors with `output: 'axi'`
 
 :::note[Unreleased]
-On `main`, not in a published release. It ships in `clibuilder` 12.
+On `main`, not in a published release. It ships in `clibuilder` 12, where it is the default.
 :::
 
-The above is the default [`output: 'console'`](/clibuilder/api/cli/#streams-and-output). With
-`cli({ output: 'axi' })` and no [`onUsageError`](#reporting-usage-errors-yourself) handler, clibuilder
-reports a usage error as one coded error on stdout, in the caller's
+With `output: 'axi'`, the default, and no [`onUsageError`](#reporting-usage-errors-yourself) handler,
+clibuilder reports a usage error as one coded error on stdout, in the caller's
 [`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's `format`. It writes
 nothing to stderr, prints no help, and exits `2`:
 
@@ -110,9 +88,33 @@ An `onUsageError` handler, on `cli()` or on a command, still takes over. `@clibu
 message, codes an extra argument `unexpected-argument`, and has no usage line, `option`, `argument`
 or `value` fields.
 
+### Usage errors with `output: 'console'`
+
+With `output: 'console'`, and in `clibuilder` 11.5.0, every error found is reported by name on
+stderr, followed by the command's help message on stdout:
+
+```sh
+$ my-cli deploy --dyr-run
+unknown option --dyr-run
+
+Usage: my-cli deploy <arguments> [options]
+...
+```
+
+Every problem found is reported, not just the first:
+
+```sh
+$ my-cli deploy --bogus
+unknown option --bogus
+missing required argument <target>
+```
+
+A command group invoked bare prints its help. A config that fails the command's schema is reported
+as `config fails validation:` and the messages for each key, followed by the help, and exits `1`.
+
 ### Reporting usage errors yourself
 
-To choose the format, the stream, and whether help is printed, declare an `onUsageError` handler.
+To choose the format, the stream, and what is printed, declare an `onUsageError` handler.
 clibuilder then prints nothing for usage errors. It calls the handler with the structured errors, the
 matched command, and that command's `ui`. To cover the whole cli, pass the handler to `cli()`:
 
@@ -146,19 +148,20 @@ Each error is a `cli.UsageError`, identified by its `type`:
 | `invalid-value` | `invalid-value` | `key`, `value`, `message` |
 | `expect-single` | `expect-single` | `key`, `value`, `keyKind` |
 
-`command` is the command the invocation matched, with its declared `arguments` and `options`. Call
-`ui.showHelp()` to print that command's help.
+`command` is the command the invocation matched, with its declared `arguments` and `options`.
+`ui.showHelp()` prints that command's text help on stdout. It is deprecated: in `clibuilder` 12,
+list what the caller needs in your own report instead.
 
 :::note[Unreleased: `code`, `format` and `exitCode`]
-On `main`, for the next `clibuilder` 11 minor:
+On `main`, in `clibuilder` 12:
 
 - Each error also has `code`, a stable kebab-case string. It is the same as `type`, except that
   `invalid-key` is `unknown-option`. Branch on `code` in new handlers: it is the name `clibuilder` 12
-  reports. In 11 it is not enumerable, so `JSON.stringify(error)` and equality checks give what they
+  reports. It is not enumerable, so `JSON.stringify(error)` and equality checks give what they
   did before.
 - The second argument also has `format`, the format the cli reports in, and `exitCode`, the code the
   cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is the caller's
-  [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else
+  [`--format`](/clibuilder/api/cli/#the-global---format-option), else
   the CLI's [`cli({ format })`](/clibuilder/api/cli/#options) value, `'toon'` by default. A bad
   `--format` value is itself one of the errors, an `invalid-value` with `allowed`, and `format` is then
   the CLI's default.
@@ -186,7 +189,7 @@ exactly one handler, the first it finds in this order:
 2. the handler of the nearest command that contains it;
 3. the handler passed to `cli()`.
 
-If none is found, clibuilder prints the errors and the help as described above.
+If none is found, clibuilder reports the error as described above.
 
 This is how a plugin keeps its error format in any cli that loads it with
 [`@clibuilder/plugins`](/clibuilder/packages/plugins/). Declare the handler on the
@@ -212,10 +215,11 @@ The cli still exits `2`. To exit with another code, return it from the handler. 
 
 ## Failing from a command
 
-Throw `CliError` from `run()`. clibuilder prints the message through the command's `ui`, prints the
-help lines after it, and exits with the code you chose. `parse()` resolves to `undefined` instead of
-rejecting, so the failure is reported to the user rather than surfacing as an unhandled rejection
-with a stack trace.
+Throw `CliError` from `run()`. clibuilder reports it once, with its help lines, and exits with the
+code you chose. With `output: 'axi'`, the default, the report is encoded on stdout (see
+[Errors with `output: 'axi'`](#errors-with-output-axi)). With `output: 'console'` the message and
+the help lines go to stderr. `parse()` resolves to the exit code instead of rejecting, so the
+failure is reported to the user rather than surfacing as an unhandled rejection with a stack trace.
 
 ```ts
 import { CliError, command, exitCodes, t } from 'clibuilder'
@@ -246,14 +250,14 @@ export const view = command({
 | `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). **Unreleased:** any integer from 1 to 255; `0` and any other value throw a `RangeError`. |
 | `code` | `string` | **Unreleased.** A stable kebab-case string that says which failure this is, such as `not-found`. Defaults to `error`. Anything else throws a `RangeError`. |
 | `details` | `Record<string, scalar \| scalar[]>` | **Unreleased.** Extra fields an agent can act on, such as the name that was not found. Flat: each value is a string, number, boolean, `null`, or a list of them. A key may not be `error`, `code` or `help`. |
-| `help` | `string \| string[]` | What the caller should do about it. Printed after the message, one line each. |
+| `help` | `string \| string[]` | What the caller should do about it. Reported after the message, one line each. |
 | `cause` | `unknown` | The underlying error, kept for the caller to inspect. |
 
 The error carries them as `message`, `code`, `details`, `help` (always a list) and `exitCode`.
 
 :::note[Unreleased: `code`, `details` and the report form]
 `code`, `details`, `new CliError(report)`, the 1 to 255 range and `CliError.reported()` are on `main`
-for the next `clibuilder` 11 minor, which is not published yet.
+and ship in `clibuilder` 12. They are not in a published release yet.
 :::
 
 You can also pass the whole report as one object:
@@ -283,11 +287,10 @@ propagating out of `parse()` untouched.
 ### Errors with `output: 'axi'`
 
 :::note[Unreleased]
-On `main` for the next `clibuilder` 11 minor, which is not published yet.
+On `main`, not in a published release. It ships in `clibuilder` 12, where it is the default.
 :::
 
-With the default [`output: 'console'`](/clibuilder/api/cli/#streams-and-output), clibuilder prints
-the message and the help lines on stderr, as above. With `cli({ output: 'axi' })` the error is an
+With [`output: 'axi'`](/clibuilder/api/cli/#streams-and-output), the default, the error is an
 answer: clibuilder renders it once on stdout, and writes nothing to stderr for it. The fields are
 flat, in this order: `error` (the message), `code`, the `details` fields, then `help`, which is left
 out when empty. The encoding is the caller's
@@ -308,6 +311,9 @@ With `--format json` or `format: 'json'` the same error is one line of JSON, and
 error, with its stack, is written to stderr as a `debug` line. The CLI exits with the error's
 `exitCode`.
 
+With `output: 'console'`, and in `clibuilder` 11.5.0, clibuilder prints the message and the help
+lines on stderr instead, one line each.
+
 ### An error already reported
 
 `CliError.reported(exitCode)` is for a failure that something else already printed, such as
@@ -327,6 +333,7 @@ test('view rejects an unknown field', async () => {
   const { exitCode, messages } = await testCommand(view, 'view --fields bogus')
 
   expect(exitCode).toBe(2)
+  // the CliError report: `error: "unknown field: bogus"`, `code: error` and the help
   expect(messages).toContain('unknown field: bogus')
 })
 ```

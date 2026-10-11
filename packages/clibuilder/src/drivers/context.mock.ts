@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
-import type { Streams } from '../core/ports.js'
+import type { Output, Streams } from '../core/ports.js'
 import { getFixturePath } from '../test-utils/index.js'
 import type { Context } from './context.js'
 import { createBuilderUI } from './logger.js'
@@ -17,6 +17,11 @@ export namespace mockContext {
 		 * `messages` and `stdout` then stay empty.
 		 */
 		streams?: Streams
+		/**
+		 * How the built-in ui routes its messages to `streams`: `'axi'` (default) or `'console'`.
+		 * Pass the same value the cli under test gets as `output`.
+		 */
+		output?: Output
 	}
 }
 
@@ -25,7 +30,7 @@ export function mockContext(params: mockContext.Params = {}): Context & {
 	readonly stdout: string
 	readonly messages: string
 } {
-	const { fixtureDir, streams } = params
+	const { fixtureDir, streams, output = 'axi' } = params
 	let messages = ''
 	const sinks: Sinks = streams
 		? createSinks(streams)
@@ -38,11 +43,11 @@ export function mockContext(params: mockContext.Params = {}): Context & {
 	let stdout = ''
 
 	/**
-	 * The built-in ui in `console` mode, at the production display default `info`,
+	 * The built-in ui in the given `output` mode, at the production display default `info`,
 	 * which `--verbose` and `--debug-cli` then raise.
 	 */
 	function testUI() {
-		return createStreamUI(sinks, 'console')
+		return createStreamUI(sinks, output)
 	}
 
 	const ui = createBuilderUI(testUI())

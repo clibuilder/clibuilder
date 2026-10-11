@@ -213,6 +213,10 @@ searched for:
 config: not found
 ```
 
+**v12, unreleased:** `--show-config` writes these lines through the CLI's `ui`. With
+`output: 'axi'`, the default, every `ui` line is a diagnostic on stderr, so they land on stderr.
+With `output: 'console'`, and in 11.5.0, they are on stdout.
+
 ## Reading the config yourself
 
 `clibuilder` exports its config resolution, so a plugin or a tool can ask the same questions the CLI

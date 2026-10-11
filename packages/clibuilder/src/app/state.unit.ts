@@ -1,5 +1,6 @@
 import { a } from 'assertron'
-import { globalFormatOf, state } from './state.js'
+import { isGlobalFormatEntry } from '../builtin/base_command.js'
+import { state } from './state.js'
 
 it('reads the config by the cli name when config is true', () => {
 	const r = state({ name: 'foo', config: true, version: '1.0.0' })
@@ -16,16 +17,17 @@ it('has no keywords: they are an option of plugins() from @clibuilder/plugins si
 	expect(r).not.toHaveProperty('keywords')
 })
 
-describe('globalFormatOf()', () => {
-	it('is undefined in the default console output with no cli({ format })', () => {
-		expect(globalFormatOf({})).toBeUndefined()
-		expect(globalFormatOf({ output: 'console' })).toBeUndefined()
+describe('the global format option', () => {
+	it('is declared in either output, with no cli({ format }), defaulting to toon', () => {
+		for (const output of [undefined, 'axi', 'console'] as const) {
+			const entry = state({ name: 'foo', version: '1.0.0', output }).command.options!.format
+			expect(isGlobalFormatEntry(entry)).toBe(true)
+			expect(entry).toMatchObject({ default: 'toon' })
+		}
 	})
-	it('is toon under output axi', () => {
-		expect(globalFormatOf({ output: 'axi' })).toBe('toon')
-	})
-	it('is the cli({ format }) value when it is set, in either output', () => {
-		expect(globalFormatOf({ format: 'text' })).toBe('text')
-		expect(globalFormatOf({ output: 'axi', format: 'json' })).toBe('json')
+	it('defaults to the cli({ format }) value when it is set', () => {
+		expect(state({ name: 'foo', version: '1.0.0', format: 'json' }).command.options!.format).toMatchObject({
+			default: 'json'
+		})
 	})
 })

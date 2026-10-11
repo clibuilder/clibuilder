@@ -134,10 +134,17 @@ options: {
 
 ```sh
 $ app --full -n 20
-option --full cannot be used with option -n
+error: option --full cannot be used with option -n
+code: conflicting-options
+option: "--full"
+conflictsWith: "-n"
+help[1]: "Usage: app [options]"
 ```
 
-Passing both is a usage error (exit code 2), reported with the other parse errors.
+Passing both is a [usage error](/clibuilder/guides/failing/#usage-errors) (exit code 2). The output
+above is the default `output: 'axi'` of `clibuilder` 12 (unreleased). With `output: 'console'`, and
+in 11.5.0, it is the line `option --full cannot be used with option -n`, reported with the other
+parse errors.
 A default value does not count as passed, so `app --full` is valid here.
 The conflict applies in both directions, and the help message lists it on both options.
 
@@ -222,9 +229,10 @@ In `clibuilder` 11.5.0 the types come from zod's `z`. In `clibuilder` 12 these c
 See [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
 :::
 
-Option validation happens before `run()` is called. A value that fails its schema, an unknown flag,
+Option validation happens before `run()` is called. A value that fails its check, an unknown flag,
 a missing required argument, or an extra positional argument all produce the same outcome: the CLI
-prints the help message and does not run the command.
+reports a [usage error](/clibuilder/guides/failing/#usage-errors), exits `2`, and does not run the
+command.
 
 ## Built-in options
 
@@ -237,6 +245,7 @@ Every command inherits these; you don't declare them, and you shouldn't shadow t
 | `--verbose` | `-V` | Display level `debug` |
 | `--silent` | | Display level `none` |
 | `--debug-cli` | | Display level `trace`, including clibuilder's own internal messages |
+| `--format <toon\|json\|text>` | | **v12, unreleased.** The format to answer in. See [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |
 
 `args.help` is always present in the inferred type for that reason.
 
@@ -246,8 +255,8 @@ broken config or a slow plugin cannot fail or delay it. Because nothing is loade
 is always the version, even if a plugin, an extension or the config declares a `-v` of its own. With anything else on the command line,
 such as `my-cli deploy --version`, the version is answered after loading, as before.
 
-**Unreleased:** with `cli({ output: 'axi' })`, `--help` follows `--format` and `--version` is plain
-text in every format. See
+**v12, unreleased:** with `output: 'axi'`, the default, `--help` follows `--format` and `--version`
+is plain text in every format. See
 [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi).
 
 One more is added only when the CLI declares `config`, since it would have nothing to report
@@ -257,13 +266,8 @@ otherwise:
 | --- | --- | --- |
 | `--show-config` | | Print the resolved config and the file it came from — see [Configuration](/clibuilder/guides/configuration/#inspecting-the-resolved-config) |
 
-**Unreleased:** one more is added with `cli({ output: 'axi' })` or `cli({ format })`, and `run()`
-reads it as `this.format`. Do not declare a `format` option of your own then: it fails the CLI at
-startup.
-
-| Flag | Alias | Effect |
-| --- | --- | --- |
-| `--format <toon\|json\|text>` | | The format to answer in — see [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |
+`run()` reads `--format` as `this.format`. Do not declare a `format` option of your own: it fails
+the CLI at startup. In `clibuilder` 11.5.0 there is no global `--format`.
 
 ### Where the built-in options go
 

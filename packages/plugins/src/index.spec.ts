@@ -1,6 +1,7 @@
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { Writable } from 'node:stream'
 import { cli } from 'clibuilder'
 import * as entry from './index.js'
 import { loadPlugins, plugins, pluginsCommand } from './index.js'
@@ -38,19 +39,25 @@ it('loads plugins into a cli through use(), sharing the registry with their comm
 	}
 })
 
-it('adds the plugins group to a cli, whose list returns what it found', async () => {
+it('adds the plugins group to a cli, whose list answers with what it found', async () => {
 	const cwd = process.cwd()
 	process.chdir(mkdtempSync(join(tmpdir(), 'clibuilder-plugins-entry-')))
 	try {
-		const app = cli({ name: 'test-cli', version: '1.0.0' }).use(plugins({ keywords: ['no-such-keyword-xyz'] }))
-		const info = vi.spyOn(console, 'info').mockImplementation(() => {})
-		const log = vi.spyOn(console, 'log').mockImplementation(() => {})
-		try {
-			expect(await app.parse(['node', 'test-cli', 'plugins', 'list', '--format', 'json'])).toEqual([])
-		} finally {
-			info.mockRestore()
-			log.mockRestore()
-		}
+		let stdout = ''
+		const stream = new Writable({
+			write(chunk, _encoding, callback) {
+				stdout += chunk
+				callback()
+			}
+		})
+		const app = cli({ name: 'test-cli', version: '1.0.0', streams: { stdout: stream, stderr: stream } }).use(
+			plugins({ keywords: ['no-such-keyword-xyz'] })
+		)
+		// in the default `axi` output the empty state is the answer: printed in `--format`, and what parse() resolves to
+		expect(await app.parse(['node', 'test-cli', 'plugins', 'list', '--format', 'json'])).toBe(
+			'0 installed plugins found with keywords: no-such-keyword-xyz'
+		)
+		expect(stdout).toContain('0 installed plugins found with keywords: no-such-keyword-xyz')
 	} finally {
 		process.chdir(cwd)
 	}

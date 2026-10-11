@@ -4,3 +4,4 @@ ignores:
   - standard-log-color
   - tslib
   - rimraf
+  - clibuilder-11

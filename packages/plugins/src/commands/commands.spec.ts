@@ -6,6 +6,12 @@ import { pluginsCommand } from './group.js'
 import { listPluginsCommand } from './list.js'
 import { searchPluginsCommand } from './search.js'
 
+/**
+ * The prose and json reports these commands log through `ui` are their `output: 'console'` rendering.
+ * Their answers in the default `axi` output are specified under 'plugins list and search under output axi'.
+ */
+const consoleOutput = { output: 'console' } as const
+
 describe('pluginsCommand', () => {
 	test('groups list and search under plugins', async () => {
 		const { messages } = await testCommand(pluginsCommand({ keywords: ['plugin-cli-plugin'] }), 'plugins --help')
@@ -14,7 +20,12 @@ describe('pluginsCommand', () => {
 	})
 
 	test('looks for the keywords it is given', async () => {
-		const { messages } = await testCommand(pluginsCommand({ keywords: ['plugin-cli-plugin'] }), 'plugins list')
+		const { messages } = await testCommand(
+			pluginsCommand({ keywords: ['plugin-cli-plugin'] }),
+			'plugins list',
+			undefined,
+			consoleOutput
+		)
 		expect(messages).toContain('plugins: 0 installed plugins found with keywords: plugin-cli-plugin')
 	})
 })
@@ -25,7 +36,9 @@ describe('listPluginsCommand', () => {
 	function list(line: string, installed: string[] = [], keywords: string[] = ['plugin-cli-plugin']) {
 		return testCommand(
 			{ ...listPluginsCommand(keywords), context: { findByKeywords: () => Promise.resolve(installed) } },
-			line
+			line,
+			undefined,
+			consoleOutput
 		)
 	}
 
@@ -117,7 +130,9 @@ describe('searchPluginsCommand', () => {
 	test('no plugin', async () => {
 		const ctx = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('packages: 0 packages found with keywords: plugin-cli-plugin')
@@ -129,7 +144,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('packages[1]: pkg-x')
@@ -141,7 +158,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('packages[2]: pkg-x,pkg-y')
@@ -153,7 +172,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('help[1]: Run `plugins list` to see which of them are installed')
@@ -165,7 +186,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['@scope/pkg-x', 'odd,name']) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('packages[2]: @scope/pkg-x,"odd,name"')
@@ -177,7 +200,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['odd"name', 'trailing\\']) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		// a hand-escaped trailing backslash would escape the closing quote and merge the entries
@@ -200,7 +225,9 @@ describe('searchPluginsCommand', () => {
 					}
 				}
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(calls).toEqual([['keyword-a'], ['keyword-b']])
@@ -213,7 +240,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
-			'search --format text'
+			'search --format text',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain(`found the following packages:
@@ -228,13 +257,17 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
-			'search --format text'
+			'search --format text',
+			undefined,
+			consoleOutput
 		)
 		expect(one.messages).toContain('found one package: pkg-x')
 
 		const none = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
-			'search --format text'
+			'search --format text',
+			undefined,
+			consoleOutput
 		)
 		expect(none.messages).toContain('no package with keywords: plugin-cli-plugin')
 	})
@@ -245,7 +278,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['plugin-cli-plugin']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
-			'search --format json'
+			'search --format json',
+			undefined,
+			consoleOutput
 		)
 
 		const msg = ctx.messages
@@ -261,7 +296,9 @@ describe('searchPluginsCommand', () => {
 	test('--format json states the empty result as data', async () => {
 		const ctx = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
-			'search --format json'
+			'search --format json',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('"packages": []')
@@ -278,7 +315,9 @@ describe('searchPluginsCommand', () => {
 		async function search(line: string) {
 			const { messages } = await testCommand(
 				{ ...searchPluginsCommand(['keyword-a', 'keyword-b']), context: { searchByKeywords: searchMixed } },
-				line
+				line,
+				undefined,
+				consoleOutput
 			)
 			return messages
 		}
@@ -328,7 +367,9 @@ describe('searchPluginsCommand', () => {
 				...searchPluginsCommand(['keyword-a', 'keyword-b']),
 				context: { searchByKeywords: (_: string[]) => Promise.resolve([]) }
 			},
-			'search'
+			'search',
+			undefined,
+			consoleOutput
 		)
 
 		expect(ctx.messages).toContain('packages: 0 packages found with keywords: keyword-a, keyword-b')
@@ -362,7 +403,9 @@ describe('the plugins commands and the global --format of clibuilder', () => {
 	})
 
 	test.each([
+		['the default output', {}],
 		['output axi', { output: 'axi' }],
+		['output console', { output: 'console' }],
 		['cli({ format })', { format: 'toon' }]
 	] as const)('give way to the global --format under %s, without a conflict', async (_, options) => {
 		const help = await run(options, ['plugins', 'list', '--help'])
@@ -373,9 +416,11 @@ describe('the plugins commands and the global --format of clibuilder', () => {
 		expect(out).toMatch(/^\{\s*"(plugins|empty)"/)
 	})
 
-	test('keep their own --format in the default console output', async () => {
-		const help = await run({}, ['plugins', 'list', '--help'])
-		expect(help.split('--format').length).toBe(2)
+	// clibuilder 12 declares the global --format in every cli, so the commands never keep their own
+	test('give way to the global --format in the console output too, so their help lists no --format of their own', async () => {
+		const help = await run({ output: 'console' }, ['plugins', 'list', '--help'])
+		expect(help).toContain('Usage: app plugins list')
+		expect(help).not.toContain('--format')
 	})
 
 	test('read this.format when their own option gives way', async () => {
@@ -486,11 +531,11 @@ describe('plugins list and search under output axi', () => {
 		expect(r.exitCode).toBe(2)
 	})
 
-	test('keep the console output and return values unchanged', async () => {
-		const listed = await run(list(['pkg-x']), 'list', {})
+	test('keep the console output and return values unchanged under output console', async () => {
+		const listed = await run(list(['pkg-x']), 'list', consoleOutput)
 		expect(listed.stdout).toBe('plugins[1]: pkg-x\nhelp[1]: Run `plugins search` to find more plugins on npm\n')
 		expect(listed.value).toEqual(['pkg-x'])
-		const searched = await run(search(['pkg-x']), 'search', {})
+		const searched = await run(search(['pkg-x']), 'search', consoleOutput)
 		expect(searched.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `plugins list` to see which of them are installed\n')
 		expect(searched.value).toBeUndefined()
 	})

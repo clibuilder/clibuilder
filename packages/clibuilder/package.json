@@ -86,6 +86,7 @@
 		"@unional/fixture": "^6.0.2",
 		"@vitest/coverage-istanbul": "^4.1.11",
 		"assertron": "^11.7.2",
+		"clibuilder-11": "npm:clibuilder@11.5.0",
 		"depcheck": "^1.4.3",
 		"esbuild": "^0.20.0",
 		"js-yaml": "^4.1.1",

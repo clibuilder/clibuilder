@@ -7,7 +7,8 @@ description: Run a command in-process and capture its result and its UI messages
 function testCommand(
   command: cli.Command,
   argv: string,
-  config?: Record<string, any>
+  config?: Record<string, any>,
+  options?: { output?: 'axi' | 'console' }
 ): Promise<{ result: any; messages: string; exitCode: number | undefined }>
 ```
 
@@ -34,7 +35,8 @@ const { result, messages } = await testCommand(
 )
 
 expect(result).toBe('x')
-expect(messages).toBe('miku')
+// what the command said, then the answer it printed
+expect(messages).toBe('miku\nx')
 ```
 
 ## Parameters
@@ -44,13 +46,14 @@ expect(messages).toBe('miku')
 | `command` | `cli.Command` | The command to run. Sub-commands come along with it. |
 | `argv` | `string` | The command line *after* the CLI name — `'cmd-a --flag value'`. |
 | `config` | `Record<string, any>` | Optional. Stands in for the config file the command would have loaded. Still validated against the command's `config` schema. |
+| `options.output` | `'axi' \| 'console'` | **v12, unreleased.** The [output mode](/clibuilder/api/cli/#streams-and-output) of the CLI under test, as `cli({ output })` takes it. Defaults to `'axi'`. Pass `'console'` to test a CLI that sets `output: 'console'`. |
 
 ## Returns
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `result` | `any` | What `run()` returned or resolved to. |
-| `messages` | `string` | Everything written through `this.ui` — `info`, `warn`, and `error` — joined with `\n`. Empty when nothing was printed. |
+| `result` | `any` | What `run()` returned or resolved to. When the CLI fails instead, the exit code. |
+| `messages` | `string` | Everything the CLI wrote, stdout and stderr together, in the order it was written, with no trailing newline. That is what `this.ui` said and, with `output: 'axi'`, the printed answer: a returned value, a `CliError` report or a usage error. Empty when nothing was printed. |
 | `exitCode` | `number \| undefined` | The code the cli would have exited with, or `undefined` when it did not fail. |
 
 The display level is `info`, so `this.ui.debug()` output does **not** appear in `messages` unless the
@@ -89,18 +92,20 @@ const { result } = await testCommand(
 expect(result).toEqual({ a: 'hi' })
 ```
 
-Passing a config that fails the schema is how you test the failure path — `result` is `undefined`,
-`exitCode` is `1`, and `messages` carries the validation errors and the help message.
+Passing a config that fails the schema is how you test the failure path. `exitCode` is `1`, and
+`messages` carries the report: `error: config fails validation`, `code: invalid-config` and the
+messages for each key. With `output: 'console'` it carries the validation errors and the help
+message instead.
 
 ## Asserting on failures
 
 Failures don't reject — they are reported and recorded. Assert on `exitCode` and `messages`:
 
 ```ts
-const { result, messages, exitCode } = await testCommand(cmd, 'cmd --unknown-flag')
-expect(result).toBeUndefined()
+const { messages, exitCode } = await testCommand(cmd, 'cmd --unknown-flag')
 expect(exitCode).toBe(2)
-expect(messages).toContain('unknown option --unknown-flag')
+expect(messages).toContain('error: unknown option --unknown-flag')
+expect(messages).toContain('code: unknown-option')
 ```
 
 A command that throws [`CliError`](/clibuilder/guides/failing/) is recorded the same way, with the

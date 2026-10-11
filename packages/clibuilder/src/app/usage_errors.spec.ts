@@ -60,10 +60,10 @@ describe('resolveGlobalOptions()', () => {
 		expect(globals.format).toBe('toon')
 		expect(errors.map((e) => e.code)).toEqual(['expect-single'])
 	})
-	it('reports --format as unknown when the global format is not active', () => {
+	it('reads --format with no cli({ format }), as the base command always declares it', () => {
 		const { globals, errors } = resolve(command({ name: 'sub', run() {} }), 'cli sub --format json')
-		expect(globals.format).toBe('toon')
-		expect(errors.map((e) => e.code)).toEqual(['unknown-option'])
+		expect(globals.format).toBe('json')
+		expect(errors).toEqual([])
 	})
 	it('reads the global flags from the base command', () => {
 		const { globals } = resolve(command({ name: 'sub', run() {} }), 'cli sub --verbose --bogus')

@@ -16,6 +16,16 @@ A highly customizable command line application builder.
 
 📖 **[Documentation](https://clibuilder.github.io/clibuilder/)**
 
+## What's new in v12 (unreleased)
+
+- Agent-facing output is the default (`cli({ output: 'axi' })`):
+  - a value returned from `run()` is printed on stdout, in the format the caller asked for with the global `--format <toon|json|text>`;
+  - a thrown `CliError` and a usage error are reported once, coded, on stdout;
+  - every `ui.*` message is a diagnostic on stderr.
+- `cli({ output: 'console' })` keeps the v11 output. It is permanent, not deprecated.
+
+See the [upgrade guide](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/).
+
 ## What's new in v8
 
 Key highlights:
@@ -71,7 +81,7 @@ You can add additional named commands and sub-commands:
 
 ```ts
 cli({ ... })
-  .command({ name: 'hello', run() { this.ui.info('hello world') }})
+  .command({ name: 'hello', run() { return 'hello world' }})
   .command({
     name: 'repo',
     commands:[
@@ -298,9 +308,12 @@ test('some test', async () => {
     }
   }), 'cmd-a')
   expect(result).toBe('x')
-  expect(messages).toBe('miku')
+  // what the command said, then the answer it printed
+  expect(messages).toBe('miku\nx')
 })
 ```
+
+Pass `{ output: 'console' }` as the fourth argument to test a CLI that sets `output: 'console'`.
 
 ## Startup time
 

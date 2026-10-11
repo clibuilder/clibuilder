@@ -245,17 +245,19 @@ describe('an answer that was already written', () => {
 	})
 })
 
-describe('a value returned from run() in the default console output', () => {
+describe('a value returned from run() in console output', () => {
+	const consoleOutput = { output: 'console' } as const
+
 	it('is not printed, and parse() resolves to it', async () => {
 		const value = { count: 1 }
-		const r = await runShow(() => value, '', {})
+		const r = await runShow(() => value, '', consoleOutput)
 		expect(r.stdout).toBe('')
 		expect(r.stderr).toBe('')
 		expect(r.value).toBe(value)
 	})
 
 	it('is not printed with cli({ format }) either', async () => {
-		const r = await runShow(() => ({ count: 1 }), '--format json', { format: 'toon' })
+		const r = await runShow(() => ({ count: 1 }), '--format json', { ...consoleOutput, format: 'toon' })
 		expect(r.stdout).toBe('')
 	})
 
@@ -264,7 +266,7 @@ describe('a value returned from run() in the default console output', () => {
 		['document()', () => document('# Rules'), '# Rules'],
 		['empty()', () => empty('0 open tasks'), '0 open tasks']
 	] as const)('from %s is not printed, and parse() resolves to the wrapped value', async (_, returns, expected) => {
-		const r = await runShow(returns, '', {})
+		const r = await runShow(returns, '', consoleOutput)
 		expect(r.stdout).toBe('')
 		expect(r.value).toEqual(expected)
 	})
@@ -274,7 +276,7 @@ describe('this.output', () => {
 	it.each([
 		[{ output: 'axi' }, 'axi'],
 		[{ output: 'console' }, 'console'],
-		[{}, 'console']
+		[{}, 'axi']
 	] as const)('is the cli output mode: %j gives %s', async (options, expected) => {
 		let output: cli.Output | undefined
 		await cli({

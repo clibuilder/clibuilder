@@ -58,7 +58,7 @@ async function parse(args: string, options: Partial<cli.Options>) {
 }
 
 /**
- * What `createUsageErrorHandler()` writes, run as the cli's handler in the default console output.
+ * What `createUsageErrorHandler()` writes, run as the cli's handler in the default output.
  */
 async function viaAxi(args: string, format: OutputFormat) {
 	let written = ''
