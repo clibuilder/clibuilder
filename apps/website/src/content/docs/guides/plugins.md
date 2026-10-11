@@ -16,8 +16,8 @@ Two mechanisms are involved, and it helps to keep them apart:
 Both come from [`@clibuilder/plugins`](/clibuilder/packages/plugins/). `clibuilder` itself has no
 plugin loading.
 
-:::caution[Unreleased]
-This page describes `clibuilder` 12, which is not published yet. In `clibuilder` 11, setting
+:::caution[New in 12]
+This page describes `clibuilder` 12. In `clibuilder` 11, setting
 `config` or `keywords` on `cli()` loads the plugins named in config and adds the `plugins` command
 without any `.use()` call. In 12 that is removed: `plugins()` is the only way to load plugins. See
 the [migration](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins). The `@clibuilder/plugins`

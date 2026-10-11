@@ -1,6 +1,13 @@
 import module from 'node:module'
 
-export const ctx = {
+type CompileCacheStatus = { ENABLED: number; ALREADY_ENABLED: number }
+
+// annotated so the published declarations do not depend on `@types/node`
+export const ctx: {
+	enableCompileCache: ((cacheDir?: string) => { status: number; message?: string; directory?: string }) | undefined
+	compileCacheStatus: CompileCacheStatus | undefined
+	env: Record<string, string | undefined>
+} = {
 	enableCompileCache: module.enableCompileCache?.bind(module),
 	compileCacheStatus: module.constants?.compileCacheStatus,
 	env: process.env

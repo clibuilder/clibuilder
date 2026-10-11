@@ -32,9 +32,7 @@ npx @clibuilder/codemod --dry-run src
 npx @clibuilder/codemod src
 ```
 
-`@clibuilder/codemod` is not published to npm yet. Until it is, build it from
-[`packages/codemod`](https://github.com/clibuilder/clibuilder/tree/main/packages/codemod) in this
-repository and run `node packages/codemod/esm/bin.js`.
+`@clibuilder/codemod` runs through `npx`; it needs no install.
 
 It takes files, directories and globs. `--dry-run` prints a unified diff and writes nothing. It
 ends with a summary of three kinds of finding:
@@ -519,8 +517,6 @@ CommonJS build. Each entry point in `exports` is `{ types, default }` and points
 keeps working: Node.js 20.19 and newer, the `engines` floor, load an ES module through
 `require(esm)`, so `require('clibuilder')`, `require('clibuilder/testing')` and the other entry
 points return the same exports as `import` does.
-
-The published `clibuilder` package unpacks to 393 kB in 187 files, down from 633 kB in 192 files.
 
 **Who is affected.**
 

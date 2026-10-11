@@ -6,4 +6,4 @@ Add the upgrade guide for clibuilder 12, [Upgrading from clibuilder 11 to 12](ht
 
 Upgrading from 11.5.0: run `npx @clibuilder/codemod src`, then fix each `TODO(clibuilder-12)` comment it leaves and review the returned values it lists. The codemod rewrites `z` from `clibuilder` to `t`, moves the `@clibuilder/axi` value helpers to `clibuilder/axi`, moves `cli({ keywords })` to `.use(plugins({ keywords }))` from `@clibuilder/plugins`, and replaces `cli({ config })` with `.use(config())` from `clibuilder/config`. It flags what it cannot rewrite safely: zod forms outside the `t` subset and zod type annotations, a command's own `format` option, `ui.showHelp()` and `ui.showVersion()`, the other `@clibuilder/axi` imports, and `cli({ config })` without `plugins()`.
 
-`@clibuilder/codemod` is not published to npm yet. Until it is, build it from `packages/codemod` in this repository and run `node packages/codemod/esm/bin.js src`.
+`@clibuilder/codemod` 0.1.0 is published with this release. Preview with `npx @clibuilder/codemod --dry-run src`.

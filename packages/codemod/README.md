@@ -18,7 +18,5 @@ and lists every `return <expr>` in a `run()`, which clibuilder 12 prints.
 | `--dry-run` | print a unified diff instead of writing files |
 | `--add-plugins` | add `.use(plugins())`, after `.use(config())`, to every `cli()` that sets `config` |
 
-The package is not published to npm yet.
-
 See [Upgrading from clibuilder 11 to 12](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/)
 for what each change means and how to fix what the codemod flags.
