@@ -1,7 +1,8 @@
 import { Writable } from 'node:stream'
 import a from 'assertron'
 import { testType } from 'type-plus/testing'
-import { cli, z } from './index.js'
+import { z } from 'zod'
+import { cli, t } from './index.js'
 
 it('needs name and version', () => {
 	const app = cli({ name: 'app', version: '1.0.0' })
@@ -36,23 +37,23 @@ it('has no keywords option: plugin keywords are an option of plugins() from @cli
 it('can specify type of the arguments and options. The command will receive the typed `args`', () => {
 	cli({ name: 'app', version: '1.0.0' }).default({
 		arguments: [
-			{ name: 'a', description: 'what does it do?', type: z.string() },
-			{ name: 'b', description: 'what does it do?', type: z.boolean() },
-			{ name: 'c', description: 'what does it do?', type: z.array(z.number()) }
+			{ name: 'a', description: 'what does it do?', type: t.string() },
+			{ name: 'b', description: 'what does it do?', type: t.boolean() },
+			{ name: 'c', description: 'what does it do?', type: t.array(t.number()) }
 		],
 		options: {
-			ob: { type: z.boolean(), description: 'a' },
-			obm: { type: z.array(z.boolean()), description: 'a' },
-			on: { type: z.number(), description: 'a' },
-			onm: { type: z.array(z.number()), description: 'a' },
-			os: { type: z.string(), description: 'a' },
-			osm: { type: z.array(z.string()), description: 'a' },
-			oob: { type: z.optional(z.boolean()), description: 'a' },
-			oobm: { type: z.optional(z.array(z.boolean())), description: 'a' },
-			oon: { type: z.optional(z.number()), description: 'a' },
-			oonm: { type: z.optional(z.array(z.number())), description: 'a' },
-			oos: { type: z.optional(z.string()), description: 'a' },
-			oosm: { type: z.optional(z.array(z.string())), description: 'a' }
+			ob: { type: t.boolean(), description: 'a' },
+			obm: { type: t.array(t.boolean()), description: 'a' },
+			on: { type: t.number(), description: 'a' },
+			onm: { type: t.array(t.number()), description: 'a' },
+			os: { type: t.string(), description: 'a' },
+			osm: { type: t.array(t.string()), description: 'a' },
+			oob: { type: t.boolean().optional(), description: 'a' },
+			oobm: { type: t.array(t.boolean()).optional(), description: 'a' },
+			oon: { type: t.number().optional(), description: 'a' },
+			oonm: { type: t.array(t.number()).optional(), description: 'a' },
+			oos: { type: t.string().optional(), description: 'a' },
+			oosm: { type: t.array(t.string()).optional(), description: 'a' }
 		},
 		run(args) {
 			args satisfies {

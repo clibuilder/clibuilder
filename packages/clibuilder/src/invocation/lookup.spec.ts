@@ -1,11 +1,14 @@
 import { a } from 'assertron'
+import { z } from 'zod'
 import { getBaseCommand } from '../builtin/base_command.js'
-import { type cli, command, parseArgv, z } from '../index.js'
+import { type cli, command, parseArgv, t } from '../index.js'
 import { argv } from '../test-utils/index.js'
+import { convertDescriptorsSync } from './descriptors.js'
 import { lookupCommand } from './lookup.js'
 
 function testLookupCommand(command: cli.Command, args: string) {
 	const r = lookupCommand(command, parseArgv(argv(args)))
+	convertDescriptorsSync(r)
 	return r ? { cmd: r.command, args: r.args, errors: r.errors } : r
 }
 
@@ -20,7 +23,7 @@ describe('with default command', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				help: { type: z.boolean(), description: 'x' }
+				help: { type: t.boolean(), description: 'x' }
 			},
 			run() {}
 		})
@@ -31,7 +34,7 @@ describe('with default command', () => {
 	test('with one argument', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.string(), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.string(), description: 'some arg' }],
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli abc')!
@@ -56,7 +59,7 @@ describe('argument', () => {
 	test('argument can be optional', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.string().optional(), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.string().optional(), description: 'some arg' }],
 			run() {}
 		})
 		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli')!
@@ -67,7 +70,7 @@ describe('argument', () => {
 	test('required argument', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.string(), description: 'some required arg' }],
+			arguments: [{ name: 'arg', type: t.string(), description: 'some required arg' }],
 			run() {}
 		})
 		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli')!
@@ -88,7 +91,7 @@ describe('argument', () => {
 	test('number argument is coerced to a number', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.number(), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.number(), description: 'some arg' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 42')!
@@ -98,7 +101,7 @@ describe('argument', () => {
 	test('boolean argument is coerced to a boolean', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.boolean(), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.boolean(), description: 'some arg' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli false')!
@@ -108,7 +111,7 @@ describe('argument', () => {
 	test('a number argument that is not a number reports invalid-value', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.number(), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.number(), description: 'some arg' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli xyz')!
@@ -118,7 +121,7 @@ describe('argument', () => {
 	test('number array argument is variadic and coerced', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'values', type: z.array(z.number()), description: 'some args' }],
+			arguments: [{ name: 'values', type: t.array(t.number()), description: 'some args' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 1 2 3')!
@@ -128,7 +131,7 @@ describe('argument', () => {
 	test('string array argument is variadic', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'values', type: z.array(z.string()), description: 'some args' }],
+			arguments: [{ name: 'values', type: t.array(t.string()), description: 'some args' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli abc def')!
@@ -138,7 +141,7 @@ describe('argument', () => {
 	test('boolean array argument is variadic and coerced', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'values', type: z.array(z.boolean()), description: 'some args' }],
+			arguments: [{ name: 'values', type: t.array(t.boolean()), description: 'some args' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli true false')!
@@ -148,7 +151,7 @@ describe('argument', () => {
 	test('optional array argument is coerced', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'values', type: z.optional(z.array(z.number())), description: 'some args' }],
+			arguments: [{ name: 'values', type: t.array(t.number()).optional(), description: 'some args' }],
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli 1 2')!
@@ -158,7 +161,7 @@ describe('argument', () => {
 	test('an argument type without a string conversion is validated by the schema itself', () => {
 		const defaultCommand = command({
 			name: '',
-			arguments: [{ name: 'arg', type: z.enum(['abc', 'def']), description: 'some arg' }],
+			arguments: [{ name: 'arg', type: t.enum(['abc', 'def']), description: 'some arg' }],
 			run() {}
 		})
 		expect(testLookupCommand(defaultCommand, 'my-cli abc')!.args).toEqual({ _: [], arg: 'abc' })
@@ -214,8 +217,8 @@ describe('options basic', () => {
 	})
 })
 describe('boolean options', () => {
-	test('accepts true/false', () => {
-		const { args } = testLookupCommand(getBaseCommand(''), 'my-cli -h false -v true')!
+	test('accepts an inline true/false', () => {
+		const { args } = testLookupCommand(getBaseCommand(''), 'my-cli -h=false -v=true')!
 		expect(args).toEqual({ _: [], help: false, version: true })
 	})
 	test('other strings are invalid', () => {
@@ -230,7 +233,7 @@ describe('boolean options', () => {
 	test('boolean options with space syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { description: 'a', type: z.boolean() } },
+			options: { abc: { description: 'a', type: t.boolean() } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc')!
@@ -240,7 +243,7 @@ describe('boolean options', () => {
 	test('boolean options with = syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.boolean(), description: 'a' } },
+			options: { abc: { type: t.boolean(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=true')!
@@ -250,18 +253,20 @@ describe('boolean options', () => {
 	test('boolean options with space syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.boolean(), description: 'a' } },
+			options: { abc: { type: t.boolean(), description: 'a' } },
 			run() {}
 		})
-		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc false')!
+		// a boolean takes no value: a following `false` is a positional, so `--abc=false` is the way to pass it
+		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc false')!
 		expect(cmd).toBe(defaultCommand)
-		expect(args).toEqual({ _: [], abc: false })
+		expect(args).toEqual({ _: [], abc: true })
+		expect(errors).toEqual([{ type: 'extra-arguments', name: '', values: ['false'] }])
 	})
 	test('boolean options with alias', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.boolean(), description: 'a', alias: ['a'] }
+				abc: { type: t.boolean(), description: 'a', alias: ['a'] }
 			},
 			run() {}
 		})
@@ -273,7 +278,7 @@ describe('boolean options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.boolean(), description: 'a', default: true }
+				abc: { type: t.boolean(), description: 'a', default: true }
 			},
 			run() {}
 		})
@@ -285,7 +290,7 @@ describe('boolean options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.boolean(), description: 'a', default: false }
+				abc: { type: t.boolean(), description: 'a', default: false }
 			},
 			run() {}
 		})
@@ -297,7 +302,7 @@ describe('boolean options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.array(z.boolean()), description: 'a' }
+				abc: { type: t.array(t.boolean()), description: 'a' }
 			},
 			run() {}
 		})
@@ -305,22 +310,22 @@ describe('boolean options', () => {
 		expect(cmd).toBe(defaultCommand)
 		expect(args).toEqual({ _: [], abc: [true, true] })
 	})
-	test('boolean options pass in multiple values gets the last value and emit warning', () => {
+	test('a boolean option passed more than once reports expect-single and gets no value', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.boolean(), description: 'a' } },
+			options: { abc: { type: t.boolean(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=false --abc=true')!
 		expect(cmd).toBe(defaultCommand)
-		expect(args).toEqual({ _: [], abc: true })
+		expect(args).toEqual({ _: [] })
 		a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['false', 'true'] }])
 	})
 	test('boolean options with multiple pass in single values gets array', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.array(z.boolean()), description: 'a' }
+				abc: { type: t.array(t.boolean()), description: 'a' }
 			},
 			run() {}
 		})
@@ -333,7 +338,7 @@ describe('numeric options', () => {
 	test('number options with = syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.number(), description: 'a' } },
+			options: { abc: { type: t.number(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=123')!
@@ -343,7 +348,7 @@ describe('numeric options', () => {
 	test('number options with space syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.number(), description: 'a' } },
+			options: { abc: { type: t.number(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc 123')!
@@ -354,7 +359,7 @@ describe('numeric options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.number(), description: 'a', alias: ['a'] }
+				abc: { type: t.number(), description: 'a', alias: ['a'] }
 			},
 			run() {}
 		})
@@ -366,7 +371,7 @@ describe('numeric options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.number(), default: 123, description: 'a' }
+				abc: { type: t.number(), default: 123, description: 'a' }
 			},
 			run() {}
 		})
@@ -375,35 +380,35 @@ describe('numeric options', () => {
 		expect(args).toEqual({ _: [], abc: 123 })
 	})
 	test.each([
-		['0 over a number default', z.number(), 123, 'my-cli --abc 0', 0],
-		['false over a boolean default', z.boolean(), true, 'my-cli --abc false', false],
-		['false (=) over a boolean default', z.boolean(), true, 'my-cli --abc=false', false],
-		['an empty string over a string default', z.string(), 'x', 'my-cli --abc=', '']
+		['0 over a number default', t.number(), 123, 'my-cli --abc 0', 0],
+		['false over a boolean default', t.boolean(), true, 'my-cli --abc=false', false],
+		['true over a false boolean default', t.boolean(), false, 'my-cli --abc=true', true],
+		['an empty string over a string default', t.string(), 'x', 'my-cli --abc=', '']
 	])('passed %s is kept', (_, type, defaultValue, input, expected) => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.optional(type), default: defaultValue, description: 'a' } },
+			options: { abc: { type: type.optional(), default: defaultValue as never, description: 'a' } },
 			run() {}
 		})
 		const { args } = testLookupCommand(defaultCommand, input)!
 		expect(args).toEqual({ _: [], abc: expected })
 	})
-	test('singular options pass in multiple values gets the last value and emit warning', () => {
+	test('a singular option passed more than once reports expect-single and gets no value', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.number(), description: 'a' } },
+			options: { abc: { type: t.number(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=2 --abc=3')!
 		expect(cmd).toBe(defaultCommand)
-		expect(args).toEqual({ _: [], abc: 3 })
+		expect(args).toEqual({ _: [] })
 		a.satisfies(errors, [{ type: 'expect-single', key: 'abc', value: ['2', '3'] }])
 	})
 	test('number array options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.array(z.number()), description: 'a' }
+				abc: { type: t.array(t.number()), description: 'a' }
 			},
 			run() {}
 		})
@@ -414,7 +419,7 @@ describe('numeric options', () => {
 	test('number options with invalid value', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.number(), description: 'a' } },
+			options: { abc: { type: t.number(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=xyz')!
@@ -422,9 +427,11 @@ describe('numeric options', () => {
 		expect(errors).toEqual([
 			{
 				key: 'abc',
-				message: 'expected to be number',
+				message: 'expected a number',
 				type: 'invalid-value',
-				value: 'xyz'
+				value: 'xyz',
+				keyKind: 'number',
+				constraint: 'number'
 			}
 		])
 	})
@@ -433,7 +440,7 @@ describe('string options', () => {
 	test('string options with = syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.string(), description: 'a' } },
+			options: { abc: { type: t.string(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc=123')!
@@ -443,7 +450,7 @@ describe('string options', () => {
 	test('string options with space syntax', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.string(), description: 'a' } },
+			options: { abc: { type: t.string(), description: 'a' } },
 			run() {}
 		})
 		const { cmd, args } = testLookupCommand(defaultCommand, 'my-cli --abc 123')!
@@ -454,7 +461,7 @@ describe('string options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.string(), description: 'a', alias: ['a'] }
+				abc: { type: t.string(), description: 'a', alias: ['a'] }
 			},
 			run() {}
 		})
@@ -466,7 +473,7 @@ describe('string options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.string(), default: '123', description: 'a' }
+				abc: { type: t.string(), default: '123', description: 'a' }
 			},
 			run() {}
 		})
@@ -478,7 +485,7 @@ describe('string options', () => {
 		const defaultCommand = command({
 			name: '',
 			options: {
-				abc: { type: z.array(z.string()), description: 'a' }
+				abc: { type: t.array(t.string()), description: 'a' }
 			},
 			run() {}
 		})
@@ -486,22 +493,22 @@ describe('string options', () => {
 		expect(cmd).toBe(defaultCommand)
 		expect(args).toEqual({ _: [], abc: ['2', '3'] })
 	})
-	test('a value the schema rejects reports invalid-value with what the schema said', () => {
+	test('a value the schema rejects reports invalid-value without forwarding the vendor text', () => {
 		const defaultCommand = command({
 			name: '',
-			options: { abc: { type: z.string().email(), description: 'a' } },
+			options: { abc: { type: t.string().check(z.string().email()), description: 'a' } },
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --abc=not-an-email')!
 		expect(args).toEqual({ _: [], abc: undefined })
-		a.satisfies(errors, [{ type: 'invalid-value', key: 'abc', value: 'not-an-email', message: 'Invalid email' }])
+		a.satisfies(errors, [{ type: 'invalid-value', key: 'abc', value: 'not-an-email', message: 'failed a check' }])
 	})
 })
 
 describe('enum options', () => {
 	const defaultCommand = command({
 		name: '',
-		options: { fmt: { type: z.optional(z.enum(['toon', 'json'])), default: 'toon' as const, description: 'a' } },
+		options: { fmt: { type: t.enum(['toon', 'json']).optional(), default: 'toon' as const, description: 'a' } },
 		run() {}
 	})
 
@@ -515,22 +522,23 @@ describe('enum options', () => {
 	// format they did not ask for, and no way to tell that is what happened.
 	test('a value outside the enum reports invalid-value instead of taking the default', () => {
 		const { args, errors } = testLookupCommand(defaultCommand, 'my-cli --fmt=yaml')!
-		a.satisfies(errors, [{ type: 'invalid-value', key: 'fmt', value: 'yaml', message: 'expected one of: toon, json' }])
-		// the default still fills the slot, but the error is what the caller acts on:
-		// `builder` reports it and exits before the command ever reads the value.
-		expect(args).toEqual({ _: [], fmt: 'toon' })
+		a.satisfies(errors, [
+			{ type: 'invalid-value', key: 'fmt', value: 'yaml', message: "expected one of 'toon', 'json'" }
+		])
+		// the default does not fill the slot either: `builder` reports the error and exits before the command reads it
+		expect(args).toEqual({ _: [] })
 	})
 })
 
 describe('option arity', () => {
 	const readCommand = command({
 		name: 'read',
-		arguments: [{ name: 'pane', description: 'pane', type: z.optional(z.string()) }],
+		arguments: [{ name: 'pane', description: 'pane', type: t.string().optional() }],
 		options: {
-			lines: { description: 'lines', type: z.optional(z.number()) },
-			name: { description: 'name', type: z.optional(z.string()) },
-			fmt: { description: 'fmt', type: z.optional(z.enum(['toon', 'json'])) },
-			env: { description: 'env', type: z.optional(z.array(z.string())) },
+			lines: { description: 'lines', type: t.number().optional() },
+			name: { description: 'name', type: t.string().optional() },
+			fmt: { description: 'fmt', type: t.enum(['toon', 'json']).optional() },
+			env: { description: 'env', type: t.array(t.string()).optional() },
 			full: { description: 'full' }
 		},
 		run() {}
@@ -563,10 +571,10 @@ describe('option arity', () => {
 		expect(args).toEqual({ _: [], pane: '%1', full: true })
 		expect(errors).toEqual([])
 	})
-	test('a boolean option takes a following true/false', () => {
+	test('a boolean option does not take a following true/false', () => {
 		const { args, errors } = testLookupCommand(root, 'my-cli read --full false %1')
-		expect(args).toEqual({ _: [], pane: '%1', full: false })
-		expect(errors).toEqual([])
+		expect(args).toEqual({ _: [], pane: 'false', full: true })
+		expect(errors).toEqual([{ type: 'extra-arguments', name: 'read', values: ['%1'] }])
 	})
 	test('a boolean option with an inline value takes no following token', () => {
 		const { args, errors } = testLookupCommand(root, 'my-cli read --full=false true')
@@ -584,20 +592,20 @@ describe('option arity', () => {
 		expect(args).toEqual({ _: [], pane: '%1', a: true, b: true })
 		expect(errors).toEqual([])
 	})
-	test('an array option keeps collecting following tokens', () => {
+	test('an array option takes one value per occurrence', () => {
 		const { args, errors } = testLookupCommand(root, 'my-cli read --env A=1 B=2 --env C=3')
-		expect(args).toEqual({ _: [], env: ['A=1', 'B=2', 'C=3'] })
+		expect(args).toEqual({ _: [], pane: 'B=2', env: ['A=1', 'C=3'] })
 		expect(errors).toEqual([])
 	})
 	test('positionals keep their order across options', () => {
 		const cmd = command({
 			name: '',
-			arguments: [{ name: 'rest', description: 'rest', type: z.array(z.string()) }],
-			options: { lines: { description: 'lines', type: z.number() }, full: { description: 'full' } },
+			arguments: [{ name: 'rest', description: 'rest', type: t.array(t.string()) }],
+			options: { lines: { description: 'lines', type: t.number() }, full: { description: 'full' } },
 			run() {}
 		})
 		const { args, errors } = testLookupCommand(cmd, 'my-cli a --lines 5 b --full c --lines 6 d')
-		expect(args).toEqual({ _: [], rest: ['a', 'b', 'c', 'd'], lines: 6, full: true })
+		expect(args).toEqual({ _: [], rest: ['a', 'b', 'c', 'd'], full: true })
 		a.satisfies(errors, [{ type: 'expect-single', key: 'lines', value: ['5', '6'] }])
 	})
 	test('extra tokens after a scalar option are reported as extra arguments', () => {
@@ -612,6 +620,7 @@ describe('option arity', () => {
 	test('a fallback command resolves the arity of options the command does not declare', () => {
 		const base = getBaseCommand('')
 		const r = lookupCommand(root, parseArgv(argv('my-cli read --verbose %1')), base)
+		convertDescriptorsSync(r)
 		expect(r.args).toEqual({ _: [], pane: '%1' })
 		expect(r.errors).toEqual([{ type: 'invalid-key', key: 'verbose' }])
 	})
@@ -621,15 +630,17 @@ describe('global options before the command path', () => {
 	const base = getBaseCommand('', { format: 'toon' })
 	const show = command({
 		name: 'show',
-		arguments: [{ name: 'x', type: z.optional(z.string()), description: 'x' }],
-		options: { all: { type: z.optional(z.boolean()), description: 'all' } },
+		arguments: [{ name: 'x', type: t.string().optional(), description: 'x' }],
+		options: { all: { type: t.boolean().optional(), description: 'all' } },
 		run() {}
 	})
 	const sub = command({ name: 'sub', run() {} })
 	const group = command({ name: 'group', commands: [sub] })
 	const root = command({ name: '', commands: [show, group] })
 	function lookup(args: string) {
-		return lookupCommand(root, parseArgv(argv(args)), base)
+		const r = lookupCommand(root, parseArgv(argv(args)), base)
+		convertDescriptorsSync(r)
+		return r
 	}
 	test('a global flag before the command name does not take the name as its value', () => {
 		const r = lookup('my-cli --verbose show x')
@@ -652,8 +663,11 @@ describe('global options before the command path', () => {
 		expect(lookup('my-cli --verbose --format json group sub').command).toBe(sub)
 		expect(lookup('my-cli -V group sub').command).toBe(sub)
 	})
-	test('a boolean global given a literal true takes it, and the next token names the command', () => {
-		expect(lookup('my-cli --verbose true show').command).toBe(show)
+	test('a boolean global given an inline true takes it, and the next token names the command', () => {
+		expect(lookup('my-cli --verbose=true show').command).toBe(show)
+	})
+	test('a boolean global takes no following true, which then is not a command', () => {
+		expect(lookup('my-cli --verbose true show').command).toBe(root)
 	})
 	test('a global option after the command keeps its following tokens as positionals', () => {
 		const r = lookup('my-cli show --verbose x')
@@ -683,7 +697,7 @@ describe('conflicting options', () => {
 		name: '',
 		options: {
 			full: { description: 'full output', alias: ['f'], conflicts: ['lines'] },
-			lines: { description: 'line count', type: z.optional(z.number()), alias: ['n'], default: 10 }
+			lines: { description: 'line count', type: t.number().optional(), alias: ['n'], default: 10 }
 		},
 		run() {}
 	})
@@ -718,8 +732,8 @@ describe('conflicting options', () => {
 		const cmd = command({
 			name: '',
 			options: {
-				env: { description: 'env', type: z.optional(z.string()), conflicts: ['template'] },
-				template: { description: 'template', type: z.optional(z.string()), conflicts: ['env'] }
+				env: { description: 'env', type: t.string().optional(), conflicts: ['template'] },
+				template: { description: 'template', type: t.string().optional(), conflicts: ['env'] }
 			},
 			run() {}
 		})

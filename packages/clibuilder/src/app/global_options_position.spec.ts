@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream'
-import { type cli, cli as createCli, exitCodes, z } from '../index.js'
+import { type cli, cli as createCli, exitCodes, t } from '../index.js'
 
 function memoryStream() {
 	const stream = new Writable({
@@ -24,8 +24,8 @@ async function run(args: string, options: Partial<cli.Options> = {}) {
 	const code = await createCli({ name: 'app', version: '1.0.0', streams: { stdout, stderr }, ...options })
 		.command({
 			name: 'show',
-			arguments: [{ name: 'x', type: z.optional(z.string()), description: 'x' }],
-			options: { all: { type: z.optional(z.boolean()), description: 'all' } },
+			arguments: [{ name: 'x', type: t.string().optional(), description: 'x' }],
+			options: { all: { type: t.boolean().optional(), description: 'all' } },
 			run(args) {
 				ran = { name: 'show', args, format: this.format }
 				this.ui.info('show ran')

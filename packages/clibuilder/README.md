@@ -33,8 +33,8 @@ Key highlights:
 - support default commands and sub-commands `my-cli cmd1 cmd2 cmd3`
 - configuration file support
 - plugin support: write commands in separate packages and reuse by multiple CLI
-- type inference and validation for config, arguments, and options\
-  using [zod](https://github.com/colinhacks/zod) (exported as `z`)
+- type inference for arguments and options with the `t` descriptors (exported as `t`),
+  and config validation with any [Standard Schema](https://standardschema.dev) such as zod or valibot
 
 ## Install
 
@@ -107,8 +107,8 @@ cli({ ... }).default({
 cli({ ... }).command({
   name: 'sum',
   arguments: [
-    // using `zod` to specify number[]
-    { name: 'values', description: 'values to add', type: z.array(z.number()) }
+    // using `t` to specify number[]
+    { name: 'values', description: 'values to add', type: t.array(t.number()) }
   ],
   run(args) {
     // inferred as number[]
@@ -143,26 +143,27 @@ cli({ ... }).command({
 })
 ```
 
-You can use `z` to mark argument and/or options as optional
+You can use `.optional()` to mark argument and/or options as optional
 
 ```ts
 cli({... }).default({
-  arguments: [{ name: 'a', description: '', type: z.optional(z.string()) }],
+  arguments: [{ name: 'a', description: '', type: t.string().optional() }],
   options: {
-    y: { type: z.optional(z.number()) }
+    y: { type: t.number().optional() }
   }
 })
 ```
 
 ### Option types with `t`
 
-`t` declares an argument or option type without zod.
+`t` declares an argument or option type.
 Each descriptor converts the raw value, carries its constraints as data that help and usage errors show,
 and gives `run()` the exact type.
 It comes from [`args-minus`](../args-minus/readme.md), which converts and checks every declaration made with it.
 
 ```ts
 import { t } from 'clibuilder'
+import { z } from 'zod' // your own dependency, used in .check() only
 
 cli({ ... }).command({
   name: 'serve',
@@ -172,7 +173,7 @@ cli({ ... }).command({
     format: { description: 'format', type: t.enum(['toon', 'text', 'json']).optional() },
     tag: { description: 'tags', type: t.array(t.string()).optional() },
     timeout: { description: 'e.g. 1m30s', type: t.custom(parseDuration).optional() },
-    email: { description: 'email', type: t.string().optional().check(z.string().email()) }
+    email: { description: 'email', type: t.string().optional().check(z.email()) }
   },
   run(args) {
     // args.port: number, args.format: 'toon' | 'text' | 'json' | undefined, args.tag: string[] | undefined
@@ -182,9 +183,7 @@ cli({ ... }).command({
 
 Help shows each constraint, e.g. `[-p|--port <int 1..65535>]` and `[--format <toon|text|json>]`.
 
-A command can mix `z` and `t`: each argument and option is parsed by its own type,
-and declarations with `z` behave exactly as before.
-Declarations with `t` follow `args-minus`:
+Every declaration follows `args-minus`:
 
 - an option that is neither `.optional()` nor given a `default` must be passed, and is reported as missing otherwise;
 - `t.boolean()` is a flag: it takes no following value, but `--dry=false` is accepted;
@@ -194,13 +193,18 @@ Declarations with `t` follow `args-minus`:
   with the option's `constraint` (and `allowed` values for `t.enum`).
   A converter that throws a plain `Error` reports its message; any other throw is a bug and propagates.
 
-The `z` form is removed in v12.
+In v12 (unreleased) `t` is the only way to declare a type: `z` and zod are removed.
+An argument without a `type` is a string, and an option without a `type` is an optional flag.
 
 If you invoke a command expecting a `config`,
 the config will be loaded.
-Each command defines their own config.
+Each command defines their own config, with any [Standard Schema](https://standardschema.dev):
+zod 3.24 or later, zod 4, valibot, arktype and others, from your own dependency.
+`this.config` is the schema's output.
 
 ```ts
+import { z } from 'zod'
+
 cli({ ... })
 .default({
   config: z.object({ presets: z.string() }),
@@ -213,6 +217,9 @@ cli({ ... })
 ## Config
 
 Config file can be written in `JSON`, `YAML`, `cjs`, or `mjs`.
+In v12 (unreleased) `js-yaml` is an optional peer dependency:
+a cli whose users write a `.yaml` or `.yml` config installs it next to `clibuilder` (`npm install js-yaml`).
+Without it, reading a YAML config fails with a `CliError` whose code is `missing-peer-dependency`.
 Common filename are supported:
 
 - `.{name}.<cjs|mjs|js|json|yaml|yml>`

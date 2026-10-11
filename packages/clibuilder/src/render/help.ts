@@ -1,20 +1,8 @@
 import type { StandardJSONSchemaV1 } from 'args-minus'
-import { tersify } from 'tersify'
-import { reduceByKey, someKey } from 'type-plus'
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConstraint, takesValue } from '../descriptor.js'
-import { type AnyDescriptor, type DescriptorData, isDescriptor, type StandardSchemaV1 } from '../t.js'
-import {
-	isZod3Type,
-	isZodArray,
-	isZodBoolean,
-	isZodNumber,
-	isZodObject,
-	isZodOptional,
-	isZodString,
-	type z
-} from '../zod.js'
+import type { AnyDescriptor, DescriptorData, StandardSchemaV1 } from '../t.js'
 import { wrap } from './wrap.js'
 
 /**
@@ -53,16 +41,16 @@ export function generateUsageSection(cliName: string, command: Command) {
 		message += command.arguments.some((a) => isRequired(a, true)) ? ' <arguments>' : ' [arguments]'
 	}
 	if (command.options) {
-		message += someKey(command.options, (k) => isRequired(command.options![k], false)) ? ' <options>' : ' [options]'
+		const options = command.options
+		message += Object.keys(options).some((k) => isRequired(options[k], false)) ? ' <options>' : ' [options]'
 	}
 	return message
 }
 
 function isRequired({ type, default: d }: { type?: cli.Command.Type; default?: unknown }, defaultValue: boolean) {
 	if (!type) return defaultValue
-	// a `t` option with a default need not be passed
-	if (isDescriptor(type)) return !type.isOptional && d === undefined
-	return !type.isOptional()
+	// an option with a default need not be passed
+	return !type.isOptional && d === undefined
 }
 
 function generateDescriptionSection(command: Command) {
@@ -109,9 +97,8 @@ function generateArgumentsSection(command: Command) {
 	const entries: string[][] = []
 	let maxWidth = 0
 	command.arguments.forEach((a) => {
-		const argStr = isDescriptor(a.type)
-			? formatArgumentDescriptor(a.name, a.type)
-			: formatSignature(a.name, a.type, { defaultRequired: true, booleanIsFlag: false })
+		// an argument without a declared type is a string, shown without a hint
+		const argStr = a.type ? formatArgumentDescriptor(a.name, a.type) : `<${a.name}>`
 		maxWidth = Math.max(maxWidth, argStr.length)
 		entries.push([argStr, a.description || ''])
 	})
@@ -151,12 +138,13 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
 		.sort((a, b) => a.length - b.length)
 		.map((v) => (v.length === 1 ? `-${v}` : `--${v}`))
 		.join('|')
-	if (isDescriptor(value.type)) return formatOptionDescriptor(keyString, value.type, isRequired(value, false))
-	return formatSignature(keyString, value.type, { defaultRequired: false, booleanIsFlag: true })
+	// an option without a declared type is an optional flag
+	if (!value.type) return `[${keyString}]`
+	return formatOptionDescriptor(keyString, value.type, isRequired(value, false))
 }
 
 /**
- * Renders an option declared with `t` from its introspection data:
+ * Renders an option from its descriptor's introspection data:
  * `[--port <int 1..65535>]`, `[--tag <string>...]`, `[--dry]`,
  * without the brackets when it must be passed.
  */
@@ -167,7 +155,7 @@ function formatOptionDescriptor(keys: string, descriptor: AnyDescriptor, require
 }
 
 /**
- * Renders an argument declared with `t` from its introspection data:
+ * Renders an argument from its descriptor's introspection data:
  * `<port: int 1..65535>`, `[name: string]`, `<files: string...>`.
  */
 function formatArgumentDescriptor(name: string, descriptor: AnyDescriptor) {
@@ -175,40 +163,8 @@ function formatArgumentDescriptor(name: string, descriptor: AnyDescriptor) {
 	return descriptor.isOptional ? `[${body}]` : `<${body}>`
 }
 
-/**
- * Renders a name as it appears in the help output:
- * `<name>` when required, `[name]` when optional,
- * with a `=<type>` hint and a `...` variadic marker when the type is known.
- *
- * @param defaultRequired how a missing type is treated.
- * Arguments are required by default while options are optional by default.
- * @param booleanIsFlag options are flags so a `=boolean` hint is noise,
- * while a boolean argument is a value the user has to type out.
- */
-function formatSignature(
-	name: string,
-	zodType: z.ZodType<any> | undefined,
-	{ defaultRequired, booleanIsFlag }: { defaultRequired: boolean; booleanIsFlag: boolean }
-) {
-	const required = zodType ? !isZodOptional(zodType) : defaultRequired
-	const body = `${name}${formatTypeHint(zodType, booleanIsFlag)}`
-	return required ? `<${body}>` : `[${body}]`
-}
-
-function formatTypeHint(zodType: z.ZodType<any> | undefined, booleanIsFlag: boolean) {
-	if (!zodType) return ''
-	const t = isZodOptional(zodType) ? zodType._def.innerType : zodType
-	const isArray = isZodArray(t)
-	const at = isArray ? t.element : t
-	const typeName = isZodString(at) ? 'string' : isZodNumber(at) ? 'number' : isZodBoolean(at) ? 'boolean' : ''
-	if (isArray) return typeName ? `=${typeName}...` : '...'
-	if (!typeName || (booleanIsFlag && typeName === 'boolean')) return ''
-	return `=${typeName}`
-}
-
 function formatDescription(value: cli.Command.Options.Entry, conflicts: string[]) {
-	const quoted = isDescriptor(value.type) ? typeof value.default === 'string' : value.type && isZodString(value.type)
-	const d = quoted ? `'${value.default}'` : value.default
+	const d = typeof value.default === 'string' ? `'${value.default}'` : value.default
 	const description = value.default ? `${value.description} (default ${d})` : value.description
 	if (conflicts.length === 0) return description
 	return `${description} (conflicts with ${conflicts.map((c) => (c.length === 1 ? `-${c}` : `--${c}`)).join(', ')})`
@@ -238,7 +194,7 @@ ${type}`
 
 function describeConfig(command: Command) {
 	if (!command.config) return undefined
-	return isZod3Type(command.config) ? toPrettyType(command.config) : describeStandardConfig(command.config)
+	return describeStandardConfig(command.config)
 }
 
 /**
@@ -266,7 +222,7 @@ function describeStandardConfig(schema: StandardSchemaV1 | StandardJSONSchemaV1)
 }
 
 /**
- * Renders a JSON Schema in the same form as a zod 3 config, such as `{ a: string, b?: Array<{ d: string }> }`.
+ * Renders a JSON Schema as a type literal, such as `{ a: string, b?: Array<{ d: string }> }`.
  * What it does not recognize is `unknown`.
  */
 function describeJsonSchema(schema: Record<string, any>): string {
@@ -298,34 +254,6 @@ function describeJsonSchema(schema: Record<string, any>): string {
 		default:
 			return 'unknown'
 	}
-}
-
-function toPrettyType(t: any): string {
-	return tersify(toTypeObject(t), { maxLength: Number.POSITIVE_INFINITY }).replace(/'/g, '')
-}
-function toTypeObject(t: z.ZodAny): any {
-	if (isZodObject(t)) {
-		const shape = t.shape as Record<string, any>
-		return reduceByKey(
-			shape,
-			(p, k) => {
-				const t = shape[k]
-				if (isZodOptional(t)) p[`${k}?`] = toTypeObject(t._def.innerType)
-				else p[k] = toTypeObject(t)
-				return p
-			},
-			{} as Record<string, any>
-		)
-	}
-	if (isZodString(t)) return 'string'
-	if (isZodBoolean(t)) return 'boolean'
-	if (isZodNumber(t)) return 'number'
-	if (isZodArray(t)) {
-		if (isZodObject(t.element)) return `Array<${toPrettyType(t.element)}>`
-		return `${toPrettyType(t.element)}[]`
-	}
-	// istanbul ignore next
-	return ''
 }
 
 /**
@@ -364,7 +292,7 @@ export namespace HelpModel {
 
 	/**
 	 * What an argument or option accepts.
-	 * `type` is the descriptor's kind, or the zod type the text help names; it is left out when unknown.
+	 * `type` is the descriptor's kind; it is left out for a declaration without a type.
 	 * An array is described by its element, with `array: true`.
 	 */
 	export type Type = {
@@ -451,20 +379,10 @@ function optionModels(options: cli.Command.Options | undefined, exclude: string[
 }
 
 /**
- * What a declaration accepts, from the same data the text help reads:
- * a descriptor's introspection form, or the zod types `formatTypeHint()` names.
+ * What a declaration accepts, from the same data the text help reads: its descriptor's introspection form.
  */
 function describeType(type: cli.Command.Type | undefined): HelpModel.Type {
-	if (!type) return {}
-	if (isDescriptor(type)) return describeData(type)
-	const t = isZodOptional(type) ? type._def.innerType : type
-	const isArray = isZodArray(t)
-	const at = isArray ? t.element : t
-	const typeName = isZodString(at) ? 'string' : isZodNumber(at) ? 'number' : isZodBoolean(at) ? 'boolean' : undefined
-	const result: HelpModel.Type = {}
-	if (typeName) result.type = typeName
-	if (isArray) result.array = true
-	return result
+	return type ? describeData(type) : {}
 }
 
 function describeData(data: DescriptorData): HelpModel.Type {

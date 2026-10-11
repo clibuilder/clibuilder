@@ -309,21 +309,9 @@ importers:
       args-minus:
         specifier: workspace:^
         version: link:../args-minus
-      js-yaml:
-        specifier: ^4.1.1
-        version: 4.1.1
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
-      tersify:
-        specifier: ^4.0.8
-        version: 4.0.8
-      type-plus:
-        specifier: 8.0.0
-        version: 8.0.0(typescript@5.9.3)
-      zod:
-        specifier: ^3.22.3
-        version: 3.25.76
     devDependencies:
       '@repobuddy/vitest':
         specifier: ^3.0.1
@@ -349,6 +337,9 @@ importers:
       esbuild:
         specifier: ^0.20.0
         version: 0.20.2
+      js-yaml:
+        specifier: ^4.1.1
+        version: 4.1.1
       ncp:
         specifier: ^2.0.0
         version: 2.0.0
@@ -361,6 +352,9 @@ importers:
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
+      type-plus:
+        specifier: 8.0.0
+        version: 8.0.0(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -370,6 +364,9 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.20.2)(jiti@2.7.0)(yaml@2.9.0))
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
       zod4:
         specifier: npm:zod@^4.4.3
         version: zod@4.4.3
@@ -729,6 +726,9 @@ importers:
       esm-plugin:
         specifier: workspace:*
         version: link:../../test-plugins/esm-plugin
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
 
   test-apps/ts-app:
     dependencies:

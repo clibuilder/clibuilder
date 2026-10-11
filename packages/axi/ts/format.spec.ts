@@ -29,9 +29,7 @@ describe('formatOption', () => {
 	})
 
 	it('accepts the supported formats and leaves room for the default', () => {
-		expect(formatOption.type.parse('json')).toBe('json')
-		expect(formatOption.type.parse(undefined)).toBeUndefined()
-		expect(formatOption.type.safeParse('yaml').success).toBe(false)
+		expect(formatOption.type).toMatchObject({ kind: 'enum', values: ['toon', 'json', 'text'], isOptional: true })
 	})
 })
 

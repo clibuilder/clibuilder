@@ -36,7 +36,7 @@ Commands passed inline to `.command()` or `.default()` are inferred without it �
 | `alias` | `string[]` | Alternate names — `alias: ['rm']` makes `app remove` answer to `app rm`. |
 | `arguments` | `Argument[]` | Positional arguments, in order. |
 | `options` | `Options` | Named options, keyed by option name. |
-| `config` | `z.ZodTypeAny` | The schema this command's [config](/clibuilder/guides/configuration/) must satisfy. Declaring it triggers the config load. |
+| `config` | Standard Schema | The schema this command's [config](/clibuilder/guides/configuration/) must satisfy, from your own `zod`, valibot or arktype. Declaring it triggers the config load. |
 | `context` | `Record<string, any>` | Arbitrary values handed back on `this.context` — the seam for injecting I/O in [tests](/clibuilder/guides/testing/). |
 | `commands` | `Command[]` | Sub-commands. |
 | `examples` | `{ command: string; description: string }[]` | **Unreleased.** Example invocations, shown at the end of the command's help. See [Examples](#examples). |
@@ -84,19 +84,19 @@ from `context.command.examples`, for example to suggest a correct invocation.
 type Argument = {
   name: string
   description: string
-  type?: z.ZodType<any>
+  type?: t.Descriptor // from t; defaults to a string
 }
 ```
 
 Positional, matched in declaration order. `type` defaults to string. An array type makes the argument
-variadic, consuming the remaining positionals; `z.optional()` makes it optional. Argument values are
-coerced to the declared type — see
+variadic, consuming the remaining positionals; `.optional()` makes it optional. Argument values are
+converted to the declared [`t`](/clibuilder/api/t/) type, and a missing required one is a usage error. See
 [Arguments & Options](/clibuilder/guides/arguments-and-options/#arguments).
 
 ```ts
 arguments: [
   { name: 'src', description: 'source file' },
-  { name: 'dest', description: 'destination', type: z.optional(z.string()) }
+  { name: 'dest', description: 'destination', type: t.string().optional() }
 ]
 ```
 
@@ -105,19 +105,20 @@ arguments: [
 ```ts
 type Options = Record<string, {
   description: string
-  type?: z.ZodType<any>
-  default?: z.infer<Type>
+  type?: t.Descriptor // from t; omit for a flag
+  default?: Value<Type>
   alias?: Array<string | { alias: string; hidden: boolean }>
   conflicts?: string[] // options this one cannot be used with
 }>
 ```
 
-`type` defaults to a flag (`boolean | undefined`). Option values are coerced to the declared type,
-and a value that fails is a usage error.
+`type` defaults to an optional flag (`boolean | undefined`). Option values are converted to the
+declared [`t`](/clibuilder/api/t/) type, and a value that fails is a usage error. An option without
+`.optional()` and without a `default` is required.
 
 ```ts
 options: {
-  port: { description: 'port to listen on', type: z.number(), default: 3000, alias: ['p'] },
+  port: { description: 'port to listen on', type: t.int({ min: 1, max: 65535 }), default: 3000, alias: ['p'] },
   quiet: { description: 'suppress output', alias: ['q', { alias: 'shh', hidden: true }] }
 }
 ```
@@ -137,7 +138,7 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | Property | Type | Description |
 | --- | --- | --- |
 | `this.ui` | [`UI`](/clibuilder/api/ui/) | Output — `info`, `warn`, `error`, `debug`, and the deprecated `showHelp`, `showVersion`. |
-| `this.config` | `z.infer<ConfigType>` | The loaded, validated config. `undefined` when the command declared no `config`. |
+| `this.config` | the config schema's output type | The loaded, validated config. `undefined` when the command declared no `config`. |
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
 | `this.format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else the CLI's `format`, `'toon'` by default. |

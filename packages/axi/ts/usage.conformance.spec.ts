@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream'
-import { type cli, command, cli as createCli, t, z } from 'clibuilder'
+import { type cli, command, cli as createCli, t } from 'clibuilder'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { OutputFormat } from './format.js'
 import { encodeError } from './output.js'
@@ -39,7 +39,7 @@ const list = command({
 		state: { type: t.enum(['open', 'closed']).optional(), description: 'the state' },
 		limit: { type: t.int({ min: 1, max: 100 }).optional(), description: 'how many' },
 		tag: { type: t.string({ pattern: /^v\d+$/ }).optional(), description: 'the tag' },
-		count: { type: z.optional(z.number()), description: 'a zod number' },
+		count: { type: t.number().optional(), description: 'a number' },
 		full: { type: t.boolean().optional(), description: 'everything', conflicts: ['brief'] },
 		brief: { type: t.boolean().optional(), description: 'a summary' }
 	},
@@ -106,7 +106,11 @@ const corpus: Array<[string, string, Additions]> = [
 		'repo --tag x',
 		{ details: { option: '--tag', value: 'x' }, valueHelp: 'expected for --tag: string /^v\\d+$/ (received "x")' }
 	],
-	['invalid value of a zod type', 'repo --count abc', { details: { option: '--count', value: 'abc' } }],
+	[
+		'invalid value of a t.number',
+		'repo --count abc',
+		{ details: { option: '--count', value: 'abc' }, valueHelp: 'expected for --count: number (received "abc")' }
+	],
 	['expect single', 'repo --count 1 --count 2', { details: { option: '--count', value: ['1', '2'] } }],
 	['missing argument', '', { details: { argument: 'repo' } }],
 	['extra arguments', 'repo extra', { details: { arguments: ['extra'] } }]

@@ -21,7 +21,7 @@ describe('getBaseCommand() with a format', () => {
 		expect(entry).toMatchObject({ default: 'json' })
 		expect(entry).not.toHaveProperty('alias')
 		expect(isGlobalFormatEntry(entry)).toBe(true)
-		expect((entry.type as any).safeParse('yaml').success).toBe(false)
+		expect(entry.type).toMatchObject({ kind: 'enum', values: ['toon', 'json', 'text'] })
 	})
 })
 

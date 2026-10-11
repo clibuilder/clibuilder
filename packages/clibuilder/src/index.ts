@@ -21,16 +21,6 @@ export * from './invocation/argv.js'
 export * from './plugins/registry.js'
 export { type Answer, document, empty, type Renderer, result } from './render/answer.js'
 export * from './t.js'
-export {
-	isZodArray,
-	isZodBoolean,
-	isZodEnum,
-	isZodNumber,
-	isZodObject,
-	isZodOptional,
-	isZodString,
-	z
-} from './zod.js'
 
 /**
  * Runs a command in isolation.

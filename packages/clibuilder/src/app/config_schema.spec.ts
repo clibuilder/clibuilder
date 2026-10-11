@@ -1,8 +1,9 @@
 import { testType } from 'type-plus/testing'
 import * as v from 'valibot'
+import { z } from 'zod'
 import { z as z4 } from 'zod4'
 import { mockContext } from '../drivers/context.mock.js'
-import { type cli, command, exitCodes, type StandardSchemaV1, z } from '../index.js'
+import { type cli, command, exitCodes, type StandardSchemaV1 } from '../index.js'
 import { generateHelpMessage } from '../render/help.js'
 import { argv } from '../test-utils/index.js'
 import { builder } from './builder.js'
@@ -241,9 +242,8 @@ describe('help Config section', () => {
 		return generateHelpMessage('app', { name: 'cmd', config, run() {} } as any)
 	}
 
-	it('renders a zod 3 config as before', () => {
-		expect(help(z.object({ a: z.string(), b: z.optional(z.array(z.number())) }))).toContain(`Config:
-{ a: string, b?: number[] }`)
+	it('omits the section for a zod 3 config, which has no JSON Schema', () => {
+		expect(help(z.object({ a: z.string(), b: z.optional(z.array(z.number())) }))).not.toContain('Config:')
 	})
 
 	it('renders a zod 4 config from its JSON Schema, in the form a config file is written', () => {

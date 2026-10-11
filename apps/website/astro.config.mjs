@@ -6,6 +6,9 @@ import { defineConfig } from 'astro/config'
 export default defineConfig({
 	site: 'https://clibuilder.github.io',
 	base: '/clibuilder/',
+	redirects: {
+		'/api/zod': '/clibuilder/api/t/'
+	},
 	vite: {
 		plugins: [tailwindcss()]
 	},
@@ -66,7 +69,7 @@ export default defineConfig({
 						{ label: 'parseArgv()', slug: 'api/parse-argv' },
 						{ label: 'enableCompileCache()', slug: 'api/compile-cache' },
 						{ label: 'clibuilder/axi', slug: 'api/axi' },
-						{ label: 'z', slug: 'api/zod' }
+						{ label: 't', slug: 'api/t' }
 					]
 				},
 				{

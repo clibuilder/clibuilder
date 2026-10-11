@@ -9,6 +9,7 @@
 	"dependencies": {
 		"@clibuilder/plugins": "workspace:*",
 		"clibuilder": "workspace:*",
-		"esm-plugin": "workspace:*"
+		"esm-plugin": "workspace:*",
+		"zod": "^3.25.76"
 	}
 }

@@ -1,4 +1,3 @@
-import { forEachKey, type RequiredPick } from 'type-plus'
 import { getBaseCommand, yieldToGlobalFormat } from '../builtin/base_command.js'
 import type { cli, Extension, ExtensionContext } from '../cli.js'
 import type { Command } from '../command/internal.js'
@@ -6,7 +5,7 @@ import { describeConfigSource } from '../config.js'
 import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
-import { convertDescriptors } from '../invocation/descriptors.js'
+import { convertDescriptors, peekFlags } from '../invocation/descriptors.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
 import { answerValue, printAnswer } from '../render/answer.js'
@@ -20,7 +19,7 @@ import {
 	topUsageError
 } from '../render/usage_error.js'
 import type { StandardSchemaV1 } from '../t.js'
-import { isZod3Type } from '../zod.js'
+import type { RequiredPick } from '../type_utils.js'
 import { type CliError, exitCodes, isCliError, isReportedCliError } from './errors.js'
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
@@ -157,19 +156,21 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
+		// a command's own `help` or `version` flag, read before the other declarations are converted
+		const flags = peekFlags(r, ['help', 'version'])
 
-		if (globals.version || args.version) {
+		if (globals.version || flags.version) {
 			if (output === 'axi') return writeVersion()
 			return createCommandInstance(context, s, r.command, registry).ui.showVersion()
 		}
 		// `--help` is answered before the errors are reported: it is the one flag
 		// that is always valid, and asking for help is not a usage error.
-		if (globals.help || args.help) {
+		if (globals.help || flags.help) {
 			if (output === 'axi') return writeHelp(r.command, baseCommand, globals.format)
 			return createCommandInstance(context, s, r.command, registry).ui.showHelp()
 		}
 
-		// declarations with `t` are converted and checked by `args-minus`, which may await a converter or a check,
+		// the declarations are converted and checked by `args-minus`, which may await a converter or a check,
 		// so it runs after `--help` and `--version` are answered
 		await convertDescriptors(r)
 
@@ -196,19 +197,16 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (command.config) {
 			const configName = typeof s.configName === 'string' ? s.configName : s.name
-			const { config, errors, formErrors } = await parseConfig(command.config, await context.loadConfig(configName))
+			const { config, errors } = await parseConfig(command.config, await context.loadConfig(configName))
 			s.config = config
 
 			if (errors) {
 				if (output === 'axi') {
-					writeReport(
-						describeInvalidConfig(formErrors ? { '(config)': formErrors, ...errors } : errors),
-						globals.format
-					)
+					writeReport(describeInvalidConfig(errors), globals.format)
 					return exit(exitCodes.error)
 				}
 				context.ui.error('config fails validation:')
-				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
+				for (const k of Object.keys(errors)) context.ui.error(`  ${k}: ${errors[k]}`)
 				createCommandInstance(context, s, r.command, registry).ui.showHelp()
 				return exit(exitCodes.error)
 			}
@@ -332,19 +330,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 async function parseConfig(
 	schema: cli.ConfigSchema,
 	config: unknown
-): Promise<
-	| { config: unknown; errors?: undefined; formErrors?: undefined }
-	| { config?: undefined; errors: ConfigErrors; formErrors?: string[] | undefined }
-> {
-	// the zod 3 path is removed in v12 (slim-dependencies RFC section 7)
-	if (isZod3Type(schema)) {
-		const r = schema.safeParse(config)
-		if (r.success) return { config: r.data }
-		const { fieldErrors, formErrors } = r.error.flatten()
-		// the errors about the config as a whole are reported in `axi` output only, under `(config)` as the Standard Schema path keys them;
-		// `console` output prints the field errors alone, as before
-		return { errors: fieldErrors, formErrors: formErrors.length > 0 ? formErrors : undefined }
-	}
+): Promise<{ config: unknown; errors?: undefined } | { config?: undefined; errors: ConfigErrors }> {
 	const r = await schema['~standard'].validate(config)
 	if (!r.issues) return { config: r.value }
 	return { errors: toConfigErrors(r.issues) }
@@ -356,8 +342,7 @@ async function parseConfig(
 type ConfigErrors = Record<string, string[] | undefined>
 
 /**
- * Maps a Standard Schema's issues into the same shape as the zod path:
- * the messages for each key, with the key read from each issue's path.
+ * Maps a Standard Schema's issues to the messages for each key, with the key read from each issue's path.
  * An issue without a path is about the config as a whole and is keyed `(config)`.
  */
 function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors {

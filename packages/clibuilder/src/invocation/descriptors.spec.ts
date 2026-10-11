@@ -1,6 +1,7 @@
+import { z } from 'zod'
 import { builder } from '../app/builder.js'
 import { mockContext } from '../drivers/context.mock.js'
-import { type cli, command, exitCodes, t, testCommand, z } from '../index.js'
+import { type cli, command, exitCodes, t, testCommand } from '../index.js'
 import { argv } from '../test-utils/index.js'
 import { convertDescriptors } from './descriptors.js'
 import { lookupCommand } from './lookup.js'
@@ -129,12 +130,12 @@ describe('options declared with t', () => {
 	})
 })
 
-describe('a command mixing z and t', () => {
+describe('a command with several declarations', () => {
 	const cmd = echo(
 		{
-			name: { description: 'd', type: z.string() },
-			count: { description: 'd', type: z.number().optional() },
-			files: { description: 'd', type: z.array(z.string()).optional() },
+			name: { description: 'd', type: t.string() },
+			count: { description: 'd', type: t.number().optional() },
+			files: { description: 'd', type: t.array(t.string()).optional() },
 			port: { description: 'd', type: t.int({ min: 1 }), default: 80 },
 			level: { description: 'd', type: t.enum(['low', 'high']).optional() }
 		},
@@ -142,15 +143,14 @@ describe('a command mixing z and t', () => {
 	)
 
 	it('parses each declaration by its own type', async () => {
-		const { result } = await parse(cmd, 'echo 7 --name a --count 2 --files x y --port 81 --level high')
+		const { result } = await parse(cmd, 'echo 7 --name a --count 2 --files x --files y --port 81 --level high')
 		expect(result).toEqual({ id: 7, name: 'a', count: 2, files: ['x', 'y'], port: 81, level: 'high' })
 	})
 
-	it('reports the errors of both', async () => {
-		const { errors, exitCode } = await parse(cmd, 'echo x --count abc --port 0 --level mid')
+	it('reports the errors of each, in declaration order after the arguments', async () => {
+		const { errors, exitCode } = await parse(cmd, 'echo x --name a --count abc --port 0 --level mid')
 		expect(exitCode).toBe(exitCodes.usage)
 		expect(errors).toEqual([
-			{ type: 'invalid-value', key: 'count', value: 'abc', message: 'expected to be number' },
 			{
 				type: 'invalid-value',
 				key: 'id',
@@ -158,6 +158,14 @@ describe('a command mixing z and t', () => {
 				value: 'x',
 				keyKind: 'int',
 				constraint: 'int'
+			},
+			{
+				type: 'invalid-value',
+				key: 'count',
+				message: 'expected a number',
+				value: 'abc',
+				keyKind: 'number',
+				constraint: 'number'
 			},
 			{
 				type: 'invalid-value',
@@ -318,26 +326,29 @@ describe('usage errors from t', () => {
 		])
 	})
 
-	it('gives a zod expect-single its kind string beside the deprecated zod type', async () => {
-		const cmd = echo({ count: { description: 'd', type: z.number() } })
+	it('gives an expect-single its kind string and no zod type', async () => {
+		const cmd = echo({ count: { description: 'd', type: t.number() } })
 		const { errors } = await parse(cmd, 'echo --count 1 --count 2')
 		expect(errors).toEqual([expect.objectContaining({ type: 'expect-single', keyKind: 'number' })])
-		expect(errors?.[0]).toHaveProperty('keyType')
+		expect(errors?.[0]).not.toHaveProperty('keyType')
 	})
 
-	it('gives a zod expect-single the kind of a zod type without a dedicated conversion', async () => {
+	it('gives an expect-single the kind of each scalar descriptor', async () => {
 		const cmd = echo({
-			level: { description: 'd', type: z.enum(['a', 'b']) },
-			mode: { description: 'd', type: z.literal('x') },
-			list: { description: 'd', type: z.array(z.enum(['a'])) },
-			either: { description: 'd', type: z.union([z.literal('a'), z.literal('b')]) }
+			level: { description: 'd', type: t.enum(['a', 'b']) },
+			mode: { description: 'd', type: t.literal('x') },
+			list: { description: 'd', type: t.array(t.enum(['a'])) },
+			when: { description: 'd', type: t.custom((raw) => raw) }
 		})
-		const { errors } = await parse(cmd, 'echo --level a --level b --mode x --mode x --list a a --either a --either b')
+		const { errors } = await parse(
+			cmd,
+			'echo --level a --level b --mode x --mode x --list a --list a --when a --when b'
+		)
+		// an array takes one value per occurrence, so it is never given too many
 		expect(errors?.flatMap((e) => (e.type === 'expect-single' ? [[e.key, e.keyKind]] : []))).toEqual([
 			['level', 'enum'],
 			['mode', 'literal'],
-			['list', 'array'],
-			['either', 'custom']
+			['when', 'custom']
 		])
 	})
 
@@ -408,7 +419,7 @@ describe('help for t declarations', () => {
 				ratio: { description: 'ratio', type: t.number({ max: 1 }).optional() },
 				tag: { description: 'tag', type: t.array(t.string()).optional() },
 				dry: { description: 'dry run', type: t.boolean().optional() },
-				name: { description: 'zod name', type: z.string().optional() }
+				name: { description: 'name', type: t.string().optional() }
 			},
 			run() {}
 		})
@@ -422,7 +433,7 @@ describe('help for t declarations', () => {
 		expect(messages).toContain('[--ratio <number <=1>]')
 		expect(messages).toContain('[--tag <string>...]')
 		expect(messages).toContain('[--dry]')
-		expect(messages).toContain('[--name=string]')
+		expect(messages).toContain('[--name <string>]')
 	})
 
 	it('shows a literal, a json and a custom value', async () => {

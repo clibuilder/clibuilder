@@ -711,7 +711,7 @@ Feature: Execution
   # ── Config from any Standard Schema ──
 
   Scenario: a command gets its config schema's output, not the loaded input
-    Given a matched command declaring a config schema with defaults and transforms, from zod 3, zod 4, valibot or any Standard Schema
+    Given a matched command declaring a config schema with defaults and transforms, from zod (3.24 or later, or 4), valibot or any Standard Schema
     When the loaded config satisfies it
     Then the command's this.config is the schema's output, with the defaults filled in and the transforms applied
 
@@ -720,11 +720,11 @@ Feature: Execution
     When it is invoked
     Then the command runs with the resolved output, or the resolved issues are reported
 
-  Scenario: a Standard Schema config's issues are reported like a zod config's
-    Given a matched command declaring a config schema that is not zod 3
+  Scenario: a config's issues are reported as messages per dotted path, and (config) for an issue without a path
+    Given a matched command declaring a config schema, including a zod 3 schema read through ~standard
     When the loaded config does not satisfy it
-    Then each issue's message is printed under its dotted path, one line per key, as the zod path prints a field
-    And an issue without a path is printed under (config)
+    Then each issue's message is printed under its dotted path, one line per key
+    And an issue without a path is printed under (config), in console and in axi output
     And help is shown
     And the cli exits with the error code
 

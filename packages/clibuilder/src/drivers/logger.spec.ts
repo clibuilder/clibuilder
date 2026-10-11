@@ -1,4 +1,5 @@
-import { command, z } from '../index.js'
+import { z as z4 } from 'zod4'
+import { command, t } from '../index.js'
 import { createStreamUI } from './stream_ui.js'
 
 describe('showVersion', () => {
@@ -103,7 +104,7 @@ Arguments:
 				'cli',
 				command({
 					name: 'cmd',
-					arguments: [{ name: 'x', description: '', type: z.string() }],
+					arguments: [{ name: 'x', description: '', type: t.string() }],
 					run() {}
 				})
 			)
@@ -111,7 +112,7 @@ Arguments:
 Usage: cli cmd <arguments>
 
 Arguments:
-  <x=string>
+  <x: string>
 `)
 		})
 		test('optional argument', () => {
@@ -120,7 +121,7 @@ Arguments:
 				'cli',
 				command({
 					name: 'cmd',
-					arguments: [{ name: 'x', description: '', type: z.optional(z.string()) }],
+					arguments: [{ name: 'x', description: '', type: t.string().optional() }],
 					run() {}
 				})
 			)
@@ -128,7 +129,7 @@ Arguments:
 Usage: cli cmd [arguments]
 
 Arguments:
-  [x=string]
+  [x: string]
 `)
 		})
 		test('variadic argument', () => {
@@ -137,7 +138,7 @@ Arguments:
 				'cli',
 				command({
 					name: 'cmd',
-					arguments: [{ name: 'x', description: '', type: z.array(z.string()) }],
+					arguments: [{ name: 'x', description: '', type: t.array(t.string()) }],
 					run() {}
 				})
 			)
@@ -145,7 +146,7 @@ Arguments:
 Usage: cli cmd <arguments>
 
 Arguments:
-  <x=string...>
+  <x: string...>
 `)
 		})
 		test('optional variadic argument', () => {
@@ -154,7 +155,7 @@ Arguments:
 				'cli',
 				command({
 					name: 'cmd',
-					arguments: [{ name: 'x', description: '', type: z.optional(z.array(z.number())) }],
+					arguments: [{ name: 'x', description: '', type: t.array(t.number()).optional() }],
 					run() {}
 				})
 			)
@@ -162,7 +163,7 @@ Arguments:
 Usage: cli cmd [arguments]
 
 Arguments:
-  [x=number...]
+  [x: number...]
 `)
 		})
 		test('boolean argument shows its type', () => {
@@ -171,7 +172,7 @@ Arguments:
 				'cli',
 				command({
 					name: 'cmd',
-					arguments: [{ name: 'x', description: '', type: z.boolean() }],
+					arguments: [{ name: 'x', description: '', type: t.boolean() }],
 					run() {}
 				})
 			)
@@ -179,7 +180,7 @@ Arguments:
 Usage: cli cmd <arguments>
 
 Arguments:
-  <x=boolean>
+  <x: boolean>
 `)
 		})
 		test('required, optional, and variadic arguments together', () => {
@@ -189,9 +190,9 @@ Arguments:
 				command({
 					name: 'cmd',
 					arguments: [
-						{ name: 'src', description: 'the source', type: z.string() },
-						{ name: 'host', description: 'the host', type: z.optional(z.string()) },
-						{ name: 'files', description: 'the files', type: z.array(z.string()) }
+						{ name: 'src', description: 'the source', type: t.string() },
+						{ name: 'host', description: 'the host', type: t.string().optional() },
+						{ name: 'files', description: 'the files', type: t.array(t.string()) }
 					],
 					run() {}
 				})
@@ -200,9 +201,9 @@ Arguments:
 Usage: cli cmd <arguments>
 
 Arguments:
-  <src=string>           the source
-  [host=string]          the host
-  <files=string...>      the files
+  <src: string>          the source
+  [host: string]         the host
+  <files: string...>     the files
 `)
 		})
 	})
@@ -233,7 +234,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.string() }
+						abc: { description: 'desc', type: t.string() }
 					},
 					run() {}
 				})
@@ -242,7 +243,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc=string>         desc
+  --abc <string>         desc
 `)
 		})
 		test('required number', () => {
@@ -252,7 +253,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.number() }
+						abc: { description: 'desc', type: t.number() }
 					},
 					run() {}
 				})
@@ -261,7 +262,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc=number>         desc
+  --abc <number>         desc
 `)
 		})
 		test('required boolean', () => {
@@ -271,7 +272,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.boolean() }
+						abc: { description: 'desc', type: t.boolean() }
 					},
 					run() {}
 				})
@@ -280,7 +281,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc>                desc
+  --abc                  desc
 `)
 		})
 		test('required string array', () => {
@@ -290,7 +291,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.array(z.string()) }
+						abc: { description: 'desc', type: t.array(t.string()) }
 					},
 					run() {}
 				})
@@ -299,7 +300,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc=string...>      desc
+  --abc <string>...      desc
 `)
 		})
 		test('required number array', () => {
@@ -309,7 +310,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.array(z.number()) }
+						abc: { description: 'desc', type: t.array(t.number()) }
 					},
 					run() {}
 				})
@@ -318,7 +319,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc=number...>      desc
+  --abc <number>...      desc
 `)
 		})
 		test('required boolean array', () => {
@@ -328,7 +329,7 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.array(z.boolean()) }
+						abc: { description: 'desc', type: t.array(t.boolean()) }
 					},
 					run() {}
 				})
@@ -337,7 +338,7 @@ Options:
 Usage: cli cmd <options>
 
 Options:
-  <--abc=boolean...>     desc
+  --abc...               desc
 `)
 		})
 		test('with default', () => {
@@ -347,16 +348,16 @@ Options:
 				command({
 					name: 'cmd',
 					options: {
-						abc: { description: 'desc', type: z.string(), default: 'miku' }
+						abc: { description: 'desc', type: t.string(), default: 'miku' }
 					},
 					run() {}
 				})
 			)
 			expect(messages()).toEqual(`
-Usage: cli cmd <options>
+Usage: cli cmd [options]
 
 Options:
-  <--abc=string>         desc (default 'miku')
+  [--abc <string>]       desc (default 'miku')
 `)
 		})
 		test('with conflicts', () => {
@@ -367,7 +368,7 @@ Options:
 					name: 'cmd',
 					options: {
 						full: { description: 'full output', conflicts: ['lines'] },
-						lines: { description: 'line count', type: z.optional(z.number()), alias: ['n'], default: 10 }
+						lines: { description: 'line count', type: t.number().optional(), alias: ['n'], default: 10 }
 					},
 					run() {}
 				})
@@ -377,7 +378,7 @@ Usage: cli cmd [options]
 
 Options:
   [--full]               full output (conflicts with --lines)
-  [-n|--lines=number]    line count (default 10) (conflicts with --full)
+  [-n|--lines <number>]  line count (default 10) (conflicts with --full)
 `)
 		})
 		test('options with single string alias', () => {
@@ -407,7 +408,7 @@ Options:
 					name: 'cmd',
 					options: {
 						long: {
-							type: z.optional(z.string()),
+							type: t.string().optional(),
 							description: 'description',
 							alias: [
 								{ alias: 'l', hidden: true },
@@ -422,7 +423,7 @@ Options:
 Usage: cli cmd [options]
 
 Options:
-  [-h|--long=string]     description
+  [-h|--long <string>]   description
 `)
 		})
 	})
@@ -434,7 +435,7 @@ Options:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({ a: z.string() }),
+					config: z4.object({ a: z4.string() }),
 					run() {}
 				})
 			)
@@ -451,7 +452,7 @@ Config:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({ a: z.string(), b: z.boolean() }),
+					config: z4.object({ a: z4.string(), b: z4.boolean() }),
 					run() {}
 				})
 			)
@@ -468,7 +469,7 @@ Config:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({ c: z.number() }),
+					config: z4.object({ c: z4.number() }),
 					run() {}
 				})
 			)
@@ -485,7 +486,7 @@ Config:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({ c: z.optional(z.array(z.string())) }),
+					config: z4.object({ c: z4.optional(z4.array(z4.string())) }),
 					run() {}
 				})
 			)
@@ -502,7 +503,7 @@ Config:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({ a: z.array(z.object({ d: z.string() })) }),
+					config: z4.object({ a: z4.array(z4.object({ d: z4.string() })) }),
 					run() {}
 				})
 			)
@@ -519,11 +520,11 @@ Config:
 				'cli',
 				command({
 					name: 'cmd',
-					config: z.object({
-						a: z
+					config: z4.object({
+						a: z4
 							.array(
-								z.object({
-									d: z.string().optional()
+								z4.object({
+									d: z4.string().optional()
 								})
 							)
 							.optional()

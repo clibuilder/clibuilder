@@ -1,17 +1,17 @@
-import { type OptionDeclaration, ParseArgsError, parseArgsAsync } from 'args-minus'
+import { type OptionDeclaration, ParseArgsError, type ParsedArgs, parseArgs, parseArgsAsync } from 'args-minus'
 import type { cli } from '../cli.js'
 import { describeConstraint } from '../descriptor.js'
 import type { AnyDescriptor } from '../t.js'
 import type { lookupCommand } from './lookup.js'
 
 /**
- * One occurrence of an option declared with `t`: the key as typed and its argv tokens,
+ * One occurrence of an option: the key as typed and its argv tokens,
  * e.g. `['--port', '80']`, `['--port=80']` or `['-vp', '80']`.
  */
 export type DescriptorOccurrence = { key: string; tokens: string[] }
 
 /**
- * A declaration with `t` of the matched command, with its raw input.
+ * A declaration of the matched command, with its raw input.
  */
 export type DescriptorInput =
 	| {
@@ -26,7 +26,7 @@ export type DescriptorInput =
 const declarations = new WeakMap<object, OptionDeclaration>()
 
 /**
- * Converts and checks every declaration with `t` of the matched command through `args-minus`,
+ * Converts and checks every declaration of the matched command through `args-minus`,
  * filling `result.args` and adding a usage error to `result.errors` for each declaration that fails.
  *
  * An option is parsed by `parseArgsAsync` from its own argv tokens, so `args-minus` tokenizes it and
@@ -39,18 +39,65 @@ const declarations = new WeakMap<object, OptionDeclaration>()
  */
 export async function convertDescriptors(result: lookupCommand.Result) {
 	for (const input of result.descriptors) {
-		const [args, declaration] =
-			input.type === 'option'
-				? [input.occurrences.flatMap((o) => o.tokens), declarationOf(input.entry)]
-				: [input.values.map((v) => `--${input.name}=${v}`), { type: input.descriptor }]
 		try {
-			const { options } = await parseArgsAsync({ args, options: { [input.name]: declaration } })
-			if (options[input.name] !== undefined) result.args[input.name] = options[input.name] as any
+			assign(result, input, await parseArgsAsync(configOf(input)))
 		} catch (e) {
-			if (!(e instanceof ParseArgsError)) throw e
-			result.errors.push(toUsageError(e, input))
+			report(result, input, e)
 		}
 	}
+}
+
+/**
+ * Converts and checks the declarations as `convertDescriptors()` does, synchronously.
+ *
+ * It is for declarations known to take no async converter or check, such as the global options of the base command.
+ * A converter or check that returns a promise throws.
+ */
+export function convertDescriptorsSync(result: lookupCommand.Result) {
+	for (const input of result.descriptors) {
+		try {
+			assign(result, input, parseArgs(configOf(input)))
+		} catch (e) {
+			report(result, input, e)
+		}
+	}
+}
+
+/**
+ * The values of the matched command's own flags named `names`, such as `help` and `version`,
+ * converted ahead of the other declarations so they are answered before any async converter or check runs.
+ * A flag with a check is left for `convertDescriptors()`.
+ */
+export function peekFlags(result: lookupCommand.Result, names: string[]): Record<string, unknown> {
+	const peek: lookupCommand.Result = {
+		...result,
+		args: { ...result.args },
+		errors: [],
+		descriptors: result.descriptors.filter(
+			(d) =>
+				d.type === 'option' &&
+				names.includes(d.name) &&
+				d.entry.type!.kind === 'boolean' &&
+				d.entry.type!.checks.length === 0
+		)
+	}
+	convertDescriptorsSync(peek)
+	return peek.args
+}
+
+function configOf(input: DescriptorInput) {
+	return input.type === 'option'
+		? { args: input.occurrences.flatMap((o) => o.tokens), options: { [input.name]: declarationOf(input.entry) } }
+		: { args: input.values.map((v) => `--${input.name}=${v}`), options: { [input.name]: { type: input.descriptor } } }
+}
+
+function assign(result: lookupCommand.Result, input: DescriptorInput, { options }: ParsedArgs) {
+	if (options[input.name] !== undefined) result.args[input.name] = options[input.name] as any
+}
+
+function report(result: lookupCommand.Result, input: DescriptorInput, e: unknown) {
+	if (!(e instanceof ParseArgsError)) throw e
+	result.errors.push(toUsageError(e, input))
 }
 
 function declarationOf(entry: cli.Command.Options.Entry<AnyDescriptor>): OptionDeclaration {

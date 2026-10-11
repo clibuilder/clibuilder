@@ -6,8 +6,8 @@ concept: [declaration-driven, error-reporting]
 # Input parsing
 
 Governs `src/invocation/` — classifying an argv vector, matching it against the
-declared command tree, and coercing and validating each raw string into the
-declared argument and option types.
+declared command tree, and handing each raw string to `args-minus` to be
+converted and validated into the declared argument and option types.
 
 ## What
 
@@ -79,7 +79,7 @@ This stage reports **no errors** — it cannot, having never seen a declaration.
 ### UC2 — `lookupCommand`: match a command and fill its declared inputs
 
 **Actor / goal.** `execution` wants the deepest command the invocation names,
-with every declared argument and option converted to its declared type and every
+with every declared argument and option converted to its declared `t` descriptor and every
 failure collected.
 
 | | |
@@ -101,8 +101,11 @@ failure collected.
 | an option key matches no declared name or alias | `invalid-key` |
 | a key retains a leading dash (from `---abc`) | `invalid-key` |
 | the terminator was used | **`invalid-key` for `__`, and the remainder is dropped**; see the gaps below |
-| a value cannot be converted to its declared type | `invalid-value`, carrying what the option would have accepted |
-| several values are given for a single-valued option | `expect-single`, and the last value is used |
+| a value cannot be converted to its declared type, or fails its range, pattern or check | `invalid-value`, in the wording of `args-minus`, carrying `keyKind`, `constraint` and what the option would have accepted; the option gets no value and its default does not fill the slot |
+| an option is neither `.optional()` nor given a `default` and is absent | `missing-argument` naming the option |
+| a boolean option (or an option with no `type`) is followed by a token | the token is not its value and stays a positional; `--flag=false` gives it `false` |
+| an array option is given | each occurrence supplies one value (`--tag a --tag b`); in `--tag a b`, `b` stays a positional |
+| several values are given for a scalar option | `expect-single` with `keyKind`, and the option gets no value |
 
 ### UC3 — `lookupOptions`: decide whether a key names a declared option
 
@@ -237,21 +240,26 @@ first option can name the path.
 
 ### Sub-graph C — fill (`processCommand`), entered by UC2
 
-Runs in a fixed order: arguments, then options from argv, then defaults.
+Runs in a fixed order: arguments, then the options present in argv, then every
+declared option. Every declaration is a `t` descriptor; one with no `type` is
+read as `t.string()` for an argument and `t.boolean().optional()` for an option.
+Before this graph runs, the tokens that follow each option are shared out by its
+declared type: a boolean takes none, a scalar takes one, an array takes one per
+occurrence, and every other token goes back to the positionals.
 
 ```mermaid
 graph TD
   FA[per declared argument] --> AT{declares a type?}
   AT -- yes --> AV{positional available?}
-  AT -- no --> ASTR[treat it as a string] --> AV
+  AT -- no --> ASTR[treat it as t.string] --> AV
   AV -- no --> OPTQ{type optional?}
   OPTQ -- yes --> SKIP[skip, no error]
   OPTQ -- no --> MISS[missing-argument]
   AV -- yes --> ARR{array type?}
   ARR -- yes --> VAR[consume every remaining positional]
   ARR -- no --> ONE[consume one]
-  VAR --> CONV[convert] --> LEFT{positionals left over?}
-  ONE --> CONV
+  VAR --> QA[queue for conversion] --> LEFT{positionals left over?}
+  ONE --> QA
   LEFT -- yes --> EXTRA[extra-arguments]
   FO[per key in tokenized args] --> UK{key is _ ?}
   UK -- yes --> SKIP2[skip: the positionals were already taken as arguments]
@@ -260,58 +268,60 @@ graph TD
   LD -- no --> LU{"resolves by name or alias? — sub-graph E"}
   LU -- no --> IK
   LU -- yes --> OT{"the resolved option declares a type?"}
-  OT -- yes --> CONV2[convert]
-  OT -- no --> OBOOL[treat it as an optional boolean] --> CONV2
-  CONV2 --> SET[set under the declared name]
+  OT -- yes --> SG{"not an array, and given more than once?"}
+  OT -- no --> OBOOL[treat it as t.boolean optional] --> SG
+  SG -- yes --> ES["expect-single with keyKind; the option is left out of conversion"]
+  SG -- no --> KEEP[keep its argv tokens for conversion]
   IK --> GAP1["__ lands here (gap 1)"]
-  FD[per declared option] --> ALREADY{already set from argv?}
-  ALREADY -- yes --> NOOP[leave it]
-  ALREADY -- no --> HASD{declares a default?}
-  HASD -- no --> NOOP
-  HASD -- yes --> ARRD{"array type, scalar default?"}
-  ARRD -- yes --> WRAP[wrap the default in an array]
-  ARRD -- no --> USE[use the default as declared]
+  FD[per declared option, given or not] --> SKIPES{"reported expect-single?"}
+  SKIPES -- yes --> NOOP[leave it unset]
+  SKIPES -- no --> QO["queue it with its argv tokens for conversion"]
 ```
 
-### Sub-graph D — convert (`convertValue`), entered from C
+### Sub-graph D — convert (`convertDescriptors`), entered from C
 
-Conversion runs in two stages, and every path passes through both. First the raw
-strings are turned into JavaScript values by the declared type's shape; then the
-declared schema itself is asked to accept the result. The second stage is what
-catches a type the first stage has no conversion for — an enum most of all.
+`args-minus` does the conversion; this node only hands it each queued
+declaration, one at a time and in order, and turns its failure into a usage
+error. An option is parsed from its own argv tokens. An argument has no option
+token, so each of its values is given inline. The declarations of the matched
+command run after `--help` and `--version` have been read from its own flags
+(`peekFlags`), and may await an async converter or check. The global options of
+the base command are converted synchronously (`convertDescriptorsSync`).
 
 ```mermaid
 graph TD
-  CV[declared type and raw values] --> OPTU{optional?}
-  OPTU -- yes --> UNWRAP[unwrap and retry on the inner type] --> OPTU
-  OPTU -- no --> K{"one value expected, or one per element?"}
-  K -- "an array of booleans, numbers or strings" --> EL[convert each element by the element type]
-  K -- "anything else" --> MULTI{"several values given?"}
-  MULTI -- yes --> ES[expect-single] --> LAST
-  MULTI -- no --> LAST[take the last value]
-  LAST --> K2{which type?}
-  K2 -- boolean --> B{"'true' or 'false'?"}
+  CV[declaration and its raw input] --> G{value given?}
+  G -- no --> DF{declares a default?}
+  DF -- yes --> DCK[the default's checks run; it is used as declared]
+  DF -- no --> OP{optional?}
+  OP -- yes --> UNSET[left unset]
+  OP -- no --> MISS[missing-argument naming the option]
+  G -- yes --> K{which kind?}
+  K -- boolean --> B{"no value, or an inline true or false?"}
   B -- yes --> BOK[boolean]
-  B -- no --> BERR[invalid-value: expected to be boolean]
-  K2 -- number --> N{numeric?}
+  B -- no --> BERR["invalid-value: expected no value, true or false"]
+  K -- number --> N{numeric?}
   N -- yes --> NOK[number]
-  N -- no --> NERR[invalid-value: expected to be number]
-  K2 -- string --> SOK[the value as typed]
-  K2 -- "no dedicated conversion" --> RAW[the value unconverted]
-  EL --> SP
-  BOK --> SP
-  NOK --> SP
-  SOK --> SP
-  RAW --> SP
-  BERR --> SP
-  NERR --> SP
-  SP{schema accepts?} -- yes --> OK["the value, with any expect-single still collected"]
-  SP -- no --> ALREADY{"did the conversion already report this value?"}
-  ALREADY -- yes --> ONCE[report nothing further; the value is dropped]
-  ALREADY -- no --> DESC{enum?}
-  DESC -- yes --> ENUM["invalid-value listing the accepted values"]
-  DESC -- no --> ZMSG["invalid-value carrying the schema's own message"]
+  N -- no --> NERR["invalid-value: expected a number"]
+  K -- string --> SOK[the value as typed]
+  K -- enum --> E{listed?}
+  E -- yes --> EOK[the value]
+  E -- no --> EERR["invalid-value: expected one of the listed values"]
+  K -- array --> EL[convert each occurrence by the element type; a failure carries its index]
+  K -- custom --> CU["the converter; a plain Error is invalid-value, anything else rejects"]
+  BOK --> CK
+  NOK --> CK
+  SOK --> CK
+  EOK --> CK
+  EL --> CK
+  CU --> CK
+  CK{"range, pattern and checks accept?"} -- yes --> OK[set under the declared name]
+  CK -- no --> CERR["invalid-value; a foreign schema's text is never forwarded: failed a check"]
 ```
+
+Every `invalid-value` carries the key as typed, the value as typed, the message,
+the descriptor's `keyKind` and its `constraint`, and for an enum the `allowed`
+values. A value that fails is not set, and the default does not take its place.
 
 ### Sub-graph E — resolve a key (`lookupOptions`), entered by UC3 and from C
 
@@ -374,14 +384,15 @@ are matched, and `hidden` affects only how `presentation/` lists it.
 | `missing-argument` | a required argument with no positional left | `a required argument with nothing left reports it missing` |
 | skip, no error | an optional argument with no positional left | `an optional argument with nothing left is skipped without error` |
 | `extra-arguments` | every declared argument filled, positionals remain | `positionals left over after every argument are reported as extra` |
-| treat it as a string | an argument declaring no type | `an argument declaring no type is filled as a string` |
+| treat it as t.string | an argument declaring no type | `an argument declaring no type is filled as a string` |
 | skip: the positionals were already taken as arguments | positionals were given | `the positionals key is not reported as an unknown option` |
 | set under the declared name | key matches an option name | `an option key matching a declared name is filled` |
 | set under the declared name | key matches an alias | `an option key matching an alias is filled under the declared name` |
 | `invalid-key` | key matches no name or alias | `an unknown option key is reported as invalid` |
 | `invalid-key` | key retains a leading dash | `an option written with three dashes is reported as invalid` |
 | `invalid-key` | the terminator was used | `an invocation using the terminator reports it as an invalid key` |
-| treat it as an optional boolean | an option declaring no type | `an option declaring no type is filled as an optional boolean` |
+| treat it as t.boolean optional | an option declaring no type | `an option declaring no type is filled as an optional boolean` |
+| `missing-argument` naming the option | a declared option absent from argv that is neither optional nor defaulted | `a t option that is absent takes its default or is reported missing` |
 | use the default as declared | a declared option absent from argv | `an absent option falls back to its declared default` |
 | wrap the default in an array | an array-typed option with a scalar default | `a scalar default on an array option is wrapped in an array` |
 | leave it | a declared option present in argv | `an option given in argv is not overwritten by its default` |
@@ -391,18 +402,21 @@ are matched, and `hidden` affects only how `presentation/` lists it.
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| `'true'` or `'false'?` — yes | boolean type | `a boolean option accepts true and false` |
-| `invalid-value: expected to be boolean` | boolean type | `a boolean option given another word is rejected as not a boolean` |
+| no value, or an inline `true` or `false`? — yes | boolean type | `a boolean option accepts true and false` |
+| boolean takes no following value (C) | boolean type followed by a positional | `a boolean option takes no following value` |
+| `invalid-value: expected no value, true or false` | boolean type | `a boolean option given another word is rejected as not a boolean` |
 | numeric? — yes | number type | `a number option accepts a numeric value` |
-| `invalid-value: expected to be number` | number type | `a number option given a non-numeric value is rejected as not a number` |
+| `invalid-value: expected a number` | number type | `a number option given a non-numeric value is rejected as not a number` |
 | the value as typed | string type | `a string option takes its value as typed` |
-| convert each element by the element type | array type | `an array option converts each of its values by the element type` |
-| unwrap and retry on the inner type | optional type | `an optional option converts by the type it wraps` |
-| `expect-single` | any single-valued type | `several values for a single-valued option are reported, and the last one is used` |
-| the value unconverted, then the schema accepts | enum type given a declared value | `an enum option given one of its declared values is accepted as typed` |
-| `invalid-value` listing the accepted values | enum type the schema rejected | `an enum option given an unlisted value is told which values it accepts` |
-| `invalid-value` carrying the schema's own message | non-enum type the schema rejected | `a value the schema rejects is reported in the schema's own words` |
-| report nothing further; the value is dropped | the conversion already rejected the value | `a value the conversion rejected is reported once, not twice` |
+| convert each occurrence by the element type | array type | `an array option converts each of its values by the element type` |
+| one value per occurrence (C) | array type given two occurrences and a bare token | `an array option takes one value per occurrence` |
+| optional? — yes, left unset | optional type | `an optional option converts by the type it wraps` |
+| `expect-single` (C) | any scalar type | `several values for a single-valued option are reported, and the option gets no value` |
+| listed? — yes | enum type given a declared value | `an enum option given one of its declared values is accepted as typed` |
+| `invalid-value: expected one of the listed values` | enum type given an unlisted value | `an enum option given an unlisted value is told which values it accepts` |
+| the default does not take its place | enum type with a default, given an unlisted value | `a value outside an enum does not fill the slot with its default` |
+| `invalid-value` with `keyKind` and `constraint` | any type, a failing value | `a value the declaration rejects is reported in the wording of args-minus, with its kind and constraint` |
+| `invalid-value` is one error per failing value | the conversion already rejected the value | `a value the conversion rejected is reported once, not twice` |
 
 ### UC3 — `lookupOptions`
 

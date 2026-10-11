@@ -158,9 +158,8 @@ function commandName(command: cli.Command, cliName: string) {
 	return [cliName, ...names].join(' ')
 }
 
-// a zod type answers `isOptional()`, a `t` descriptor has an `isOptional` field
 function isOptional(type: cli.Command.Type | undefined) {
-	return typeof (type as any)?.isOptional === 'function' ? (type as any).isOptional() : !!type?.isOptional
+	return !!type?.isOptional
 }
 
 function argumentsHelp(command: cli.Command, cliName: string) {
@@ -182,7 +181,6 @@ function optionsHelp(command: cli.Command, cliName: string) {
 /**
  * What an `invalid-value` error's key accepts: the allowed values of an enum, else the constraint
  * the declaration states, such as `int 1..65535`, with the value as the caller typed it.
- * A zod declaration states neither, so it has no such line.
  */
 function valueHelp(error: lookupCommand.InvalidValueType, label: string) {
 	const at = error.index === undefined ? '' : `[${error.index}]`

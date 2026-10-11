@@ -1,8 +1,7 @@
 /**
  * Option and argument type descriptors from `args-minus`.
  *
- * Declare an option or argument `type` with `t` instead of `z` to have it converted and checked by `args-minus`.
- * Each declaration is parsed by its own type, so a command can mix `z` and `t` declarations.
+ * Declare an option or argument `type` with `t` to have it converted and checked by `args-minus`.
  */
 export {
 	type AnyDescriptor,

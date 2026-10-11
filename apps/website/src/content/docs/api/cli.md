@@ -453,7 +453,8 @@ printed and the promise to resolve. Only an error thrown by your own `run()` rej
 
 ```ts
 #!/usr/bin/env node
-import { cli, command, z } from 'clibuilder'
+import { cli, command } from 'clibuilder'
+import { z } from 'zod'
 
 cli({
   name: 'app',

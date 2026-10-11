@@ -73,7 +73,7 @@ const { result } = await testCommand(
   command({
     name: 'cfg',
     description: 'reads config',
-    config: z.object({ a: z.string() }),
+    config: z.object({ a: z.string() }), // z from your own 'zod'
     run() {
       return this.config
     }

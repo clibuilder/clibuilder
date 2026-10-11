@@ -13,7 +13,7 @@ The core idea is that a command's declaration *is* its type. When you write:
 ```ts
 command({
   name: 'sum',
-  arguments: [{ name: 'values', description: 'values to add', type: z.array(z.number()) }],
+  arguments: [{ name: 'values', description: 'values to add', type: t.array(t.number()) }],
   options: { verbose: { description: 'be chatty' } },
   run(args) {
     // args.values: number[]
@@ -23,16 +23,16 @@ command({
 ```
 
 there is no second place to declare the shape of `args` — it is inferred from `arguments` and
-`options`, using [zod](https://github.com/colinhacks/zod) (re-exported as [`z`](/clibuilder/api/zod/)).
+`options`, using the [`t`](/clibuilder/api/t/) type descriptors.
 
 ## What it does
 
 - **Commands and sub-commands** — `my-cli repo create` nests to any depth, with aliases. See
   [Commands](/clibuilder/guides/commands/).
-- **Typed arguments and options** — declared with zod, inferred into `run(args)`, validated before
+- **Typed arguments and options** — declared with `t`, inferred into `run(args)`, validated before
   `run()` is reached. See [Arguments & Options](/clibuilder/guides/arguments-and-options/).
 - **Config files** — `JSON`, `YAML`, `cjs`, or `mjs`, resolved by convention from the CLI name, and
-  validated per command against a zod schema. See [Configuration](/clibuilder/guides/configuration/).
+  validated per command against any Standard Schema. See [Configuration](/clibuilder/guides/configuration/).
 - **Plugins** — commands published as separate packages, loaded by [`@clibuilder/plugins`](/clibuilder/packages/plugins/)
   when a CLI opts in. See
   [Plugins](/clibuilder/guides/plugins/).

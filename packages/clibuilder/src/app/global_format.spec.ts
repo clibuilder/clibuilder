@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream'
-import { CliError, cli, command, exitCodes, z } from '../index.js'
+import { CliError, cli, command, exitCodes, t } from '../index.js'
 
 function memoryStream() {
 	const stream = new Writable({
@@ -70,7 +70,7 @@ describe('the global --format in the default console output, with no cli({ forma
 		await app
 			.command({
 				name: 'show',
-				options: { format: { type: z.optional(z.string()), description: 'local' } },
+				options: { format: { type: t.string().optional(), description: 'local' } },
 				run(args) {
 					value = args.format
 				}
@@ -91,7 +91,7 @@ describe.each([
 		await app.command({ name: 'show', run() {} }).parse(['node', 'app', '--help', '--format', 'text'])
 		const help = stdout.text + stderr.text
 		expect(countOf(help, '--format')).toBe(1)
-		expect(help).toContain(`(default ${defaultFormat})`)
+		expect(help).toContain(`(default '${defaultFormat}')`)
 		expect(help).not.toContain('-f|')
 	})
 
@@ -152,9 +152,9 @@ describe.each([
 			return
 		}
 		const out = r.stdout + r.stderr
-		expect(countOf(out, 'invalid value for option --format: expected one of: toon, json, text, received "yaml"')).toBe(
-			1
-		)
+		expect(
+			countOf(out, `invalid value for option --format: expected one of 'toon', 'json', 'text', received "yaml"`)
+		).toBe(1)
 	})
 
 	it('fails a command that declares its own format option at startup', () => {
@@ -162,7 +162,7 @@ describe.each([
 		expect(() =>
 			app.command({
 				name: 'show',
-				options: { format: { type: z.optional(z.string()), description: 'local' } },
+				options: { format: { type: t.string().optional(), description: 'local' } },
 				run() {}
 			})
 		).toThrow(/command 'show' declares its own option 'format'.*read this\.format.*axi-native\.md section 3\.4/)

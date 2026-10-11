@@ -27,7 +27,7 @@ Almost every decision here resolves in the **type system**. `command()` is an
 identity function at runtime: its whole value is that it constrains the literal
 it is handed and infers the `run` signature from it. The acceptance point for
 this node is therefore the compiler, observed through `type-plus`'s `testType`
-assertions.
+assertions (a development dependency of the package).
 
 **Non-goals.** Matching argv against the declared tree, coercing raw strings, and
 reporting a validation failure belong to `input-parsing/`. Assembling an
@@ -63,7 +63,7 @@ today, so it appears in neither the Control Flow nor the suite:
 
 | Actor | Goal | Provenance |
 | --- | --- | --- |
-| Command author | have an option that declares a default type as present, rather than as possibly `undefined` | [#274](https://github.com/clibuilder/clibuilder/issues/274) — closed without an implementation. `RunArgs` types an option as `z.infer<OT>`, so an optional type stays `T \| undefined` even when a `default` guarantees a value. Verified with a type probe |
+| Command author | have an option that declares a default type as present, rather than as possibly `undefined` | [#274](https://github.com/clibuilder/clibuilder/issues/274) — closed without an implementation. `RunArgs` types an option from its `t` descriptor, so an optional type stays `T \| undefined` even when a `default` guarantees a value. Verified with a type probe |
 
 ### UC1 — `command()`: declare a command and infer its run arguments
 
@@ -87,7 +87,7 @@ types.
 | an option's `type` is optional | accepted; the inferred type carries `\| undefined` |
 | an option's `default` disagrees with its `type` | **accepted, unchecked** — see the gap below; the option still types as its declared type, so `run` receives a value the declaration says is impossible |
 | the author declares an option named `help` | accepted; the declared type replaces the implicit one rather than colliding with it |
-| a command declares a `config` schema | `run` reads `this.config` at that schema's type; a field the schema omits is refused |
+| a command declares a `config` schema (any Standard Schema) | `run` reads `this.config` at that schema's output type; a field the schema omits is refused |
 | an option declares an alias | it is a bare string or a `{ alias, hidden }` pair; any other shape is rejected |
 | a command declares `onUsageError` | accepted on a leaf, a group, and a default command alike; its parameters are typed as the list of usage errors and a context carrying the matched command and a `ui` |
 | an `onUsageError` returns something other than nothing or a number | rejected — the only result the framework reads is an exit code |
@@ -96,9 +96,9 @@ At runtime this use case has **no** extensions — `command()` returns its
 argument and cannot fail. Every row above is a compile-time path.
 
 **Known gap — `default` is not checked against `type`.** `Options` is declared as
-`Record<Name, Options.Entry<Type>>` with `Type` defaulting to `z.ZodType<any>`
-and never inferred per entry, so `Entry`'s `default?: z.infer<Type>` widens to
-`any`. An option declaring `type: z.array(z.string())` and `default: 5` compiles,
+`Record<Name, Options.Entry<Type>>` with `Type` defaulting to `AnyDescriptor`
+and never inferred per entry, so `Entry`'s `default` widens to
+`any`. An option declaring `type: t.array(t.string())` and `default: 5` compiles,
 and `args.abc` still types as `string[]`. The specified behavior below is the
 current one; closing the hole needs per-entry inference of `Type` and is tracked
 as a followup in this spec's ledger.
@@ -180,12 +180,12 @@ the results merge into one `args` object.
 ```mermaid
 graph TD
   ARGS[type the run arguments] --> A{per declared argument}
-  A -- has type --> A1["z.infer&lt;Type&gt;"]
+  A -- has type --> A1["the descriptor's output type"]
   A -- omits type --> A2[string]
   ARGS --> O{per declared option}
   O -- has type --> O1{"type is optional?"}
-  O1 -- yes --> O1a["z.infer&lt;Type&gt; | undefined"]
-  O1 -- no --> O1b["z.infer&lt;Type&gt;"]
+  O1 -- yes --> O1a["the descriptor's output type | undefined"]
+  O1 -- no --> O1b["the descriptor's output type"]
   O -- omits type --> O2["boolean | undefined"]
   O1a --> DF{declares default?}
   O1b --> DF
@@ -193,7 +193,7 @@ graph TD
   DF -- yes --> DF1["default accepted unchecked; the option keeps the type above"]
   DF -- no --> DF2["the option keeps the type above"]
   ARGS --> CFG{declares a config schema?}
-  CFG -- yes --> CFY["this.config is z.infer of the declared schema, so a field it does not declare is refused"]
+  CFG -- yes --> CFY["this.config is the output of the declared Standard Schema, so a field it does not declare is refused"]
   CFG -- no --> CFN["this.config stays the unconstrained default"]
   ARGS --> ALI{per declared alias}
   ALI -- "a bare string" --> ALS[accepted]
@@ -256,7 +256,7 @@ This node owns only the type that makes both possible.
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |
-| this.config is z.infer of the declared schema | a command declaring a config schema | `a declared config schema types what run reads from this.config` |
+| this.config is the output of the declared schema | a command declaring a config schema | `a declared config schema types what run reads from this.config` |
 | this.config stays the unconstrained default | a command declaring no config schema | `a command with no config schema puts no shape on this.config` |
 | a bare string | an alias declared as a bare string | `an option alias may be declared as a bare string` |
 | a pair carrying alias and hidden | an alias declared as a hidden pair | `an option alias may be declared as a pair that marks it hidden` |

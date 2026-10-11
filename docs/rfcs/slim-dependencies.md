@@ -331,7 +331,7 @@ A subpath export alone **does not** reduce install size, because `dependencies` 
 | Format | Core v12 |
 |---|---|
 | `package.json` field, `.json`, `.js` / `.mjs` / `.cjs` | built in, no dependencies |
-| `.yaml` / `.yml` | `js-yaml` as an **optional peer** (`peerDependenciesMeta.optional`), loaded with dynamic `import()`. A missing peer gives a coded error naming the package to install. |
+| `.yaml` / `.yml` | `js-yaml` as an **optional peer** (`peerDependenciesMeta.optional`), loaded with dynamic `import()`. A missing peer gives a coded error naming the package to install: a `CliError` with code `missing-peer-dependency` and `details: { package: 'js-yaml' }` (decided in the implementation). |
 | `.jsonc` / rc with comments | see Q4 |
 
 For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) as a regular dependency, make it an optional peer like js-yaml, or replace it with a small internal comment and trailing-comma stripper feeding `JSON.parse`.
