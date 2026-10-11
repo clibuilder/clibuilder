@@ -1,24 +1,22 @@
-import { logLevels } from 'standard-log'
-import { createStandardLogForTest } from 'standard-log/testing'
 import { command, z } from '../index.js'
-import { createUI } from './logger.js'
+import { createStreamUI } from './stream_ui.js'
 
 describe('showVersion', () => {
 	test('undefined version shows "not versioned"', () => {
-		const { ui, reporter } = testUI()
+		const { ui, messages } = testUI()
 		ui.showVersion()
-		expect(reporter.getLogMessage()).toEqual('not versioned')
+		expect(messages()).toEqual('not versioned')
 	})
 	test('empty version shows "not versioned"', () => {
-		const { ui, reporter } = testUI()
+		const { ui, messages } = testUI()
 		ui.showVersion('')
-		expect(reporter.getLogMessage()).toEqual('not versioned')
+		expect(messages()).toEqual('not versioned')
 	})
 })
 
 describe('showHelp()', () => {
 	test('command with alias', () => {
-		const { ui, reporter } = testUI()
+		const { ui, messages } = testUI()
 		ui.showHelp(
 			'cli',
 			command({
@@ -27,7 +25,7 @@ describe('showHelp()', () => {
 				run() {}
 			})
 		)
-		expect(reporter.getLogMessage()).toEqual(`
+		expect(messages()).toEqual(`
 Usage: cli search-package
 
 Alias:
@@ -35,7 +33,7 @@ Alias:
 `)
 	})
 	test('with sub-commands', () => {
-		const { ui, reporter } = testUI()
+		const { ui, messages } = testUI()
 		ui.showHelp(
 			'cli',
 			command({
@@ -48,7 +46,7 @@ Alias:
 				]
 			})
 		)
-		expect(reporter.getLogMessage()).toEqual(`
+		expect(messages()).toEqual(`
 Usage: cli cmd <command>
 
 Commands:
@@ -58,7 +56,7 @@ cmd <command> -h         Get help for <command>
 `)
 	})
 	test('sub command with alias', () => {
-		const { ui, reporter } = testUI()
+		const { ui, messages } = testUI()
 		ui.showHelp(
 			'cli',
 			command({
@@ -72,7 +70,7 @@ cmd <command> -h         Get help for <command>
 				]
 			})
 		)
-		expect(reporter.getLogMessage()).toEqual(`
+		expect(messages()).toEqual(`
 Usage: cli repo <command>
 
 Commands:
@@ -83,7 +81,7 @@ repo <command> -h        Get help for <command>
 	})
 	describe('arguments', () => {
 		test('untyped argument is required', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -92,7 +90,7 @@ repo <command> -h        Get help for <command>
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -100,7 +98,7 @@ Arguments:
 `)
 		})
 		test('required argument', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -109,7 +107,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -117,7 +115,7 @@ Arguments:
 `)
 		})
 		test('optional argument', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -126,7 +124,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [arguments]
 
 Arguments:
@@ -134,7 +132,7 @@ Arguments:
 `)
 		})
 		test('variadic argument', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -143,7 +141,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -151,7 +149,7 @@ Arguments:
 `)
 		})
 		test('optional variadic argument', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -160,7 +158,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [arguments]
 
 Arguments:
@@ -168,7 +166,7 @@ Arguments:
 `)
 		})
 		test('boolean argument shows its type', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -177,7 +175,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -185,7 +183,7 @@ Arguments:
 `)
 		})
 		test('required, optional, and variadic arguments together', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -198,7 +196,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <arguments>
 
 Arguments:
@@ -210,7 +208,7 @@ Arguments:
 	})
 	describe('options', () => {
 		test('default (optional boolean)', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -221,7 +219,7 @@ Arguments:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -229,7 +227,7 @@ Options:
 `)
 		})
 		test('required string', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -240,7 +238,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -248,7 +246,7 @@ Options:
 `)
 		})
 		test('required number', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -259,7 +257,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -267,7 +265,7 @@ Options:
 `)
 		})
 		test('required boolean', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -278,7 +276,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -286,7 +284,7 @@ Options:
 `)
 		})
 		test('required string array', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -297,7 +295,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -305,7 +303,7 @@ Options:
 `)
 		})
 		test('required number array', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -316,7 +314,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -324,7 +322,7 @@ Options:
 `)
 		})
 		test('required boolean array', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -335,7 +333,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -343,7 +341,7 @@ Options:
 `)
 		})
 		test('with default', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -354,7 +352,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd <options>
 
 Options:
@@ -362,7 +360,7 @@ Options:
 `)
 		})
 		test('with conflicts', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -374,7 +372,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -383,7 +381,7 @@ Options:
 `)
 		})
 		test('options with single string alias', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -394,7 +392,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -402,7 +400,7 @@ Options:
 `)
 		})
 		test('options with hidden alias', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -420,7 +418,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd [options]
 
 Options:
@@ -431,7 +429,7 @@ Options:
 
 	describe('config', () => {
 		test('{ a: string }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -440,7 +438,7 @@ Options:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -448,7 +446,7 @@ Config:
 `)
 		})
 		test('{ a: string, b: boolean }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -457,7 +455,7 @@ Config:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -465,7 +463,7 @@ Config:
 `)
 		})
 		test('{ c: number }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -474,7 +472,7 @@ Config:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -482,7 +480,7 @@ Config:
 `)
 		})
 		test('{ c?: string[] }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -491,7 +489,7 @@ Config:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -499,7 +497,7 @@ Config:
 `)
 		})
 		test('{ a: Array<{ d: string }> }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -508,7 +506,7 @@ Config:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -516,7 +514,7 @@ Config:
 `)
 		})
 		test('{ a?: Array<{ d?: string }> }', () => {
-			const { ui, reporter } = testUI()
+			const { ui, messages } = testUI()
 			ui.showHelp(
 				'cli',
 				command({
@@ -533,7 +531,7 @@ Config:
 					run() {}
 				})
 			)
-			expect(reporter.getLogMessage()).toEqual(`
+			expect(messages()).toEqual(`
 Usage: cli cmd
 
 Config:
@@ -544,7 +542,9 @@ Config:
 })
 
 function testUI() {
-	const sl = createStandardLogForTest({ logLevel: logLevels.all })
-	const log = sl.getLogger('mock-ui')
-	return { ui: createUI(log), reporter: sl.reporter }
+	let text = ''
+	const sink = { colour: false, write: (t: string) => void (text += t) }
+	const ui = createStreamUI({ stdout: sink, stderr: sink }, 'console')
+	ui.displayLevel = 'trace'
+	return { ui, messages: () => text.replace(/\n$/, '') }
 }

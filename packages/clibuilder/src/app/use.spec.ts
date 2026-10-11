@@ -45,7 +45,7 @@ describe('use()', () => {
 			.use(contribute('from-extension', ''))
 			.command({ name: 'from-host', run() {} })
 			.parse(argv('test-cli --help'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('from-extension')
 		expect(msg.indexOf('from-host')).toBeLessThan(msg.indexOf('from-extension'))
 	})
@@ -74,7 +74,7 @@ describe('use()', () => {
 	it('runs the extensions before --help, which has to list their commands', async () => {
 		const [app, ctx] = setup()
 		await app.use(contribute('from-extension', '')).parse(argv('test-cli --help'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('from-extension')
+		expect(ctx.messages).toContain('from-extension')
 	})
 
 	it('runs the extensions once however many times parse() is called', async () => {
@@ -133,7 +133,7 @@ describe('use()', () => {
 			.use(({ ui }) => ui.debug('extension debug message'))
 			.default({ run() {} })
 			.parse(argv('test-cli --debug-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('extension debug message')
+		expect(ctx.messages).toContain('extension debug message')
 	})
 
 	it("gives the extension a ui with every method of a command's ui", async () => {
@@ -150,7 +150,7 @@ describe('use()', () => {
 			})
 			.default({ description: 'the default command', run() {} })
 			.parse(argv('test-cli'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('extension info')
 		expect(msg).toContain('extension warn')
 		expect(msg).toContain('extension error')
@@ -190,7 +190,7 @@ describe('use() with the @clibuilder/plugins extension', () => {
 	it('keeps loading the config plugins and the plugins group without it', async () => {
 		const [app, ctx] = setup({ fixtureDir: 'one-plugin' }, { config: true })
 		await app.use(() => {}).parse(argv('test-cli --help'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('plugins')
 		expect(msg).toContain('one')
 	})
@@ -199,7 +199,7 @@ describe('use() with the @clibuilder/plugins extension', () => {
 		const [app, ctx] = setup({ fixtureDir: 'one-plugin' }, { config: true })
 		await app.use(asPluginsExtension(() => {})).parse(argv('test-cli one'))
 		expect(ctx.exitCode).toBe(2)
-		expect(ctx.sl.reporter.getLogMessage()).toContain('unexpected argument: one')
+		expect(ctx.messages).toContain('unexpected argument: one')
 	})
 
 	it('skips the automatic plugins group', async () => {

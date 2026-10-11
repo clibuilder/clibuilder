@@ -1,3 +1,4 @@
+import { Writable } from 'node:stream'
 import { cli } from 'clibuilder'
 import { plugins } from './index.js'
 
@@ -11,18 +12,19 @@ vi.mock('search-packages', () => ({ searchByKeywords: async () => ['pkg-a', 'odd
 // queries npm for real. The per-keyword union is covered by the command specs.
 const keywords = ['keyword-a']
 
-// The cli binds the console methods when the first one is built, so the spies go in first.
+// Every line the cli writes, named by the stream it went to.
+// The built-in ui of clibuilder 12 writes to `cli({ streams })` rather than through `console`.
 const lines: string[] = []
-beforeAll(() => {
-	for (const m of ['log', 'info', 'warn', 'error', 'debug'] as const) {
-		vi.spyOn(console, m).mockImplementation((...args: any[]) => {
-			lines.push(`${m}: ${args.join(' ')}`)
-		})
-	}
-})
-afterAll(() => {
-	vi.restoreAllMocks()
-})
+function capture(name: 'stdout' | 'stderr') {
+	return new Writable({
+		decodeStrings: false,
+		write(chunk, _encoding, callback) {
+			for (const line of String(chunk).replace(/\n$/, '').split('\n')) lines.push(`${name}: ${line}`)
+			callback()
+		}
+	})
+}
+const streams = { stdout: capture('stdout'), stderr: capture('stderr') }
 
 /** Builds and runs a cli, capturing what it writes, whichever console method it goes through. */
 async function run(build: () => { parse(argv: string[]): Promise<any> }, line: string) {
@@ -38,11 +40,11 @@ async function run(build: () => { parse(argv: string[]): Promise<any> }, line: s
 
 function builtIn() {
 	// `keywords` makes the cli executable at runtime, but only the `config` overload of `cli()` says so.
-	return cli({ name: 'test-cli', version: '1.0.0', keywords }) as cli.Builder & cli.Executable
+	return cli({ name: 'test-cli', version: '1.0.0', keywords, streams }) as cli.Builder & cli.Executable
 }
 
 function extended() {
-	return cli({ name: 'test-cli', version: '1.0.0' }).use(plugins({ keywords }))
+	return cli({ name: 'test-cli', version: '1.0.0', streams }).use(plugins({ keywords }))
 }
 
 describe.each([

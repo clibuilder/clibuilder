@@ -14,9 +14,7 @@ describe('pluginsCommand', () => {
 				version: '',
 				keywords: ['plugin-cli-plugin']
 			}).parse(argv('test-cli plugins list'))
-			expect(ctx.sl.reporter.getLogMessage()).toContain(
-				'plugins: 0 installed plugins found with keywords: plugin-cli-plugin'
-			)
+			expect(ctx.messages).toContain('plugins: 0 installed plugins found with keywords: plugin-cli-plugin')
 		})
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.
 		// thus this test will fail
@@ -29,7 +27,7 @@ describe('pluginsCommand', () => {
 				keywords: ['test-cli']
 			}).parse(argv('test-cli plugins list'))
 
-			expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[1]: cjs-plugin')
+			expect(ctx.messages).toContain('plugins[1]: cjs-plugin')
 		})
 
 		// There is a bug in Node 14 that requires the plugins to be added in the `clibuilder`.
@@ -43,7 +41,7 @@ describe('pluginsCommand', () => {
 				config: true,
 				keywords: ['test-cli']
 			}).parse(argv('test-cli plugins list'))
-			const msg = ctx.sl.reporter.getLogMessage()
+			const msg = ctx.messages
 			expect(msg).toContain('plugins[2]: cjs-plugin,plugin-two')
 		})
 	})
@@ -62,21 +60,21 @@ describe('listPluginsCommand', () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list', ['pkg-x', 'pkg-y'])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[2]: pkg-x,pkg-y')
+		expect(ctx.messages).toContain('plugins[2]: pkg-x,pkg-y')
 	})
 
 	test('keeps the same shape for a single plugin', async () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list', ['pkg-x'])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[1]: pkg-x')
+		expect(ctx.messages).toContain('plugins[1]: pkg-x')
 	})
 
 	test('states the empty result as nothing installed, not nothing published', async () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list', [], ['keyword-a', 'keyword-b'])
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('plugins: 0 installed plugins found with keywords: keyword-a, keyword-b')
 		expect(msg).toContain('help[1]: Run `plugins search` to find plugins to install')
 	})
@@ -85,14 +83,14 @@ describe('listPluginsCommand', () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list', ['pkg-x'])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('help[1]: Run `plugins search` to find more plugins on npm')
+		expect(ctx.messages).toContain('help[1]: Run `plugins search` to find more plugins on npm')
 	})
 
 	test('quotes plugin names that would read as two toon entries', async () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list', ['@scope/pkg-x', 'odd,name'])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('plugins[2]: @scope/pkg-x,"odd,name"')
+		expect(ctx.messages).toContain('plugins[2]: @scope/pkg-x,"odd,name"')
 	})
 
 	test('returns the found plugins, whatever the format', async () => {
@@ -105,7 +103,7 @@ describe('listPluginsCommand', () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list --format text', ['pkg-x', 'pkg-y'])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`found the following plugins:
+		expect(ctx.messages).toContain(`found the following plugins:
 
   pkg-x
   pkg-y`)
@@ -114,18 +112,18 @@ describe('listPluginsCommand', () => {
 	test('--format text reports one plugin and none in prose', async () => {
 		const one = mockContext()
 		await list(one, 'string-bin list --format text', ['pkg-x'])
-		expect(one.sl.reporter.getLogMessage()).toContain('found one plugin: pkg-x')
+		expect(one.messages).toContain('found one plugin: pkg-x')
 
 		const none = mockContext()
 		await list(none, 'string-bin list --format text', [])
-		expect(none.sl.reporter.getLogMessage()).toContain('no plugin with keywords: plugin-cli-plugin')
+		expect(none.messages).toContain('no plugin with keywords: plugin-cli-plugin')
 	})
 
 	test('--format json emits the payload alone, so it survives a pipe', async () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list --format json', ['pkg-x', 'pkg-y'])
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain(`{
   "plugins": [
     "pkg-x",
@@ -139,14 +137,14 @@ describe('listPluginsCommand', () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list --format json', [])
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('"plugins": []')
+		expect(ctx.messages).toContain('"plugins": []')
 	})
 
 	test('rejects an unknown --format value as a usage error', async () => {
 		const ctx = mockContext()
 		await list(ctx, 'string-bin list --format yaml', ['pkg-x'])
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('invalid value for option --format')
 		expect(msg).not.toContain('plugins[')
 		expect(ctx.exitCode).toBe(2)
@@ -163,7 +161,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages: 0 packages found with keywords: plugin-cli-plugin')
+		expect(ctx.messages).toContain('packages: 0 packages found with keywords: plugin-cli-plugin')
 	})
 
 	test('one plugin', async () => {
@@ -175,7 +173,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[1]: pkg-x')
+		expect(ctx.messages).toContain('packages[1]: pkg-x')
 	})
 
 	test('two plugins', async () => {
@@ -187,7 +185,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: pkg-x,pkg-y')
+		expect(ctx.messages).toContain('packages[2]: pkg-x,pkg-y')
 	})
 
 	test('suggests the next command when packages are found', async () => {
@@ -199,7 +197,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('help[1]: Run `plugins list` to see which of them are installed')
+		expect(ctx.messages).toContain('help[1]: Run `plugins list` to see which of them are installed')
 	})
 
 	test('quotes package names containing the toon delimiter', async () => {
@@ -211,7 +209,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: @scope/pkg-x,"odd,name"')
+		expect(ctx.messages).toContain('packages[2]: @scope/pkg-x,"odd,name"')
 	})
 
 	test('escapes quotes and backslashes in package names', async () => {
@@ -224,7 +222,7 @@ describe('searchPluginsCommand', () => {
 			.parse(argv('string-bin search'))
 
 		// a hand-escaped trailing backslash would escape the closing quote and merge the entries
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[2]: "odd\\"name","trailing\\\\"')
+		expect(ctx.messages).toContain('packages[2]: "odd\\"name","trailing\\\\"')
 	})
 
 	test('searches each keyword separately and unions the results', async () => {
@@ -247,7 +245,7 @@ describe('searchPluginsCommand', () => {
 			.parse(argv('string-bin search'))
 
 		expect(calls).toEqual([['keyword-a'], ['keyword-b']])
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages[3]: pkg-a,pkg-shared,pkg-b')
+		expect(ctx.messages).toContain('packages[3]: pkg-a,pkg-shared,pkg-b')
 	})
 
 	test('--format text keeps the human-readable prose', async () => {
@@ -259,7 +257,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search --format text'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`found the following packages:
+		expect(ctx.messages).toContain(`found the following packages:
 
   pkg-x
   pkg-y`)
@@ -273,7 +271,7 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			})
 			.parse(argv('string-bin search --format text'))
-		expect(one.sl.reporter.getLogMessage()).toContain('found one package: pkg-x')
+		expect(one.messages).toContain('found one package: pkg-x')
 
 		const none = mockContext()
 		await builder(none, { name: 'plugin-cli', version: '1.0.0', keywords: ['plugin-cli-plugin'] })
@@ -282,7 +280,7 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: () => Promise.resolve([]) }
 			})
 			.parse(argv('string-bin search --format text'))
-		expect(none.sl.reporter.getLogMessage()).toContain('no package with keywords: plugin-cli-plugin')
+		expect(none.messages).toContain('no package with keywords: plugin-cli-plugin')
 	})
 
 	test('--format json emits the payload alone, so it survives a pipe', async () => {
@@ -294,7 +292,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search --format json'))
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain(`{
   "packages": [
     "pkg-x",
@@ -313,7 +311,7 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search --format json'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('"packages": []')
+		expect(ctx.messages).toContain('"packages": []')
 	})
 
 	describe('--fields keywords', () => {
@@ -328,7 +326,7 @@ describe('searchPluginsCommand', () => {
 			await builder(ctx, { name: 'plugin-cli', version: '1.0.0', keywords: ['keyword-a', 'keyword-b'] })
 				.command({ ...searchPluginsCommand, context: { searchByKeywords: searchMixed } })
 				.parse(argv(line))
-			return ctx.sl.reporter.getLogMessage()
+			return ctx.messages
 		}
 
 		test('reports which keyword found each package as a toon table', async () => {
@@ -383,6 +381,6 @@ describe('searchPluginsCommand', () => {
 			})
 			.parse(argv('string-bin search'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('packages: 0 packages found with keywords: keyword-a, keyword-b')
+		expect(ctx.messages).toContain('packages: 0 packages found with keywords: keyword-a, keyword-b')
 	})
 })

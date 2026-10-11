@@ -33,7 +33,7 @@ describe('writeStdout()', () => {
 })
 
 describe('createCommandUI()', () => {
-	it('is the standard-log ui without streams or axi output', () => {
+	it('is the built-in ui at info without streams or axi output', () => {
 		const ui = context().createCommandUI('cmd')
 		expect(ui.displayLevel).toBe('info')
 	})

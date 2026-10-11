@@ -104,20 +104,20 @@ Feature: Testing support
     When it exits through a mock context
     Then the captured messages carry an exit naming that code
 
-  Scenario: a given log level is the one the mock log keeps to
-    Given a log level passed to the mock context
-    When a message below that level is emitted
-    Then it is not among the captured messages
+  Scenario: a mock context with streams writes the ui to them
+    Given streams passed to the mock context
+    When a message is emitted
+    Then it is written to those streams and the captured messages stay empty
 
-  Scenario: a mock context without a log level defaults to info
-    Given no log level passed to the mock context
+  Scenario: a mock context captures the ui at info
+    Given no streams passed to the mock context
     When a debug message and an info message are emitted
     Then the info message is captured and the debug message is not
 
-  Scenario: each command gets a ui on its own named logger
+  Scenario: a command ui is captured with the framework's messages, in order
     Given a mock context
-    When a command ui is created for an id
-    Then its messages are captured under that id
+    When the framework and a command ui each emit a message
+    Then both are captured, one line each, in the order they were emitted
 
   # Current behavior, and a known fidelity gap: the real context caches the
   # resolution so concurrent callers share one filesystem walk.

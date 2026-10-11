@@ -15,7 +15,7 @@ async function runWithConfig(cmd: cli.Command.DefaultCommand<any, any, any>, con
 	const ctx = mockContext()
 	ctx.loadConfig = async () => config
 	const result = await builder(ctx, { name: 'app', version: '1.0.0' }).default(cmd).parse(argv('app'))
-	return { result, messages: ctx.sl.reporter.getLogMessage(), exitCode: ctx.exitCode }
+	return { result, messages: ctx.messages, exitCode: ctx.exitCode }
 }
 
 describe('config from a zod 3 schema', () => {

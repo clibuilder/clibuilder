@@ -250,7 +250,7 @@ agent reading stdout wants only answers there. Design: axi-native RFC sections
 | `showHelp` / `showVersion` | stdout in either output: `--help` and `--version` are answers |
 | the stream is not a TTY | no colour, whatever `FORCE_COLOR` says |
 | the stream is a TTY | `FORCE_COLOR` decides when set (`0` or `false` is off), else a non-empty `NO_COLOR` turns colour off, else the terminal decides |
-| neither `streams` nor `output: 'axi'` is given | the v11 standard-log ui is used, unchanged; it is removed in v12 |
+| neither `streams` nor `output: 'axi'` is given | the built-in ui writes to `process.stdout` and `process.stderr` in `console` mode; it is the only engine since v12 removed standard-log |
 
 The routing table behind each mode is internal; it is not a `cli()` option.
 A line is the arguments joined by spaces with objects inspected and no printf
@@ -585,7 +585,7 @@ graph TD
 | no colour | not a TTY | `a stream that is not a TTY is never coloured` |
 | no colour | TTY with `NO_COLOR` | `NO_COLOR turns colour off on a TTY` |
 | colour unless 0 or false | TTY with `FORCE_COLOR` | `FORCE_COLOR decides colour on a TTY` |
-| standard-log, unchanged | neither `streams` nor `axi` | `without streams or axi output the v11 ui is used` |
+| built-in ui on the process streams | neither `streams` nor `axi` | `without streams or axi output the built-in ui writes to the process streams` |
 
 ### UC10 — encode an answer
 

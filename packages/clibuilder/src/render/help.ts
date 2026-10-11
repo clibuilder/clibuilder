@@ -1,8 +1,6 @@
 import type { StandardJSONSchemaV1 } from 'args-minus'
-import padRight from 'pad-right'
 import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
-import wordwrap from 'wordwrap'
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConstraint, takesValue } from '../descriptor.js'
@@ -17,6 +15,7 @@ import {
 	isZodString,
 	type z
 } from '../zod.js'
+import { wrap } from './wrap.js'
 
 /**
  * Renders a command's help text from its declaration.
@@ -29,7 +28,6 @@ import {
 const INDENT = 2
 const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
-const wrap = wordwrap(80)
 
 export function generateHelpMessage(cliName: string, command: Command) {
 	const helpSections = [
@@ -85,9 +83,9 @@ function generateCommandsSection(command: Command) {
 	if (commandNames.length === 0) return ''
 
 	return `Commands:
-  ${wrap(commandNames.join(', '))}
+  ${wrap(commandNames.join(', '), 80)}
 
-${padRight(command.name ? `${command.name} <command> -h` : '  <command> -h', MIN_LHS_WIDTH, ' ')}Get help for <command>`
+${(command.name ? `${command.name} <command> -h` : '  <command> -h').padEnd(MIN_LHS_WIDTH)}Get help for <command>`
 }
 
 function getCommandsNamesAndAlias(commands: cli.Command[] | undefined) {
@@ -120,7 +118,7 @@ function generateArgumentsSection(command: Command) {
 
 	const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxWidth + RIGHT_PADDING)
 
-	message += entries.map((e) => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`.trimEnd()).join('\n')
+	message += entries.map((e) => `  ${e[0].padEnd(alignedWidth)}${e[1]}`.trimEnd()).join('\n')
 	return message
 }
 
@@ -139,7 +137,7 @@ function generateOptionsSection(command: Command) {
 	}
 	const alignedWidth = Math.max(MIN_LHS_WIDTH - INDENT, maxOptionStrWidth + RIGHT_PADDING)
 
-	message += entries.map((e) => `  ${padRight(e[0], alignedWidth, ' ')}${e[1]}`).join('\n')
+	message += entries.map((e) => `  ${e[0].padEnd(alignedWidth)}${e[1]}`).join('\n')
 	return message
 }
 
@@ -228,7 +226,7 @@ function conflictsOf(key: string, options: cli.Command.Options) {
 function generateAliasSection(command: Command) {
 	if (!command.alias) return ''
 	return `Alias:
-  ${wrap(command.alias.join(', '))}`
+  ${wrap(command.alias.join(', '), 80)}`
 }
 
 function generateConfigSection(command: Command) {
