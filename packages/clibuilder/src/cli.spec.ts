@@ -1,5 +1,5 @@
 import a from 'assertron'
-import { testType } from 'type-plus'
+import { testType } from 'type-plus/testing'
 import { cli, z } from './index.js'
 
 it('needs name and version', () => {
