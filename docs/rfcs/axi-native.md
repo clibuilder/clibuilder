@@ -3,7 +3,7 @@
 - **Status:** Accepted. Maintainer decisions recorded 2026-10-11; the items in [section 10](#10-open-questions) are still open. Design only; no code changes.
 - **Target:** `clibuilder@12` (breaking), shipped with [slim-dependencies](slim-dependencies.md)
 - **Issue:** [#639](https://github.com/clibuilder/clibuilder/issues/639)
-- **Related:** [#636](https://github.com/clibuilder/clibuilder/pull/636) (`@clibuilder/axi` completion) and its [findings](../../packages/axi/docs/findings/README.md); #607, #608, #609, #614
+- **Related:** [#667](https://github.com/clibuilder/clibuilder/issues/667) (where `@clibuilder/axi`'s contents belong, section 4.1); [#636](https://github.com/clibuilder/clibuilder/pull/636) (`@clibuilder/axi` completion) and its [findings](../../packages/axi/docs/findings/README.md); #607, #608, #609, #614
 - **Scope:** the nine friction points in #639, and what each one changes in core versus `@clibuilder/axi`. Not the dependency work, though section 8 checks the two plans against each other.
 
 ## Decisions
@@ -23,7 +23,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 9 | `cli({ output: 'axi' \| 'console' })`, default `'axi'`. Both modes are permanent. The level-to-stream routing is internal in v12. | 3.10 |
 | 10 | standard-log is replaced by a built-in UI over `cli({ streams })`. | 3.10, [slim-dependencies section 4](slim-dependencies.md#4-logging-standard-log-and-standard-log-color) |
 | 11 | `showHelp` and `showVersion` leave `ui`. Core owns `--help` and `--version` as answers on stdout. Usage errors no longer print the full help. | 3.3, 3.7 |
-| 12 | `@clibuilder/axi` is absorbed into core in v12. axi keeps only what shapes a value. | 4 |
+| 12 | `@clibuilder/axi` is folded into core in v12. The output, error, usage and format parts are built into core. The value helpers move to a `clibuilder/axi` subpath whose modules import nothing from the framework. `@clibuilder/axi` is deprecated on npm only when v12 ships. | 4, 4.1 |
 | 13 | clibuilder does not wrap or depend on axi-sdk-js. It aligns the error keys and adds a conformance test. | 9 |
 | 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Both may be async. A conversion that reads files, resolves paths against `cwd`, calls the network or depends on other options belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
 | 15 | Only the top-ranked usage error is reported. It carries a `help` list with the command's usage line and, for `invalid-value`, the option, the raw value, and the violated constraint or the allowed values. | 3.3 |
@@ -35,7 +35,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 **Design.**
 
 - **Core owns the contract.** Anything that has to happen *inside* `parse()`, or that every CLI must agree on to be readable by an agent, is part of `clibuilder@12`: error rendering, usage-error ranking and rendering, the resolved `--format`, the result channel and its helpers, the version fast path, stream routing and EPIPE.
-- **`@clibuilder/axi` keeps only what shapes a value.** Truncation, `count: N of M total`, `orEmpty`, home header and collapse, and optional helpers. They shape *what* a command says, and none of them needs to run inside `parse()`.
+- **The value helpers move to a `clibuilder/axi` subpath.** Truncation, `count: N of M total`, `orEmpty`, home header and collapse. They shape *what* a command says, and none of them needs to run inside `parse()` (section 4.1).
 - **One major.** The defaults flip in `clibuilder@12`, together with the dependency slimming. v11 minors add the pieces first behind gates, so most of the work can be adopted and tested before the flip.
 - **Two permanent output modes.** `cli({ output: 'axi' })` is the default. `cli({ output: 'console' })` keeps today's behaviour. Neither is deprecated; the difference between them is a routing table and a usage-error renderer.
 
@@ -45,7 +45,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 2 | Usage errors ignore `--format` | Resolve global options before usage errors are reported | core |
 | 3 | Usage errors are prose on stderr | Built-in ranked, coded error on stdout, exit 2 | core |
 | 4 | `--format` is not first-class | One global `--format`, resolved value on `this.format` | core (option, json, text, toon) |
-| 5 | No result channel | A returned value is printed; `result`, `document`, `empty` | core (envelope, `help[N]`); axi (truncation, counts, home) |
+| 5 | No result channel | A returned value is printed; `result`, `document`, `empty` | core (envelope, `help[N]`); `clibuilder/axi` subpath (truncation, counts, home) |
 | 6 | Exit codes stop at 2 | Core keeps 0, 1, 2; `exitCode` is open from 1 to 255 | core |
 | 7 | Help is not agent-shaped | `examples` field, structured `--help` under `--format` | core |
 | 8 | No version fast path | Answer a bare `--version` before config and plugins load | core |
@@ -104,7 +104,7 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 - **`invalid-value` fields:** the option name, the raw value as typed, the violated constraint or the check's message, and the allowed values when the option is an enum. A failed descriptor conversion, range, pattern or `.check()` reports this code, and so does a `t.custom` that throws a plain `Error` (proposed). A foreign schema's issues are mapped into it, never forwarded raw.
 - The full help is no longer printed after a usage error, after a config-validation failure, or for a bare command group. The coded error lists the valid options or arguments instead, which is what the agent needed from the help.
 - `cli({ onUsageError })` stays, for CLIs that want their own rendering. `UsageError` gains the `code` strings above next to the existing `type`, and its `keyType` becomes the descriptor's `kind` string (slim-dependencies section 3.4).
-- `@clibuilder/axi`'s `createUsageErrorHandler` and `describeUsageError` are absorbed into core and removed from axi.
+- `@clibuilder/axi`'s `createUsageErrorHandler` and `describeUsageError` are built into core.
 - In `output: 'console'` mode, usage errors keep today's renderer: prose plus the full help on stderr.
 
 ### 3.4 `--format` is not first-class (#639.4)
@@ -138,8 +138,8 @@ run() {
 - `result(value, { help, render })` attaches `help[N]:` lines inside the encoded output (omitted when empty, per upstream principle 9) and optional per-format renderers, for example `{ render: { text: (v) => table(v) } }`.
 - `document(content)` writes `content` verbatim, for output that is already the answer (markdown, a diff, a file).
 - `empty(message)` is a success with an explicit empty state. Empty is exit 0.
-- These helpers absorb `@clibuilder/axi`'s `createOutput`, `writeResult`, `writeDocument`, `writeError` and `Output`, which are removed from axi.
-- **Core owns:** the envelope, `help[N]`, `result`, `document`, `empty`. **axi keeps:** `truncateText` and `truncateList` (`count: N of M total`, `--full`), `orEmpty`, `homeHeader`, `collapseHome`. They build the *value* a command returns. The `fullOption` stays a CLI-level option that the command reads.
+- These helpers replace `@clibuilder/axi`'s `createOutput`, `writeResult`, `writeDocument`, `writeError` and `Output`.
+- **Core owns:** the envelope, `help[N]`, `result`, `document`, `empty`. **The `clibuilder/axi` subpath holds:** `truncateText` and `truncateList` (`count: N of M total`, `--full`), `orEmpty`, `homeHeader`, `collapseHome`. They build the *value* a command returns. The `fullOption` stays a CLI-level option that the command reads.
 - A warning the agent must see goes in the result data. `ui.warn` is a diagnostic on stderr (section 3.10). The result has no reserved keys for messages.
 - In `output: 'console'` mode returned values are not printed, as today.
 - The risk is commands that already return values for programmatic use and now print them. A codemod flags every `return <expr>` in a `run()` for review; see section 5.
@@ -163,7 +163,7 @@ run() {
 - Text help is unchanged except for the examples section.
 - A compact mode (`--help` on a group lists only names and one-line descriptions) is already how groups render; no flag is added.
 - `showHelp` and `showVersion` leave the `ui` object, which now carries only diagnostics. A command that shows its own help (cyber-sdd calls `ui.showHelp()` today) still gets it on stdout, following the format, like `--help`.
-- **Stays in axi:** the home view (`bin:`, `description`, collapse), because it is a CLI's decision about what its bare invocation shows.
+- **In the `clibuilder/axi` subpath:** the home view (`bin:`, `description`, collapse), because it is a CLI's decision about what its bare invocation shows.
 
 ### 3.8 No version fast path (#639.8)
 
@@ -209,23 +209,59 @@ This is the design that sections 3.1 to 3.7 route through. It replaces standard-
 
 ## 4. What moves, in one table
 
-`@clibuilder/axi` is absorbed into core in v12. What remains in it is a small set of value helpers.
+`@clibuilder/axi` is folded into core in v12. Its output, error, usage and format parts are built into core. Its value helpers move to the `clibuilder/axi` subpath of core (section 4.1).
 
-| Concern | Core (`clibuilder@12`) | `@clibuilder/axi` after |
+| Concern | Built into core (`clibuilder@12`) | `clibuilder/axi` subpath |
 |---|---|---|
-| Error report shape and rendering (`ErrorReport`, `errorOutput`) | yes | removed |
-| Usage-error ranking and codes (`createUsageErrorHandler`, `describeUsageError`) | yes | removed |
-| `--format`, `this.format`, json, text, toon (`formatOption`, `parseFormat`, `renderText`) | yes | removed |
-| Result channel: `result`, `document`, `empty`, `help[N]` | yes | `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines` removed |
+| Error report shape and rendering (`ErrorReport`, `errorOutput`) | yes | no |
+| Usage-error ranking and codes (`createUsageErrorHandler`, `describeUsageError`) | yes | no |
+| `--format`, `this.format`, json, text, toon (`formatOption`, `parseFormat`, `renderText`) | yes | no |
+| Result channel: `result`, `document`, `empty`, `help[N]` (replaces `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines`) | yes | no |
 | Stream routing, `cli({ output, streams })` | yes | n/a |
-| Truncation, counts, `--full` | no | stays |
-| `orEmpty`, home header, collapse | no | stays |
-| Exit codes 0, 1, 2 | yes | the `exitCodes` re-export is removed |
+| Truncation, counts, `--full` | no | yes |
+| `orEmpty`, home header, collapse | no | yes |
+| Exit codes 0, 1, 2 | yes | no |
 | Exit codes above 2 | no (each CLI's own) | none |
 | Help examples, structured help | yes | n/a |
 | Version fast path, EPIPE | yes | n/a |
 
-The line: **if it changes what `parse()` does, it is core. If it shapes the value a command returns, it is axi.** axi stays small and optional, and a CLI that wants no truncation helpers gets conforming errors, usage errors and result output from core alone.
+The line: **if it changes what `parse()` does, it is built into core. If it shapes the value a command returns, it is in the `clibuilder/axi` subpath.** The subpath is optional, and a CLI that does not import it gets conforming errors, usage errors and result output from core alone.
+
+### 4.1 Decision: where `@clibuilder/axi`'s contents belong
+
+Recorded from [#667](https://github.com/clibuilder/clibuilder/issues/667).
+
+**Context.** `@clibuilder/axi` 0.2.0 holds about 600 lines in one package named after clibuilder. Checking which of its files import `clibuilder` shows a seam:
+
+| Imports `clibuilder` | Does not |
+|---|---|
+| `usage.ts` (reads `cli.Command` and `cli.UsageError`) | `error.ts`, `help.ts`, `home.ts`, `text.ts` |
+| `output.ts` (`createOutput.error` returns a `CliError`) | the writers and `encodeResult` in `output.ts` |
+| `format.ts` and `truncate.ts` (`defineFormatOption`, `fullOption` use `z`) | `truncateText`, `truncateList`, `orEmpty`, `OutputFormat`, `parseFormat` |
+| `index.ts` (re-exports `exitCodes`) | |
+
+The conventions themselves are framework-free: the error shape, truncation, counts, the empty state, the home header, `help[N]` and the text renderer. Only the five spots in the left column couple to clibuilder. Because both sides ship in one package, a CLI that is not built on clibuilder cannot reuse the conventions without a clibuilder peer. axi-sdk-js has the same shape (section 9).
+
+The conventions track an upstream spec that is still before 1.0, so they change more often than core. Core should own its output contract and not depend on a package that changes more often than it does.
+
+**Decision.**
+
+1. Core owns the AXI contract: error rendering, usage-error ranking, `--format`, the result channel, and the text and toon encoders (sections 3 and 4).
+2. The value helpers (truncation, counts, `orEmpty`, home header and collapse) move to a `clibuilder/axi` subpath of core. The subpath can be tree-shaken, and a CLI that does not import it does not pay for it.
+3. The framework-free modules in core import nothing from the framework. A lint or depcheck boundary rule enforces this, so a neutral package can later be extracted by moving files, not rewriting them.
+4. `@clibuilder/axi` is deprecated on npm when v12 ships with the subpath, with a message that points at it. Until then it is not deprecated, and current users keep using it.
+
+**Not doing.**
+
+- No separate neutral package now. About 150 lines are generic, and a package costs more in releases and docs than it saves. The four CLIs that hand-roll these pieces today do not depend on clibuilder. A neutral package is extracted only if one of them wants a shared helper.
+- No dependency on, or wrapper around, axi-sdk-js. Core aligns the error keys and adds a conformance test (section 9).
+
+**Consequences.**
+
+- `@clibuilder/axi` has no v12 release. Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
+- The boundary rule is added to the repo's lint or depcheck configuration before the subpath is created.
+- An extracted neutral package, if one is ever needed, must never import clibuilder.
+- Deprecating `@clibuilder/axi` on npm needs an explicit decision when v12 is published.
 
 ## 5. Breaking changes in v12
 
@@ -236,7 +272,7 @@ The line: **if it changes what `parse()` does, it is core. If it shapes the valu
 5. **A global `--format` exists, default `toon`.** A command that declares its own `format` is a startup error. *Migrate:* delete the local declaration and read `this.format`.
 6. **`showHelp` and `showVersion` leave `ui`.** Usage errors, config-validation failures and a bare command group no longer print the full help.
 7. **`UsageError` gains `code`;** `keyType` becomes the descriptor's `kind` string; `onUsageError` context gains `format`. Only the top-ranked usage error is reported, with a `help` list.
-8. **`@clibuilder/axi` is absorbed.** Its output, error, format and usage exports are removed; import them from `clibuilder`.
+8. **`@clibuilder/axi` is folded into core.** Import its output, error, format and usage exports from `clibuilder`, and the value helpers from `clibuilder/axi` (section 4.1).
 9. **zod is replaced by `t`** (slim-dependencies section 3). Conversion that reads files, resolves paths, calls the network or depends on other options moves into `run()` as a `CliError`.
 10. **`builder()` no longer loads config on construction.** Observable only to tests that inspected the I/O.
 11. Plus the rest of what slim-dependencies breaks (standard-log, `testCommand` export, plugins).
@@ -256,7 +292,7 @@ Every step below is its own issue and PR. All but the last two land in v11 minor
 7. **Result channel** (3.5): printed returns, `result`, `document`, `empty`, under `output: 'axi'`.
 8. **Built-in ranked usage errors** (3.3) and core-owned `--help` and `--version` (3.7), under `output: 'axi'`.
 9. **Help examples and structured help** (3.7). Additive.
-10. **Flip the defaults in v12**, together with slim-dependencies' v12 step: `output: 'axi'` becomes the default, zod and standard-log are removed, `@clibuilder/axi` is reduced to its value helpers and releases with peer `^12` in the same train.
+10. **Flip the defaults in v12**, together with slim-dependencies' v12 step: `output: 'axi'` becomes the default, zod and standard-log are removed, and the value helpers ship in the `clibuilder/axi` subpath (section 4.1).
 11. **Codemod and migration guide**, written while 10 is in review, as one document for both RFCs.
 
 Steps 1 and 2 are independent of the rest and can ship first. Step 2 precedes 4 to 8, which all write through the routing table. Step 3 precedes 8, because usage errors read descriptor kinds. Steps 5 to 8 share the base-lookup change and should be reviewed in order.
@@ -268,7 +304,7 @@ From the #639 survey and the slimming RFC's dependent list:
 - **cyber-mux, cynapse, gherkin-cli** already render AXI output by hand; they delete code (their error shapes become core's) and need the `code` strings aligned.
 - **cyber-asana, cyber-figma** keep their own exit codes 3 to 7 through `CliError.exitCode`; cynapse keeps its own meanings the same way.
 - **repobuddy/buddy, agent-harness** return values from `run()` in places; the codemod flags those. Any CLI that prints with `ui.info` and is read by a script either returns the value or picks `output: 'console'`.
-- **`@clibuilder/axi` in this repo** is the first consumer. Its output, error, format and usage modules move into core; the package keeps truncation, counts, `orEmpty` and the home helpers, and releases in lockstep.
+- **`@clibuilder/axi` in this repo** is the first consumer. Its output, error, format and usage modules move into core, and truncation, counts, `orEmpty` and the home helpers move to the `clibuilder/axi` subpath. The package is deprecated on npm when v12 ships (section 4.1).
 
 ## 8. Interaction with slim-dependencies
 
@@ -296,7 +332,7 @@ Resolved on 2026-10-11:
 8. ~~**Version fast path scope.** Bare `--version` only, or also `cli <group> --version`?~~ **Resolved:** bare `--version` or `-v` only (section 3.8).
 9. ~~**Bad `--format` value.** Default format or plain text?~~ **Resolved:** a usage error in the CLI's default format, exit 2, code `invalid-value` (section 3.2).
 10. ~~**`-f` for `--format`.**~~ **Resolved:** not reserved (section 3.4).
-11. ~~**Does `@clibuilder/axi` still need to be a separate package?**~~ **Resolved:** it is absorbed into core in v12 and keeps only the value helpers (section 4).
+11. ~~**Does `@clibuilder/axi` still need to be a separate package?**~~ **Resolved:** no. The output, error, usage and format parts are built into core. The value helpers move to a `clibuilder/axi` subpath, and a boundary rule keeps those modules free of framework imports. `@clibuilder/axi` is deprecated on npm only when v12 ships (sections 4 and 4.1).
 
 Settled by later decisions on 2026-10-11:
 

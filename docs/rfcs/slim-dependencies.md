@@ -352,7 +352,6 @@ For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) a
 |---|---|---|---|
 | `clibuilder@12` | `@toon-format/toon` (0 deps, ~120 KB), `args-minus` (in-house, 0 deps) | `js-yaml`, (`jsonc-parser` under Q4) | **3 packages, ~0.6 MB**, down from 43 packages and ~54 MB |
 | `@clibuilder/plugins` (new) | `import-meta-resolve`, `find-installed-packages`, `search-packages` | `clibuilder ^12` | opt-in |
-| `@clibuilder/axi` | none | `clibuilder ^12` | smaller: only the value helpers remain ([axi-native section 4](axi-native.md#4-what-moves-in-one-table)) |
 
 `@toon-format/toon` is core's single third-party dependency. The AXI-native output encodes every toon value with it ([axi-native section 3.4](axi-native.md#34---format-is-not-first-class-6394)), the same choice the reference axi-sdk-js makes. It replaces a hand-rolled encoder, which could disagree with the spec.
 
@@ -402,7 +401,7 @@ Common to all six:
 | repobuddy/buddy | 3 (`.optional()` chain) | `ui.info`; one spec asserts `messages`; `testCommand` from the root entry | **`config: true` is load-bearing** for plugin loading | med |
 | repobuddy/typescript | 3 (`z.union` of literals) | `ui.info`; `testCommand` from `clibuilder/testing` | `activate` | low |
 | cyber-sdd | 0 | `showHelp` (leaves `ui`) | none | low |
-| `@clibuilder/axi` (in repo) | `format.ts`, `truncate.ts` | uses `cli.UsageError` (`keyType` changes); its output, error, format and usage modules move into core | none | low; release in lockstep |
+| `@clibuilder/axi` (in repo) | `format.ts`, `truncate.ts` | uses `cli.UsageError` (`keyType` changes); its output, error, format and usage modules move into core, and its value helpers into the `clibuilder/axi` subpath | none | low; deprecated when v12 ships |
 
 ### Migration path
 
@@ -422,7 +421,7 @@ Common to all six:
    - Optionally drop CJS.
    - Add `@toon-format/toon` as a dependency, if the v11 `--format` step has not already.
    - Ship together with the #639 breaks so users take one major, not two.
-4. **Release `@clibuilder/axi`**, reduced to its value helpers, with peer `clibuilder ^12` in the same release train.
+4. **Fold `@clibuilder/axi` into core.** Its value helpers ship in the `clibuilder/axi` subpath, and the package is deprecated on npm when v12 ships ([axi-native section 4.1](axi-native.md#41-decision-where-clibuilderaxis-contents-belong)).
 
 ## 8. Open questions
 
@@ -464,7 +463,7 @@ Section 5.3 moved only discovery out of core and kept loading in, because repobu
 | Registry: `createRegistry`, `defineKey`, `defineCollectionKey`, `this.registry` | `plugins/registry.ts` | **stays in core** |
 | Config resolution (`resolveConfig`, `lookupConfig`, …) | `config.ts` | stays in core |
 
-The registry stays because it is not specific to plugins. It is how any extension shares values with the host's commands. It has no dependencies and is about 70 lines. Keeping it in core means `this.registry` keeps working, and `@clibuilder/axi` or any other extension can use it too.
+The registry stays because it is not specific to plugins. It is how any extension shares values with the host's commands. It has no dependencies and is about 70 lines. Keeping it in core means `this.registry` keeps working, and any extension can use it too.
 
 ### 9.3 Core's new hook: `use()`
 
