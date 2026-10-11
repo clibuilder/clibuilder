@@ -588,8 +588,7 @@ describe('loadConfig()', () => {
 		const a = await cli.parse(argv('has-config'))
 		expect(a).toEqual({ a: 1 })
 	})
-	//   // seems to be some issue with `zod` default system
-	test.skip('default config is overridden by value in config file', async () => {
+	test('default config is overridden by value in config file', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config' })
 		const a = await builder(ctx, { name: 'has-config', version: '1.0.0' })
 			.default({

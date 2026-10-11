@@ -1,5 +1,4 @@
 import type { cli } from '../cli.js'
-import type { z } from '../zod.js'
 
 /**
  * Helper function to define a command.
@@ -20,7 +19,7 @@ import type { z } from '../zod.js'
  */
 export function command<
 	Context extends Record<string, any>,
-	ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
+	ConfigType extends cli.ConfigSchema = cli.ConfigSchema,
 	AName extends string = string,
 	A extends cli.Command.Argument<AName>[] = cli.Command.Argument<AName>[],
 	O extends cli.Command.Options = cli.Command.Options

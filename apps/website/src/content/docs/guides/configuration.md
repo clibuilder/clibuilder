@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs — and validate it per command with zod.
+description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs — and validate it per command with zod or any Standard Schema.
 ---
 
 A CLI opts into config by declaring `config` on [`cli()`](/clibuilder/api/cli/). Doing so also makes
@@ -62,6 +62,33 @@ cli({ name: 'app', version: '1.0.0', config: true })
 `this.config` is typed by `z.infer<>` of the schema you declared, so downstream code sees the real
 shape.
 
+:::note[Unreleased: any Standard Schema, and the schema's output]
+The next `clibuilder` 11 minor, on `main` and not yet published, changes two things:
+
+- **`config` takes any [Standard Schema](https://standardschema.dev),** such as zod 4, valibot or
+  arktype, beside the zod 3 schemas from [`z`](/clibuilder/api/zod/). `this.config` is typed from the
+  schema's output. A schema whose `validate` returns a promise is awaited.
+- **`this.config` is the schema's output.** Before, the command got the loaded config as it was
+  written, so a `.default()` or a `.transform()` in the schema had no effect. Now defaults are filled
+  in and transforms are applied. This also changes what you see if you relied on the old behaviour:
+  a zod `z.object()` strips keys it does not declare, so they are no longer on `this.config`.
+
+```ts
+import { cli } from 'clibuilder'
+import * as v from 'valibot'
+
+cli({ name: 'app', version: '1.0.0', config: true })
+  .default({
+    config: v.object({ presets: v.string(), port: v.optional(v.number(), 3000) }),
+    run() {
+      // this.config: { presets: string; port: number }
+      this.ui.info(`presets: ${this.config.presets} on ${this.config.port}`)
+    }
+  })
+  .parse(process.argv)
+```
+:::
+
 Different commands can ask for different slices of the same file — each declares only what it uses,
 and each validates independently.
 
@@ -95,6 +122,28 @@ config fails validation:
 ```
 
 Use `z.optional()` or `.default()` in the schema for fields you don't want to be mandatory.
+
+:::note[Unreleased: errors from a Standard Schema]
+In the next `clibuilder` 11 minor, a schema that is not zod 3 is reported the same way: each issue's
+message is printed under the dotted path of the value that failed, such as `server.port`, and an
+issue about the config as a whole is printed under `(config)`.
+:::
+
+### In help
+
+A zod 3 config is shown in the command's help, under `Config:`:
+
+```
+Config:
+{ presets: string, port?: number }
+```
+
+:::note[Unreleased: help for a Standard Schema config]
+In the next `clibuilder` 11 minor, a Standard Schema config is shown the same way when its library
+can describe it as JSON Schema through `~standard.jsonSchema`, as zod 4 does. Help shows the shape a
+config file is written in, so a field with a default is optional. When the library cannot, as with
+valibot, the `Config:` section is left out.
+:::
 
 ## File formats
 
@@ -209,4 +258,5 @@ loaded into the CLI. See [Plugins](/clibuilder/guides/plugins/).
 ```
 
 You do not need to declare `plugins` in a command's schema — but if your schema is a strict object
-that rejects unknown keys, remember it is there.
+that rejects unknown keys, remember it is there. Plugins are loaded before a command's schema runs, so
+a schema that strips unknown keys does not stop them loading.

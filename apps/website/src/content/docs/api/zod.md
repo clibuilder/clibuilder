@@ -19,6 +19,13 @@ option's `type`. `z` keeps working unchanged, and a command can mix both. `clibu
 to remove zod and the `z` re-export. See the [v12 roadmap](/clibuilder/roadmap/v12/#zod-is-replaced-by-t).
 :::
 
+:::note[Unreleased: `z` is deprecated]
+In the next `clibuilder` 11 minor, on `main` and not yet published, the `z` re-export is marked
+`@deprecated`, so your editor strikes it through and points you at `t`. It behaves exactly as before.
+For `config`, pass any [Standard Schema](https://standardschema.dev) instead, such as zod 4 or valibot
+installed as your own dependency. See [Configuration](/clibuilder/guides/configuration/#declaring-what-a-command-needs).
+:::
+
 ## Where schemas are used
 
 | Position | What the schema does |
@@ -43,6 +50,13 @@ correctly, while ones expecting a converted value do not. Do that validation ins
 
 Config schemas have no such restriction: the config file is already structured data, so any zod
 schema works.
+
+:::note[Unreleased: defaults and transforms in `config`]
+Up to `clibuilder` 11.5.0 the command gets the config as it was loaded, not the schema's output, so
+the `.default(3000)` below has no effect and `this.config.port` is `undefined` when the file leaves it
+out. The next `clibuilder` 11 minor fixes this: `this.config` is the schema's output, with defaults
+filled in, transforms applied and undeclared keys stripped by `z.object()`.
+:::
 
 ```ts
 config: z.object({

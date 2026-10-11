@@ -147,3 +147,11 @@ Feature: Testing support
     Given a fixture's name
     When its path is resolved
     Then the result is an absolute path beneath the fixtures directory
+
+  # ── testCommand from the root entry ──
+
+  Scenario: the root testCommand export is deprecated in favour of clibuilder/testing
+    Given testCommand is imported from clibuilder rather than clibuilder/testing
+    When an editor reads its declaration
+    Then it is marked deprecated, pointing at clibuilder/testing
+    And it is the same function clibuilder/testing exports

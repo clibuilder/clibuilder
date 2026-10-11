@@ -379,3 +379,16 @@ Feature: Presentation
     When the invocation is missing a required option, gives one no value, or gives a value that fails
     Then the message names the option or argument, the element index of an array, and what was expected
     And it shows the received value only when one was given
+
+  # ── Help for a Standard Schema config ──
+
+  Scenario: help shows a Standard Schema config from its JSON Schema
+    Given a command whose config schema exposes a JSON Schema through ~standard.jsonSchema
+    When its help is rendered
+    Then the Config section shows the shape a config file is written in, such as { name: string, port?: number }
+    And a zod 3 config renders exactly as before
+
+  Scenario: help omits the Config section when the config exposes no JSON Schema
+    Given a command whose config schema does not implement ~standard.jsonSchema, or whose conversion throws
+    When its help is rendered
+    Then there is no Config section

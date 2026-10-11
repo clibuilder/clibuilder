@@ -1,3 +1,4 @@
+import type { StandardJSONSchemaV1 } from 'args-minus'
 import padRight from 'pad-right'
 import { tersify } from 'tersify'
 import { reduceByKey, someKey } from 'type-plus'
@@ -5,8 +6,17 @@ import wordwrap from 'wordwrap'
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConstraint, takesValue } from '../descriptor.js'
-import { type AnyDescriptor, isDescriptor } from '../t.js'
-import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString, type z } from '../zod.js'
+import { type AnyDescriptor, isDescriptor, type StandardSchemaV1 } from '../t.js'
+import {
+	isZod3Type,
+	isZodArray,
+	isZodBoolean,
+	isZodNumber,
+	isZodObject,
+	isZodOptional,
+	isZodString,
+	type z
+} from '../zod.js'
 
 /**
  * Renders a command's help text from its declaration.
@@ -222,8 +232,60 @@ function generateAliasSection(command: Command) {
 
 function generateConfigSection(command: Command) {
 	if (!command.config) return ''
+	const type = isZod3Type(command.config) ? toPrettyType(command.config) : describeStandardConfig(command.config)
+	if (type === undefined) return ''
 	return `Config:
-${toPrettyType(command.config)}`
+${type}`
+}
+
+/**
+ * Describes a Standard Schema config from the JSON Schema of its input, the shape a config file is written in.
+ * It is `undefined`, and the section omitted, when the vendor does not implement `~standard.jsonSchema`
+ * or cannot convert this schema.
+ */
+function describeStandardConfig(schema: StandardSchemaV1 | StandardJSONSchemaV1): string | undefined {
+	const jsonSchema = (schema as Partial<StandardJSONSchemaV1>)['~standard']?.jsonSchema
+	if (!jsonSchema) return undefined
+	try {
+		return describeJsonSchema(jsonSchema.input({ target: 'draft-2020-12' }))
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Renders a JSON Schema in the same form as a zod 3 config, such as `{ a: string, b?: Array<{ d: string }> }`.
+ * What it does not recognize is `unknown`.
+ */
+function describeJsonSchema(schema: Record<string, any>): string {
+	if (Array.isArray(schema.enum)) return schema.enum.map((v: unknown) => JSON.stringify(v)).join(' | ')
+	if ('const' in schema) return JSON.stringify(schema.const)
+	const union = schema.anyOf ?? schema.oneOf
+	if (Array.isArray(union)) return union.map(describeJsonSchema).join(' | ')
+	switch (schema.type) {
+		case 'object': {
+			const properties: Record<string, Record<string, any>> = schema.properties ?? {}
+			const required: string[] = schema.required ?? []
+			const entries = Object.keys(properties).map(
+				(k) => `${k}${required.includes(k) ? '' : '?'}: ${describeJsonSchema(properties[k])}`
+			)
+			return entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`
+		}
+		case 'array': {
+			const items = schema.items && typeof schema.items === 'object' ? schema.items : {}
+			if (items.type === 'object') return `Array<${describeJsonSchema(items)}>`
+			return `${describeJsonSchema(items)}[]`
+		}
+		case 'string':
+		case 'boolean':
+		case 'number':
+		case 'null':
+			return schema.type
+		case 'integer':
+			return 'number'
+		default:
+			return 'unknown'
+	}
 }
 
 function toPrettyType(t: any): string {
