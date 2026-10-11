@@ -284,8 +284,8 @@ See [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-
 
 ## zod is replaced by `t`
 
-**On `main`:** `t` re-exported from `clibuilder` (released in 11.5.0), and `z` deprecated.
-**Pending:** the removal of `z` and zod.
+**On `main`.** `t` is re-exported from `clibuilder` since 11.5.0. In 12, `z`, zod and the
+`isZodArray`, `isZodBoolean`, … helpers are removed.
 
 **What changed.** Options and arguments declare their `type` with the `t` descriptors from
 [`args-minus`](/clibuilder/packages/args-minus/). Constraints go in an options bag, not a chain.
@@ -293,7 +293,7 @@ There are no built-in formats: validation goes in `.check()`, which takes a func
 [Standard Schema](https://standardschema.dev). A conversion that reads files, resolves paths, calls
 the network or depends on other options moves into `run()` and throws a `CliError`.
 
-**Who is affected.** Every CLI that imports `z` from `clibuilder`.
+**Who is affected.** Every CLI that imports `z` or an `isZod*` helper from `clibuilder`.
 
 **Fix.** Run the codemod. It rewrites these forms:
 
@@ -334,12 +334,35 @@ options: {
 }
 ```
 
+**What else changes with it.** These zod behaviours do not carry over, so check your tests and any
+script that calls your CLI:
+
+- A boolean option takes no value after it. `--dry false` leaves `false` as a positional; write
+  `--dry=false`. This applies to an option declared without a `type` too, and to the global flags
+  such as `--verbose`.
+- An array option takes one value per occurrence. Write `--tag a --tag b`; in `--tag a b`, `b` is a
+  positional.
+- An option that is neither `.optional()` nor given a `default` must be passed. zod typed it as
+  present but did not enforce it; `t` reports a missing one as a usage error. Add `.optional()` where
+  the option may be left out.
+- A single-valued option given twice is an `expect-single` usage error and gets no value. zod also
+  used the last value.
+- `z.coerce`, `.transform()` and `.default()` inside an option `type` have no `t` form. Convert with
+  `t.custom(raw => value)`, put the default in the option's `default`, and keep validation in
+  `.check()`, whose schema output is ignored.
+- `t.number()` is strict: an empty string, `Infinity` or trailing text is an invalid value.
+- Usage error messages use the `args-minus` wording, such as `expected a number`, and an
+  `invalid-value` error carries `keyKind` and `constraint`. `cli.UsageError`'s `keyType`, the zod
+  type, is removed; read `keyKind`, the kind string.
+- Help shows a value hint in the `t` form: `[--name <string>]` and `<file: string>` instead of
+  `[--name=string]` and `<file=string>`.
+
 Source: [slim-dependencies section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#34-design-c).
-See [Using `t` in clibuilder](/clibuilder/packages/args-minus/#using-t-in-clibuilder).
+See [`t`](/clibuilder/api/t/).
 
 ## `config` takes a Standard Schema, and stores its output
 
-**On `main`.** The `z` schemas stop working when zod is removed (pending).
+**On `main`.** A `z` schema from `clibuilder` no longer exists in 12.
 
 **What changed.** A command's `config` takes any Standard Schema: zod 3.24 or later, zod 4, valibot,
 arktype and others. `this.config` is the schema's **output**, not the loaded input. Defaults are
@@ -350,7 +373,9 @@ filled in and transforms applied, and a zod `z.object()` strips the keys it does
 reads a config key its schema does not declare.
 
 **Fix.** Import the schema library as your own dependency. Declare every key you read, or keep the
-unknown keys with your library's passthrough.
+unknown keys with your library's passthrough. Help builds its `Config:` section from the schema's
+JSON Schema (`~standard.jsonSchema`), which zod 4 provides and zod 3 does not, so a zod 3 config has
+no `Config:` section in help.
 
 ```ts
 // before
@@ -363,6 +388,25 @@ config: z.object({ name: z.string(), extra: z.string().optional() })
 ```
 
 Source: [slim-dependencies section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#34-design-c).
+See [Configuration](/clibuilder/guides/configuration/).
+
+## `js-yaml` is an optional peer dependency
+
+**On `main`.**
+
+**What changed.** `clibuilder` no longer installs `js-yaml`. It loads it only when it reads a
+`.yaml` or `.yml` config file. Without it, reading one fails with a `CliError` whose code is
+`missing-peer-dependency`.
+
+**Who is affected.** A CLI whose users write their config in YAML.
+
+**Fix.** Add `js-yaml` to the CLI's own dependencies:
+
+```sh
+npm install js-yaml
+```
+
+Source: [slim-dependencies section 5.2](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#52-config-loading).
 See [Configuration](/clibuilder/guides/configuration/).
 
 ## standard-log is removed

@@ -1,11 +1,11 @@
-import { command, z } from '../index.js'
+import { command, t } from '../index.js'
 import { formatLookupError } from './error.js'
 
 describe('formatLookupError()', () => {
 	const cmd = command({
 		name: 'cmd',
-		arguments: [{ name: 'arg', description: 'an arg', type: z.number() }],
-		options: { abc: { description: 'abc', type: z.optional(z.number()) } },
+		arguments: [{ name: 'arg', description: 'an arg', type: t.number() }],
+		options: { abc: { description: 'abc', type: t.number().optional() } },
 		run() {}
 	})
 
@@ -47,12 +47,12 @@ describe('formatLookupError()', () => {
 		).toBe('invalid value for argument <arg>: expected to be number, received "xyz"')
 	})
 	it('names an option given too many values', () => {
-		expect(formatLookupError({ type: 'expect-single', key: 'abc', keyType: z.number(), value: ['1', '2'] }, cmd)).toBe(
+		expect(formatLookupError({ type: 'expect-single', key: 'abc', keyKind: 'number', value: ['1', '2'] }, cmd)).toBe(
 			'option --abc expects a single value, received: 1, 2'
 		)
 	})
 	it('reports a single value for an option given too many values', () => {
-		expect(formatLookupError({ type: 'expect-single', key: 'abc', keyType: z.number(), value: '1' }, cmd)).toBe(
+		expect(formatLookupError({ type: 'expect-single', key: 'abc', keyKind: 'number', value: '1' }, cmd)).toBe(
 			'option --abc expects a single value, received: 1'
 		)
 	})

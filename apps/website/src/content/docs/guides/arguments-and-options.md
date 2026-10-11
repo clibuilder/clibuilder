@@ -1,6 +1,6 @@
 ---
 title: Arguments & Options
-description: Declare positional arguments and named options with zod, and get run(args) typed from the declaration.
+description: Declare positional arguments and named options with `t`, and get run(args) typed from the declaration.
 ---
 
 Arguments and options are declared on the command, and the type of `run(args)` is inferred from that
@@ -12,7 +12,7 @@ Arguments are positional, matched in the order they are declared. `name` and `de
 required; `type` defaults to string.
 
 ```ts
-import { cli, z } from 'clibuilder'
+import { cli, t } from 'clibuilder'
 
 cli({ name: 'app', version: '1.0.0' }).default({
   arguments: [
@@ -32,7 +32,7 @@ cli({ name: 'app', version: '1.0.0' }).command({
   name: 'cat',
   description: 'print files',
   arguments: [
-    { name: 'files', description: 'files to print', type: z.array(z.string()) }
+    { name: 'files', description: 'files to print', type: t.array(t.string()) }
   ],
   run(args) {
     // args.files: string[]
@@ -46,16 +46,16 @@ $ app cat a.txt b.txt c.txt
 ```
 
 :::note
-Argument values are coerced to the declared type, just like options. `type: z.number()` gives you a
-real `number` in `run()`, and a value that doesn't fit its schema is a usage error.
+Argument values are converted to the declared type, just like options. `type: t.number()` gives you
+a real `number` in `run()`, and a value that doesn't fit is a usage error.
 
-An `z.array()` argument is variadic: it consumes the remaining positional arguments.
+A `t.array()` argument is variadic: it consumes the remaining positional arguments.
 :::
 
 ## Options
 
 Options are declared as a record keyed by option name. `description` is required; `type` defaults to
-`boolean | undefined`, which is what you want for a flag.
+`boolean | undefined`, which is what you want for an optional flag.
 
 ```ts
 cli({ name: 'app', version: '1.0.0' }).default({
@@ -70,22 +70,22 @@ cli({ name: 'app', version: '1.0.0' }).default({
 ```
 
 :::note
-A flag declared without a `type` behaves exactly as `type: z.boolean()` would: `args.flag` is `true`
+A flag declared without a `type` behaves like `type: t.boolean().optional()` would: `args.flag` is `true`
 when the flag is present and `undefined` when it is not. Passing a non-boolean value to it
-(`--flag=somevalue`) is a usage error — declare `type: z.string()` if you want to accept one.
+(`--flag=somevalue`) is a usage error — declare `type: t.string()` if you want to accept one.
 :::
 
-Option values are coerced to the declared type, and a value that doesn't fit is a usage error.
+Option values are converted to the declared type, and a value that doesn't fit is a usage error.
 
 ```ts
 options: {
-  port: { description: 'port to listen on', type: z.number() }
+  port: { description: 'port to listen on', type: t.int({ min: 1, max: 65535 }) }
 }
 ```
 
 ```sh
 $ app --port=3000     # args.port === 3000
-$ app --port=abc      # usage error: expected to be number
+$ app --port=abc      # usage error: invalid value for --port
 ```
 
 ### Aliases
@@ -117,7 +117,7 @@ options: {
 
 ```ts
 options: {
-  port: { description: 'port to listen on', type: z.number(), default: 3000 }
+  port: { description: 'port to listen on', type: t.int(), default: 3000 }
 }
 ```
 
@@ -128,7 +128,7 @@ options: {
 ```ts
 options: {
   full: { description: 'print the whole file', conflicts: ['lines'] },
-  lines: { description: 'lines to print', type: z.number(), alias: ['n'], default: 10 }
+  lines: { description: 'lines to print', type: t.int(), alias: ['n'], default: 10 }
 }
 ```
 
@@ -143,51 +143,84 @@ The conflict applies in both directions, and the help message lists it on both o
 
 ### Repeating an option
 
-An array-typed option accumulates every occurrence:
+An array-typed option takes one value per occurrence and accumulates them:
 
 ```ts
 options: {
-  tag: { description: 'a tag', type: z.array(z.string()) }
+  tag: { description: 'a tag', type: t.array(t.string()) }
 }
 ```
 
 ```sh
 $ app --tag=a --tag=b     # args.tag === ['a', 'b']
+$ app --tag a --tag b     # the same
 ```
+
+`--tag a b` does not work: `b` is a positional argument, not a second tag.
 
 A non-array option given more than once is a usage error, rather than silently keeping the last one.
 
-## Optional values
+## Required and optional values
 
-Wrap the type in `z.optional()` to make an argument or option optional. Without it, a declared
-argument is required, and omitting it is a usage error that prints the help message.
+An option declared with a `type` is required unless it is `.optional()` or has a `default`. A missing
+one is a usage error, as is a missing argument. Both print the help message. An option without a
+`type` is still an optional flag.
 
 ```ts
 cli({ name: 'app', version: '1.0.0' }).default({
   arguments: [
-    { name: 'a', description: 'an optional name', type: z.optional(z.string()) }
+    { name: 'a', description: 'an optional name', type: t.string().optional() }
   ],
   options: {
-    y: { description: 'an optional number', type: z.optional(z.number()) }
+    y: { description: 'an optional number', type: t.number().optional() },
+    port: { description: 'port with a default', type: t.int(), default: 3000 }
   },
   run(args) {
     // args.a: string | undefined
     // args.y: number | undefined
+    // args.port: number
   }
 })
 ```
 
 ## Supported types
 
+See [`t`](/clibuilder/api/t/) for every builder. The common ones:
+
 | Declaration | `args` type | Argument | Option |
 | --- | --- | --- | --- |
-| *(omitted)* | `string` / `boolean \| undefined` | The default — a string | The default — a flag |
-| `z.string()` | `string` | ✓ | ✓ |
-| `z.number()` | `number` | ✓ coerced | ✓ coerced |
-| `z.boolean()` | `boolean` | ✓ coerced | ✓ `--flag`, `--flag=true`, `--flag false` |
-| `z.array(z.string())` | `string[]` | ✓ variadic | ✓ repeatable |
-| `z.array(z.number())` | `number[]` | ✓ variadic, coerced | ✓ repeatable, coerced |
-| `z.optional(...)` | `T \| undefined` | ✓ makes it optional | ✓ |
+| *(omitted)* | `string` / `boolean \| undefined` | The default, a string | The default, an optional flag |
+| `t.string()` | `string` | yes | yes |
+| `t.number()`, `t.int()` | `number` | yes | yes |
+| `t.boolean()` | `boolean` | yes | `--flag` or `--flag=false`, no separate value |
+| `t.enum([...])`, `t.literal(v)` | the values | yes | yes |
+| `t.array(t.string())` | `string[]` | variadic | one value per occurrence |
+| `t.custom(fn)`, `t.json()` | what `fn` returns, `unknown` | yes | yes |
+| `.optional()` | `T \| undefined` | optional | optional |
+
+Add a constraint with the builder's options, such as `t.int({ min: 1 })`, or with
+`.check(fnOrStandardSchema)`. A check from a library comes from your own dependency:
+
+```ts
+import { z } from 'zod'
+
+options: {
+  email: { description: 'who to notify', type: t.string().check(z.email()) }
+}
+```
+
+The constraint shows in the help message, such as `[--port <int 1..65535>]`, `[--tag <string>...]`
+or `[ids: int >=1...]`.
+
+:::note[v12, unreleased]
+In `clibuilder` 11.5.0 the types come from zod's `z`. In `clibuilder` 12 these changed:
+
+- A boolean option takes no value after it. `--flag false` no longer works. Write `--flag=false`.
+- An array option takes one value per occurrence: `--tag a --tag b`, not `--tag a b`.
+- An option declared without `.optional()` and without a `default` is required.
+
+See [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
+:::
 
 Option validation happens before `run()` is called. A value that fails its schema, an unknown flag,
 a missing required argument, or an extra positional argument all produce the same outcome: the CLI

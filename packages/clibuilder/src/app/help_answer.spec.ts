@@ -1,6 +1,7 @@
 import { Writable } from 'node:stream'
 import { decode } from '@toon-format/toon'
-import { cli, command, t, z } from '../index.js'
+import { z as z4 } from 'zod4'
+import { cli, command, t } from '../index.js'
 import { generateHelpMessage } from '../render/help.js'
 
 function memoryStream() {
@@ -147,19 +148,19 @@ describe('--help under output axi', () => {
 		expect(JSON.parse(r.stdout).name).toBe('app deploy')
 	})
 
-	it('reads zod types, hidden aliases, conflicts and config like the text help', async () => {
+	it('reads types, hidden aliases, conflicts and config like the text help', async () => {
 		const r = await run(
-			'zod --help --format json',
+			'typed --help --format json',
 			{ output: 'axi' },
 			command({
-				name: 'zod',
-				arguments: [{ name: 'files', description: 'files', type: z.optional(z.array(z.string())) }],
+				name: 'typed',
+				arguments: [{ name: 'files', description: 'files', type: t.array(t.string()).optional() }],
 				options: {
-					name: { type: z.string(), description: 'a name', alias: ['n', { alias: 'secret', hidden: true }] },
-					all: { type: z.optional(z.boolean()), description: 'all', conflicts: ['name'] },
-					size: { type: z.optional(z.number()), description: 'size' }
+					name: { type: t.string(), description: 'a name', alias: ['n', { alias: 'secret', hidden: true }] },
+					all: { type: t.boolean().optional(), description: 'all', conflicts: ['name'] },
+					size: { type: t.number().optional(), description: 'size' }
 				},
-				config: z.object({ a: z.string() }),
+				config: z4.object({ a: z4.string() }),
 				run() {}
 			})
 		)
@@ -206,7 +207,7 @@ describe('--help under output axi', () => {
 				name: 'bare',
 				arguments: [{ name: 'value', description: '' }],
 				options: {
-					level: { type: z.optional(z.enum(['a', 'b'])), description: '', alias: [{ alias: 'l', hidden: false }] }
+					level: { description: '', alias: [{ alias: 'l', hidden: false }] }
 				},
 				commands: [command({ name: 'sub', run() {} })],
 				run() {}
@@ -295,7 +296,7 @@ describe('ui.showHelp() and ui.showVersion() from run()', () => {
 	const self = command({
 		name: 'self',
 		description: 'shows its own help',
-		options: { version: { type: z.optional(z.boolean()), description: 'unused' } },
+		options: { version: { type: t.boolean().optional(), description: 'unused' } },
 		run() {
 			this.ui.showHelp()
 			this.ui.showVersion()

@@ -1,7 +1,6 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
-import { z as zod } from 'zod'
 import * as root from './index.js'
 import * as testing from './testing/index.js'
 import { testCommand as testCommandFn } from './testing/test_command.js'
@@ -38,8 +37,8 @@ function deprecationsOf(file: string) {
 describe('deprecated exports', { timeout: 30_000 }, () => {
 	const rootDeprecations = deprecationsOf(join(srcDir, 'index.ts'))
 
-	it('marks the z re-export @deprecated, pointing at t', () => {
-		expect(rootDeprecations.z).toMatch(/`t`/)
+	it('no longer exports z, removed in v12 in favour of t', () => {
+		expect('z' in root).toBe(false)
 	})
 
 	it('marks the root testCommand export @deprecated, pointing at clibuilder/testing', () => {
@@ -52,7 +51,6 @@ describe('deprecated exports', { timeout: 30_000 }, () => {
 	})
 
 	it('does not change what the deprecated exports are', () => {
-		expect(root.z).toBe(zod)
 		expect(root.testCommand).toBe(testCommandFn)
 		expect(testing.testCommand).toBe(testCommandFn)
 	})

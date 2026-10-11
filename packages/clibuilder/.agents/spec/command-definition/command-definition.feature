@@ -155,7 +155,8 @@ Feature: Command definition
   Scenario: an option or argument type may be a t descriptor
     Given t is imported from clibuilder
     When an option or argument declares its type with a t descriptor
-    Then the declaration is accepted alongside zod declarations in the same command
+    Then the declaration is accepted
+    And t is the only way to declare a type: clibuilder exports no z
 
   Scenario: run arguments are inferred exactly from a t declaration
     Given a command declaring options and arguments with t
@@ -171,16 +172,16 @@ Feature: Command definition
   # ── UC4 — config from any Standard Schema ──
 
   Scenario: a command's config may be any Standard Schema
-    Given a command declaring its config with a zod 3 type, a zod 4 schema, a valibot schema or another Standard Schema
+    Given a command declaring its config with a zod schema (3.24 or later, or 4), a valibot schema or another Standard Schema
     When its run reads this.config
     Then it types as the schema's output
     And the command fits where a cli.Command is expected
 
-  Scenario: the z re-export is deprecated in favour of t
-    Given z is imported from clibuilder
-    When an editor reads its declaration
-    Then it is marked deprecated, pointing at t
-    And it is still the zod instance clibuilder validates zod declarations with
+  Scenario: clibuilder exports no z and no zod guards
+    Given the names clibuilder exports
+    When z or an isZod guard is looked for
+    Then neither is exported
+    And an option or argument type is declared with t
 
   # ── UC1 — examples ──
 

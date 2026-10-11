@@ -132,7 +132,7 @@ Feature: Presentation
   Scenario: a declared config schema is shown as a type
     Given a command declaring a config schema
     When its help is shown
-    Then the schema's shape appears as a readable type
+    Then the shape its JSON Schema describes appears as a readable type
 
   Scenario: usage says nothing about a command when none are declared
     Given a command declaring no sub-commands
@@ -189,17 +189,17 @@ Feature: Presentation
   Scenario: no type declared shows no hint beside the name
     Given an argument or option declaring no type at all
     When its signature is rendered
-    Then the name carries no type hint, only its brackets
+    Then the name carries no type hint, only its brackets: <name> for an argument and [--flag] for an option
 
   Scenario: a string or number type is hinted beside the name
     Given an option or argument declaring a string or number type
     When its signature is rendered
-    Then the type is hinted beside the name
+    Then the type is hinted beside the name, such as [--name <string>] or <x: number>
 
   Scenario: an array type is marked variadic
     Given an option or argument declaring an array type
     When its signature is rendered
-    Then it carries a variadic marker
+    Then it carries a variadic marker, such as --abc <string>... or [x: number...]
 
   Scenario: a boolean option is shown without a type hint, because it is a flag
     Given an option declaring a boolean type
@@ -237,9 +237,9 @@ Feature: Presentation
     Then the description names the default as written, without quotes
 
   Scenario: a string default is quoted in the description
-    Given an option declaring a string type and a default
+    Given an option declaring a string type and a default, such as the global --format
     When its help entry is rendered
-    Then the default appears quoted
+    Then the default appears quoted, such as (default 'toon')
 
   # ── UC5 — showVersion ──
 
@@ -315,7 +315,7 @@ Feature: Presentation
     Then each value-taking option shows its constraint, such as --port <int 1..65535> or --format <toon|text|json>
     And a flag shows no value, an array is marked with ..., and an optional or defaulted one is bracketed
     And each argument shows its name and constraint, such as <root: string>
-    And the declarations with z render exactly as before
+    And an untyped argument shows <name> and an untyped option shows [--flag]
 
   Scenario: a usage error from a t declaration is printed in the caller's terms
     Given a command declaring t options and arguments
@@ -329,10 +329,9 @@ Feature: Presentation
     Given a command whose config schema exposes a JSON Schema through ~standard.jsonSchema
     When its help is rendered
     Then the Config section shows the shape a config file is written in, such as { name: string, port?: number }
-    And a zod 3 config renders exactly as before
 
   Scenario: help omits the Config section when the config exposes no JSON Schema
-    Given a command whose config schema does not implement ~standard.jsonSchema, or whose conversion throws
+    Given a command whose config schema does not implement ~standard.jsonSchema, such as a zod 3 schema, or whose conversion throws
     When its help is rendered
     Then there is no Config section
 
@@ -469,7 +468,7 @@ Feature: Presentation
     Then each carries its kind as type, with min and max, the pattern as the help shows it, or the allowed values
 
   Scenario: an array is described by its element and marked array
-    Given an option declared with t.array of an element, or a zod array
+    Given an option declared with t.array of an element
     When the structured help is built
     Then it carries the element's type and constraints, with array true
 

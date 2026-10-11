@@ -29,8 +29,8 @@ Key highlights:
 - support default commands and sub-commands `my-cli cmd1 cmd2 cmd3`
 - configuration file support
 - plugin support: write commands in separate packages and reuse by multiple CLI
-- type inference and validation for config, arguments, and options\
-  using [zod](https://github.com/colinhacks/zod) (exported as `z`)
+- type inference for arguments and options with the `t` descriptors (exported as `t`),
+  and config validation with any [Standard Schema](https://standardschema.dev) such as zod or valibot
 - opt-in V8 compile cache for faster startup\
   via `clibuilder/compile-cache`
 

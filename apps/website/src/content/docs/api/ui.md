@@ -86,7 +86,7 @@ and its options — you never write it by hand. It is printed automatically when
 Usage: app <arguments> [options]
 
 Arguments:
-  <values=number...>     values to add
+  <values: number...>     values to add
 
 Options:
   [-h|--help]            Print help message
@@ -101,9 +101,9 @@ Arguments and options are written in the same notation:
 | Notation | Meaning |
 | --- | --- |
 | `<name>` | Required |
-| `[name]` | Optional — declared with `z.optional(...)` |
-| `=string`, `=number`, `=boolean` | The declared type, when there is one |
-| `...` | Variadic — declared with `z.array(...)` |
+| `[name]` | Optional, declared with `.optional()` |
+| `name: string`, `<int 1..65535>` | The declared type and its constraint, when there is one |
+| `...` | Variadic or repeatable, declared with `t.array(...)` |
 
 A command that declares [`examples`](/clibuilder/api/command/#examples) (Unreleased) gets an
 `Examples:` section at the end.

@@ -1,8 +1,9 @@
 import { a } from 'assertron'
 import { required } from 'type-plus'
 import { testType } from 'type-plus/testing'
+import { z } from 'zod'
 import { mockContext } from '../drivers/context.mock.js'
-import { CliError, type cli, command, exitCodes, z } from '../index.js'
+import { CliError, type cli, command, exitCodes, t } from '../index.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
 import { builder } from './builder.js'
 
@@ -34,7 +35,7 @@ describe('default()', () => {
 		const [builder] = setupBuilderTest()
 		const a = await builder
 			.default({
-				arguments: [{ name: 'a', description: 'd', type: z.array(z.string()) }],
+				arguments: [{ name: 'a', description: 'd', type: t.array(t.string()) }],
 				run(args) {
 					return args.a
 				}
@@ -46,7 +47,7 @@ describe('default()', () => {
 		const [builder] = setupBuilderTest()
 		const a = await builder
 			.default({
-				arguments: [{ name: 'a', description: 'd', type: z.number() }],
+				arguments: [{ name: 'a', description: 'd', type: t.number() }],
 				run(args) {
 					return args.a
 				}
@@ -59,7 +60,7 @@ describe('default()', () => {
 		const a = await builder
 			.command({
 				name: 'sum',
-				arguments: [{ name: 'values', description: 'values to add', type: z.array(z.number()) }],
+				arguments: [{ name: 'values', description: 'values to add', type: t.array(t.number()) }],
 				run(args) {
 					return args.values.reduce((p, v) => p + v, 0)
 				}
@@ -139,7 +140,7 @@ describe('version', () => {
 	it('answers -v alone even when a command declares its own -v', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({
-			options: { value: { type: z.optional(z.boolean()), description: 'v', alias: ['v'] } },
+			options: { value: { type: t.boolean().optional(), description: 'v', alias: ['v'] } },
 			run: () => expect.fail('should not reach')
 		})
 		await cli.parse(argv('test-cli -v'))
@@ -660,7 +661,7 @@ describe('usage errors', () => {
 		const cli = builder.default({
 			options: {
 				full: { description: 'full output', conflicts: ['lines'] },
-				lines: { description: 'line count', type: z.optional(z.number()), default: 10 }
+				lines: { description: 'line count', type: t.number().optional(), default: 10 }
 			},
 			run() {
 				expect.fail('should not reach')
@@ -699,13 +700,13 @@ describe('usage errors', () => {
 	it('names an invalid option value and exits with the usage code', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({
-			options: { abc: { description: 'abc', type: z.optional(z.number()) } },
+			options: { abc: { description: 'abc', type: t.number().optional() } },
 			run() {
 				expect.fail('should not reach')
 			}
 		})
 		await cli.parse(argv('test-cli --abc=xyz'))
-		expect(ctx.messages).toContain('invalid value for option --abc: expected to be number, received "xyz"')
+		expect(ctx.messages).toContain('invalid value for option --abc: expected a number, received "xyz"')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names every error it found', async () => {
@@ -966,9 +967,9 @@ describe('global options are accepted by every command', () => {
 
 describe('a malformed global option value under a sub command (#614)', () => {
 	it.each([
-		['--verbose=notabool', 'invalid value for option --verbose: expected to be boolean, received "notabool"'],
-		['--silent=nope', 'invalid value for option --silent: expected to be boolean, received "nope"'],
-		['--help=nope', 'invalid value for option --help: expected to be boolean, received "nope"']
+		['--verbose=notabool', 'invalid value for option --verbose: expected no value, true or false, received "notabool"'],
+		['--silent=nope', 'invalid value for option --silent: expected no value, true or false, received "nope"'],
+		['--help=nope', 'invalid value for option --help: expected no value, true or false, received "nope"']
 	])('rejects `sub %s` as the root command does', async (flag, message) => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({
@@ -985,7 +986,7 @@ describe('a malformed global option value under a sub command (#614)', () => {
 		const [rootBuilder, rootCtx] = setupBuilderTest()
 		await rootBuilder.default({ run: () => expect.fail('should not reach') }).parse(argv('test-cli --verbose=notabool'))
 		expect(rootCtx.messages).toContain(
-			'invalid value for option --verbose: expected to be boolean, received "notabool"'
+			'invalid value for option --verbose: expected no value, true or false, received "notabool"'
 		)
 		expect(rootCtx.exitCode).toBe(exitCodes.usage)
 	})
@@ -1163,9 +1164,9 @@ describe('option arity', () => {
 		const [builder, context] = setupBuilderTest()
 		const cli = builder.command({
 			name: 'read',
-			arguments: [{ name: 'pane', description: 'pane', type: z.optional(z.string()) }],
+			arguments: [{ name: 'pane', description: 'pane', type: t.string().optional() }],
 			options: {
-				lines: { description: 'lines', type: z.optional(z.number()) },
+				lines: { description: 'lines', type: t.number().optional() },
 				full: { description: 'full' }
 			},
 			run(args) {

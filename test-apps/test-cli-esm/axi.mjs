@@ -1,6 +1,8 @@
 // the same kind of cli under `output: 'axi'`, where usage errors are reported by core:
 // one ranked, coded error on stdout, exit 2, nothing on stderr (axi-native RFC section 3.3).
-const { cli, command, t, z } = await import('clibuilder')
+const { cli, command, t } = await import('clibuilder')
+// config takes any Standard Schema: the cli brings its own validator
+const { z } = await import('zod')
 
 const app = cli({ name: 'axi-cli', version: '1.0.0', output: 'axi' })
 	.command({

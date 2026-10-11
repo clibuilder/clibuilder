@@ -1,4 +1,4 @@
-import { z } from 'clibuilder'
+import { t } from 'clibuilder'
 
 /**
  * How a command renders its result.
@@ -48,7 +48,7 @@ export function defineFormatOption<D extends OutputFormat = 'toon'>(
 ) {
 	const defaultFormat = (options.default ?? 'toon') as D
 	return {
-		type: z.optional(z.enum(formats)),
+		type: t.enum(formats).optional(),
 		description:
 			options.description ??
 			`Output format: ${formats.map((f) => (f === defaultFormat ? `${f} (default)` : f)).join(', ')} — toon for agents, json to pipe, text for humans`,

@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs — and validate it per command with zod or any Standard Schema.
+description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs — and validate it per command with any Standard Schema.
 ---
 
 A CLI opts into config by declaring `config` on [`cli()`](/clibuilder/api/cli/). Doing so also makes
@@ -43,11 +43,16 @@ If nothing is found at all, the CLI warns and `this.config` is `undefined`.
 
 ## Declaring what a command needs
 
-Config is validated **per command**, against the zod schema that command declares. A command with no
+Config is validated **per command**, against the schema that command declares. A command with no
 `config` schema doesn't trigger a load and doesn't get one.
 
+`config` takes any [Standard Schema](https://standardschema.dev): zod 3.24 or later, zod 4, valibot
+or arktype. Install the library as your own dependency and import it from there. `clibuilder` does
+not install one for you.
+
 ```ts
-import { cli, z } from 'clibuilder'
+import { cli } from 'clibuilder'
+import { z } from 'zod'
 
 cli({ name: 'app', version: '1.0.0', config: true })
   .default({
@@ -60,19 +65,11 @@ cli({ name: 'app', version: '1.0.0', config: true })
   .parse(process.argv)
 ```
 
-`this.config` is typed by `z.infer<>` of the schema you declared, so downstream code sees the real
-shape.
+`this.config` is the schema's output, so downstream code sees the real shape. Defaults are filled in,
+transforms are applied, and a zod `z.object()` strips keys it does not declare. A schema whose
+`validate` returns a promise is awaited.
 
-:::note[Unreleased: any Standard Schema, and the schema's output]
-The next `clibuilder` 11 minor, on `main` and not yet published, changes two things:
-
-- **`config` takes any [Standard Schema](https://standardschema.dev),** such as zod 4, valibot or
-  arktype, beside the zod 3 schemas from [`z`](/clibuilder/api/zod/). `this.config` is typed from the
-  schema's output. A schema whose `validate` returns a promise is awaited.
-- **`this.config` is the schema's output.** Before, the command got the loaded config as it was
-  written, so a `.default()` or a `.transform()` in the schema had no effect. Now defaults are filled
-  in and transforms are applied. This also changes what you see if you relied on the old behaviour:
-  a zod `z.object()` strips keys it does not declare, so they are no longer on `this.config`.
+The same works with valibot:
 
 ```ts
 import { cli } from 'clibuilder'
@@ -88,6 +85,11 @@ cli({ name: 'app', version: '1.0.0', config: true })
   })
   .parse(process.argv)
 ```
+
+:::note[v12, unreleased]
+In `clibuilder` 11.5.0 the schema comes from `z`, re-exported by `clibuilder`, and the command gets
+the config as it was loaded, so a `.default()` or `.transform()` had no effect. See
+[zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
 :::
 
 Different commands can ask for different slices of the same file — each declares only what it uses,
@@ -115,46 +117,44 @@ cli({ name: 'app', version: '1.0.0', config: true })
 
 ## When validation fails
 
-The CLI prints each field's error and then the command's help message, and does not run the command:
+The CLI prints each issue's message under the dotted path of the value that failed, such as
+`server.port`, and then the command's help message. An issue about the config as a whole is printed
+under `(config)`. The command does not run.
 
 ```
 config fails validation:
   presets: Required
 ```
 
-Use `z.optional()` or `.default()` in the schema for fields you don't want to be mandatory.
-
-:::note[Unreleased: errors from a Standard Schema]
-In the next `clibuilder` 11 minor, a schema that is not zod 3 is reported the same way: each issue's
-message is printed under the dotted path of the value that failed, such as `server.port`, and an
-issue about the config as a whole is printed under `(config)`.
-:::
+Mark fields you don't want to be mandatory as optional, or give them a default, in the schema.
 
 ### In help
 
-A zod 3 config is shown in the command's help, under `Config:`:
+The `Config:` section of a command's help is generated only from the schema's JSON Schema, which a
+Standard Schema exposes as `~standard.jsonSchema`. Zod 4, valibot (through its converter) and arktype
+provide it:
 
 ```
 Config:
 { presets: string, port?: number }
 ```
 
-:::note[Unreleased: help for a Standard Schema config]
-In the next `clibuilder` 11 minor, a Standard Schema config is shown the same way when its library
-can describe it as JSON Schema through `~standard.jsonSchema`, as zod 4 does. Help shows the shape a
-config file is written in, so a field with a default is optional. When the library cannot, as with
-valibot, the `Config:` section is left out.
-:::
+Help shows the shape a config file is written in, so a field with a default is optional. A zod 3
+schema has no JSON Schema, so its `Config:` section is left out.
 
 ## File formats
 
 | Extension | Format |
 | --- | --- |
 | `.json`, `.jsonc` | JSON with comments and trailing commas |
-| `.yml`, `.yaml` | YAML |
+| `.yml`, `.yaml` | YAML. Needs the optional peer `js-yaml` |
 | `.cjs` | CommonJS module — its export is the config |
 | `.mjs`, `.js` | ES module — its default export is the config |
 | none | inferred from the content — JSONC, then YAML, then module |
+
+YAML needs `js-yaml`, an optional peer dependency. Install it with `npm install js-yaml` in a CLI
+whose users write a `.yaml` or `.yml` config. Without it, reading a YAML config fails with a
+`CliError` whose code is `missing-peer-dependency`.
 
 The format comes from the extension, so a `.json` file that is not valid JSON is reported as a parse
 error against that file rather than being silently retried as YAML.

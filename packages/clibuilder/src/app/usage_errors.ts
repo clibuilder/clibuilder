@@ -1,6 +1,7 @@
 import { isGlobalFormatEntry } from '../builtin/base_command.js'
 import type { cli } from '../cli.js'
 import type { parseArgv } from '../invocation/argv.js'
+import { convertDescriptorsSync } from '../invocation/descriptors.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { formats } from '../render/encode.js'
 import { usageErrorCode } from '../render/usage_error.js'
@@ -41,7 +42,10 @@ export function resolveGlobalOptions(
 	rawArgs: parseArgv.Result,
 	format: cli.Format
 ): GlobalOptions {
-	const { args, errors } = lookupCommand(baseCommand, rawArgs)
+	const r = lookupCommand(baseCommand, rawArgs)
+	// the global options are flags and an enum, which take no async converter or check
+	convertDescriptorsSync(r)
+	const { args, errors } = r
 	const globalErrors = errors
 		.filter((e) => 'key' in e && isDeclared(baseCommand, e.key))
 		.map(withAllowedFormats(baseCommand))

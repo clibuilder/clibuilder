@@ -218,14 +218,14 @@ rejecting, so the failure is reported to the user rather than surfacing as an un
 with a stack trace.
 
 ```ts
-import { CliError, command, exitCodes, z } from 'clibuilder'
+import { CliError, command, exitCodes, t } from 'clibuilder'
 
 const fields = ['name', 'version', 'description']
 
 export const view = command({
   name: 'view',
   description: 'show a package',
-  options: { fields: { description: 'fields to show', type: z.optional(z.array(z.string())) } },
+  options: { fields: { description: 'fields to show', type: t.array(t.string()).optional() } },
   async run(args) {
     const unknown = (args.fields ?? []).filter((f) => !fields.includes(f))
     if (unknown.length > 0) {

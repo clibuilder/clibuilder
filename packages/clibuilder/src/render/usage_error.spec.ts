@@ -1,11 +1,11 @@
-import { type cli, command, t, z } from '../index.js'
+import { type cli, command, t } from '../index.js'
 import { describeInvalidConfig, describeMissingCommand, describeUsageError, topUsageError } from './usage_error.js'
 
 // ported from `@clibuilder/axi`'s `usage.spec.ts`; each help list now leads with the usage line
 describe('describeUsageError()', () => {
 	const cmd = command({
 		name: 'show',
-		arguments: [{ name: 'id', description: 'the id', type: z.optional(z.number()) }],
+		arguments: [{ name: 'id', description: 'the id', type: t.number().optional() }],
 		run() {}
 	})
 	const usage = 'Usage: app show [arguments]'
@@ -53,7 +53,7 @@ describe('describeUsageError()', () => {
 			help: [usage]
 		})
 		expect(
-			describeUsageError({ type: 'expect-single', key: 'limit', keyType: z.number(), value: [1, 2] }, cmd, 'app')
+			describeUsageError({ type: 'expect-single', key: 'limit', keyKind: 'number', value: [1, 2] }, cmd, 'app')
 		).toEqual({
 			code: 'expect-single',
 			message: 'option --limit expects a single value, received: 1, 2',
@@ -70,7 +70,7 @@ describe('describeUsageError()', () => {
 
 	it('reports a single value that should have been one', () => {
 		expect(
-			describeUsageError({ type: 'expect-single', key: 'limit', keyType: z.number(), value: 3 }, cmd, 'app').message
+			describeUsageError({ type: 'expect-single', key: 'limit', keyKind: 'number', value: 3 }, cmd, 'app').message
 		).toBe('option --limit expects a single value, received: 3')
 	})
 

@@ -1,6 +1,7 @@
 import { Writable } from 'node:stream'
+import { z } from 'zod'
 import { mockContext } from '../drivers/context.mock.js'
-import { type cli, command, cli as createCli, exitCodes, t, z } from '../index.js'
+import { type cli, command, cli as createCli, exitCodes, t } from '../index.js'
 import { argv } from '../test-utils/index.js'
 import { builder } from './builder.js'
 
@@ -223,7 +224,7 @@ describe('usage errors under output axi', () => {
 		const r = await run('show 1 --format yaml', { format: 'json' })
 		expect(r.code).toBe(exitCodes.usage)
 		expect(JSON.parse(r.stdout)).toEqual({
-			error: 'invalid value for option --format: expected one of: toon, json, text, received "yaml"',
+			error: `invalid value for option --format: expected one of 'toon', 'json', 'text', received "yaml"`,
 			code: 'invalid-value',
 			option: '--format',
 			value: 'yaml',

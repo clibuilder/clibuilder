@@ -1,5 +1,4 @@
 import type { DefaultOf } from 'args-minus'
-import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
 import type { ConfigLoadResult } from './config.js'
 import type { Output as OutputMode, Streams as StreamsPort, UI } from './core/ports.js'
@@ -7,7 +6,7 @@ import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
 import type { AnyDescriptor, OutputOf, StandardSchemaV1 } from './t.js'
-import type { z } from './zod.js'
+import type { RequiredPick, UnionOfValues } from './type_utils.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
 export function cli(options: cli.Options): cli.Builder
@@ -204,20 +203,15 @@ export namespace cli {
 
 	/**
 	 * What a command's `config` can be declared with:
-	 * any Standard Schema, such as zod 4 or valibot, or a zod 3 type from `z`.
-	 * The zod 3 form is removed in v12.
+	 * any Standard Schema, such as zod (3.24 or later), valibot or arktype.
 	 */
-	export type ConfigSchema = z.ZodTypeAny | StandardSchemaV1
+	export type ConfigSchema = StandardSchemaV1
 
 	/**
 	 * The config `run()` gets for a `config` schema: the schema's output,
 	 * so its defaults and transforms are applied.
 	 */
-	export type ConfigOf<C extends ConfigSchema> = C extends z.ZodTypeAny
-		? z.infer<C>
-		: C extends StandardSchemaV1
-			? StandardSchemaV1.InferOutput<C>
-			: never
+	export type ConfigOf<C extends ConfigSchema> = StandardSchemaV1.InferOutput<C>
 
 	export type Executable = {
 		/**
@@ -340,12 +334,9 @@ export namespace cli {
 			  }
 
 		/**
-		 * What an argument or option can be declared with in `type`:
-		 * a zod type, or a descriptor from `t`.
-		 * A command can mix both; each declaration is parsed by its own type.
-		 * The zod form is removed in v12.
+		 * What an argument or option can be declared with in `type`: a descriptor from `t`.
 		 */
-		export type Type = z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> | AnyDescriptor
+		export type Type = AnyDescriptor
 
 		/**
 		 * An example invocation of a command.
@@ -380,7 +371,7 @@ export namespace cli {
 				 * The value used when the option is not passed.
 				 * With a descriptor from `t` it is not converted, but the descriptor's checks run on it.
 				 */
-				default?: T extends AnyDescriptor ? DefaultOf<OutputOf<T>> : T extends z.ZodTypeAny ? z.infer<T> : never
+				default?: DefaultOf<OutputOf<T>>
 				alias?: Alias[]
 				/**
 				 * Names of the options this one cannot be used with.
@@ -397,9 +388,7 @@ export namespace cli {
 						[k in AName]: Extract<UnionOfValues<A>, { name: k }>['type'] extends infer AT
 							? AT extends AnyDescriptor
 								? DescriptorValue<AT, AT extends { isOptional: false } ? true : false>
-								: AT extends z.ZodType<any>
-									? z.infer<AT>
-									: string
+								: string
 							: never
 					} & {
 						[k in OName]: O[k]['type'] extends infer OT
@@ -408,9 +397,7 @@ export namespace cli {
 										OT,
 										O[k] extends { default: unknown } ? true : OT extends { isOptional: false } ? true : false
 									>
-								: OT extends z.ZodType<any>
-									? z.infer<OT>
-									: boolean | undefined
+								: boolean | undefined
 							: never
 					} & (string extends OName ? Options.Default : Omit<Options.Default, OName>)
 				: never

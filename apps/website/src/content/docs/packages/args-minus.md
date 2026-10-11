@@ -7,7 +7,7 @@ description: "The dependency-free argument parser in this repository, and its op
 and browsers. It lives in this repository under
 [`packages/args-minus`](https://github.com/clibuilder/clibuilder/tree/main/packages/args-minus).
 This page covers the option type descriptors, `t`, which `clibuilder` re-exports and which replace
-zod in `clibuilder` 12 (see the [v12 roadmap](/clibuilder/roadmap/v12/)). The package
+zod in `clibuilder` 12 (see [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t)). The package
 [readme](https://github.com/clibuilder/clibuilder/tree/main/packages/args-minus#readme) is the full
 reference for `tokenizeArgs()`, grammars, aliases and short groups.
 
@@ -16,30 +16,8 @@ re-export is available in `clibuilder` 11.5.0.
 
 ## Using `t` in clibuilder
 
-`clibuilder` 11.5.0 re-exports `t`. An argument or option can declare its `type` with `t` instead of
-`z`, and `run()` gets the descriptor's exact type. This is not a breaking change: each declaration is
-parsed by its own type, so a command can mix `z` and `t`, and `z` declarations behave as before.
-
-```ts
-import { command, t } from 'clibuilder'
-
-command({
-  name: 'serve',
-  arguments: [{ name: 'root', description: 'root folder', type: t.string() }],
-  options: {
-    port: { description: 'port', type: t.int({ min: 1, max: 65535 }), default: 8080, alias: ['p'] },
-    tag: { description: 'tags', type: t.array(t.string()).optional() }
-  },
-  run(args) {
-    // args.port: number, args.tag: string[] | undefined
-  }
-})
-```
-
-A declaration with `t` follows `args-minus`: it is required unless it is `.optional()` or has a
-`default`, `t.boolean()` takes no following value, and `t.array()` takes one value per occurrence.
-Converters and checks may be async. A failure is an `invalid-value` usage error that carries the
-option's constraint, and help shows the constraint too, such as `[-p|--port <int 1..65535>]`.
+`clibuilder` re-exports `t`. See [`t`](/clibuilder/api/t/) for how a command declares its arguments
+and options with it.
 
 ## Declaring options with `t`
 

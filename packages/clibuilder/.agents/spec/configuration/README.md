@@ -136,8 +136,8 @@ both `foo.json` and `.foo.json` are conventional.
 | --- | --- |
 | the extension names a module | it is imported; a module exporting `activate` yields the whole module, otherwise its default export |
 | the extension names JSON(C) | parsed permissively — comments and trailing commas are allowed |
-| the extension names YAML | parsed as YAML |
-| the file has no format-bearing extension | JSON(C) is tried, then YAML, then module |
+| the extension names YAML | parsed as YAML with `js-yaml`, an optional peer dependency loaded only now; when it is not installed the read fails with a `CliError`, code `missing-peer-dependency`, details `{ package: 'js-yaml' }` |
+| the file has no format-bearing extension | JSON(C) is tried, then YAML (loading `js-yaml` only if JSON(C) failed), then module |
 | JSON(C) parsing reports an error | it is raised as a throw, because the underlying parser **recovers** instead of throwing — a JS module would otherwise parse to an empty object and a YAML list to its first scalar, and the fallback chain above would never fire |
 
 ### UC5 — `findAnyFileUp` / `findFileUp`: walk ancestors for a file
@@ -258,7 +258,9 @@ graph TD
   FMT -- "json, jsonc" --> JS[parse permissively] --> ERR{the parser reported errors?}
   ERR -- yes --> THROW[raise it, so the fallback chain can fire]
   ERR -- no --> VAL[the value]
-  FMT -- "yml, yaml" --> YA[parse as YAML] --> VAL
+  FMT -- "yml, yaml" --> LY{"js-yaml installed?"}
+  LY -- yes --> YA[parse as YAML] --> VAL
+  LY -- no --> MPD["CliError missing-peer-dependency, details package js-yaml"]
   FMT -- "none" --> T1[try parsing it permissively as JSON] --> T1Q{did that raise?}
   T1Q -- no --> VAL
   T1Q -- yes --> T2[try YAML] --> T2Q{did that raise?}
@@ -319,6 +321,7 @@ graph TD
 | its default export | a module without `activate` | `a module config without activate yields its default export` |
 | parse permissively | a `.json` or `.jsonc` file | `a JSON config accepts comments and trailing commas` |
 | parse as YAML | a `.yml` or `.yaml` file | `a YAML config is parsed as YAML` |
+| `missing-peer-dependency` | a `.yml` or `.yaml` file read without `js-yaml` installed | `reading a YAML config without js-yaml is a missing-peer-dependency error` |
 | did that raise? — no, after JSON | an extension-less file holding JSON | `an extension-less config holding JSON is parsed as JSON` |
 | did that raise? — yes, then YAML | an extension-less file holding YAML | `an extension-less config holding YAML falls through to YAML` |
 | raise it | JSON parsing reported an error | `a JSON config the parser could not read raises rather than returning a recovered value` |

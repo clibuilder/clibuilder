@@ -1,5 +1,5 @@
 import { testType } from 'type-plus/testing'
-import { type cli, command, type UI, z } from '../index.js'
+import { type cli, command, t, type UI } from '../index.js'
 
 test('when no argument and options, args will have help', () => {
 	command({
@@ -13,7 +13,7 @@ test('when no argument and options, args will have help', () => {
 test('command can override help', () => {
 	command({
 		name: 'cmd',
-		options: { help: { description: 'help with topic', type: z.string() } },
+		options: { help: { description: 'help with topic', type: t.string() } },
 		run(args) {
 			testType.equal<typeof args.help, string>(true)
 		}
@@ -23,7 +23,7 @@ test('command can override help', () => {
 test('argument with defined type', () => {
 	command({
 		name: 'cmd',
-		arguments: [{ name: 'arg1', description: 'desc', type: z.number() }],
+		arguments: [{ name: 'arg1', description: 'desc', type: t.number() }],
 		run(args) {
 			testType.equal<typeof args.arg1, number>(true)
 		}
@@ -43,7 +43,7 @@ test('argument type defaults to string', () => {
 test('argument of number array', () => {
 	command({
 		name: 'cmd',
-		arguments: [{ name: 'arg1', description: 'desc', type: z.array(z.number()) }],
+		arguments: [{ name: 'arg1', description: 'desc', type: t.array(t.number()) }],
 		run(args) {
 			testType.equal<typeof args.arg1, number[]>(true)
 		}
@@ -55,7 +55,7 @@ test('multiple arguments with omitted type', () => {
 		name: 'cmd',
 		arguments: [
 			{ name: 'arg1', description: 'desc' },
-			{ name: 'arg2', description: 'desc', type: z.boolean() }
+			{ name: 'arg2', description: 'desc', type: t.boolean() }
 		],
 		run(args) {
 			testType.equal<typeof args.arg1, string>(true)
@@ -80,7 +80,7 @@ test('options with type', () => {
 	command({
 		name: 'cmd',
 		options: {
-			abc: { description: 'abc', type: z.array(z.string()) }
+			abc: { description: 'abc', type: t.array(t.string()) }
 		},
 		run(args) {
 			testType.equal<typeof args.abc, string[]>(true)
@@ -92,7 +92,7 @@ test('multiple options with omitted type', () => {
 	command({
 		name: 'cmd',
 		options: {
-			abc: { description: 'abc', type: z.array(z.string()) },
+			abc: { description: 'abc', type: t.array(t.string()) },
 			def: { description: 'abc' }
 		},
 		run(args) {
@@ -107,10 +107,10 @@ test('with arguments and options', () => {
 		name: 'cmd',
 		arguments: [
 			{ name: 'arg1', description: 'desc' },
-			{ name: 'arg2', description: 'desc', type: z.boolean() }
+			{ name: 'arg2', description: 'desc', type: t.boolean() }
 		],
 		options: {
-			abc: { description: 'abc', type: z.array(z.string()) },
+			abc: { description: 'abc', type: t.array(t.string()) },
 			def: { description: 'abc' }
 		},
 		run(args) {
@@ -126,7 +126,7 @@ test('options with optional type', () => {
 	command({
 		name: 'cmd',
 		options: {
-			abc: { description: 'abc', type: z.optional(z.string()) }
+			abc: { description: 'abc', type: t.string().optional() }
 		},
 		run(args) {
 			testType.equal<typeof args.abc, string | undefined>(true)
@@ -138,7 +138,7 @@ it('pass array default values options to the run function', () => {
 	command({
 		name: 'cmd',
 		options: {
-			arrayValues: { description: 'desc', type: z.array(z.string()), default: ['a', 'b'] }
+			arrayValues: { description: 'desc', type: t.array(t.string()), default: ['a', 'b'] }
 		},
 		run({ arrayValues }) {
 			testType.equal<typeof arrayValues, string[]>(true)

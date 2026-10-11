@@ -30,23 +30,42 @@ rush add -p clibuilder
 
 ```ts
 // ESM
-import { cli, command, z } from 'clibuilder'
+import { cli, command, t } from 'clibuilder'
 ```
 
 ```js
 // CJS
-const { cli, command, z } = require('clibuilder')
+const { cli, command, t } = require('clibuilder')
 ```
 
-## zod
+## Types
 
-`clibuilder` depends on [zod](https://github.com/colinhacks/zod) and re-exports it as
-[`z`](/clibuilder/api/zod/). Import it from `clibuilder` rather than installing zod separately —
-that guarantees the schemas you build are the same zod instance the library validates with.
+Arguments and options declare their `type` with [`t`](/clibuilder/api/t/), which `clibuilder`
+exports. You install nothing for it.
 
 ```ts
-import { z } from 'clibuilder'
+import { t } from 'clibuilder'
 ```
+
+:::note[v12, unreleased]
+Before `clibuilder` 12, types came from zod, re-exported as `z`. See
+[zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
+:::
+
+## Optional packages
+
+A command's `config` takes any [Standard Schema](https://standardschema.dev). Install the library
+you pick as your own dependency, for example `npm install zod`.
+
+`js-yaml` is an optional peer dependency. If your users write a `.yaml` or `.yml` config file,
+install it too:
+
+```sh
+npm install js-yaml
+```
+
+Without it, reading a YAML config fails with a `CliError` whose code is `missing-peer-dependency`.
+JSON, JSONC, `cjs` and `mjs` config files need nothing extra.
 
 ## Next
 

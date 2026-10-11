@@ -1,5 +1,5 @@
 import { getBaseCommand } from '../builtin/base_command.js'
-import { type cli, command, parseArgv, z } from '../index.js'
+import { type cli, command, parseArgv, t } from '../index.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { argv } from '../test-utils/index.js'
 import { resolveGlobalOptions, resolveUsageErrors, usageErrorCode } from './usage_errors.js'
@@ -43,7 +43,9 @@ describe('resolveGlobalOptions()', () => {
 				type: 'invalid-value',
 				key: 'format',
 				value: 'yaml',
-				message: 'expected one of: toon, json, text',
+				message: "expected one of 'toon', 'json', 'text'",
+				keyKind: 'enum',
+				constraint: 'toon|json|text',
 				allowed: ['toon', 'json', 'text']
 			}
 		])
@@ -70,7 +72,14 @@ describe('resolveGlobalOptions()', () => {
 	it('keeps only the errors on the global options', () => {
 		const { globals } = resolve(command({ name: 'sub', run() {} }), 'cli sub --verbose=nope --bogus')
 		expect(globals.errors).toEqual([
-			{ type: 'invalid-value', key: 'verbose', value: 'nope', message: 'expected to be boolean' }
+			{
+				type: 'invalid-value',
+				key: 'verbose',
+				value: 'nope',
+				message: 'expected no value, true or false',
+				keyKind: 'boolean',
+				constraint: 'boolean'
+			}
 		])
 	})
 })
@@ -83,20 +92,36 @@ describe('resolveUsageErrors()', () => {
 	it('reports a malformed global flag as the base command does, once', () => {
 		const { errors } = resolve(sub, 'cli sub --verbose=nope')
 		expect(errors).toEqual([
-			{ type: 'invalid-value', key: 'verbose', value: 'nope', message: 'expected to be boolean' }
+			{
+				type: 'invalid-value',
+				key: 'verbose',
+				value: 'nope',
+				message: 'expected no value, true or false',
+				keyKind: 'boolean',
+				constraint: 'boolean'
+			}
 		])
 		expect(errors[0].code).toBe('invalid-value')
 	})
 	it('reports a malformed alias of a global flag under the alias', () => {
 		const { errors } = resolve(sub, 'cli sub -V=nope')
-		expect(errors).toEqual([{ type: 'invalid-value', key: 'V', value: 'nope', message: 'expected to be boolean' }])
+		expect(errors).toEqual([
+			{
+				type: 'invalid-value',
+				key: 'V',
+				value: 'nope',
+				message: 'expected no value, true or false',
+				keyKind: 'boolean',
+				constraint: 'boolean'
+			}
+		])
 	})
 	it("keeps the order of the matched command's errors", () => {
 		const { errors } = resolve(sub, 'cli sub --bogus --verbose=nope extra')
 		expect(errors.map((e) => e.code)).toEqual(['extra-arguments', 'unknown-option', 'invalid-value'])
 	})
 	it("leaves a key the matched command declares to the command's own declaration", () => {
-		const own = command({ name: 'sub', options: { verbose: { type: z.string(), description: 'own' } }, run() {} })
+		const own = command({ name: 'sub', options: { verbose: { type: t.string(), description: 'own' } }, run() {} })
 		expect(resolve(own, 'cli sub --verbose=loud').errors).toEqual([])
 	})
 	it('sets `code` without changing equality or serialization', () => {

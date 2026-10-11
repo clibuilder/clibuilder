@@ -90,6 +90,13 @@ Feature: Configuration
     When it is read
     Then it is parsed as YAML
 
+  Scenario: reading a YAML config without js-yaml is a missing-peer-dependency error
+    Given a config file whose extension names YAML
+    When js-yaml is not installed
+    Then reading it fails with a CliError whose code is missing-peer-dependency
+    And its details name the package js-yaml
+    And a JSON config never loads js-yaml
+
   Scenario: an extension-less config holding JSON is parsed as JSON
     Given a config file with no format-bearing extension
     When its content is JSON

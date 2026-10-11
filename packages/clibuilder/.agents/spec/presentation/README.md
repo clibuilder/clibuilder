@@ -110,7 +110,7 @@ author wants that without writing it.
 | the command is nested | usage names the whole chain from the application through every ancestor |
 | the command declares sub-commands | usage says a command is expected, and they are listed with their aliases |
 | an argument or option is required | usage marks the group with angle brackets rather than square ones |
-| the command declares a config schema | the schema's shape is rendered as a type |
+| the command declares a config schema | the shape its JSON Schema describes is rendered as a type; a schema with no JSON Schema, such as zod 3, adds no `Config:` section |
 | the command declares examples | each description is shown above its command line, verbatim |
 
 ### UC4 — the signature format: mark what is required and what it takes
@@ -128,14 +128,15 @@ something is required and what kind of value it takes.
 
 | Cause | Outcome |
 | --- | --- |
-| no type is declared | an argument is treated as required, an option as optional — matching how each is filled |
+| no type is declared | an argument is treated as required (`<name>`), an option as optional (`[--flag]`) — matching how each is filled |
 | no type is declared | no type hint is shown beside the name, whichever the element is |
-| the type is an array | a variadic marker is shown |
-| the type is a boolean **option** | no type hint — an option is a flag, so `=boolean` would be noise |
+| the type is a scalar | the hint is the constraint: `[--name <string>]`, `<x: string>`, `[--port <int 1..65535>]` |
+| the type is an array | a variadic marker is shown after the hint: `--abc <string>...`, `[x: number...]` |
+| the type is a boolean **option** | no type hint — an option is a flag, so a hint would be noise |
 | the type is a boolean **argument** | the hint is shown, because it is a value the user has to type out |
 | the option declares aliases | they are shown with the name, shortest first, each dashed by its own length |
 | an alias is marked hidden | it is left out |
-| the option declares a default | the description names it, quoted when it is a string |
+| the option declares a default | the description names it, quoted when the default is a string, including the global `--format`: `(default 'toon')` beside `[--format <toon\|json\|text>]` |
 
 ### UC5 — `showVersion`: report the application's version
 
@@ -202,7 +203,7 @@ not prose (axi-native RFC section 3.7).
 | Outcome | `name`, `usage`, `description`, `aliases`, `commands`, `arguments`, `options`, `config`, `examples`, `globalOptions`; a key with nothing to say is left out |
 
 **Extensions.** It reads the same declaration data the text help reads, and nothing more: an option's type is the
-descriptor's kind, or the zod type the text help names, with a `t` declaration's `min`, `max`, `pattern` or allowed
+descriptor's kind, left out for a declaration with no type, with its `min`, `max`, `pattern` or allowed
 `values`. Sub-commands carry only their name, aliases and the first line of their description, so group help stays
 compact. The global options are listed once, under `globalOptions`, and the root leaves them out of its `options`.
 The text renderer is left as it was; a test proves the two agree.
@@ -343,25 +344,26 @@ graph TD
   SG --> F
 ```
 
-### Sub-graph C — a signature (`formatSignature`), entered by UC4
+### Sub-graph C — a signature (`formatOptionDescriptor`, `formatArgumentDescriptor`), entered by UC4
+
+Every typed declaration is a `t` descriptor, so the signature reads the
+descriptor's kind, constraint and optionality; a declaration with no type has a
+fixed form.
 
 ```mermaid
 graph TD
   N[name and declared type] --> T{type declared?}
   T -- no --> DFT{argument or option?}
-  DFT -- argument --> REQ[required]
-  DFT -- option --> OPT[optional]
-  T -- yes --> ISO{optional type?}
-  ISO -- yes --> OPT
-  ISO -- no --> REQ
-  REQ --> BR["angle brackets"]
-  OPT --> SQ["square brackets"]
+  DFT -- argument --> RA["&lt;name&gt;: required, no hint"]
+  DFT -- option --> OA["[--flag]: optional, no hint, a flag"]
+  T -- yes --> ISO{"optional, or has a default (option)?"}
+  ISO -- yes --> OPT[square brackets]
+  ISO -- no --> REQ[angle brackets for an argument, none for an option]
   N --> HINT{what kind of type?}
-  HINT -- array --> VAR[variadic marker, with the element type when known]
-  HINT -- "boolean, as an option" --> NOH[no hint: it is a flag]
-  HINT -- "boolean, as an argument" --> YESH[hint shown]
-  HINT -- "string or number" --> TH[hint shown]
-  HINT -- none --> NOH2[no hint]
+  HINT -- array --> VAR["the element's hint, then ... (--tag &lt;string&gt;..., [files: string...])"]
+  HINT -- "boolean, as an option" --> NOH["no hint: it is a flag, [--dry]"]
+  HINT -- "boolean, as an argument" --> YESH["hint shown, &lt;x: boolean&gt;"]
+  HINT -- "any other kind" --> TH["the constraint is the hint: [--name &lt;string&gt;], &lt;x: number&gt;, [--format &lt;toon|json|text&gt;]"]
 ```
 
 ### Sub-graph E — an option's name and description in help, entered by UC4
@@ -379,7 +381,7 @@ graph TD
   KEPT --> ORD["sorted shortest first, each dashed by its own length — one dash for a single character, two otherwise"]
   DE[its description] --> DEF{declares a default?}
   DEF -- no --> DESC[the description alone]
-  DEF -- yes --> DQ{"is the declared type a string?"}
+  DEF -- yes --> DQ{"is the default a string?"}
   DQ -- yes --> DS["the description, then the default in quotes"]
   DQ -- no --> DP["the description, then the default as written"]
 ```
@@ -540,7 +542,7 @@ graph TD
 | every section the text help shows, as keys; empty keys left out | a command declaring every section | `the structured help carries what the text help shows` |
 | aliases, type, default, required, description, conflicts | an option declaring each | `an option in the structured help carries its aliases, type, default, whether it is required, description and conflicts` |
 | `min`, `max`, `pattern`, `values` | `t.int`, `t.string`, `t.enum`, `t.literal` | `the constraints of a t declaration are carried as min, max, pattern and values` |
-| the element, with `array: true` | `t.array` or a zod array | `an array is described by its element and marked array` |
+| the element, with `array: true` | `t.array` | `an array is described by its element and marked array` |
 | a hidden alias left out | an alias marked hidden | `a hidden alias is left out of the structured help` |
 | name, aliases, first description line | a group | `sub-commands are listed by name and the first line of their description` |
 | `globalOptions`, once | the root or a command | `the global options are listed once, apart from the root's own options` |

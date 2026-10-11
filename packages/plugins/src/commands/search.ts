@@ -1,4 +1,4 @@
-import { CliError, command, exitCodes, z } from 'clibuilder'
+import { CliError, command, exitCodes, t } from 'clibuilder'
 import {
 	answers,
 	formatOption,
@@ -19,7 +19,7 @@ export function searchPluginsCommand(keywords: string[]) {
 		options: {
 			format: formatOption,
 			fields: {
-				type: z.optional(z.string()),
+				type: t.string().optional(),
 				description: "Extra fields to report, comma separated. Only 'keywords' is available"
 			}
 		},

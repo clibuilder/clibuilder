@@ -6,7 +6,7 @@ description: Everything clibuilder exports.
 `clibuilder` has a small surface. Everything below is a named export of the package root:
 
 ```ts
-import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
+import { cli, command, testCommand, parseArgv, t } from 'clibuilder'
 ```
 
 ## Functions
@@ -26,7 +26,7 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 
 | Export | Purpose |
 | --- | --- |
-| [`z`](/clibuilder/api/zod/) | The zod instance used for every schema in the library |
+| [`t`](/clibuilder/api/t/) | The type descriptors for arguments and options (v12, unreleased; replaces `z`) |
 | [`exitCodes`](/clibuilder/guides/failing/#exit-codes) | The codes the cli exits with — `success`, `error`, `usage` |
 | [`CliError`](/clibuilder/guides/failing/#failing-from-a-command) | Thrown from `run()` to fail the cli with a message and an exit code |
 

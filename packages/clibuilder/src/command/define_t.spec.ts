@@ -1,4 +1,5 @@
-import { type cli, command, t, z } from '../index.js'
+import { z } from 'zod'
+import { type cli, command, t } from '../index.js'
 
 // These assertions are checked by `tsc` (the build), not at runtime.
 // Each deliberately wrong expectation sits under `@ts-expect-error`: an unused directive is itself an error.
@@ -66,9 +67,9 @@ it('infers each t argument exactly', () => {
 it('infers a command mixing z and t', () => {
 	command({
 		name: 'cmd',
-		arguments: [{ name: 'id', description: 'd', type: z.number() }],
+		arguments: [{ name: 'id', description: 'd', type: t.number() }],
 		options: {
-			name: { description: 'd', type: z.string().optional() },
+			name: { description: 'd', type: t.string().optional() },
 			port: { description: 'd', type: t.int() },
 			flag: { description: 'd' }
 		},

@@ -235,13 +235,19 @@ Feature: Input parsing
 
   Scenario: a boolean option accepts true and false
     Given a command declaring a boolean option
-    When the invocation gives it the word true or the word false
+    When the invocation gives it the word true or the word false written with =
     Then its value is the matching boolean
+
+  Scenario: a boolean option takes no following value
+    Given a command declaring a boolean option, or an option with no type
+    When the option is followed by a bare word such as false
+    Then the option is true
+    And the word stays a positional
 
   Scenario: a boolean option given another word is rejected as not a boolean
     Given a command declaring a boolean option
-    When the invocation gives it a word that is neither true nor false
-    Then an invalid-value error says it expected a boolean
+    When the invocation gives it, written with =, a word that is neither true nor false
+    Then an invalid-value error says it expected no value, true or false
 
   Scenario: a number option accepts a numeric value
     Given a command declaring a number option
@@ -252,6 +258,7 @@ Feature: Input parsing
     Given a command declaring a number option
     When the invocation gives it a value that does not read as a number
     Then an invalid-value error says it expected a number
+    And it carries the kind number and the constraint number
 
   Scenario: a string option takes its value as typed
     Given a command declaring a string option
@@ -260,19 +267,25 @@ Feature: Input parsing
 
   Scenario: an array option converts each of its values by the element type
     Given a command declaring an option with an array type
-    When the invocation gives it several values
+    When the invocation gives it several values, one per occurrence
     Then each value is converted by the array's element type
+
+  Scenario: an array option takes one value per occurrence
+    Given a command declaring an array option and an argument
+    When the invocation is --tag a --tag b c
+    Then the option holds a and b
+    And c stays a positional for the argument
 
   Scenario: an optional option converts by the type it wraps
     Given a command declaring an option with an optional type
     When the invocation gives it a value
     Then the value is converted by the type inside the optional
 
-  Scenario: several values for a single-valued option are reported, and the last one is used
+  Scenario: several values for a single-valued option are reported, and the option gets no value
     Given a command declaring an option whose type holds a single value
     When the invocation gives it more than one value
-    Then an expect-single error names the option
-    And the last value given is the one used
+    Then an expect-single error names the option and carries its kind as keyKind
+    And the option is not set, and its default does not fill it
 
   Scenario: an enum option given one of its declared values is accepted as typed
     Given a command declaring an option with an enum type
@@ -282,12 +295,20 @@ Feature: Input parsing
   Scenario: an enum option given an unlisted value is told which values it accepts
     Given a command declaring an option with an enum type
     When the invocation gives it a value the enum does not list
-    Then an invalid-value error lists the values the option accepts
+    Then an invalid-value error says it expected one of the listed values
+    And the error lists the allowed values
 
-  Scenario: a value the schema rejects is reported in the schema's own words
-    Given a command declaring an option whose type is not an enum
-    When the schema rejects the value and no conversion error was recorded
-    Then an invalid-value error carries the schema's own message
+  Scenario: a value outside an enum does not fill the slot with its default
+    Given a command declaring an option with an enum type and a default
+    When the invocation gives it a value the enum does not list
+    Then an invalid-value error is reported
+    And the option is not set, and the default does not take its place
+
+  Scenario: a value the declaration rejects is reported in the wording of args-minus, with its kind and constraint
+    Given a command declaring an option with a range, a pattern or a check
+    When the invocation gives it a value that fails
+    Then an invalid-value error carries the message args-minus words for that failure
+    And it carries the descriptor's keyKind and its constraint
 
   Scenario: a value the conversion rejected is reported once, not twice
     Given a command declaring a number option
@@ -324,10 +345,9 @@ Feature: Input parsing
   # ── UC4 — declarations with t: converted and checked by args-minus ──
 
   Scenario: each declaration is parsed by its own type
-    Given a command declaring some options and arguments with z and others with t
+    Given a command declaring options and arguments with several t types
     When it is invoked with values for all of them
-    Then the z declarations are filled exactly as before
-    And each t declaration holds the value its descriptor converted
+    Then each declaration holds the value its descriptor converted
 
   Scenario: a t option is parsed by args-minus from its own argv tokens
     Given a command declaring an option with t
@@ -341,7 +361,7 @@ Feature: Input parsing
     And the array holds one value per occurrence
 
   Scenario: a t option that is absent takes its default or is reported missing
-    Given a command declaring t options with a default, with optional(), and with neither
+    Given a command declaring t options with a default, with optional(), and with neither, so that one is required
     When the invocation passes none of them
     Then the defaulted option holds its default, the optional one is undefined
     And the one with neither is reported as a missing-argument error naming the option
@@ -372,13 +392,26 @@ Feature: Input parsing
     Given a command declaring a t option that is not an array
     When the invocation passes it twice
     Then an expect-single error carries the descriptor's kind as keyKind
+    And the option gets no value
 
-  Scenario: a repeated zod scalar keeps its zod type and gains its kind
-    Given a command declaring a zod option that is not an array
+  Scenario: an expect-single error has a keyKind and no keyType
+    Given a command declaring a t option that is not an array
     When the invocation passes it twice
-    Then the expect-single error carries the kind string as keyKind beside the deprecated zod keyType
+    Then the expect-single error carries the kind string as keyKind
+    And it has no keyType, which belonged to the removed zod type
 
   Scenario: t declarations are not converted when help is asked for
     Given a command declaring a t option with a converter
     When the invocation asks for --help
     Then the converter does not run
+
+  Scenario: help and version flags are read before the other declarations convert
+    Given a matched command whose other options declare an async converter or check
+    When the invocation passes --help or --version
+    Then the flag is read from its own declaration first
+    And no converter or check of another declaration has run
+
+  Scenario: the global options are converted synchronously from the base command
+    Given the base command's global options, which are flags and an enum
+    When the invocation is resolved for them
+    Then they are converted without awaiting, so no async converter or check is involved

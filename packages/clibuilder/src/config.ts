@@ -1,10 +1,10 @@
 import { extname } from 'node:path'
-import yaml from 'js-yaml'
 import { type ParseError, parse as parseJsonc, printParseErrorCode } from 'jsonc-parser'
 import type { UI } from './core/ports.js'
 import { findAnyFileUp } from './drivers/find_up.js'
 import { findPackageJson, getPackageJson } from './drivers/package_json.js'
 import { importModule, readTextFile } from './drivers/read_file.js'
+import { loadYaml } from './drivers/yaml.js'
 
 export const ctx = {
 	findPackageJson,
@@ -179,11 +179,12 @@ export async function readConfigFile(configFilePath: string) {
 
 	const content = readTextFile(configFilePath)
 	if (format === 'jsonc') return parseJsoncOrThrow(content, configFilePath)
-	if (format === 'yaml') return yaml.load(content)
+	if (format === 'yaml') return (await loadYaml()).load(content)
 
 	try {
 		return parseJsoncOrThrow(content, configFilePath)
 	} catch {
+		const yaml = await loadYaml()
 		try {
 			return yaml.load(content)
 		} catch {

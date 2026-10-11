@@ -1,4 +1,4 @@
-import { command, exitCodes, t, testCommand, z } from 'clibuilder'
+import { command, exitCodes, t, testCommand } from 'clibuilder'
 import { describe, expect, it, vi } from 'vitest'
 import { formatOption } from './format.js'
 import { createUsageErrorHandler, describeUsageError } from './usage.js'
@@ -7,8 +7,8 @@ function listCommand(write: (chunk: string) => void, format?: 'json') {
 	return command({
 		name: 'list',
 		description: 'list tasks',
-		arguments: [{ name: 'repo', description: 'the repo', type: z.string() }],
-		options: { format: formatOption, state: { type: z.optional(z.string()), description: 'the state' } },
+		arguments: [{ name: 'repo', description: 'the repo', type: t.string() }],
+		options: { format: formatOption, state: { type: t.string().optional(), description: 'the state' } },
 		onUsageError: createUsageErrorHandler({ format, stdout: { write } }),
 		run() {
 			return 'ran'
@@ -95,7 +95,7 @@ describe('createUsageErrorHandler', () => {
 describe('describeUsageError', () => {
 	const cmd = command({
 		name: 'show',
-		arguments: [{ name: 'id', description: 'the id', type: z.optional(z.number()) }],
+		arguments: [{ name: 'id', description: 'the id', type: t.number().optional() }],
 		run() {}
 	})
 
@@ -136,9 +136,7 @@ describe('describeUsageError', () => {
 			message: 'option --full cannot be used with option -n',
 			help: []
 		})
-		expect(
-			describeUsageError({ type: 'expect-single', key: 'limit', keyType: z.number(), value: [1, 2] }, cmd)
-		).toEqual({
+		expect(describeUsageError({ type: 'expect-single', key: 'limit', keyKind: 'number', value: [1, 2] }, cmd)).toEqual({
 			code: 'expect-single',
 			message: 'option --limit expects a single value, received: 1, 2',
 			help: []
@@ -146,9 +144,9 @@ describe('describeUsageError', () => {
 	})
 
 	it('reports a single value that should have been one', () => {
-		expect(
-			describeUsageError({ type: 'expect-single', key: 'limit', keyType: z.number(), value: 3 }, cmd).message
-		).toBe('option --limit expects a single value, received: 3')
+		expect(describeUsageError({ type: 'expect-single', key: 'limit', keyKind: 'number', value: 3 }, cmd).message).toBe(
+			'option --limit expects a single value, received: 3'
+		)
 	})
 
 	it('says when a command takes no arguments', () => {

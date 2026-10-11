@@ -1,5 +1,5 @@
 import * as clibuilder from 'clibuilder'
-import { z } from 'clibuilder'
+import { t } from 'clibuilder'
 
 /**
  * How a command renders a collection it reports.
@@ -22,7 +22,7 @@ export type OutputFormat = 'toon' | 'text' | 'json'
  */
 export const formatOption = Object.defineProperty(
 	{
-		type: z.optional(z.enum(['toon', 'text', 'json'])),
+		type: t.enum(['toon', 'text', 'json']).optional(),
 		description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
 		default: 'toon' as const
 	},

@@ -2,7 +2,7 @@ import type { cli } from '../cli.js'
 import { command } from '../command/define.js'
 import { lookupOptions } from '../invocation/lookup.js'
 import { formats } from '../render/encode.js'
-import { z } from '../zod.js'
+import { t } from '../t.js'
 
 /**
  * Marks the global `--format` entry of the base command,
@@ -32,32 +32,32 @@ export function getBaseCommand(description: string, options?: { config?: boolean
 		description,
 		options: {
 			help: {
-				type: z.optional(z.boolean()),
+				type: t.boolean().optional(),
 				description: 'Print help message',
 				alias: ['h']
 			},
 			version: {
-				type: z.optional(z.boolean()),
+				type: t.boolean().optional(),
 				description: 'Print the CLI version',
 				alias: ['v']
 			},
 			verbose: {
-				type: z.optional(z.boolean()),
+				type: t.boolean().optional(),
 				description: 'Turn on verbose logging',
 				alias: ['V']
 			},
 			silent: {
-				type: z.optional(z.boolean()),
+				type: t.boolean().optional(),
 				description: 'Turn off logging'
 			},
 			'debug-cli': {
-				type: z.optional(z.boolean()),
+				type: t.boolean().optional(),
 				description: 'Display clibuilder debug messages'
 			},
 			...(options?.config
 				? {
 						'show-config': {
-							type: z.optional(z.boolean()),
+							type: t.boolean().optional(),
 							description: 'Print the resolved config and where it was loaded from'
 						}
 					}
@@ -75,7 +75,7 @@ export function getBaseCommand(description: string, options?: { config?: boolean
 function formatEntry(defaultFormat: cli.Format) {
 	return Object.defineProperty(
 		{
-			type: z.optional(z.enum(formats as [cli.Format, ...cli.Format[]])),
+			type: t.enum(formats as [cli.Format, ...cli.Format[]]),
 			description: "Output format: 'toon' for agents, 'json' to pipe, 'text' for humans",
 			default: defaultFormat
 		},
