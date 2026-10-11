@@ -136,7 +136,8 @@ inputs they gave, or to be told precisely what was wrong.
 | a display-level flag is given | the level is set and the flag is removed before the command is matched, so it is never reported as unknown |
 | `--show-config` on an application that takes config | the resolved config and its source are reported, and no command runs |
 | `--show-config` on an application that takes no config | the option was never declared, so it is a usage error like any other unknown option |
-| `--version` on the base command or the matched one | the version is shown, and no command runs |
+| `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config and plugin work is awaited, so a broken config or a hanging plugin cannot fail or delay it. A rejection from that work is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
+| `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
 | an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
 | an unknown-option error names a global option whose value the base command rejected | the base command's invalid-value error is reported in its place, so a malformed global flag fails under a sub-command as it does on the root (#614) |
@@ -331,7 +332,9 @@ graph TD
 
 ```mermaid
 graph TD
-  P[parse argv] --> AW[await pending config and plugin work]
+  P[parse argv] --> FV{"only --version or -v?"}
+  FV -- yes --> FVW[write the version to stdout; stop without awaiting pending work]
+  FV -- no --> AW[await pending config and plugin work]
   AW --> TOK[tokenize argv] --> BASE[match against the base command for global flags]
   BASE --> DL{display-level flag given?}
   DL -- silent --> D1[level none] --> STRIP[remove the flag before matching]
@@ -486,8 +489,12 @@ graph TD
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
 | report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
 | show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
+| write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and plugins load` |
+| write the version to stdout; stop without awaiting pending work | `-v` alone, plugin activation never finishes | `version asked for alone does not wait for plugin activation` |
+| write the version to stdout; stop without awaiting pending work | `-v` alone, the default command declares `-v` | `the short version flag alone is the version even when a command declares it` |
 | show the version | `--version` on the base command | `version asked of the application shows its version` |
 | show the version | `--version` on the matched command | `version asked of a matched command shows the application version` |
+| only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and plugins` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
 | drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |

@@ -50,6 +50,9 @@ export function context(): Context {
 		exit(code?: number) {
 			process.exitCode = code
 		},
+		writeStdout(text: string) {
+			process.stdout.write(text)
+		},
 		createCommandUI(id: string) {
 			return createUI(sl.getLogger(id))
 		},
@@ -82,6 +85,10 @@ export type Context = {
 	 * Records the code the cli should exit with, rather than ending the process.
 	 */
 	exit(code?: number): void
+	/**
+	 * Writes text to stdout as given, with no logger or formatting in between.
+	 */
+	writeStdout(text: string): void
 	createCommandUI(id: string): createUI.UI
 	ui: BuilderUI
 }

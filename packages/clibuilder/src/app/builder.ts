@@ -118,6 +118,17 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	}
 
 	async function parse(argv: string[]) {
+		if (isBareVersion(argv)) {
+			// answered before the pending config, the configured plugins and the `use()` extensions,
+			// so a broken config or a hanging plugin or extension cannot fail or delay it.
+			// The config load is not awaited, so a rejection from it is marked handled here
+			// instead of crashing the process.
+			for (const p of pending) p.catch(() => {})
+			// the exit code is left unset, so the process exits 0, and parse resolves to
+			// `undefined` as it does when the version is answered on the normal path.
+			context.writeStdout(`${s.version || 'not versioned'}\n`)
+			return
+		}
 		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
@@ -140,10 +151,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
 
-		// a bare `--version` does not need the command tree, so it is answered without the extensions:
-		// a slow or broken one cannot make `cli --version` hang or fail.
 		await loadConfiguredPlugins()
-		if (!isBareVersion(argv)) await extend()
+		await extend()
 
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
@@ -239,6 +248,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
  *
  * Anything else, `cli <cmd> --version` included, needs the command tree,
  * because a sub-command may declare `-v` or `--version` as its own option.
+ * Nothing is loaded when the bare form is answered, so a bare `-v` is the version
+ * even if a plugin, an extension or the config declares `-v`.
  */
 function isBareVersion(argv: string[]) {
 	const tokens = argv.slice(2)

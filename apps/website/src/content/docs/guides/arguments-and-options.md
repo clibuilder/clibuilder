@@ -207,6 +207,12 @@ Every command inherits these; you don't declare them, and you shouldn't shadow t
 
 `args.help` is always present in the inferred type for that reason.
 
+When `--version` or `-v` is the only argument, the CLI prints the version to stdout as plain text
+and exits 0 before it loads its config or activates any plugin, so a broken config or a slow
+plugin cannot fail or delay it. Because nothing is loaded yet, a bare `-v` is always the version,
+even if a plugin or the config declares a `-v` of its own. With anything else on the command line,
+such as `my-cli deploy --version`, the version is answered after loading, as before.
+
 One more is added only when the CLI declares `config`, since it would have nothing to report
 otherwise:
 

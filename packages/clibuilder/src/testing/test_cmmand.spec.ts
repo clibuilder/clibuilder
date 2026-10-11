@@ -65,3 +65,10 @@ test('get the exit code of a usage error', async () => {
 	expect(exitCode).toBe(2)
 	expect(messages).toContain('unknown option --bogus')
 })
+
+test('get the version in messages when asked for it alone', async () => {
+	const { messages, result, exitCode } = await testCommand(command({ name: 'cmd', run() {} }), '-v')
+	expect(messages).toBe('1.0.0')
+	expect(result).toBeUndefined()
+	expect(exitCode).toBeUndefined()
+})

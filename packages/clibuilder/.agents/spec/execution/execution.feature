@@ -120,11 +120,34 @@ Feature: Execution
     Then the application's version is shown
     And no command runs
 
+  Scenario: version asked for alone is answered before config and plugins load
+    Given an application whose config loader rejects or never resolves
+    When it is invoked with only the version flag
+    Then the version is written to stdout as plain text
+    And the cli exits with the success code
+
+  Scenario: version asked for alone does not wait for plugin activation
+    Given an application whose configured plugin never finishes activating
+    When it is invoked with only the version flag
+    Then the version is written to stdout without waiting for the plugin
+
+  Scenario: the short version flag alone is the version even when a command declares it
+    Given an application whose default command declares its own -v
+    When it is invoked with only -v
+    Then the version is written to stdout
+    And the command does not run
+
   Scenario: version asked of a matched command shows the application version
     Given an application declaring a command
     When that command is invoked asking for the version
     Then the application's version is shown
     And the command does not run
+
+  Scenario: version asked of a matched command waits for config and plugins
+    Given an application declaring a config name and a command
+    When that command is invoked asking for the version
+    Then the config is loaded before the version is shown
+    And nothing is written to stdout ahead of the normal path
 
   Scenario: help asked for shows help and runs nothing
     Given an application
