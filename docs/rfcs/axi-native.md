@@ -25,7 +25,8 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 11 | `showHelp` and `showVersion` leave `ui`. Core owns `--help` and `--version` as answers on stdout. Usage errors no longer print the full help. | 3.3, 3.7 |
 | 12 | `@clibuilder/axi` is absorbed into core in v12. axi keeps only what shapes a value. | 4 |
 | 13 | clibuilder does not wrap or depend on axi-sdk-js. It aligns the error keys and adds a conformance test. | 9 |
-| 14 | zod is replaced by the `t` descriptors from `args-minus`. | [slim-dependencies section 3](slim-dependencies.md#3-zod) |
+| 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Anything that is not a pure, synchronous function of one raw string belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
+| 15 | Only the top-ranked usage error is reported. It carries a `help` list with the command's usage line and, for `invalid-value`, the option, the raw value, and the violated constraint or the allowed values. | 3.3 |
 
 ## 1. Summary
 
@@ -75,6 +76,7 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 - `throw new CliError(report)` is the only way a command reports a failure. Core encodes it once, in the resolved format, on stdout (section 3.4), and writes nothing to stderr for it.
 - The encoded keys are `error` (the message), `code`, the `details` fields, and `help[N]`. These match axi-sdk-js (section 9).
 - A debugging copy is available under `--verbose`, as a `debug` line on stderr.
+- A failure the parser cannot detect is a `CliError` from `run()`: a check that reads a file, resolves a path against `cwd`, uses the network, depends on another option, or is async. The parser handles only pure, synchronous conversions and checks of one raw string ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
 - In `output: 'console'` mode the message and help go to stderr as today (section 3.10).
 
 **In core:** the report shape and the encoding, absorbed from axi's `ErrorReport` and `errorOutput`. Translating backend failures into reports ("backend text must be translated, not forwarded") is a convention for the CLI author, not a framework feature.
@@ -94,10 +96,14 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 
 **Design: the ranked, coded error on stdout is the default.**
 
-- Core takes the ranking from `@clibuilder/axi`'s `usage.ts`: unknown option, conflicting options, invalid value, expect single, missing argument, extra arguments. Only the top-ranked error is reported, because later ones are usually caused by it (cyber-mux #194).
-- Output: `error`, `code` (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument`, `extra-arguments`), the offending key or name, the valid choices, and `help[N]` lines. Exit 2, stdout, in the resolved format.
+- Core takes the ranking from `@clibuilder/axi`'s `usage.ts`: unknown option, conflicting options, invalid value, expect single, missing argument, extra arguments.
+- **Only the top-ranked error is reported.** Later errors are usually caused by the first (cyber-mux #194), so core does not collect every failure.
+- **The error carries enough to fix more than one mistake.** Its `help` list holds the command's usage line, and for `invalid-value` the allowed values or the violated constraint, for example `allowed: low, normal, high` or the range. An agent with two independent mistakes can often fix both in one turn.
+- Output: `error`, `code`, the offending key or name, and `help[N]` lines. Exit 2, stdout, in the resolved format.
+- **Codes stay separate:** `unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument`, `extra-arguments`. A runtime can map each one on its own.
+- **`invalid-value` fields:** the option name, the raw value as typed, the violated constraint or the check's message, and the allowed values when the option is an enum. A failed descriptor conversion, range, pattern, `.check()` or `t.custom` all report this code. A foreign schema's issues are mapped into it, never forwarded raw.
 - The full help is no longer printed after a usage error, after a config-validation failure, or for a bare command group. The coded error lists the valid options or arguments instead, which is what the agent needed from the help.
-- `cli({ onUsageError })` stays, for CLIs that want their own rendering. `UsageError` gains the `code` strings above next to the existing `type`, and its `keyType` becomes a kind string (slim-dependencies section 3.4).
+- `cli({ onUsageError })` stays, for CLIs that want their own rendering. `UsageError` gains the `code` strings above next to the existing `type`, and its `keyType` becomes the descriptor's `kind` string (slim-dependencies section 3.4).
 - `@clibuilder/axi`'s `createUsageErrorHandler` and `describeUsageError` are absorbed into core and removed from axi.
 - In `output: 'console'` mode, usage errors keep today's renderer: prose plus the full help on stderr.
 
@@ -152,7 +158,7 @@ run() {
 **Design: core owns `--help`, adds per-command examples and structured help.**
 
 - `--help` is an answer on stdout. It follows `--format`: text help under `text`, and the structured model under `toon` and `json`.
-- The structured model is the one the text help is rendered from (name, description, arguments, options with types, defaults and aliases, sub-commands, examples). No new data: `render/help.ts` already walks this structure, so structured help is the encoder reading it instead of the text renderer. It reads option types through the descriptor introspection form in slim-dependencies section 3.4.
+- The structured model is the one the text help is rendered from (name, description, arguments, options with types, defaults and aliases, sub-commands, examples). No new data: `render/help.ts` already walks this structure, so structured help is the encoder reading it instead of the text renderer. It reads option types and constraints through the descriptor introspection form in slim-dependencies section 3.4, so text help can show them, for example `--port <int 1..65535>`.
 - `Command.examples?: { command: string; description: string }[]`, rendered under the command's help. It is also what a usage error's `help[N]` can draw from.
 - Text help is unchanged except for the examples section.
 - A compact mode (`--help` on a group lists only names and one-line descriptions) is already how groups render; no flag is added.
@@ -229,9 +235,9 @@ The line: **if it changes what `parse()` does, it is core. If it shapes the valu
 4. **`CliError` message and help no longer go to stderr.** They are rendered once as a report on stdout.
 5. **A global `--format` exists, default `toon`.** A command that declares its own `format` is a startup error. *Migrate:* delete the local declaration and read `this.format`.
 6. **`showHelp` and `showVersion` leave `ui`.** Usage errors, config-validation failures and a bare command group no longer print the full help.
-7. **`UsageError` gains `code`;** `keyType` becomes a kind string; `onUsageError` context gains `format`.
+7. **`UsageError` gains `code`;** `keyType` becomes the descriptor's `kind` string; `onUsageError` context gains `format`. Only the top-ranked usage error is reported, with a `help` list.
 8. **`@clibuilder/axi` is absorbed.** Its output, error, format and usage exports are removed; import them from `clibuilder`.
-9. **zod is replaced by `t`** (slim-dependencies section 3).
+9. **zod is replaced by `t`** (slim-dependencies section 3). Validation that is not a pure, synchronous function of one raw string moves into `run()` as a `CliError`.
 10. **`builder()` no longer loads config on construction.** Observable only to tests that inspected the I/O.
 11. Plus the rest of what slim-dependencies breaks (standard-log, `testCommand` export, plugins).
 
@@ -243,7 +249,7 @@ Every step below is its own issue and PR. All but the last two land in v11 minor
 
 1. **Version fast path** (3.8). Independent, small. Fix for a real failure mode.
 2. **Streams and the built-in UI** (3.10, slim-dependencies section 4). `cli({ streams })`, the routing table and both presets, with `output: 'console'` as the v11 default. EPIPE (3.9) lands in the same driver.
-3. **`t` descriptors on `args-minus`** (slim-dependencies section 3), alongside the zod path. `UsageError.keyType` gets its kind string here, and help reads the descriptor introspection form.
+3. **`t` descriptors** (slim-dependencies section 7). The descriptor work lands in `args-minus` first: the builders and their constraints, `.check()`, `t.custom`, the introspection form and the vendored Standard Schema interface. clibuilder then re-exports `t` and moves its parser onto `args-minus`, alongside the zod path. `UsageError.keyType` gets its kind string here, and help reads the introspection form.
 4. **Structured `CliError`** (3.1), rendered once on stdout under `output: 'axi'`.
 5. **Global-option resolution before usage errors**, with `format` passed to `onUsageError` (3.2). Includes folding the #634 swap-in into it.
 6. **`--format` global option and the toon, json and text encoders** (3.4), active under `output: 'axi'` or when `cli({ format })` is set. Adds `@toon-format/toon` as a dependency.
@@ -269,7 +275,7 @@ From the #639 survey and the slimming RFC's dependent list:
 - **Streams.** The routing in section 3.10 is a table over `cli({ streams })`; EPIPE lives in the same driver. [slim-dependencies section 4](slim-dependencies.md#4-logging-standard-log-and-standard-log-color) describes the same two presets.
 - **toon.** `@toon-format/toon` is core's single third-party runtime dependency (section 3.4). This resolves slim-dependencies Q7.
 - **`ui.info`.** Slim-dependencies Q5 and this RFC's Q5 are the same question, resolved by section 3.10.
-- **`t`.** zod is replaced by descriptors that live in `args-minus` and are re-exported by clibuilder. Usage errors and structured help read their introspection form.
+- **`t`.** zod is replaced by descriptors that live in `args-minus` and are re-exported by clibuilder. Usage errors and structured help read their introspection form, including the constraints an `invalid-value` error reports.
 - **One major.** Both break the same release; the migration guide is a single document.
 
 ## 9. Relationship to axi-sdk-js
@@ -292,10 +298,18 @@ Resolved on 2026-10-11:
 10. ~~**`-f` for `--format`.**~~ **Resolved:** not reserved (section 3.4).
 11. ~~**Does `@clibuilder/axi` still need to be a separate package?**~~ **Resolved:** it is absorbed into core in v12 and keeps only the value helpers (section 4).
 
-Still open:
+Settled by later decisions on 2026-10-11:
 
 12. ~~**Name of the `quiet()` opt-out.**~~ **Resolved:** there is no opt-out wrapper; `result(value, { render })` controls the printed form (section 3.5).
-13. **Descriptor introspection field names.** The introspection form is public and read-only ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)); its exact field names are still a proposal.
-14. ~~**Untested `t` typing.**~~ **Resolved:** the refinement typing was tested on TS 6.0.3 and 7.0.2 and uses an explicit input check ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
+13. ~~**Descriptor introspection form.**~~ **Resolved:** a public, read-only union keyed on `kind` ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)). Its exact field names stay open (item 17).
+14. ~~**Untested `t` typing.**~~ **Resolved:** the foreign-schema typing was tested on TS 6.0.3 and 7.0.2, and `.check()` uses an explicit input comparison ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
 15. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 3.10).
-16. **Refinement semantics.** Whether a refinement may change the type or only narrow it, and whether CLI string coercion must live in the descriptor or parser rather than in a refinement ([slim-dependencies section 10](slim-dependencies.md#10-still-open), items 5 and 6).
+16. ~~**Schema semantics.** May a schema change the option's type, and where does string coercion live?~~ **Resolved:** a schema in `.check()` only validates and its output is ignored; the descriptor or `t.custom` converts, and there is no coercion step ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
+
+Still open, all in [slim-dependencies section 10](slim-dependencies.md#10-still-open):
+
+17. **Exact introspection field names,** finalized in the implementation PR.
+18. **A built-in `t.json(schema)` helper.**
+19. **`t.custom` as an array element** after v12.
+20. **Async Standard Schema in `.check()`:** awaited or rejected.
+21. **Type-check cost on a CLI with many commands,** not yet measured.
