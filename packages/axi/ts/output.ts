@@ -72,7 +72,8 @@ export type Output = {
 	document(content: string): void
 	/**
 	 * Writes a structured error on stdout, where the agent reads its answers, and returns a
-	 * `CliError` carrying the exit code for the command to throw:
+	 * `CliError` carrying the exit code for the command to throw. clibuilder 11.6 and later
+	 * print nothing more for it, so the error is reported once:
 	 *
 	 * @example
 	 * ```ts
@@ -120,7 +121,11 @@ export function createOutput(format: OutputFormat | undefined, options: { stdout
 		},
 		error(report) {
 			const exitCode = writeError(report, resolved, stdout)
-			return new CliError(report.message, { exitCode })
+			// already written above, so clibuilder must not report it again.
+			// `CliError.reported` is new in clibuilder 11.6; an older one still gets a plain `CliError`.
+			return typeof CliError.reported === 'function'
+				? CliError.reported(exitCode, report.message)
+				: new CliError(report.message, { exitCode })
 		}
 	}
 }

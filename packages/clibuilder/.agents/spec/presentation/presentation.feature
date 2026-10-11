@@ -471,3 +471,25 @@ Feature: Presentation
     Given a cli built with its own stdout stream
     When it sets up its streams
     Then no error handler is added to that stream
+
+  # ── UC10 — encode an answer in the cli's format ──
+
+  Scenario: an answer is encoded in toon by the official encoder
+    Given a plain object
+    When it is encoded in toon
+    Then the text is what @toon-format/toon encodes, with no trailing newline
+
+  Scenario: an answer is encoded in json on one line
+    Given a plain object
+    When it is encoded in json
+    Then the text is its JSON.stringify
+
+  Scenario: an answer is encoded in text as key and value lines
+    Given a plain object with scalars, lists of scalars and lists of records
+    When it is encoded in text
+    Then each key is a line, a list of scalars is bulleted, a list of records is a table, and an empty list is (none)
+
+  Scenario: an error report is error, code, the details fields, then help
+    Given an error's message, code, details and help
+    When it is laid out for encoding
+    Then the keys are error, code, each details key, then help, and help is left out when empty

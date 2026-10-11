@@ -139,7 +139,7 @@ inputs they gave, or to be told precisely what was wrong.
 | `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the configured plugins or the `use()` extensions run, so a broken config or a hanging plugin or extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin, an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
-| any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the default, `toon`, until `cli({ format })` and `--format` exist |
+| any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the `cli({ format })` value, `toon` by default, until `--format` exists |
 | a usage error names a global key: one only the base command declares | base errors win for global keys: it is replaced by the base command's errors for that key. A well-formed global flag has none, so a sub-command declaring no options of its own does not report it as unknown; a malformed one is reported as the invalid value it is, once, as on the root (#614). A key the matched command declares itself is its own option, not the global one |
 | any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code |
 | any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
@@ -147,7 +147,9 @@ inputs they gave, or to be told precisely what was wrong.
 | the matched command declares no config schema | no validation runs and the command is reached directly |
 | the matched command's `run` returns | its value is returned from `parse` |
 | the matched command has no `run` | help is shown and the CLI exits with the usage code — a group command is not a runnable command, so invoking it bare is missing its sub-command ([#609](https://github.com/clibuilder/clibuilder/issues/609)). This includes an application with no default command. `--help` on a group is answered earlier and exits with success |
-| `run` throws a `CliError` | its message and help lines are printed and the CLI exits with the error's own code |
+| `run` throws a `CliError`, in `console` output (the default) | its message and help lines are printed through `ui.error` and the CLI exits with the error's own code |
+| `run` throws a `CliError`, in `axi` output | the report is encoded once on stdout in the CLI's format, nothing is written to stderr for it, a debugging copy is a `debug` line, and the CLI exits with the error's own code |
+| `run` throws a `CliError` from `CliError.reported()`, in either output | nothing is printed for it, and the CLI exits with the error's own code |
 | `run` throws anything else | it propagates to the caller — a defect in the command is not the framework's to swallow |
 
 ### UC4 — `CliError` and the exit codes: report a failure
@@ -157,12 +159,25 @@ optional guidance, and an exit code that says which kind of failure it was.
 
 | | |
 | --- | --- |
-| Trigger | `throw new CliError(message, options)` from `run` |
-| Inputs | a message; optionally an exit code, help lines, and a cause |
-| Outcome | the message and help are printed, and the process exit code is set |
+| Trigger | `throw new CliError(message, options)` or `throw new CliError(report)` from `run` |
+| Inputs | a message; optionally an exit code, a code, details, help lines, and a cause |
+| Outcome | the report is printed (UC3 says where), and the process exit code is set |
+
+The `CliError` is the structured report of the failure (axi-native RFC
+section 3.1): `message`, `code` (a stable kebab-case string, `error` by
+default), `details` (a flat record whose values are scalars or lists of
+scalars, `{}` by default), `help` (a list) and `exitCode`.
 
 **Extensions.** The exit code defaults to the error code when none is given.
-`help` may be one line or many and is normalized to a list. `isCliError` tests a
+It is any integer from 1 to 255; `0`, which would report a failure as success,
+and anything else outside that range are rejected with a `RangeError` (section
+3.6). A code that is not kebab-case is rejected, and so is a `details` key that
+the report is rendered under (`error`, `code`, `help`). `details` and `help`
+are copied, so a caller changing its own record later does not change the
+error. `help` may be one line or many and is normalized to a list.
+`CliError.reported(exitCode)` is a `CliError` for a failure already reported
+elsewhere, such as by `@clibuilder/axi`'s `output.error()`: it carries the exit
+code and renders nothing, which is what removes the double report in v11. `isCliError` tests a
 **brand**, not the class, so an error thrown by a duplicated copy of
 `clibuilder` in the dependency tree is still recognized.
 
@@ -291,6 +306,10 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `parse` | UC3 | — |
 | `exitCodes` | UC4 | — |
 | `CliError` and its options | UC4 | — |
+| `CliError` as one report object, `CliError.Report` | UC4 | the `(message, options)` form |
+| `CliError.code`, `CliError.details`, `CliError.Details` | UC4 | — |
+| `CliError.reported` | UC4 | — |
+| `cli.Options.format`, `cli.Format` | UC3 — the format a `CliError` is encoded in under `axi` output; the global `--format` is a later step | — |
 | `isCliError` | UC4 | — |
 | `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
 | `context().createCommandUI` | UC2 — each command gets its own ui before it runs | — |
@@ -517,6 +536,11 @@ graph TD
 | show help, exit with the usage code | matched command has no `run` | `a group command invoked bare shows help and exits with the usage code` |
 | return its value | a runnable command, no errors | `a matched command runs and its value is returned` |
 | print the message and help lines; exit with the error's code | `run` throws `CliError` | `a command failing with CliError is reported and sets its exit code` |
+| encode once on stdout, nothing on stderr | `run` throws `CliError`, `axi` output, each format | `in axi output a CliError is rendered once on stdout in the cli's format` |
+| a debug line on stderr | the same, with `--verbose` | `in axi output a debugging copy of a CliError is a debug line` |
+| unchanged | `run` throws `CliError`, `console` output, with a format | `in console output a CliError is reported on stderr as before` |
+| nothing printed | `run` throws `CliError.reported()` | `a CliError already reported renders nothing` |
+| reject at construction | `cli({ format })` outside toon, json, text | `a cli format other than toon, json or text is rejected` |
 | propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |
 
 ### UC4 — `CliError` and the exit codes
@@ -531,6 +555,14 @@ graph TD
 | carries the brand? — yes | an error from a duplicated copy of the package | `an error from a second copy of clibuilder is still recognized` |
 | carries the brand? — no | a plain Error | `an ordinary error is not mistaken for a CliError` |
 | success, error and usage are three distinct values | any | `success, error, and usage are three distinct exit codes` |
+| accept 1 to 255 | exit code 1 or 255 | `a CliError accepts any exit code from 1 to 255` |
+| reject | exit code 0, 256, negative or fractional | `a CliError rejects an exit code outside 1 to 255` |
+| default code and details | no code or details given | `a CliError with no code or details uses the code error and no details` |
+| reject | a code that is not kebab-case | `a CliError rejects a code that is not kebab-case` |
+| reject | a details key `error`, `code` or `help` | `a CliError rejects a details key it is rendered under` |
+| the same error | one report object | `a CliError can be constructed from one report object` |
+| still a CliError | a subclass | `a subclass of CliError is a CliError` |
+| exit code, renders nothing | `CliError.reported(exitCode)` | `CliError.reported carries an exit code and is marked as reported` |
 
 ### UC2 — the ui a command runs with
 
@@ -561,6 +593,7 @@ graph TD
 | use the cli's | only the cli declares a handler | `the cli's handler takes over when no command in the chain declares one` |
 | call it with the errors, the matched command, and its ui; print nothing | any handler found | `a handler receives each error and the matched command, and the framework prints nothing` |
 | call it with the format and the exit code | any handler found | `a handler receives the resolved format and the usage exit code` |
+| call it with the cli's format | `cli({ format })` given | `a handler receives the format the cli was built with` |
 | call it with the coded errors | each kind of usage error | `each usage error a handler receives carries its stable code` |
 | exit with the usage code | the handler returns nothing | `a handler that returns nothing leaves the usage exit code` |
 | exit with that number | the handler returns a number | `a handler that returns an exit code sets it` |

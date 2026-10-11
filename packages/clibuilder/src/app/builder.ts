@@ -10,10 +10,11 @@ import { parseArgv } from '../invocation/argv.js'
 import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
+import { encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
 import type { StandardSchemaV1 } from '../t.js'
 import { isZod3Type } from '../zod.js'
-import { exitCodes, isCliError } from './errors.js'
+import { type CliError, exitCodes, isCliError, isReportedCliError } from './errors.js'
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
@@ -37,6 +38,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	// and override the log level for this logger.
 	// context.ui.displayLevel = 'trace'
 	const s = state(options)
+	const format = options.format ?? 'toon'
+	if (!formats.includes(format)) {
+		throw new TypeError(`cli({ format }) must be one of ${formats.join(', ')}, received ${String(format)}`)
+	}
 	const description = s.description
 	const pending: Promise<any>[] = []
 	const registry = createRegistry()
@@ -138,8 +143,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const baseCommand = getBaseCommand(s.description, { config: !!s.configName })
 		// the global options are read from the base command alone, before the matched
 		// command's usage errors are looked at (axi-native RFC section 3.2).
-		// There is no `cli({ format })` or `--format` yet, so the format is the default.
-		const globals = resolveGlobalOptions(baseCommand, rawArgs, 'toon')
+		// There is no `--format` yet, so the format is the `cli({ format })` default.
+		const globals = resolveGlobalOptions(baseCommand, rawArgs, format)
 		if (globals.silent) {
 			delete rawArgs.silent
 			s.displayLevel = 'none'
@@ -214,8 +219,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			// a command signals failure by throwing `CliError`. Anything else is a
 			// defect in the command and keeps propagating to the caller.
 			if (!isCliError(e)) throw e
-			commandInstance.ui.error(e.message)
-			for (const h of e.help) commandInstance.ui.error(h)
+			reportCliError(e, commandInstance.ui)
 			return exit(e.exitCode)
 		}
 	}
@@ -232,6 +236,24 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const ui = createCommandUI(context, s, s.command)
 		ui.info(`config: ${describeConfigSource(source)}`)
 		if (source.type !== 'none') ui.info(JSON.stringify(config, undefined, 2))
+	}
+
+	/**
+	 * Reports a `CliError` once: as an encoded answer on stdout in `axi` output, with a debugging copy
+	 * as a `debug` line, or as its message and help lines through `ui.error` in `console` output.
+	 * One from `CliError.reported()` was already reported, so nothing is written for it.
+	 */
+	function reportCliError(e: CliError, ui: { error(...args: any[]): void; debug(...args: any[]): void }) {
+		if (isReportedCliError(e)) return
+		if (options.output === 'axi') {
+			// read field by field: a `CliError` from an older copy of clibuilder has no `code` or `details`
+			const report = errorOutput({ message: e.message, code: e.code ?? 'error', details: e.details, help: e.help })
+			context.writeStdout(`${encode(report, format)}\n`)
+			ui.debug(e)
+			return
+		}
+		ui.error(e.message)
+		for (const h of e.help) ui.error(h)
 	}
 
 	function exit(code: number) {

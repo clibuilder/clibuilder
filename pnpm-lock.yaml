@@ -303,6 +303,9 @@ importers:
 
   packages/clibuilder:
     dependencies:
+      '@toon-format/toon':
+        specifier: ^4.1.1
+        version: 4.1.1
       args-minus:
         specifier: workspace:^
         version: link:../args-minus

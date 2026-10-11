@@ -28,6 +28,7 @@ namespace cli {
     onUsageError?: UsageErrorHandler
     streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
     output?: 'console' | 'axi'
+    format?: 'toon' | 'json' | 'text'
   }
 }
 ```
@@ -41,7 +42,8 @@ namespace cli {
 | `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. Planned for removal in v12, where it becomes an option of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
-| `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
+| `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages and errors go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
+| `format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format answers are encoded in. Defaults to `'toon'`. With `output: 'axi'`, a thrown [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) is encoded in it. Any other value throws when `cli()` is called. |
 
 Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI, unless the CLI
 uses [`@clibuilder/plugins`](/clibuilder/packages/plugins/), which adds its own.
@@ -81,8 +83,10 @@ await cli({ name: 'app', version: '1.0.0', streams: { stdout: capture, stderr: p
 | `ui.showHelp`, `ui.showVersion`, `--help`, `--version` | stdout | stdout |
 
 With `'axi'`, stdout is left for answers, so an agent or a script reading it never gets diagnostics
-mixed in. In this release `output` changes only where `ui` messages go. Returned values, errors and
-usage errors move to stdout in later releases, and `'axi'` becomes the default in v12. Both modes
+mixed in. With `'axi'`, a `CliError` thrown from `run()` is also an answer: it is rendered once on
+stdout in the CLI's `format`, and nothing is written to stderr for it (see
+[Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)). Returned values
+and usage errors move to stdout in later releases, and `'axi'` becomes the default in v12. Both modes
 are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
 
 When you pass `streams` or set `output: 'axi'`, the CLI uses its built-in UI:

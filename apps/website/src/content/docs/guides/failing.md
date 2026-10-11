@@ -113,8 +113,9 @@ On `main`, for the next `clibuilder` 11 minor:
   reports. In 11 it is not enumerable, so `JSON.stringify(error)` and equality checks give what they
   did before.
 - The second argument also has `format`, the format the cli reports in, and `exitCode`, the code the
-  cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is `'toon'` until
-  `cli({ format })` and the global `--format` option land.
+  cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is `'toon'`, or the
+  CLI's [`cli({ format })`](/clibuilder/api/cli/#options) value (Unreleased), until the global
+  `--format` option lands.
 - The global options are read before the handler runs. `--silent` and `--verbose` are already applied
   to the `ui` it receives, and a malformed global flag, such as `--verbose=maybe`, is one of the
   errors, reported once as an `invalid-value`.
@@ -195,9 +196,34 @@ export const view = command({
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). |
+| `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). **Unreleased:** any integer from 1 to 255; `0` and any other value throw a `RangeError`. |
+| `code` | `string` | **Unreleased.** A stable kebab-case string that says which failure this is, such as `not-found`. Defaults to `error`. Anything else throws a `RangeError`. |
+| `details` | `Record<string, scalar \| scalar[]>` | **Unreleased.** Extra fields an agent can act on, such as the name that was not found. Flat: each value is a string, number, boolean, `null`, or a list of them. A key may not be `error`, `code` or `help`. |
 | `help` | `string \| string[]` | What the caller should do about it. Printed after the message, one line each. |
 | `cause` | `unknown` | The underlying error, kept for the caller to inspect. |
+
+The error carries them as `message`, `code`, `details`, `help` (always a list) and `exitCode`.
+
+:::note[Unreleased: `code`, `details` and the report form]
+`code`, `details`, `new CliError(report)`, the 1 to 255 range and `CliError.reported()` are on `main`
+for the next `clibuilder` 11 minor, which is not published yet.
+:::
+
+You can also pass the whole report as one object:
+
+```ts
+throw new CliError({
+  message: `no plugin named ${name}`,
+  code: 'not-found',
+  details: { name },
+  help: 'run `my-cli plugins list` to see the installed plugins',
+  exitCode: 4
+})
+```
+
+The exit code says *success, failure, or usage error*. The `code` says *which failure*. Scripts
+branch on the first and agents on the second. clibuilder uses only 0, 1 and 2; a CLI that wants its
+own codes above 2, such as 3 for not found, sets them itself.
 
 Use `exitCodes.usage` when the invocation itself was wrong — a value your schema could not have
 caught, such as an option value that is only valid for certain other values. Use the default for
@@ -206,6 +232,40 @@ succeed.
 
 Any other error thrown from `run()` is a defect rather than a reported failure, so it keeps
 propagating out of `parse()` untouched.
+
+### Errors with `output: 'axi'`
+
+:::note[Unreleased]
+On `main` for the next `clibuilder` 11 minor, which is not published yet.
+:::
+
+With the default [`output: 'console'`](/clibuilder/api/cli/#streams-and-output), clibuilder prints
+the message and the help lines on stderr, as above. With `cli({ output: 'axi' })` the error is an
+answer: clibuilder renders it once on stdout, and writes nothing to stderr for it. The fields are
+flat, in this order: `error` (the message), `code`, the `details` fields, then `help`, which is left
+out when empty. The encoding is the CLI's [`format`](/clibuilder/api/cli/#options), `toon` unless
+you set another:
+
+```sh
+$ my-cli plugins show foo
+error: no plugin named foo
+code: not-found
+name: foo
+help[1]: run `my-cli plugins list` to see the installed plugins
+```
+
+With `format: 'json'` the same error is one line of JSON, and with `format: 'text'` it is
+`key: value` lines. The keys are the ones `@clibuilder/axi` and
+[axi-sdk-js](https://github.com/kunchenguid/axi) use. Under `--verbose`, a debugging copy of the
+error, with its stack, is written to stderr as a `debug` line. The CLI exits with the error's
+`exitCode`.
+
+### An error already reported
+
+`CliError.reported(exitCode)` is for a failure that something else already printed, such as
+`@clibuilder/axi`'s `output.error()`. The CLI exits with `exitCode`, and prints nothing for it on
+stdout or stderr, in either output, so the failure is not reported twice. It is
+**Unreleased**, like the rest of this section.
 
 ## Asserting on failures in tests
 
