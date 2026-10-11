@@ -16,7 +16,7 @@ and lists every `return <expr>` in a `run()`, which clibuilder 12 prints.
 | Option | Meaning |
 | --- | --- |
 | `--dry-run` | print a unified diff instead of writing files |
-| `--add-plugins` | add `.use(plugins())`, after `.use(config())`, to every `cli()` that sets `config` |
+| `--add-plugins` | add `.use(plugins())`, after `.use(config())`, to every `cli()` that sets `config`. Without it, the codemod flags those calls with a `TODO(clibuilder-12)` comment, since 12 no longer loads plugins from `config` |
 
 See [Upgrading from clibuilder 11 to 12](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/)
 for what each change means and how to fix what the codemod flags.

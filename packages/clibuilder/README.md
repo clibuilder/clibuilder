@@ -279,7 +279,7 @@ import type { PluginActivationContext } from '@clibuilder/plugins'
 const sing = command({ ... })
 const dance = command({ ... })
 
-export function activate({ addCommand }: PluginCli.ActivationContext) {
+export function activate({ addCommand }: PluginActivationContext) {
   addCommand({
     name: 'miku',
     commands: [sing, dance]
@@ -337,7 +337,7 @@ cli({ name: 'app', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-or in CommonJS:
+or in CommonJS, which loads the ESM build through `require(esm)` on Node 20.19 or later:
 
 ```js
 #!/usr/bin/env node
