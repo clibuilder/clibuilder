@@ -6,10 +6,8 @@ import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
 import type { AnyDescriptor, OutputOf, StandardSchemaV1 } from './t.js'
-import type { RequiredPick, UnionOfValues } from './type_utils.js'
+import type { UnionOfValues } from './type_utils.js'
 
-export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
-export function cli(options: cli.Options): cli.Builder
 export function cli(options: cli.Options): cli.Builder {
 	return builder(context({ streams: options.streams, output: options.output }), options)
 }
@@ -29,15 +27,6 @@ export namespace cli {
 		 * A short description of the cli.
 		 */
 		description?: string
-		/**
-		 * Indicate the cli accepts configuration.
-		 * Set it to true to read config based on the cli name,
-		 * or specify a different config name.
-		 *
-		 * It loads the config for the commands only. Plugins load through `@clibuilder/plugins`:
-		 * `cli({ ... }).use(plugins())`.
-		 */
-		config?: string | boolean
 		/**
 		 * Takes over how usage errors are reported for every command
 		 * that does not declare its own `onUsageError`.
@@ -181,7 +170,10 @@ export namespace cli {
 			A extends Command.Argument<AName>[],
 			OName extends string,
 			O extends Command.Options<OName>
-		>(this: T, command: Command.DefaultCommand<ConfigType, A, O>): Omit<T, 'default'> & Executable
+		>(
+			this: T,
+			command: Command.DefaultCommand<ConfigType, A, O> & ConfigGuard<T, ConfigType>
+		): Omit<T, 'default'> & Executable
 		command<
 			T,
 			Context extends Record<string, any>,
@@ -190,19 +182,39 @@ export namespace cli {
 			A extends Command.Argument<AName>[],
 			OName extends string,
 			O extends Command.Options<OName>
-		>(this: T, command: Command<Context, ConfigType, A, O>): T & Executable
+		>(this: T, command: Command<Context, ConfigType, A, O> & ConfigGuard<T, ConfigType>): T & Executable
 		/**
-		 * Adds an extension that contributes commands and registry entries
-		 * before `parse()` picks the command to run.
+		 * Adds an extension that contributes commands, global options, registry entries
+		 * and pre-run hooks before `parse()` picks the command to run.
 		 *
 		 * Extensions run in the order `use()` was called, each awaited before the next,
 		 * on the first `parse()` that needs the command tree.
 		 * A bare `--version` is answered without running them.
 		 *
+		 * `.use(config())` from `clibuilder/config` lets the commands added after it declare `config`.
+		 *
 		 * @see Extension
 		 */
-		use<T>(this: T, extension: Extension): T & Executable
+		use<T, E extends Extension>(
+			this: T,
+			extension: E
+		): T & Executable & (E extends ConfigExtension ? ConfigEnabled : unknown)
 	}
+
+	/**
+	 * A command's `config` is a type error unless the cli has `.use(config())` from `clibuilder/config`,
+	 * added before the command.
+	 */
+	export type ConfigGuard<T, ConfigType> = T extends ConfigEnabled
+		? unknown
+		: ConfigSchema extends ConfigType
+			? unknown
+			: { config: ConfigNeedsExtension }
+
+	/**
+	 * What a command's `config` is checked against on a cli without `.use(config())`: no schema matches it.
+	 */
+	export type ConfigNeedsExtension = 'a command declares config: add .use(config()) from clibuilder/config first'
 
 	/**
 	 * What a command's `config` can be declared with:
@@ -433,10 +445,24 @@ export type PluginActivationContext = {
 /**
  * Extends a cli before `parse()` picks the command to run.
  *
- * It is how `@clibuilder/plugins` loads plugins, and how any other package
- * can add commands or share values through the registry.
+ * It is how `clibuilder/config` loads config and `@clibuilder/plugins` loads plugins,
+ * and how any other package can add commands, global options and pre-run hooks,
+ * or share values through the registry.
  */
 export type Extension = (context: ExtensionContext) => void | Promise<void>
+
+declare const configEnabled: unique symbol
+
+/**
+ * The extension `config()` from `clibuilder/config` returns.
+ * `.use()` of it lets the commands added after it declare `config`.
+ */
+export type ConfigExtension = Extension & { readonly [configEnabled]: true }
+
+/**
+ * A builder that has `.use(config())`, so its commands may declare `config`.
+ */
+export type ConfigEnabled = { readonly [configEnabled]: true }
 
 export type ExtensionContext = {
 	readonly host: { readonly name: string; readonly version: string }
@@ -444,12 +470,77 @@ export type ExtensionContext = {
 	readonly ui: UI
 	readonly registry: RegistryOwner
 	/**
+	 * Values extensions share with each other for this cli, keyed like the registry with `defineKey()`.
+	 * Unlike the registry, a value can be replaced, and the commands do not see it.
+	 */
+	readonly shared: SharedState
+	/**
 	 * Adds a command after the host's own `.command()` and `.default()` commands.
 	 */
 	addCommand(command: cli.Command<any, any, any, any>): void
 	/**
-	 * The cli's config and where it came from.
-	 * `source.type` is `'none'` when the cli sets no `config`.
+	 * Adds a global option, listed with `--help`, `--verbose` and the other options every command accepts.
+	 *
+	 * When the caller passes it, `answer` runs instead of the matched command, after the logging flags apply.
+	 * What it returns is the answer, as for `run()`: under `output: 'axi'` it is printed in the resolved format.
+	 */
+	addGlobalOption(name: string, entry: cli.Command.Options.Entry, answer: GlobalOptionAnswer): void
+	/**
+	 * Adds a hook that runs before the matched command's `run()`, once its arguments are valid.
+	 * Hooks run in the order they were added. A hook fails the command by throwing a `CliError`.
+	 */
+	beforeRun(hook: BeforeRunHook): void
+	/**
+	 * The cli's config and where it came from, as the `clibuilder/config` extension resolved it.
+	 * `source.type` is `'none'` when the cli has no `.use(config())`, or it is added after this extension.
 	 */
 	resolveConfig(): Promise<ConfigLoadResult>
 }
+
+/**
+ * Values shared between extensions.
+ *
+ * @see ExtensionContext.shared
+ */
+export type SharedState = {
+	get<T>(key: ValueKey<T>): T | undefined
+	set<T>(key: ValueKey<T>, value: T): void
+	has(key: ValueKey<unknown>): boolean
+}
+
+/**
+ * Answers a global option an extension added.
+ *
+ * @see ExtensionContext.addGlobalOption
+ */
+export type GlobalOptionAnswer = (context: {
+	/**
+	 * The option's value, converted by its `type`.
+	 */
+	value: unknown
+	/**
+	 * The format to answer in: the caller's `--format`, else the `cli({ format })` value.
+	 */
+	format: cli.Format
+	output: cli.Output
+	ui: UI
+}) => unknown
+
+/**
+ * Runs before the matched command's `run()`.
+ *
+ * @see ExtensionContext.beforeRun
+ */
+export type BeforeRunHook = (context: {
+	/**
+	 * The command about to run.
+	 */
+	readonly command: cli.Command
+	/**
+	 * What `run()` reads as `this.config`. A hook may set it.
+	 */
+	config: unknown
+	readonly format: cli.Format
+	readonly output: cli.Output
+	readonly ui: UI
+}) => void | Promise<void>

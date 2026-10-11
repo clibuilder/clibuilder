@@ -21,12 +21,12 @@ function counts(findings: ReturnType<typeof transform>['findings']) {
 describe('fixtures', () => {
 	it.each([
 		['cyber-mux', { rewrite: 8, flag: 7, review: 2 }],
-		['repobuddy-buddy', { rewrite: 4, flag: 1, review: 1 }],
+		['repobuddy-buddy', { rewrite: 5, flag: 1, review: 1 }],
 		['repobuddy-buddy-spec', { rewrite: 1, flag: 0, review: 0 }],
 		['repobuddy-typescript', { rewrite: 4, flag: 0, review: 1 }],
 		['zod-subset', { rewrite: 11, flag: 9, review: 0 }],
 		['axi-imports', { rewrite: 2, flag: 4, review: 0 }],
-		['plugins-keywords', { rewrite: 1, flag: 1, review: 1 }],
+		['plugins-keywords', { rewrite: 2, flag: 1, review: 1 }],
 		['show-help', { rewrite: 0, flag: 2, review: 0 }]
 	])('%s matches output.ts', async (name, expected) => {
 		const result = runFixture(name)
@@ -186,14 +186,16 @@ describe('plugins', () => {
 
 		const added = runFixture('repobuddy-buddy', { addPlugins: true })
 		expect(added.output).toContain("import { plugins } from '@clibuilder/plugins'")
-		expect(added.output).toContain('}).use(plugins())\n\t.command(testScripts)')
+		expect(added.output).toContain('}).use(config()).use(plugins())\n\t.command(testScripts)')
 		expect(added.dependencies).toEqual(['@clibuilder/plugins'])
 	})
 
-	it('leaves a cli that already uses @clibuilder/plugins alone', () => {
+	it('adds no plugins() to a cli that already uses @clibuilder/plugins, and loads its config before it', () => {
 		const source =
 			"import { cli } from 'clibuilder'\nimport { plugins } from '@clibuilder/plugins'\ncli({ name: 'a', config: true }).use(plugins())\n"
-		expect(transform(source, 'x.ts', { addPlugins: true }).output).toBe(source)
+		expect(transform(source, 'x.ts', { addPlugins: true }).output).toBe(
+			"import { cli } from 'clibuilder'\nimport { config } from 'clibuilder/config'\nimport { plugins } from '@clibuilder/plugins'\ncli({ name: 'a' }).use(config()).use(plugins())\n"
+		)
 	})
 
 	it('moves shorthand keywords and aliases plugins when the name is taken', () => {
@@ -207,7 +209,7 @@ describe('plugins', () => {
 
 	it('moves keywords that is the only property', () => {
 		const result = transform("import { cli } from 'clibuilder'\ncli({ keywords: ['k'] })\n", 'x.ts')
-		expect(result.output).toContain("cli({  }).use(plugins({ keywords: ['k'] }))")
+		expect(result.output).toContain("cli({ }).use(plugins({ keywords: ['k'] }))")
 	})
 
 	it('flags keywords it cannot move', () => {
@@ -318,5 +320,65 @@ describe('format option', () => {
 			'x.ts'
 		)
 		expect(result.findings.map((f) => [f.rule, f.line])).toEqual([['format-option', 3]])
+	})
+})
+
+describe('config', () => {
+	it('replaces config: true with .use(config()) from clibuilder/config', () => {
+		const result = transform("import { cli } from 'clibuilder'\ncli({ name: 'a', config: true })\n", 'x.ts')
+		expect(result.output).toContain("import { cli } from 'clibuilder'\nimport { config } from 'clibuilder/config'\n")
+		expect(result.output).toContain("cli({ name: 'a' }).use(config())\n")
+		expect(result.findings.filter((f) => f.rule === 'config').map((f) => f.kind)).toEqual(['rewrite'])
+	})
+
+	it("replaces config: 'name' with .use(config({ name }))", () => {
+		const result = transform("import { cli } from 'clibuilder'\ncli({ config: 'other', name: 'a' })\n", 'x.ts')
+		expect(result.output).toContain("cli({ name: 'a' }).use(config({ name: 'other' }))")
+	})
+
+	it('drops config: false', () => {
+		const result = transform("import { cli } from 'clibuilder'\ncli({ name: 'a', config: false })\n", 'x.ts')
+		expect(result.output).toBe("import { cli } from 'clibuilder'\ncli({ name: 'a' })\n")
+	})
+
+	it('flags a config it cannot read', () => {
+		const result = transform("import { cli } from 'clibuilder'\ncli({ name: 'a', config: name })\n", 'x.ts')
+		expect(result.findings.filter((f) => f.rule === 'config').map((f) => f.kind)).toEqual(['flag'])
+		expect(result.output).toContain("cli({ name: 'a', config: name })")
+		expect(result.output).not.toContain('import { config }')
+	})
+
+	it('aliases config when the file already binds the name', () => {
+		const result = transform(
+			"import { cli } from 'clibuilder'\nconst config = {}\ncli({ name: 'a', config: true })\n",
+			'x.ts'
+		)
+		expect(result.output).toContain("import { config as clibuilderConfig } from 'clibuilder/config'")
+		expect(result.output).toContain("cli({ name: 'a' }).use(clibuilderConfig())")
+	})
+
+	it('moves the config functions and types from clibuilder to clibuilder/config', () => {
+		const result = transform(
+			"import { cli, resolveConfig, type ConfigSource } from 'clibuilder'\nimport type { ConfigLoadResult } from 'clibuilder'\n",
+			'x.ts'
+		)
+		expect(result.output).toBe(
+			"import { cli } from 'clibuilder'\nimport { resolveConfig, type ConfigSource } from 'clibuilder/config'\nimport type { ConfigLoadResult } from 'clibuilder/config'\n"
+		)
+	})
+
+	it('joins the config import it adds', () => {
+		const result = transform(
+			"import { cli, lookupConfig } from 'clibuilder'\ncli({ name: 'a', config: true })\n",
+			'x.ts'
+		)
+		expect(result.output).toContain(
+			"import { cli } from 'clibuilder'\nimport { config, lookupConfig } from 'clibuilder/config'\n"
+		)
+	})
+
+	it('flags a config function used through a namespace import', () => {
+		const result = transform("import * as c from 'clibuilder'\nc.resolveConfig()\n", 'x.ts')
+		expect(result.findings.map((f) => [f.rule, f.kind])).toEqual([['config', 'flag']])
 	})
 })

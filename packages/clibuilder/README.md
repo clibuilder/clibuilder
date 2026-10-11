@@ -206,6 +206,7 @@ Every declaration follows `args-minus`:
 In v12 (unreleased) `t` is the only way to declare a type: `z` and zod are removed.
 An argument without a `type` is a string, and an option without a `type` is an optional flag.
 
+A cli loads config with `.use(config())` from `clibuilder/config`.
 If you invoke a command expecting a `config`,
 the config will be loaded.
 Each command defines their own config, with any [Standard Schema](https://standardschema.dev):
@@ -213,9 +214,11 @@ zod 3.24 or later, zod 4, valibot, arktype and others, from your own dependency.
 `this.config` is the schema's output.
 
 ```ts
+import { config } from 'clibuilder/config'
 import { z } from 'zod'
 
 cli({ ... })
+.use(config())
 .default({
   config: z.object({ presets: z.string() }),
   run() {
@@ -240,7 +243,7 @@ Common filename are supported:
 You can override the config name too:
 
 ```ts
-cli({ config: 'alt-config.json' })
+cli({ ... }).use(config({ name: 'alt-config' }))
 ```
 
 ## Plugins

@@ -37,6 +37,10 @@
 			"types": "./esm/compile_cache.d.ts",
 			"default": "./esm/compile_cache.js"
 		},
+		"./config": {
+			"types": "./esm/config/index.d.ts",
+			"default": "./esm/config/index.js"
+		},
 		"./testing": {
 			"types": "./esm/testing/index.d.ts",
 			"default": "./esm/testing/index.js"

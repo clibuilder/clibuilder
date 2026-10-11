@@ -32,13 +32,13 @@ Feature: Built-in commands
     When its base command is built
     Then it declares format, choices toon, json and text, defaulting to the cli's format or toon, with no short alias
 
-  Scenario: an application taking config also declares show-config
-    Given an application that takes configuration
+  Scenario: an application using config() also declares show-config
+    Given an application using config()
     When its base command is built
     Then show-config is among its options
 
-  Scenario: an application taking no config does not advertise show-config
-    Given an application that takes no configuration
+  Scenario: an application not using config() does not advertise show-config
+    Given an application not using config()
     When its base command is built
     Then show-config is not among its options
 

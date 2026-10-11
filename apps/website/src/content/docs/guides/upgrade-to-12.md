@@ -58,7 +58,8 @@ What it rewrites and what it flags:
 | value helpers from `@clibuilder/axi` | moved to `clibuilder/axi` |
 | other imports from `@clibuilder/axi` | flagged ([`@clibuilder/axi` moves into `clibuilder`](#clibuilderaxi-moves-into-clibuilder)) |
 | `cli({ keywords })` | rewritten to `.use(plugins({ keywords }))` ([plugins move out of core](#plugins-move-to-clibuilderplugins)) |
-| `cli({ config })` | flagged; with `--add-plugins`, rewritten to add `.use(plugins())` |
+| `cli({ config })` | rewritten to `.use(config())` ([config loads through `.use(config())`](#config-loads-through-useconfig)); with `--add-plugins`, also adds `.use(plugins())` |
+| config functions imported from `clibuilder` | moved to `clibuilder/config` |
 | `this.keywords` | flagged |
 | `import { testCommand } from 'clibuilder'` | moved to `clibuilder/testing` ([`testCommand` is only in `clibuilder/testing`](#testcommand-is-only-in-clibuildertesting)) |
 | `return <expr>` in `run()` | listed for review |
@@ -549,6 +550,53 @@ const { testCommand } = require('clibuilder/testing')
 Source: [slim-dependencies section 5.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#54-build-output).
 See [Installation](/clibuilder/getting-started/installation/#module-formats).
 
+## Config loads through `.use(config())`
+
+**On `main`.**
+
+**What changed.** The `config` option of `cli()` is removed. Config loading is an extension from
+the `clibuilder/config` subpath. A CLI without `.use(config())` contains no config loader, no
+find-up and no parsers. The config functions and types moved to the same subpath: `lookupConfig`,
+`resolveConfig`, `loadConfig`, `readConfigFile`, `getConfigFilenames`, `getConfigFormat`,
+`describeConfigSource`, `ConfigFormat`, `ConfigLoadResult`, `ConfigLookupResult` and `ConfigSource`.
+The root `clibuilder` export no longer has them.
+
+`.use(config())` gives the CLI the global `--show-config` option, the validation of each command's
+`config` schema before `run()`, and `this.config`. A command without a schema reads the config as
+loaded. The config is resolved on the first `parse()`, not when `cli()` is called.
+
+**Who is affected.** A CLI that sets `config`, and code that imports a config function from
+`clibuilder`. The codemod rewrites both, rule `config`. It flags a `config` value it cannot read, such as a
+variable, with a `TODO(clibuilder-12)` comment.
+
+**Fix.** Replace the option with the extension, and import from `clibuilder/config`.
+
+| Before | After |
+| --- | --- |
+| `cli({ name, version, config: true })` | `cli({ name, version }).use(config())` |
+| `cli({ name, version, config: 'other' })` | `cli({ name, version }).use(config({ name: 'other' }))` |
+| `import { resolveConfig } from 'clibuilder'` | `import { resolveConfig } from 'clibuilder/config'` |
+
+```ts
+// before
+cli({ name: 'my-cli', version: '1.0.0', config: true })
+
+// after
+import { config } from 'clibuilder/config'
+cli({ name: 'my-cli', version: '1.0.0' }).use(config())
+```
+
+Add `.use(config())` before the `.command()` and `.default()` calls that declare `config`. A
+`.command()` or `.default()` that declares `config` before `.use(config())`, or on a CLI without it,
+is a type error. A sub-command or a command an extension adds is checked at run time instead, and
+fails with:
+
+```
+Error: command 'x' declares config, but the cli does not load config. Add .use(config()) from 'clibuilder/config' to the cli.
+```
+
+Run the codemod with `npx @clibuilder/codemod`, as in [Run the codemod first](#run-the-codemod-first).
+
 ## Plugins move to `@clibuilder/plugins`
 
 **On `main`.**
@@ -560,19 +608,21 @@ plugins with `.use(plugins())` from `@clibuilder/plugins`, which needs `clibuild
 **Who is affected.** A CLI that sets `config` or `keywords` and loads plugins, such as
 repobuddy/buddy. For such a CLI, adding `plugins()` is required: without it the plugins stop
 loading, and `clibuilder` 12 warns once. The codemod rewrites `keywords` to
-`plugins({ keywords })`. It flags `config` alone, because it cannot tell whether the CLI loads
-plugins; rerun it with `--add-plugins` if it does. Either rewrite also adds `@clibuilder/plugins`
-to `package.json`.
+`plugins({ keywords })`. It does not add `plugins()` for `config` alone, because it cannot tell
+whether the CLI loads plugins; rerun it with `--add-plugins` if it does. Either rewrite also adds
+`@clibuilder/plugins` to `package.json`.
 
-**Fix.** Add `.use(plugins())`.
+**Fix.** Add `.use(config()).use(plugins())`, config first: `plugins()` reads the `plugins` key
+from the config that `config()` resolved.
 
 ```ts
 // before
 cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })
 
 // after
+import { config } from 'clibuilder/config'
 import { plugins } from '@clibuilder/plugins'
-cli({ name: 'my-cli', version: '1.0.0', config: true }).use(plugins({ keywords: ['my-cli-plugin'] }))
+cli({ name: 'my-cli', version: '1.0.0' }).use(config()).use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
 The details, including what stays in core, are in

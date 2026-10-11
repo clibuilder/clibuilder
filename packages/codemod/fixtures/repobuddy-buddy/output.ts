@@ -1,6 +1,7 @@
 // Mirrors repobuddy/buddy: `config: true` loads its plugins, `.optional()` chains and `z.optional(...)`,
 // and a `run()` that both logs with `ui.info` and returns the report.
 import { CliError, cli, command, exitCodes, t } from 'clibuilder'
+import { config } from 'clibuilder/config'
 
 export const testScripts = command({
 	name: 'test-scripts',
@@ -41,13 +42,11 @@ export const checkDependenciesCommand = command({
 	},
 })
 
+// TODO(clibuilder-12): clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, `.use(plugins())` from '@clibuilder/plugins' is required: add it and the dependency, or rerun the codemod with `--add-plugins`.
 export const app = cli({
 	name: 'repobuddy',
 	version: '1.0.0',
 	description: 'Your repo buddy',
-	// Load-bearing: this is how clibuilder finds the plugin commands other packages contribute.
-	// TODO(clibuilder-12): clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, `.use(plugins())` from '@clibuilder/plugins' is required: add it and the dependency, or rerun the codemod with `--add-plugins`.
-	config: true,
-})
+}).use(config())
 	.command(testScripts)
 	.command(checkDependenciesCommand)

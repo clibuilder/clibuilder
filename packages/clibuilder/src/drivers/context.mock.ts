@@ -1,7 +1,6 @@
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Output, Streams } from '../core/ports.js'
 import { getFixturePath } from '../test-utils/index.js'
 import type { Context } from './context.js'
@@ -52,12 +51,6 @@ export function mockContext(params: mockContext.Params = {}): Context & {
 
 	const ui = createBuilderUI(testUI())
 	return {
-		async loadConfig(configName: string) {
-			return (await this.resolveConfig(configName)).config
-		},
-		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
-			return resolveConfig({ cwd, ui: this.ui }, configName)
-		},
 		cwd,
 		/**
 		 * Records the code instead of touching `process.exitCode`,

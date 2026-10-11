@@ -18,7 +18,10 @@ export type GlobalOptions = {
 	verbose?: boolean | undefined
 	silent?: boolean | undefined
 	'debug-cli'?: boolean | undefined
-	'show-config'?: boolean | undefined
+	/**
+	 * Every value the base lookup read, the global options extensions added among them.
+	 */
+	values: Record<string, unknown>
 	/**
 	 * The `--format` value, when the global `--format` is active and the value is valid,
 	 * else the cli's default format.
@@ -56,7 +59,7 @@ export function resolveGlobalOptions(
 		verbose: args.verbose as any,
 		silent: args.silent as any,
 		'debug-cli': args['debug-cli'] as any,
-		'show-config': args['show-config'] as any,
+		values: args,
 		format: (formatValid && (args.format as any as cli.Format | undefined)) || format,
 		errors: globalErrors
 	}

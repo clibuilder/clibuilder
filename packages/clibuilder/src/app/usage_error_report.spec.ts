@@ -1,5 +1,6 @@
 import { Writable } from 'node:stream'
 import { z } from 'zod'
+import { configExtension } from '../config/extension.js'
 import { mockContext } from '../drivers/context.mock.js'
 import { type cli, command, cli as createCli, exitCodes, t } from '../index.js'
 import { argv } from '../test-utils/index.js'
@@ -301,8 +302,8 @@ describe('usage errors under output console are unchanged', () => {
 describe('a config failing the command schema', () => {
 	async function runWithConfig(config: unknown, output: cli.Output, format?: cli.Format) {
 		const ctx = mockContext()
-		ctx.loadConfig = async () => config
 		const result = await builder(ctx, { name: 'app', version: '1.0.0', output, format })
+			.use(configExtension(async () => ({ config, source: { type: 'none' }, candidates: [] }), { showConfig: true }))
 			.default({
 				config: z.object({ port: z.number(), name: z.string() }),
 				run() {

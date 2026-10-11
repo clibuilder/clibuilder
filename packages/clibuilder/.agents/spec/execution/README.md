@@ -41,8 +41,8 @@ to `presentation/`. What the built-in commands *do* belongs to
 
 **Key terms.** The **base command** is the invisible root carrying the global
 options; every application has one. **Assembly** is everything before `parse`;
-**pending work** is the config loading started during assembly that
-`parse` must await. A **command instance** is a matched declaration bound to its
+**pending work** is the config that `.use(config())` resolves on the first
+`parse`, which `parse` awaits. A **command instance** is a matched declaration bound to its
 `ui`, `config`, `cwd`, and `registry`.
 
 ## Use Cases
@@ -66,24 +66,25 @@ well and leave the agent unable to decide whether to retry.
 ### UC1 — `cli`: assemble an application
 
 **Actor / goal.** A CLI author wants a runnable application derived from a name,
-a version, and a statement of whether it takes configuration.
+a version, and, through `.use(config())` from `clibuilder/config`, whether it takes configuration.
 
 | | |
 | --- | --- |
 | Trigger | `cli(options)` |
-| Inputs | `name`, `version`, optional `description`, `config`, `onUsageError` |
-| Outcome | a builder; when the application takes config, it is already executable |
+| Inputs | `name`, `version`, optional `description`, `onUsageError`. The `config` option is removed: config loads through `.use(config())` |
+| Outcome | a builder; nothing is loaded until the first `parse` |
 
 **Extensions.**
 
 | Cause | Outcome |
 | --- | --- |
-| `config` is `true` | the config name is the CLI's own name |
-| `config` is a string | that string is the config name |
-| `config` is omitted | there is no config name, and nothing is loaded for one |
-| `config` is set | the config is loaded for the commands, no `plugins` command group is added, and `parse` is available immediately, so `--show-config` and `--help` work with no command registered |
-| `config` is omitted | `parse` becomes available only once a command is registered |
-| the loaded config lists plugins, and no `.use()` extension read the config through `resolveConfig()` (as `plugins()` does) | the cli warns once, through `ui.warn`, that the config lists plugins but this cli loads none, and to add `.use(plugins())` from `@clibuilder/plugins`. Plugin loading moved out of core in v12 |
+| `.use(config())` is called | the config name is the CLI's own name |
+| `.use(config({ name }))` is called | that name is the config name |
+| `.use(config())` is not called | there is no config loader, and nothing is loaded |
+| `.use(config())` is called | the config is loaded on the first `parse`, not at `cli()`, for the commands. No `plugins` command group is added, and `parse` is available immediately, so `--show-config` and `--help` work with no command registered |
+| `.use()` is not called | `parse` becomes available only once a command is registered |
+| a command declares `config`, and the cli has no `.use(config())` | a type error when `.command()` or `.default()` follows `.use(config())`; at run time the cli fails with `command 'x' declares config, but the cli does not load config. Add .use(config()) from 'clibuilder/config' to the cli.` |
+| the loaded config lists plugins, and no `.use()` extension read the config through `resolveConfig()` (as `plugins()` does, after `config()`) | the cli warns once, through `ui.warn`, that the config lists plugins but this cli loads none, and to add `.use(plugins())` from `@clibuilder/plugins`. Plugin loading moved out of core in v12 |
 | an extension read the config | no warning: something is handling the `plugins` list |
 | the loaded config lists no plugins | no warning |
 
@@ -133,10 +134,10 @@ inputs they gave, or to be told precisely what was wrong.
 | Cause | Outcome |
 | --- | --- |
 | a display-level flag is given | the level is set and the flag is removed before the command is matched, so it is never reported as unknown |
-| `--show-config` on an application that takes config | the resolved config and its source are reported, and no command runs |
-| `--show-config` on an application that takes config, in `axi` output | it is an answer: written to stdout whatever the display level, in the resolved format, with nothing on stderr from it, exit 0. `text` is the `console` rendering (`config: <source>` then the config as indented JSON); `toon` and `json` encode `{ source, path, property, config }`, where `source` is `file`, `package.json` or `none`, `path` and `property` are present only for the sources that have them, and `config` is `null` when nothing matched |
-| `--show-config` on an application that takes config, in `console` output | the same lines as the `axi` `text` answer, written through `ui.info`, as in v11 |
-| `--show-config` on an application that takes no config | the option was never declared, so it is a usage error like any other unknown option |
+| `--show-config` on an application with `.use(config())` | the resolved config and its source are reported, and no command runs |
+| `--show-config` on an application with `.use(config())`, in `axi` output | it is an answer: written to stdout whatever the display level, in the resolved format, with nothing on stderr from it, exit 0. `text` is the `console` rendering (`config: <source>` then the config as indented JSON); `toon` and `json` encode `{ source, path, property, config }`, where `source` is `file`, `package.json` or `none`, `path` and `property` are present only for the sources that have them, and `config` is `null` when nothing matched |
+| `--show-config` on an application with `.use(config())`, in `console` output | the same lines as the `axi` `text` answer, written through `ui.info`, as in v11 |
+| `--show-config` on an application without `.use(config())` | the option was never declared, so it is a usage error like any other unknown option |
 | `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the `use()` extensions run, so a broken config or a hanging extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported. The matched command's own `help` and `version` flags are read first (`peekFlags`), before its other declarations convert, so an async converter or check never delays the answer |
@@ -266,7 +267,7 @@ extension is for.
 | | |
 | --- | --- |
 | Trigger | `.use(extension)`, then `parse(argv)` |
-| Inputs | an extension: a function of an `ExtensionContext` — `host`, `cwd`, `ui`, `registry`, `addCommand`, `resolveConfig` |
+| Inputs | an extension: a function of an `ExtensionContext` — `host`, `cwd`, `ui`, `registry`, `shared`, `addCommand`, `addGlobalOption`, `beforeRun`, `resolveConfig` |
 | Outcome | the extension's commands are registered after the host's own, and its registry entries are visible to every command |
 
 The extensions run **on the first `parse` that needs the command tree**, not at
@@ -289,8 +290,12 @@ that keeps command order deterministic.
 | an extension throws | `parse` rejects with that error |
 | an extension registers a value | a command reads it through `this.registry` |
 | an extension logs through its `ui` | the message follows `--silent`, `--verbose`, and `--debug-cli` like the framework's own |
-| the application sets no `config` | `resolveConfig` reports no source and no config |
-| the application sets `config` | `resolveConfig` resolves it with where it came from |
+| an extension adds a global option with `addGlobalOption` | it is listed with the other global options, and when the caller passes it, its `answer` runs instead of the command, after the logging flags apply |
+| an extension adds a `beforeRun` hook | it runs before `run()` once the arguments are valid; it may set `run.config`, and fails the command by throwing a `CliError` |
+| extensions share a value through `shared` | a later extension reads it; commands do not see it |
+| extensions run | they run before the global options are resolved, and the `ui` messages they write are held until the logging flags apply |
+| the application has no `.use(config())` | `resolveConfig` reports no source and no config |
+| the application has `.use(config())` before the extension that asks | `resolveConfig` resolves it with where it came from |
 
 **Surface trace.**
 
@@ -298,7 +303,7 @@ that keeps command order deterministic.
 | --- | --- | --- |
 | `cli.Options.name` / `.version` | UC1 | — |
 | `cli.Options.description` | UC1 (help text) | — |
-| `cli.Options.config` | UC1, UC3 (`--show-config`) | — |
+| `config()` from `clibuilder/config` | UC1, UC3 (`--show-config`) | — |
 | `cli.Options.onUsageError` | UC6 — the application-wide handler | — (a command's own handler takes precedence) |
 | a command's `onUsageError` | UC6 — the per-command handler; its declaration is `command-definition/`'s | — (the nearest one in the chain is the only one called) |
 | `cli.UsageError`, `cli.UsageErrorHandler` | UC6 — the handler's error entries and its signature, shared by both places it is declared | — |
@@ -331,7 +336,7 @@ graph TD
   CS --> LC
   CT --> LC{config name present?}
   CU --> LC
-  LC -- yes --> LOAD["start loading config as pending work, add no plugins group, expose parse now"]
+  LC -- yes --> LOAD["resolve config on the first parse as pending work, add no plugins group, expose parse now"]
   LC -- no --> NOLOAD[nothing to load, parse exposed on first registration]
   LOAD --> HASP{"config lists plugins, and no extension read the config?"}
   HASP -- yes --> WARN["warn once: the config lists plugins but this cli loads none — add .use(plugins()); on the first parse, sub-graph G"]
@@ -367,7 +372,7 @@ graph TD
   DL -- debug-cli --> D3[level trace] --> STRIP
   DL -- none --> APPLY[apply the level to the ui]
   STRIP --> APPLY
-  APPLY --> SC{"show-config given and config enabled?"}
+  APPLY --> SC{"show-config given and config() used?"}
   SC -- yes --> RPT[report the resolved config and its source; stop]
   SC -- no --> MATCH[match the command and fill its inputs]
   MATCH --> VER{version asked for?}
@@ -476,11 +481,11 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| config name is that string | `config` is a string | `a string config option names the config file` |
-| config name is the cli name | `config` is true | `config given as true names the config after the cli` |
-| no config name | `config` omitted | `an application declaring no config has no config name` |
-| add no plugins group; expose parse now | config name present | `an application with config loads it for its commands and adds no plugins group` |
-| start loading config as pending work | a config name | `parse waits for the config started during assembly` |
+| config name is that string | `config({ name })` | `config given a name names the config file` |
+| config name is the cli name | `config()` | `config given no name names the config after the cli` |
+| no config name | no `.use(config())` | `an application without config() has no config name` |
+| add no plugins group; expose parse now | `.use(config())` | `an application using config() loads it for its commands and adds no plugins group` |
+| resolve config on the first parse as pending work | `.use(config())` | `parse resolves the config on its first call` |
 | warn once | the loaded config lists plugins and no extension read the config | `a config listing plugins warns once when the cli loads none` |
 | no warning | the loaded config lists plugins and an extension read the config | `an extension that reads the config silences the plugins warning` |
 | no warning | the loaded config lists no plugins | `a config that lists no plugins does not warn` |
@@ -504,10 +509,10 @@ graph TD
 | level none, flag removed | `--silent` | `silent turns logging off and is not reported as unknown` |
 | level debug, flag removed | `--verbose` | `verbose raises the log level and is not reported as unknown` |
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
-| report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
-| report the config and its source | `--show-config`, config enabled, output axi | `in axi output show-config is an answer on stdout in the resolved format` |
-| report the config and its source | `--show-config`, config enabled, output console | `in console output show-config is written through ui.info` |
-| show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
+| report the config and its source | `--show-config`, `.use(config())` | `show-config reports the resolved config and where it came from` |
+| report the config and its source | `--show-config`, `.use(config())`, output axi | `in axi output show-config is an answer on stdout in the resolved format` |
+| report the config and its source | `--show-config`, `.use(config())`, output console | `in console output show-config is written through ui.info` |
+| show-config given and config enabled? — no | `--show-config`, no `.use(config())` | `show-config on an application without config is an unknown option` |
 | write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and extensions load` |
 | write the version to stdout; stop without awaiting pending work | `-v` alone, the default command declares `-v` | `the short version flag alone is the version even when a command declares it` |
 | show the version | `--version` on the base command | `version asked of the application shows its version` |
@@ -640,5 +645,5 @@ graph TD
 | the context | any extension | `an extension is told its host and working directory` |
 | the context | an extension registering a value | `an extension shares the registry with the commands` |
 | the context | an extension logging at debug | `an extension logs through the framework ui` |
-| the context | no `config` | `resolveConfig reports no source when the application sets no config` |
-| the context | `config` set | `resolveConfig resolves the application config and its source` |
+| the context | no `.use(config())` | `resolveConfig reports no source when the application has no config()` |
+| the context | `.use(config())` | `resolveConfig resolves the config() config and its source` |

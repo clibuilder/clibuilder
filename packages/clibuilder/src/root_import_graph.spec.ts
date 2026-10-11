@@ -57,3 +57,27 @@ describe('root entry import graph', { timeout: 30_000 }, () => {
 		)
 	})
 })
+
+/** The config loader: the lookup, find-up, the file readers and the parsers. */
+const configLoader = [
+	'src/config.ts',
+	'src/drivers/find_up.ts',
+	'src/drivers/package_json.ts',
+	'src/drivers/read_file.ts',
+	'src/drivers/yaml.ts',
+	'src/strip_jsonc.ts'
+]
+
+describe('config loading', { timeout: 30_000 }, () => {
+	it('is not reached by the root entry, so a cli without .use(config()) does not contain it (#692)', async () => {
+		const graph = await importGraph('src/index.ts')
+		expect(graph.modules.filter((m) => configLoader.includes(m))).toEqual([])
+		expect(graph.packages).not.toContain('js-yaml')
+	})
+
+	it('is reached by the clibuilder/config entry', async () => {
+		const graph = await importGraph('src/config/index.ts')
+		expect(graph.modules).toEqual(expect.arrayContaining(configLoader))
+		expect(testOnly(graph)).toEqual([])
+	})
+})

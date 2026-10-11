@@ -25,7 +25,8 @@ export namespace plugins {
 		 */
 		dependencies?: boolean
 		/**
-		 * Read the `plugins` key from the cli's resolved config.
+		 * Read the `plugins` key from the config `.use(config())` from `clibuilder/config` resolved.
+		 * Add `config()` before `plugins()`.
 		 * An entry starting with `!` excludes that package from the other sources.
 		 */
 		config?: boolean
@@ -43,7 +44,8 @@ export namespace plugins {
  * A package named by more than one source loads once, at its first position.
  *
  * @example
- * cli({ name: 'my-cli', version: '1.0.0', config: true })
+ * cli({ name: 'my-cli', version: '1.0.0' })
+ *   .use(config())
  *   .use(plugins({ keywords: ['my-cli-plugin'] }))
  *   .parse(process.argv)
  */

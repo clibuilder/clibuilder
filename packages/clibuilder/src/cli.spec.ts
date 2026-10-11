@@ -2,7 +2,8 @@ import { Writable } from 'node:stream'
 import a from 'assertron'
 import { testType } from 'type-plus/testing'
 import { z } from 'zod'
-import { cli, t } from './index.js'
+import { config } from './config/index.js'
+import { cli, command, t } from './index.js'
 
 it('needs name and version', () => {
 	const app = cli({ name: 'app', version: '1.0.0' })
@@ -14,18 +15,18 @@ it('can have a short description', () => {
 	a.satisfies(app, { name: 'app', version: '1.0.0', description: 'some short description' })
 })
 
-it('can set config to true which will try to read config', () => {
-	const app = cli({ name: 'app', version: '1.0.0', config: true })
+it('has no config option: config loads through .use(config()) from clibuilder/config since v12', () => {
+	// @ts-expect-error `config` is not a cli option
+	cli({ name: 'app', version: '1.0.0', config: true })
+})
+
+it('loads config by the cli name with .use(config())', () => {
+	const app = cli({ name: 'app', version: '1.0.0' }).use(config())
 	a.satisfies(app, { name: 'app', version: '1.0.0' })
 })
 
-it('can specify a different name for config', () => {
-	const app = cli({ name: 'app', version: '1.0.0', config: 'another-name' })
-	a.satisfies(app, { name: 'app', version: '1.0.0' })
-})
-
-it('can specify a specific config file', () => {
-	const app = cli({ name: 'app', version: '1.0.0', config: 'my-app.json' })
+it('loads config by another name with .use(config({ name }))', () => {
+	const app = cli({ name: 'app', version: '1.0.0' }).use(config({ name: 'another-name' }))
 	a.satisfies(app, { name: 'app', version: '1.0.0' })
 })
 
@@ -103,21 +104,67 @@ it('will have parse method if a command is defined', () => {
 	testType.canAssign<typeof app, { parse(args: string[]): Promise<any> }>(true)
 })
 
-it('will have parse method if config is defined', () => {
-	const app = cli({ name: 'app', version: '1.0.0', config: true })
+it('will have parse method with .use(config())', () => {
+	const app = cli({ name: 'app', version: '1.0.0' }).use(config())
 	testType.canAssign<typeof app, { parse(args: string[]): Promise<any> }>(true)
 	expect(app.parse).toBeDefined()
 })
 
 it('can specify the config used by the command', () => {
+	cli({ name: 'app', version: '1.0.0' })
+		.use(config())
+		.default({
+			config: z.object({
+				c: z.boolean()
+			}),
+			run() {
+				testType.equal<boolean, typeof this.config.c>(true)
+			}
+		})
+})
+
+it('rejects a command config on a cli without .use(config())', () => {
 	cli({ name: 'app', version: '1.0.0' }).default({
-		config: z.object({
-			c: z.boolean()
-		}),
-		run() {
-			testType.equal<boolean, typeof this.config.c>(true)
-		}
+		// @ts-expect-error config needs .use(config()) from clibuilder/config
+		config: z.object({ c: z.boolean() }),
+		run() {}
 	})
+	cli({ name: 'app', version: '1.0.0' }).command({
+		name: 'cmd',
+		// @ts-expect-error config needs .use(config()) from clibuilder/config
+		config: z.object({ c: z.boolean() }),
+		run() {}
+	})
+})
+
+it('rejects a command config added before .use(config())', () => {
+	cli({ name: 'app', version: '1.0.0' })
+		.command({
+			name: 'cmd',
+			// @ts-expect-error config needs .use(config()) added before the command
+			config: z.object({ c: z.boolean() }),
+			run() {}
+		})
+		.use(config())
+})
+
+it('keeps the config brand across other extensions and commands', () => {
+	cli({ name: 'app', version: '1.0.0' })
+		.use(config())
+		.use(() => {})
+		.command({ name: 'a', run() {} })
+		.command({
+			name: 'b',
+			config: z.object({ c: z.boolean() }),
+			run() {
+				testType.equal<boolean, typeof this.config.c>(true)
+			}
+		})
+})
+
+it('accepts a command defined with command() and no config on a cli without .use(config())', () => {
+	const cmd = command({ name: 'cmd', run() {} })
+	cli({ name: 'app', version: '1.0.0' }).command(cmd)
 })
 
 describe('streams and output', () => {

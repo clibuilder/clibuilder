@@ -2,7 +2,7 @@
 Feature: Execution
 
   Turn declarations into a running program. Assembly derives state from the
-  options and starts any config loading; invocation answers the
+  options, and config() loads the config on the first parse; invocation answers the
   global flags, matches a command, checks its inputs, and either runs it or
   refuses. Global flags are answered before usage errors, and failure is
   reported as an exit code rather than thrown, so a wrong invocation reaches
@@ -10,23 +10,23 @@ Feature: Execution
 
   # ── UC1 — cli: assemble an application ──
 
-  Scenario: a string config option names the config file
-    Given an application declaring config as a string
+  Scenario: config given a name names the config file
+    Given an application using config() with a name
     When its state is derived
     Then the config name is that string
 
-  Scenario: config given as true names the config after the cli
-    Given an application declaring config as true
+  Scenario: config given no name names the config after the cli
+    Given an application using config() with no name
     When its state is derived
     Then the config name is the application's own name
 
-  Scenario: an application declaring no config has no config name
-    Given an application declaring no config
+  Scenario: an application without config() has no config name
+    Given an application not using config()
     When its state is derived
     Then it has no config name
 
-  Scenario: an application with config loads it for its commands and adds no plugins group
-    Given an application declaring config
+  Scenario: an application using config() loads it for its commands and adds no plugins group
+    Given an application using config()
     When it is assembled
     Then its commands can read the loaded config
     And no plugins command is among its commands
@@ -48,10 +48,15 @@ Feature: Execution
     When the application is given argv
     Then no warning about plugins is written
 
-  Scenario: parse waits for the config started during assembly
-    Given an application declaring a config name
+  Scenario: parse resolves the config on its first call
+    Given an application using config()
     When it is given argv
-    Then the config loading started during assembly has completed before a command is matched
+    Then the config has been resolved before a command is matched, and not before parse
+
+  Scenario: a command declaring config on an application without config() fails
+    Given a command declaring a config schema, and an application not using config()
+    When it is given argv
+    Then it fails with an error saying the command declares config but the cli does not load config, and to add .use(config()) from clibuilder/config
 
   # ── UC2 — register commands ──
 
@@ -101,24 +106,24 @@ Feature: Execution
     And the flag is not reported as an unknown option
 
   Scenario: show-config reports the resolved config and where it came from
-    Given an application that takes configuration
+    Given an application using config()
     When it is invoked asking to show the config
     Then the resolved config and its source are reported
     And no command runs
 
   Scenario: in axi output show-config is an answer on stdout in the resolved format
-    Given an application that takes configuration, with output axi
+    Given an application using config(), with output axi
     When it is invoked asking to show the config, with a format of toon, json or text, toon by default
     Then stdout holds the source, the path and the config, encoded in that format, and text holds the console lines
     And nothing from it is written to stderr, even with --silent the answer is written, and the cli exits with the success code
 
   Scenario: in console output show-config is written through ui.info
-    Given an application that takes configuration, with output console
+    Given an application using config(), with output console
     When it is invoked asking to show the config
     Then the source line and the config are written through ui.info, as in v11
 
   Scenario: show-config on an application without config is an unknown option
-    Given an application that takes no configuration
+    Given an application not using config()
     When it is invoked asking to show the config
     Then the option is reported as unknown, because it was never declared
 
@@ -147,7 +152,7 @@ Feature: Execution
     And the command does not run
 
   Scenario: version asked of a matched command waits for config and extensions
-    Given an application declaring a config name and a command
+    Given an application using config() and a command
     When that command is invoked asking for the version
     Then the config is loaded before the version is shown
     And nothing is written to stdout ahead of the normal path
@@ -707,13 +712,13 @@ Feature: Execution
     When the application is invoked with --debug-cli
     Then the message is shown
 
-  Scenario: resolveConfig reports no source when the application sets no config
-    Given an application without config
+  Scenario: resolveConfig reports no source when the application has no config()
+    Given an application without config()
     When an extension resolves the config
     Then there is no config and the source is none
 
-  Scenario: resolveConfig resolves the application config and its source
-    Given an application with config and a config file
+  Scenario: resolveConfig resolves the config() config and its source
+    Given an application using config() before the extension, and a config file
     When an extension resolves the config
     Then it receives the file's content and that the source is a file
 

@@ -11,6 +11,9 @@ filename conventions, reading its format, and reporting where the value came
 from. The deciding lives in `config.ts`; every call that touches the filesystem
 is in a driver.
 
+The functions are exported from the `clibuilder/config` subpath, not from the root,
+and a CLI loads config by adding `.use(config())` from the same subpath (#692).
+
 ## What
 
 A CLI that takes configuration has to answer a question its user rarely thinks
@@ -49,8 +52,8 @@ candidate such as `.foorc` carries no format hint, so its content decides.
 | Actor | Reaches this capability | Goal |
 | --- | --- | --- |
 | CLI end user | places a config file and runs the CLI | have their file found wherever the conventions allow them to put it |
-| `execution` | calls `loadConfig` / `resolveConfig` | get the config value, and its origin when it needs to report it |
-| CLI author | declares `config` on the application | let their users configure the CLI without inventing a file format |
+| `execution` (through `.use(config())`) | calls `loadConfig` / `resolveConfig` | get the config value, and its origin when it needs to report it |
+| CLI author | adds `.use(config())` from `clibuilder/config` to the application | let their users configure the CLI without inventing a file format |
 | A user debugging a config that was not picked up *(stakeholder)* | reads the warning and `--show-config` | learn which names were searched and which file won |
 
 **Unserved goals — recovered from the issue tracker, not from the source.**

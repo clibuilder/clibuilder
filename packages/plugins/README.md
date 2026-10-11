@@ -18,9 +18,11 @@ npm install @clibuilder/plugins clibuilder
 
 ```ts
 import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import { plugins } from '@clibuilder/plugins'
 
-cli({ name: 'my-cli', version: '1.0.0', config: true })
+cli({ name: 'my-cli', version: '1.0.0' })
+  .use(config())
   .use(plugins({ keywords: ['my-cli-plugin'] }))
   .parse(process.argv)
 ```
@@ -32,7 +34,8 @@ plugins from up to three sources, in this order:
 2. `dependencies`: the project's direct `dependencies` and `devDependencies` that carry one of
    `keywords`, in `package.json` order. Off by default.
 3. `config`: the `plugins` key in the CLI's config, as in `clibuilder` 11. An entry starting with
-   `!` excludes that package from the other sources.
+   `!` excludes that package from the other sources. The config is the one `.use(config())` from
+   `clibuilder/config` resolved, so add it before `plugins()`.
 
 A package named by more than one source loads once, at its first position.
 
@@ -41,7 +44,7 @@ A package named by more than one source loads once, at its first position.
 | `keywords` | `[name]` of the CLI | the npm keywords `plugins list` and `plugins search` look for, and that `dependencies` matches |
 | `include` | `[]` | plugin packages the CLI ships with |
 | `dependencies` | `false` | load the project's direct dependencies that carry a keyword |
-| `config` | `true` | read the `plugins` key from the CLI's config |
+| `config` | `true` | read the `plugins` key from the config `.use(config())` resolved |
 | `command` | `true` | add the `plugins list` / `plugins search` group |
 
 `find-installed-packages` and `search-packages` are imported only when `plugins list` or
@@ -50,12 +53,13 @@ A package named by more than one source loads once, at its first position.
 ### Moving from `clibuilder` 11
 
 In `clibuilder` 11, setting `config` or `keywords` loads the plugins named in config and adds the
-`plugins` group. `clibuilder` 12 removes both, and the `keywords` option with them: a CLI loads
-plugins only through `plugins()`. Add one call:
+`plugins` group. `clibuilder` 12 removes both, and the `config` and `keywords` options with them:
+a CLI loads config only through `config()` from `clibuilder/config`, and plugins only through `plugins()`:
 
 ```diff
 - cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })
-+ cli({ name: 'my-cli', version: '1.0.0', config: true })
++ cli({ name: 'my-cli', version: '1.0.0' })
++   .use(config())
 +   .use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 

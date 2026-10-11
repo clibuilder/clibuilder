@@ -5,13 +5,15 @@ enableCompileCache()
 // `import` compiles the whole graph before this module runs, so the cache would
 // come too late. `await import` keeps clibuilder out of that graph.
 const { CliError, cli, document } = await import('clibuilder')
+const { config } = await import('clibuilder/config')
 const { plugins } = await import('@clibuilder/plugins')
 
 const app = cli({
 	name: 'test-cli',
-	version: '1.0.0',
-	config: true
+	version: '1.0.0'
 })
+	// loads the config for the commands and plugins(), and adds `--show-config`
+	.use(config())
 	.default({
 		run() {
 			// every ui message is a diagnostic on stderr in the default axi output

@@ -25,9 +25,8 @@ export function createBuilderUI(ui: createUI.UI): BuilderUI {
 		error: (...args: any[]) => (pending ? entries.push(['error', args]) : ui.error(...args)),
 		dump: () => {
 			pending = false
-			entries.forEach(([m, args]) => {
-				ui[m](...args)
-			})
+			// released once: a later `parse()` dumps again, and must not repeat them
+			for (const [m, args] of entries.splice(0)) ui[m](...args)
 		}
 	}
 }

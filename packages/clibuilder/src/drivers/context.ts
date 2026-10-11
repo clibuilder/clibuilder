@@ -1,4 +1,3 @@
-import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Output, Streams } from '../core/ports.js'
 import { type BuilderUI, createBuilderUI, type createUI } from './logger.js'
 import { createStreamUI } from './stream_ui.js'
@@ -21,20 +20,7 @@ export function context(options: context.Options = {}): Context {
 	const cwd = process.cwd()
 	const sinks = createSinks(options.streams ?? { stdout: process.stdout, stderr: process.stderr })
 	const output = options.output ?? 'axi'
-	// the resolution is cached as a promise so concurrent callers share one filesystem walk,
-	// and so a config that is legitimately falsy is not re-resolved on every call.
-	let resolvingConfig: Promise<ConfigLoadResult>
 	return {
-		async loadConfig(configName: string) {
-			return (await this.resolveConfig(configName)).config
-		},
-		/**
-		 * Resolves the config along with where it came from.
-		 */
-		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
-			if (resolvingConfig) return resolvingConfig
-			return (resolvingConfig = resolveConfig({ cwd, ui: this.ui }, configName))
-		},
 		cwd,
 		/**
 		 * Records the code the process should exit with.
@@ -57,8 +43,8 @@ export function context(options: context.Options = {}): Context {
 }
 
 /**
- * What the framework needs from the outside world: a working directory, the
- * config loading it defers, somewhere to log, and a way to end.
+ * What the framework needs from the outside world: a working directory,
+ * somewhere to log, and a way to end. Config loading is not here: it is the `clibuilder/config` extension.
  *
  * Declared here rather than derived from `context()` with `ReturnType`. A port
  * taken from one implementation is not a contract — the other implementation
@@ -67,11 +53,6 @@ export function context(options: context.Options = {}): Context {
  */
 export type Context = {
 	readonly cwd: string
-	loadConfig(configName: string): Promise<any>
-	/**
-	 * Resolves the config along with where it came from.
-	 */
-	resolveConfig(configName: string): Promise<ConfigLoadResult>
 	/**
 	 * Records the code the cli should exit with, rather than ending the process.
 	 */

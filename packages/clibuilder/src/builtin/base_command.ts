@@ -19,12 +19,14 @@ const globalFormat = Symbol.for('clibuilder.global-format')
 export const defersToGlobalFormat = Symbol.for('clibuilder.defers-to-global-format')
 
 /**
- * @param options.config whether the cli accepts configuration.
- * `--show-config` is only offered when it does, so a cli without config
- * does not advertise an option that could never do anything.
  * @param options.format the default of the global `--format`: the `cli({ format })` value, `toon` by default.
+ * @param options.options the global options extensions added, such as `--show-config` from `clibuilder/config`.
+ * They are listed before `--format`.
  */
-export function getBaseCommand(description: string, options?: { config?: boolean; format?: cli.Format | undefined }) {
+export function getBaseCommand(
+	description: string,
+	options?: { format?: cli.Format | undefined; options?: cli.Command.Options | undefined }
+) {
 	return command({
 		name: '',
 		description,
@@ -52,14 +54,7 @@ export function getBaseCommand(description: string, options?: { config?: boolean
 				type: t.boolean().optional(),
 				description: 'Display clibuilder debug messages'
 			},
-			...(options?.config
-				? {
-						'show-config': {
-							type: t.boolean().optional(),
-							description: 'Print the resolved config and where it was loaded from'
-						}
-					}
-				: {}),
+			...options?.options,
 			format: formatEntry(options?.format ?? 'toon')
 		},
 		commands: []

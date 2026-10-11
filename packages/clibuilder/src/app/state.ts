@@ -9,7 +9,6 @@ export namespace state {
 		name: string
 		version: string
 		description: string
-		configName?: string
 		config?: any
 		displayLevel: DisplayLevel
 		command: RequiredPick<Command, 'commands'>
@@ -17,14 +16,12 @@ export namespace state {
 }
 
 export function state(options: cli.Options): state.Result {
-	const { name, description = '', version, config } = options
-	const configName = typeof config === 'string' ? config : config ? name : undefined
+	const { name, description = '', version } = options
 	return {
 		name,
 		description,
 		version,
-		configName,
 		displayLevel: 'info',
-		command: getBaseCommand(description, { config: !!configName, format: options.format }) as any
+		command: getBaseCommand(description, { format: options.format }) as any
 	}
 }

@@ -6,9 +6,10 @@ import {
 	flagFormatOption,
 	flagKeywords,
 	flagShowHelp,
-	moveTestingImports,
-	reportTestingImports,
+	moveSubpathImports,
+	reportSubpathImports,
 	transformAxiImports,
+	transformConfig,
 	transformPlugins
 } from './rules.js'
 import { transformZod } from './zod.js'
@@ -42,19 +43,20 @@ export function transform(source: string, fileName: string, options: TransformOp
 	transformZod(context)
 	transformAxiImports(context)
 	transformPlugins(context, { addPlugins: options.addPlugins ?? false })
+	transformConfig(context)
 	flagKeywords(context)
 	flagFormatOption(context)
 	flagShowHelp(context)
 	auditReturns(context)
-	reportTestingImports(context)
+	reportSubpathImports(context)
 
 	const output = applyEdits(source, context.allEdits())
-	const testing = new FileContext(parse(output, fileName), output)
-	moveTestingImports(testing)
+	const subpaths = new FileContext(parse(output, fileName), output)
+	moveSubpathImports(subpaths)
 
 	const findings = [...context.findings].sort((a, b) => a.line - b.line || a.column - b.column)
 	return {
-		output: applyEdits(output, testing.allEdits()),
+		output: applyEdits(output, subpaths.allEdits()),
 		findings,
 		dependencies: [...context.dependencies]
 	}

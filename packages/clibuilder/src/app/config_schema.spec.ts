@@ -2,6 +2,7 @@ import { testType } from 'type-plus/testing'
 import * as v from 'valibot'
 import { z } from 'zod'
 import { z as z4 } from 'zod4'
+import { configExtension } from '../config/extension.js'
 import { mockContext } from '../drivers/context.mock.js'
 import { type cli, command, exitCodes, type StandardSchemaV1 } from '../index.js'
 import { generateHelpMessage } from '../render/help.js'
@@ -17,8 +18,8 @@ import { builder } from './builder.js'
  */
 async function runWithConfig(cmd: cli.Command.DefaultCommand<any, any, any>, config: unknown) {
 	const ctx = mockContext({ output: 'console' })
-	ctx.loadConfig = async () => config
 	const result = await builder(ctx, { name: 'app', version: '1.0.0', output: 'console' })
+		.use(configExtension(async () => ({ config, source: { type: 'none' }, candidates: [] }), { showConfig: true }))
 		.default(cmd)
 		.parse(argv('app'))
 	return { result, messages: ctx.messages, exitCode: ctx.exitCode }

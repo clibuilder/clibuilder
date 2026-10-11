@@ -1,6 +1,7 @@
 import { Writable } from 'node:stream'
 import { builder } from '../app/builder.js'
 import type { cli } from '../cli.js'
+import { configExtension } from '../config/extension.js'
 import { mockContext } from '../drivers/context.mock.js'
 import * as tu from '../test-utils/index.js'
 
@@ -37,8 +38,9 @@ export async function testCommand(
 	})
 	const ctx = mockContext({ streams: { stdout: stream, stderr: stream }, output: options.output })
 
-	ctx.loadConfig = async () => config
 	const result = await builder(ctx, { name: 'test-cli', version: '1.0.0', output: options.output })
+		// the given config, validated as `config()` validates a loaded one. No `--show-config`: nothing was looked up
+		.use(configExtension(async () => ({ config, source: { type: 'none' }, candidates: [] }), { showConfig: false }))
 		.command(command)
 		.parse(tu.argv(`test-cli ${argv}`))
 	// one entry per line, as `testCommand` has always returned them

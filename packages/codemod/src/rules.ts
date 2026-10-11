@@ -149,16 +149,46 @@ export function transformAxiImports(context: FileContext) {
 /** Test-only exports that clibuilder 12 serves only from `clibuilder/testing`. slim-dependencies RFC section 5.1. */
 const TESTING_EXPORTS = new Set(['testCommand'])
 
-const TESTING_MOVE =
-	'`clibuilder` → `clibuilder/testing`: clibuilder 12 exports test helpers only from `clibuilder/testing`'
+/** The config exports that clibuilder 12 serves only from `clibuilder/config` (#692). */
+const CONFIG_EXPORTS = new Set([
+	'describeConfigSource',
+	'getConfigFilenames',
+	'getConfigFormat',
+	'loadConfig',
+	'lookupConfig',
+	'readConfigFile',
+	'resolveConfig',
+	'ConfigFormat',
+	'ConfigLoadResult',
+	'ConfigLookupResult',
+	'ConfigSource'
+])
+
+/** Where each export that leaves the `clibuilder` root goes, and why. */
+const SUBPATH_MOVES = [
+	{
+		exports: TESTING_EXPORTS,
+		module: 'clibuilder/testing',
+		rule: 'testing-import',
+		why: 'clibuilder 12 exports test helpers only from `clibuilder/testing`'
+	},
+	{
+		exports: CONFIG_EXPORTS,
+		module: 'clibuilder/config',
+		rule: 'config',
+		why: 'clibuilder 12 exports config loading only from `clibuilder/config`'
+	}
+] as const
 
 /**
- * Reports each test-only export imported from `clibuilder`, and flags its use through a namespace import.
- * `moveTestingImports` makes the edit, over the output of the other rules.
+ * Reports each export imported from `clibuilder` that clibuilder 12 serves from a subpath,
+ * and flags its use through a namespace import.
+ * `moveSubpathImports` makes the edit, over the output of the other rules.
  */
-export function reportTestingImports(context: FileContext) {
+export function reportSubpathImports(context: FileContext) {
 	for (const { specifier, imported } of namedImports(context.sourceFile, 'clibuilder')) {
-		if (TESTING_EXPORTS.has(imported)) context.rewrite(specifier, 'testing-import', `${imported}: ${TESTING_MOVE}`)
+		const move = SUBPATH_MOVES.find((m) => m.exports.has(imported))
+		if (move) context.rewrite(specifier, move.rule, `${imported}: \`clibuilder\` → \`${move.module}\`: ${move.why}`)
 	}
 	const namespaces = new Set(
 		importsFrom(context.sourceFile, 'clibuilder').flatMap((declaration) => {
@@ -168,54 +198,114 @@ export function reportTestingImports(context: FileContext) {
 	)
 	if (namespaces.size === 0) return
 	forEachNode(context.sourceFile, (node) => {
-		if (
-			ts.isPropertyAccessExpression(node) &&
-			ts.isIdentifier(node.expression) &&
-			namespaces.has(node.expression.text) &&
-			TESTING_EXPORTS.has(node.name.text)
-		) {
-			context.flag(
-				node,
-				'testing-import',
-				`\`${node.name.text}\` is not exported from \`clibuilder\` in clibuilder 12. Import it from \`clibuilder/testing\`.`
-			)
-		}
+		if (!ts.isPropertyAccessExpression(node) || !ts.isIdentifier(node.expression)) return
+		if (!namespaces.has(node.expression.text)) return
+		const move = SUBPATH_MOVES.find((m) => m.exports.has(node.name.text))
+		if (!move) return
+		context.flag(
+			node,
+			move.rule,
+			`\`${node.name.text}\` is not exported from \`clibuilder\` in clibuilder 12. Import it from \`${move.module}\`.`
+		)
 	})
 }
 
 /**
- * Moves the test-only exports from `clibuilder` to `clibuilder/testing`, joining an existing
- * `clibuilder/testing` import when there is one.
+ * Moves the exports clibuilder 12 serves from a subpath, such as `testCommand` to `clibuilder/testing`
+ * and `resolveConfig` to `clibuilder/config`, joining an existing import of that subpath when there is one.
  *
- * It runs over the output of the other rules, because the zod rule rewrites the `{ … }` of the same import.
+ * It runs over the output of the other rules, because the zod rule rewrites the `{ … }` of the same import,
+ * and the config rule adds a `clibuilder/config` import.
  */
-export function moveTestingImports(context: FileContext) {
-	const testingImports = importsFrom(context.sourceFile, 'clibuilder/testing').filter(
-		(d) => d.importClause?.namedBindings && ts.isNamedImports(d.importClause.namedBindings)
-	)
+export function moveSubpathImports(context: FileContext) {
 	for (const declaration of importsFrom(context.sourceFile, 'clibuilder')) {
 		const specifiers = namedImports(context.sourceFile, 'clibuilder').filter((i) => i.declaration === declaration)
-		const moved = specifiers.filter((i) => TESTING_EXPORTS.has(i.imported)).map((i) => context.nodeText(i.specifier))
-		if (moved.length === 0) continue
-		const kept = specifiers.filter((i) => !TESTING_EXPORTS.has(i.imported)).map((i) => context.nodeText(i.specifier))
 		const typeOnly = declaration.importClause?.isTypeOnly ?? false
-		const target = testingImports.find((d) => (d.importClause?.isTypeOnly ?? false) === typeOnly)
-		if (target) {
-			const existing = namedImports(context.sourceFile, 'clibuilder/testing')
-				.filter((i) => i.declaration === target)
-				.map((i) => context.nodeText(i.specifier))
-			replaceNamedImports(context, target, [...existing, ...moved.filter((m) => !existing.includes(m))])
-			replaceNamedImports(context, declaration, kept)
+		const lines: string[] = []
+		for (const move of SUBPATH_MOVES) {
+			const moved = specifiers.filter((i) => move.exports.has(i.imported)).map((i) => context.nodeText(i.specifier))
+			if (moved.length === 0) continue
+			const target = importsFrom(context.sourceFile, move.module).find(
+				(d) =>
+					d.importClause?.namedBindings &&
+					ts.isNamedImports(d.importClause.namedBindings) &&
+					(d.importClause.isTypeOnly ?? false) === typeOnly
+			)
+			if (target) {
+				const existing = namedImports(context.sourceFile, move.module)
+					.filter((i) => i.declaration === target)
+					.map((i) => context.nodeText(i.specifier))
+				replaceNamedImports(context, target, [...existing, ...moved.filter((m) => !existing.includes(m))])
+			} else {
+				lines.push(`import ${typeOnly ? 'type ' : ''}{ ${moved.join(', ')} } from '${move.module}'`)
+			}
+		}
+		const kept = specifiers
+			.filter((i) => !SUBPATH_MOVES.some((m) => m.exports.has(i.imported)))
+			.map((i) => context.nodeText(i.specifier))
+		if (kept.length === specifiers.length) continue
+		if (lines.length > 0 && kept.length === 0 && !declaration.importClause?.name) {
+			context.replace(declaration.getStart(context.sourceFile), declaration.end, lines.join('\n'))
 			continue
 		}
-		const line = `import ${typeOnly ? 'type ' : ''}{ ${moved.join(', ')} } from 'clibuilder/testing'`
-		if (kept.length > 0 || declaration.importClause?.name) {
-			replaceNamedImports(context, declaration, kept)
-			addImportAfter(context, declaration, line)
-		} else {
-			context.replace(declaration.getStart(context.sourceFile), declaration.end, line)
-		}
+		replaceNamedImports(context, declaration, kept)
+		if (lines.length > 0) addImportAfter(context, declaration, lines.join('\n'))
 	}
+}
+
+/**
+ * clibuilder 12 loads config only through `.use(config())` from `clibuilder/config` (#692).
+ *
+ * `config: true` becomes `.use(config())` and `config: 'name'` becomes `.use(config({ name: 'name' }))`.
+ * `config: false` is dropped. Any other value is flagged.
+ *
+ * It runs after `transformPlugins`, so the `.use(config())` it adds lands before `.use(plugins())`,
+ * which reads the config.
+ */
+export function transformConfig(context: FileContext) {
+	const cliImport = namedImports(context.sourceFile, 'clibuilder').find((i) => i.imported === 'cli')
+	if (!cliImport) return
+
+	let configName: string | undefined
+	forEachNode(context.sourceFile, (node) => {
+		if (!ts.isCallExpression(node) || !ts.isIdentifier(node.expression) || node.expression.text !== cliImport.local)
+			return
+		const [arg] = node.arguments
+		if (!arg || !ts.isObjectLiteralExpression(arg)) return
+		const property = arg.properties.find((p) => propertyName(p) === 'config')
+		if (!property) return
+		const value = ts.isPropertyAssignment(property) ? property.initializer : undefined
+		const options =
+			value?.kind === ts.SyntaxKind.TrueKeyword
+				? ''
+				: value && (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value))
+					? `{ name: ${context.nodeText(value)} }`
+					: undefined
+		if (value?.kind === ts.SyntaxKind.FalseKeyword) {
+			removeProperty(context, arg, property)
+			context.rewrite(property, 'config', 'removed `config: false`: clibuilder 12 has no `cli({ config })`')
+			return
+		}
+		if (options === undefined) {
+			context.flag(
+				property,
+				'config',
+				"clibuilder 12 removes `cli({ config })`. Load config with `.use(config())`, or `.use(config({ name }))`, from 'clibuilder/config'."
+			)
+			return
+		}
+		configName ??= bindsName(context.sourceFile, 'config') ? context.freeName('clibuilderConfig') : 'config'
+		removeProperty(context, arg, property)
+		context.replace(node.end, node.end, `.use(${configName}(${options}))`)
+		context.rewrite(
+			node,
+			'config',
+			`replaced \`${context.nodeText(property)}\` with \`.use(${configName}(${options}))\`: clibuilder 12 loads config only through \`clibuilder/config\``
+		)
+	})
+	if (!configName) return
+	const specifier = configName === 'config' ? 'config' : `config as ${configName}`
+	addImportAfter(context, cliImport.declaration, `import { ${specifier} } from 'clibuilder/config'`)
 }
 
 /**
@@ -235,11 +325,16 @@ export function transformPlugins(context: FileContext, options: { addPlugins: bo
 		const [arg] = node.arguments
 		if (!arg || !ts.isObjectLiteralExpression(arg)) return
 		const keywords = arg.properties.find((p) => propertyName(p) === 'keywords')
-		const config = arg.properties.find((p) => propertyName(p) === 'config')
+		const config = arg.properties.find(
+			(p) =>
+				propertyName(p) === 'config' &&
+				!(ts.isPropertyAssignment(p) && p.initializer.kind === ts.SyntaxKind.FalseKeyword)
+		)
 		if (!keywords && !config) return
 		if (!keywords && !options.addPlugins) {
+			// on the call, as `transformConfig` removes the `config` property
 			context.flag(
-				config!,
+				node,
 				'plugins',
 				"clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, `.use(plugins())` from '@clibuilder/plugins' is required: add it and the dependency, or rerun the codemod with `--add-plugins`."
 			)
@@ -273,17 +368,53 @@ export function transformPlugins(context: FileContext, options: { addPlugins: bo
 	context.dependencies.add('@clibuilder/plugins')
 }
 
+/**
+ * Removes a property with its comma and the comments above it, which describe it.
+ * The range ends at the property's own comma, so removing two properties never makes overlapping edits.
+ */
 function removeProperty(
 	context: FileContext,
 	object: ts.ObjectLiteralExpression,
 	property: ts.ObjectLiteralElementLike
 ) {
-	const index = object.properties.indexOf(property)
-	const next = object.properties[index + 1]
-	const previous = object.properties[index - 1]
-	if (next) context.replace(property.getStart(context.sourceFile), next.getStart(context.sourceFile), '')
-	else if (previous) context.replace(previous.end, property.end, '')
-	else context.replace(property.getStart(context.sourceFile), property.end, '')
+	const text = context.text
+	let start = property.getFullStart()
+	let end = property.end
+	const after = skipBlanks(text, end)
+	if (text[after] === ',') end = after + 1
+	else {
+		// the last property gives up the comma before it instead
+		const previous = object.properties[object.properties.indexOf(property) - 1]
+		if (previous) start = text.lastIndexOf(',', property.getStart(context.sourceFile))
+	}
+	context.replace(start, end, '')
+}
+
+function skipBlanks(text: string, pos: number) {
+	while (text[pos] === ' ' || text[pos] === '\t') pos++
+	return pos
+}
+
+/** Whether the file declares `name`: an import, a variable, a parameter, a function or a class. */
+function bindsName(sourceFile: ts.SourceFile, name: string) {
+	let found = false
+	forEachNode(sourceFile, (node) => {
+		if (found) return
+		if (
+			(ts.isImportSpecifier(node) ||
+				ts.isImportClause(node) ||
+				ts.isNamespaceImport(node) ||
+				ts.isVariableDeclaration(node) ||
+				ts.isParameter(node) ||
+				ts.isFunctionDeclaration(node) ||
+				ts.isClassDeclaration(node)) &&
+			node.name &&
+			ts.isIdentifier(node.name) &&
+			node.name.text === name
+		)
+			found = true
+	})
+	return found
 }
 
 /** `this.keywords` is removed with plugin loading. slim-dependencies RFC section 9.2. */

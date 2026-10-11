@@ -2,6 +2,8 @@ import { a } from 'assertron'
 import { required } from 'type-plus'
 import { testType } from 'type-plus/testing'
 import { z } from 'zod'
+import { configExtension } from '../config/extension.js'
+import { config } from '../config/index.js'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, t } from '../index.js'
 import { encode } from '../render/encode.js'
@@ -21,7 +23,16 @@ function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<
 	return [builder(context, opt), context] as const
 }
 
-it('will not have parse() if there is no `config` and have not define any command', async () => {
+/**
+ * A config extension that loads with `load` instead of looking the config up.
+ */
+function loadsConfig(load: () => Promise<unknown>) {
+	return configExtension(async () => ({ config: await load(), source: { type: 'none' }, candidates: [] }), {
+		showConfig: true
+	})
+}
+
+it('will not have parse() if it has no command and no extension', async () => {
 	const [builder] = setupBuilderTest()
 	testType.equal<never, keyof typeof builder & 'parse'>(true)
 	expect((builder as any).parse).toBeUndefined()
@@ -130,18 +141,18 @@ describe('version', () => {
 	})
 	it('answers --version even when the config loader rejects', async () => {
 		const ctx = mockContext()
-		ctx.loadConfig = async () => {
-			throw new Error('broken config')
-		}
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0' }).use(
+			loadsConfig(async () => {
+				throw new Error('broken config')
+			})
+		)
 		await cli.parse(argv('test-cli --version'))
 		expect(ctx.stdout).toEqual('1.0.0\n')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('answers --version even when the config loader never resolves', async () => {
 		const ctx = mockContext()
-		ctx.loadConfig = () => new Promise(() => {})
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0' }).use(loadsConfig(() => new Promise(() => {})))
 		await cli.parse(argv('test-cli --version'))
 		expect(ctx.stdout).toEqual('1.0.0\n')
 	})
@@ -157,14 +168,17 @@ describe('version', () => {
 	it('takes the normal path for --version after a command', async () => {
 		const ctx = mockContext()
 		let loaded = false
-		ctx.loadConfig = async () => {
-			loaded = true
-			return {}
-		}
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true, output: 'console' }).command({
-			name: 'cmd',
-			run: () => expect.fail('should not reach')
-		})
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', output: 'console' })
+			.use(
+				loadsConfig(async () => {
+					loaded = true
+					return {}
+				})
+			)
+			.command({
+				name: 'cmd',
+				run: () => expect.fail('should not reach')
+			})
 		await cli.parse(argv('test-cli cmd --version'))
 		expect(loaded).toBe(true)
 		expect(ctx.stdout).toEqual('')
@@ -510,25 +524,30 @@ describe('fluent syntax', () => {
 describe('loadConfig()', () => {
 	it('loads `{config}` including file extension', async () => {
 		const ctx = mockContext({ fixtureDir: 'alt-config-name' })
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt.json' }).default({
-			run() {
-				return this.config
-			}
-		})
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0' })
+			.use(config({ name: 'alt.json' }))
+			.default({
+				run() {
+					return this.config
+				}
+			})
 		expect(await cli.parse(argv('test-cli'))).toEqual({ name: 'alt' })
 	})
 	it('loads `{config}.json`', async () => {
 		const ctx = mockContext({ fixtureDir: 'alt-config-name' })
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt' }).default({
-			run() {
-				return this.config
-			}
-		})
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0' })
+			.use(config({ name: 'alt' }))
+			.default({
+				run() {
+					return this.config
+				}
+			})
 		expect(await cli.parse(argv('test-cli'))).toEqual({ name: 'alt' })
 	})
 	it('emits warning and exit when config fails validation', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
 		await builder(ctx, { name: 'show-config', version: '1.0.0', output: 'console' })
+			.use(config())
 			.default({
 				config: z.object({
 					a: z.object({ c: z.number() }),
@@ -553,30 +572,35 @@ describe('loadConfig()', () => {
 		const cli = builder(mockContext({ fixtureDir: 'has-config' }), {
 			name: 'has-config',
 			version: '1.0.0'
-		}).default({
-			config: z.object({ a: z.number() }),
-			run() {
-				this.config satisfies { a: number }
-				return this.config
-			}
 		})
+			.use(config())
+			.default({
+				config: z.object({ a: z.number() }),
+				run() {
+					this.config satisfies { a: number }
+					return this.config
+				}
+			})
 		const a = await cli.parse(argv('has-config'))
 		expect(a).toEqual({ a: 1 })
 	})
 	test('read config file in parent directory', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config/sub-folder' })
-		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' }).default({
-			config: z.object({ a: z.number() }),
-			run() {
-				return this.config
-			}
-		})
+		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
+			.use(config())
+			.default({
+				config: z.object({ a: z.number() }),
+				run() {
+					return this.config
+				}
+			})
 		const a = await cli.parse(argv('has-config'))
 		expect(a).toEqual({ a: 1 })
 	})
 	test('default config is overridden by value in config file', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config' })
 		const a = await builder(ctx, { name: 'has-config', version: '1.0.0' })
+			.use(config())
 			.default({
 				config: z.object({
 					a: z.number().default(2),
@@ -591,38 +615,53 @@ describe('loadConfig()', () => {
 	})
 	test('load config if default command has config', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config' })
-		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' }).default({
-			config: z.object({ a: z.number() }),
-			run() {
-				const cfg = this.config
-				testType.equal<{ a: number }, typeof cfg>(true)
-				return cfg
-			}
-		})
+		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
+			.use(config())
+			.default({
+				config: z.object({ a: z.number() }),
+				run() {
+					const cfg = this.config
+					testType.equal<{ a: number }, typeof cfg>(true)
+					return cfg
+				}
+			})
 
 		const a = await cli.parse(argv('has-config'))
 		expect(a).toEqual({ a: 1 })
 	})
 	test('load config if any command has config', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-config' })
-		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' }).command({
-			name: 'group',
-			commands: [
-				{
-					name: 'config',
-					config: z.object({ a: z.number() }),
-					run() {
-						return this.config
+		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' })
+			.use(config())
+			.command({
+				name: 'group',
+				commands: [
+					{
+						name: 'config',
+						config: z.object({ a: z.number() }),
+						run() {
+							return this.config
+						}
 					}
-				}
-			]
-		})
+				]
+			})
 		const a = await cli.parse(argv('has-config group config'))
 		expect(a).toEqual({ a: 1 })
+	})
+	test('a command that declares config fails the cli without .use(config())', async () => {
+		const ctx = mockContext({ fixtureDir: 'has-config' })
+		const cli = builder(ctx, { name: 'has-config', version: '1.0.0' }).command({
+			name: 'group',
+			commands: [{ name: 'config', config: z.object({ a: z.number() }), run() {} }]
+		})
+		await expect(cli.parse(argv('has-config group config'))).rejects.toThrow(
+			"command 'config' declares config, but the cli does not load config. Add .use(config()) from 'clibuilder/config' to the cli."
+		)
 	})
 	test('no config fails a schema with a required key, naming that key', async () => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
 		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.use(config())
 			.default({
 				config: z.object({ a: z.number() }),
 				run() {
@@ -640,6 +679,7 @@ describe('loadConfig()', () => {
 	test('no config passes a schema whose keys all have defaults, with the defaults', async () => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
 		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.use(config())
 			.default({
 				config: z.object({ port: z.number().default(8080) }),
 				run() {
@@ -653,6 +693,7 @@ describe('loadConfig()', () => {
 	test('no config leaves the config undefined for a schema that accepts undefined', async () => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
 		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.use(config())
 			.default({
 				config: z.object({ port: z.number().default(8080) }).optional(),
 				run() {
@@ -664,14 +705,16 @@ describe('loadConfig()', () => {
 	})
 	test('a cli with config: true and no config file says nothing about it by default', async () => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
-		await builder(ctx, { name: 'no-config', version: '1.0.0', config: true })
+		await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.use(config())
 			.default({ run() {} })
 			.parse(argv('single-bin'))
 		expect(ctx.messages).not.toContain('no config found')
 	})
 	test.each(['--verbose', '--debug-cli'])('%s reports the config file names searched for', async (flag) => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
-		await builder(ctx, { name: 'no-config', version: '1.0.0', config: true })
+		await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.use(config())
 			.default({ run() {} })
 			.parse(argv(`single-bin ${flag}`))
 		expect(ctx.messages).toContain('no config found')
@@ -943,6 +986,7 @@ describe('usage errors', () => {
 	it('exits with the error code when the config fails validation', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
 		await builder(ctx, { name: 'show-config', version: '1.0.0' })
+			.use(config())
 			.default({
 				config: z.object({ b: z.string() }),
 				run() {
@@ -1174,9 +1218,9 @@ describe('CliError', () => {
 describe('--show-config (#317)', () => {
 	it('prints the config and the file it was loaded from', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
-		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true, output: 'console' }).parse(
-			argv('show-config --show-config')
-		)
+		await builder(ctx, { name: 'show-config', version: '1.0.0', output: 'console' })
+			.use(config())
+			.parse(argv('show-config --show-config'))
 
 		const msg = ctx.messages
 		expect(msg).toContain(`config: ${getFixturePath('has-json-config')}`)
@@ -1186,9 +1230,9 @@ describe('--show-config (#317)', () => {
 
 	it('reports the package.json fallback as the source', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-pjson-config' })
-		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true, output: 'console' }).parse(
-			argv('show-config --show-config')
-		)
+		await builder(ctx, { name: 'show-config', version: '1.0.0', output: 'console' })
+			.use(config())
+			.parse(argv('show-config --show-config'))
 
 		const msg = ctx.messages
 		expect(msg).toContain('package.json (property "show-config")')
@@ -1196,15 +1240,21 @@ describe('--show-config (#317)', () => {
 	})
 
 	it('reports that no config was found', async () => {
-		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
-		await builder.default({ run() {} }).parse(argv('test-cli --show-config'))
+		const [builder, ctx] = setupBuilderTest()
+		await builder
+			.use(config())
+			.default({ run() {} })
+			.parse(argv('test-cli --show-config'))
 
 		expect(ctx.messages).toContain('config: not found')
 	})
 
 	it('is offered by a cli that accepts config', async () => {
-		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
-		await builder.default({ run() {} }).parse(argv('test-cli --help'))
+		const [builder, ctx] = setupBuilderTest()
+		await builder
+			.use(config())
+			.default({ run() {} })
+			.parse(argv('test-cli --help'))
 
 		expect(ctx.messages).toContain('[--show-config]')
 	})
@@ -1220,7 +1270,8 @@ describe('--show-config (#317)', () => {
 describe('--show-config with output axi', () => {
 	function showConfig(fixtureDir: string, args = '') {
 		const ctx = mockContext({ fixtureDir })
-		return builder(ctx, { name: 'show-config', version: '1.0.0', config: true })
+		return builder(ctx, { name: 'show-config', version: '1.0.0' })
+			.use(config())
 			.parse(argv(`show-config --show-config ${args}`))
 			.then(() => ctx)
 	}
@@ -1268,8 +1319,11 @@ describe('--show-config with output axi', () => {
 	})
 
 	it('answers that no config was found', async () => {
-		const [builder, ctx] = setupBuilderTest(undefined, { config: true, output: 'axi' })
-		await builder.default({ run() {} }).parse(argv('test-cli --show-config --format json'))
+		const [builder, ctx] = setupBuilderTest(undefined, { output: 'axi' })
+		await builder
+			.use(config())
+			.default({ run() {} })
+			.parse(argv('test-cli --show-config --format json'))
 
 		expect(JSON.parse(ctx.stdout)).toEqual({ source: 'none', config: null })
 		expect(ctx.exitCode).toBeUndefined()
@@ -1336,6 +1390,7 @@ describe('parse() resolves to the exit code it records', () => {
 	it('on a config that fails validation', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
 		const code = await builder(ctx, { name: 'show-config', version: '1.0.0' })
+			.use(config())
 			.default({ config: z.object({ b: z.string() }), run() {} })
 			.parse(argv('show-config'))
 		expect(code).toBe(exitCodes.error)
