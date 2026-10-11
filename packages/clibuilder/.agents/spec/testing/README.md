@@ -55,8 +55,8 @@ would, and assert on the outcome as values.
 
 | | |
 | --- | --- |
-| Trigger | `testCommand(command, argv, config, { output })` |
-| Inputs | the command declaration, the argv as a string, and optionally a config and an output mode |
+| Trigger | `testCommand(command, argv, { config, output, format })` |
+| Inputs | the command declaration, the argv as a string, and optionally a config, an output mode and a format |
 | Outcome | the command's return value, the captured messages, and the recorded exit code |
 
 **Extensions.**

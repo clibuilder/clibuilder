@@ -395,9 +395,9 @@ describe('usage errors from t', () => {
 			run() {}
 		})
 		// console output, which prints every error; the default axi output reports the top-ranked one
-		const missing = await testCommand(cmd, 'echo', undefined, { output: 'console' })
+		const missing = await testCommand(cmd, 'echo', { output: 'console' })
 		expect(missing.messages).toContain('missing required option --port')
-		const { messages, exitCode } = await testCommand(cmd, 'echo x --port --tag a --tag c', undefined, {
+		const { messages, exitCode } = await testCommand(cmd, 'echo x --port --tag a --tag c', {
 			output: 'console'
 		})
 		expect(exitCode).toBe(exitCodes.usage)

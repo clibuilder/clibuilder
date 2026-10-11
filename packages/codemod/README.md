@@ -10,7 +10,7 @@ npx @clibuilder/codemod src
 It rewrites `z` from `clibuilder` to `t`, moves `@clibuilder/axi` value helpers to `clibuilder/axi`,
 moves `cli({ keywords })` to `.use(plugins({ keywords }))`, replaces `cli({ config })` with
 `.use(config())` from `clibuilder/config`, moves the config functions such as `resolveConfig` from
-`clibuilder` to `clibuilder/config`, and moves `testCommand` from `clibuilder` to `clibuilder/testing`. It flags what it cannot rewrite with a `// TODO(clibuilder-12): …` comment,
+`clibuilder` to `clibuilder/config`, moves `testCommand` from `clibuilder` to `clibuilder/testing`, and rewrites its `config` and `options` arguments into one `options` object. It flags what it cannot rewrite with a `// TODO(clibuilder-12): …` comment,
 and lists every `return <expr>` in a `run()`, which clibuilder 12 prints.
 
 | Option | Meaning |

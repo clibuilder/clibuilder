@@ -149,6 +149,61 @@ export function transformAxiImports(context: FileContext) {
 /** Test-only exports that clibuilder 12 serves only from `clibuilder/testing`. slim-dependencies RFC section 5.1. */
 const TESTING_EXPORTS = new Set(['testCommand'])
 
+/** The keys of `testCommand`'s clibuilder 12 options: a third argument with only these is already migrated. */
+const TEST_COMMAND_OPTION_KEYS = new Set(['config', 'output', 'format'])
+
+/**
+ * clibuilder 12 takes `testCommand(command, argv, options?)`, where 11 took `(command, argv, config?, options?)`.
+ *
+ * `undefined` as the third argument is dropped, and a config object moves to `options.config`.
+ * A third argument the codemod cannot read as a config is flagged.
+ */
+export function transformTestCommand(context: FileContext) {
+	const locals = new Set(
+		['clibuilder', 'clibuilder/testing'].flatMap((module) =>
+			namedImports(context.sourceFile, module)
+				.filter((i) => i.imported === 'testCommand')
+				.map((i) => i.local)
+		)
+	)
+	if (locals.size === 0) return
+	forEachNode(context.sourceFile, (node) => {
+		if (!ts.isCallExpression(node) || !ts.isIdentifier(node.expression) || !locals.has(node.expression.text)) return
+		const [, argv, third, fourth] = node.arguments
+		if (!argv || !third) return
+		const isUndefined = ts.isIdentifier(third) && third.text === 'undefined'
+		if (!isUndefined && !fourth) {
+			if (!ts.isObjectLiteralExpression(third)) {
+				context.flag(
+					third,
+					'test-command',
+					'`testCommand(command, argv, options)` replaces `(command, argv, config, options)` in clibuilder 12. If this is a config, pass `{ config }`.'
+				)
+				return
+			}
+			if (third.properties.every((p) => TEST_COMMAND_OPTION_KEYS.has(propertyName(p) ?? ''))) return
+		}
+		const config = isUndefined
+			? undefined
+			: ts.isIdentifier(third) && third.text === 'config'
+				? 'config'
+				: `config: ${context.nodeText(third)}`
+		let options: string | undefined
+		if (!fourth) options = config ? `{ ${config} }` : undefined
+		else if (!config) options = context.nodeText(fourth)
+		else if (ts.isObjectLiteralExpression(fourth) && fourth.properties.length > 0) {
+			options = `{ ${config}, ${fourth.properties.map((p) => context.nodeText(p)).join(', ')} }`
+		} else options = `{ ${config}, ...${context.nodeText(fourth)} }`
+		const last = node.arguments[node.arguments.length - 1]!
+		context.replace(argv.end, last.end, options ? `, ${options}` : '')
+		context.rewrite(
+			node,
+			'test-command',
+			`moved the config and options of \`testCommand\` into one \`options\` argument: ${options ?? 'dropped `undefined`'}`
+		)
+	})
+}
+
 /** The config exports that clibuilder 12 serves only from `clibuilder/config` (#692). */
 const CONFIG_EXPORTS = new Set([
 	'describeConfigSource',

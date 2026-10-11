@@ -60,6 +60,7 @@ What it rewrites and what it flags:
 | config functions imported from `clibuilder` | moved to `clibuilder/config` |
 | `this.keywords` | flagged |
 | `import { testCommand } from 'clibuilder'` | moved to `clibuilder/testing` ([`testCommand` is only in `clibuilder/testing`](#testcommand-is-only-in-clibuildertesting)) |
+| `testCommand(cmd, argv, config, options)` | rewritten to `testCommand(cmd, argv, { config, ...options })` ([`testCommand` is only in `clibuilder/testing`](#testcommand-is-only-in-clibuildertesting)) |
 | `return <expr>` in `run()` | listed for review |
 
 When it adds an import from `@clibuilder/plugins`, it also adds the package to the nearest
@@ -101,10 +102,10 @@ spec in the repository runs the same invocations against 11.5.0 and against 12 t
 
 `testCommand` follows the default too. Its `messages` now include the printed answer, such as a
 returned value or a `CliError` report. To test a CLI that sets `output: 'console'`, pass the same
-mode as the fourth argument:
+mode as `options.output`:
 
 ```ts
-const { messages } = await testCommand(cmd, 'cmd', undefined, { output: 'console' })
+const { messages } = await testCommand(cmd, 'cmd', { output: 'console' })
 ```
 
 Source: [axi-native section 3.10](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#310-output-modes-and-stream-routing).
@@ -486,14 +487,16 @@ See [Streams and output](/clibuilder/api/cli/#streams-and-output).
 **On `main`.**
 
 **What changed.** The root entry no longer exports `testCommand()`. Import it from
-`clibuilder/testing`, which 11.5.0 already has, with the same signature. `clibuilder/testing` also
-exports `mockPluginContext()`. Nothing that the root entry imports reaches test-only code, so a CLI
+`clibuilder/testing`, which 11.5.0 already has. `testCommand(command, argv, options?)` takes one
+`options` object, `{ config, output, format }`, where 11.5.0 took `(command, argv, config?, options?)`,
+and it also runs a `.default()` command. `clibuilder/testing` also exports `mockPluginContext()` and
+`mockExtensionContext()`. Nothing that the root entry imports reaches test-only code, so a CLI
 no longer loads the test helper and its in-memory streams when it starts.
 
 **Who is affected.** A test that imports `testCommand` from `clibuilder`, such as repobuddy/buddy's
 specs. 11.5.0 marks that export deprecated.
 
-**Fix.** Import it from `clibuilder/testing`. The codemod moves it.
+**Fix.** Import it from `clibuilder/testing`, and pass the config as `options.config`. The codemod does both.
 
 ```ts
 // before

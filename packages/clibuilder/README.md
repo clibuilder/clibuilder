@@ -316,7 +316,7 @@ test('some test', async () => {
 })
 ```
 
-Pass `{ output: 'console' }` as the fourth argument to test a CLI that sets `output: 'console'`.
+Pass `{ output: 'console' }` as the third argument to test a CLI that sets `output: 'console'`.
 
 ## Startup time
 

@@ -382,3 +382,46 @@ describe('config', () => {
 		expect(result.findings.map((f) => [f.rule, f.kind])).toEqual([['config', 'flag']])
 	})
 })
+
+describe('testCommand options', () => {
+	const run = (call: string, from = 'clibuilder/testing') =>
+		transform(`import { testCommand } from '${from}'\nawait ${call}\n`, 'x.ts')
+	const output = (call: string) => run(call).output.split('\n')[1]!.replace('await ', '')
+
+	it.each([
+		["testCommand(cmd, 'x', undefined)", "testCommand(cmd, 'x')"],
+		["testCommand(cmd, 'x', undefined, { output: 'console' })", "testCommand(cmd, 'x', { output: 'console' })"],
+		["testCommand(cmd, 'x', undefined, options)", "testCommand(cmd, 'x', options)"],
+		["testCommand(cmd, 'x', { port: 1 })", "testCommand(cmd, 'x', { config: { port: 1 } })"],
+		[
+			"testCommand(cmd, 'x', { port: 1 }, { output: 'console' })",
+			"testCommand(cmd, 'x', { config: { port: 1 }, output: 'console' })"
+		],
+		["testCommand(cmd, 'x', config, options)", "testCommand(cmd, 'x', { config, ...options })"]
+	])('rewrites %s', (input, expected) => {
+		const result = run(input)
+		expect(output(input)).toBe(expected)
+		expect(result.findings.map((f) => [f.kind, f.rule])).toEqual([['rewrite', 'test-command']])
+	})
+
+	it('leaves the clibuilder 12 forms alone, so a second run changes nothing', () => {
+		for (const call of ["testCommand(cmd, 'x')", "testCommand(cmd, 'x', { output: 'console', format: 'json' })"]) {
+			const source = `import { testCommand } from 'clibuilder/testing'\nawait ${call}\n`
+			expect(transform(source, 'x.ts')).toEqual({ output: source, findings: [], dependencies: [] })
+		}
+	})
+
+	it('flags a third argument it cannot read as a config', () => {
+		const result = run("testCommand(cmd, 'x', options)")
+		expect(result.output).toContain('// TODO(clibuilder-12)')
+		expect(result.findings.map((f) => [f.kind, f.rule])).toEqual([['flag', 'test-command']])
+	})
+
+	it('follows the import from clibuilder, and a renamed binding', () => {
+		const result = transform(
+			"import { testCommand as run } from 'clibuilder'\nawait run(cmd, 'x', undefined, o)\n",
+			'x.ts'
+		)
+		expect(result.output).toContain("await run(cmd, 'x', o)")
+	})
+})
