@@ -10,7 +10,8 @@
 			"!**/dist",
 			"!**/esm",
 			"!**/target",
-			"!**/node_modules"
+			"!**/node_modules",
+			"!packages/args-minus/src/standard_schema.ts"
 		]
 	},
 	"javascript": {

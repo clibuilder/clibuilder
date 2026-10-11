@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs'
-import { ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
+import { ParseArgsError, parseArgs, t, tokenizeArgs } from './index.js'
 
 // Runs every example in readme.md: an expression, then `// => value` or `// throws text`.
 const readme = readFileSync(new URL('../readme.md', import.meta.url), 'utf8')
 const blocks = [...readme.matchAll(/```ts\n([\s\S]*?)```/g)].map((m) => m[1]!).filter((b) => !b.startsWith('import'))
 
 function evaluate(code: string) {
-	return new Function('parseArgs', 'tokenizeArgs', `return (${code})`)(parseArgs, tokenizeArgs)
+	return new Function('parseArgs', 'tokenizeArgs', 't', `return (${code})`)(parseArgs, tokenizeArgs, t)
 }
 
 const examples = blocks.flatMap((block) =>
@@ -21,7 +21,7 @@ const examples = blocks.flatMap((block) =>
 )
 
 it('finds the readme examples', () => {
-	expect(examples.length).toBeGreaterThanOrEqual(14)
+	expect(examples.length).toBeGreaterThanOrEqual(18)
 })
 
 describe('readme examples', () => {

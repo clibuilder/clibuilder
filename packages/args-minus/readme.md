@@ -74,12 +74,13 @@ works from Node 22.12.
 ## Usage
 
 ```ts
-import { parseArgs, tokenizeArgs } from 'args-minus'
+import { parseArgs, parseArgsAsync, t, tokenizeArgs } from 'args-minus'
 ```
 
-The package has two functions, `tokenizeArgs()` and `parseArgs()`, plus the
-`ParseArgsError` class. It depends on no runtime API, only on the JavaScript
-language, so it runs wherever ES modules do.
+The package has three functions, `tokenizeArgs()`, `parseArgs()` and
+`parseArgsAsync()`, the option type builders `t`, and the `ParseArgsError`
+class. It depends on no runtime API, only on the JavaScript language, so it
+runs wherever ES modules do.
 
 Both take the arguments already split into an array: pass `process.argv.slice(2)`
 (Node), `Deno.args`, or `Bun.argv.slice(2)`.
@@ -171,11 +172,103 @@ Result:
 
 ```ts
 { type: 'boolean' | 'number' | 'string', alias?, multiple?, default? }
+{ type: t.int({ min: 1 }), alias?, default? }
 ```
 
+`type` is a type name or a descriptor from `t` (next section).
 `parseArgs` is generic over the declarations, so `options` is typed from them:
 `number`, `boolean`, `string`, an array when `multiple`, and non-optional when
 there is a `default`.
+
+### Option types: `t`
+
+A descriptor from `t` converts the raw argument to a typed value and carries
+its constraints as data.
+
+| Builder | Converts the argument to | Data |
+| --- | --- | --- |
+| `t.string(opts?)` | the text, matching `pattern` if given | `pattern?` |
+| `t.string<T>({ pattern })` | the text, typed as `T` | `pattern` |
+| `t.number(opts?)` | a finite number | `min?`, `max?` |
+| `t.int(opts?)` | an integer | `min?`, `max?` |
+| `t.boolean()` | `true` when present; takes no value | |
+| `t.literal(value)` | exactly `value` (string, number or boolean) | `value` |
+| `t.enum([...])` | one of a non-empty tuple of strings | `values` |
+| `t.array(element)` | every occurrence, each converted by `element` | `element` |
+| `t.custom(raw => value)` | what the function returns or resolves to | `convert` |
+| `t.json(schema?)` | the value of the JSON text | `schema?` |
+
+```ts
+parseArgs({ args: ['--port', '8080', '--tag=a', '--tag=b', '--level=warn'], options: { port: { type: t.int({ min: 1, max: 65535 }) }, tag: { type: t.array(t.string()) }, level: { type: t.enum(['info', 'warn']) }, dry: { type: t.boolean().optional() } } }).options
+// => { port: 8080, tag: ['a', 'b'], level: 'warn' }
+
+parseArgs({ args: ['--port=0'], options: { port: { type: t.int({ min: 1, max: 65535 }) } } })
+// throws Invalid value for option 'port': expected an integer from 1 to 65535, got '0' (from '--port=0')
+```
+
+Rules:
+
+- A descriptor option is required unless it is `.optional()` or has a
+  `default`. A required option that is absent throws.
+- `t.number()` and `t.int()` are strict: an empty value, `NaN`, `Infinity` or
+  trailing text is an invalid value. Both take a negative number as the next
+  argument (`--n -5`).
+- `t.boolean()` and a boolean `t.literal()` are flags: they never take the next
+  argument, and accept only `=true` or `=false` inline.
+- `t.string<T>({ pattern })` is an assertion: TypeScript cannot check `T`
+  against the pattern.
+- `t.literal()` and `t.enum()` infer the exact values: `t.literal(true)` is
+  `true`, and `t.enum(['a', 'b'])` is `'a' | 'b'`.
+- `t.array(element)` collects every occurrence in source order. The element is
+  any descriptor that is neither optional nor an array. It replaces
+  `multiple`, which a descriptor declaration does not take.
+- `t.json()` is `unknown`, and `t.json<T>()` asserts `T` after checking only
+  the JSON syntax. `t.json(schema)` validates with a
+  [Standard Schema](https://standardschema.dev) and uses its output. The JSON
+  comes from the argument text only; reading a file or stdin is left to the
+  application.
+- `t.custom(convert)` throwing a plain `Error` (whose constructor is `Error`)
+  is an invalid value with that message. Any other throw propagates.
+- A `default` is not converted. Its checks run on the first parse that uses its
+  declaration; a failure there throws a plain `Error`, not a `ParseArgsError`.
+- Definitions are checked when built: `min <= max`, integer bounds on
+  `t.int()`, a non-empty `t.enum()`, and a scalar `t.literal()`. A bad one
+  throws.
+
+`.optional()` and `.check()` are the only methods, and each returns a new
+descriptor. The descriptor's own fields are its data, a read-only union keyed
+on `kind` (`Data`), so `{ ...t.int({ min: 1 }) }` is
+`{ kind: 'int', min: 1, isOptional: false, checks: [] }`.
+
+### Checks
+
+`.check()` validates the converted value. It never changes the value or its
+type. It takes:
+
+- a function that returns `true` or nothing to pass, `false` to fail, or a
+  string to fail with that message, or a promise of one of these;
+- any Standard Schema (zod, valibot, arktype, …). Its output is ignored, and an
+  async `validate` is awaited.
+
+Checks run in declaration order and the first failure wins. A check that throws
+propagates. On `t.array()`, an element's checks run on each element and the
+array's checks on the whole array.
+
+```ts
+parseArgs({ args: ['--n=3'], options: { n: { type: t.int().check((n) => n % 2 === 0 || 'must be even') } } })
+// throws Invalid value for option 'n': must be even (from '--n=3')
+
+parseArgs({ args: ['--tag=a', '--tag=B'], options: { tag: { type: t.array(t.string({ pattern: /^[a-z]+$/ })) } } })
+// throws Invalid value for option 'tag[1]'
+```
+
+### Asynchronous options: `parseArgsAsync(config)`
+
+A `t.custom()` converter, a check, or a schema may be asynchronous.
+`parseArgsAsync()` takes the same config as `parseArgs()`, awaits them one at a
+time in input order, and resolves to the same result. `parseArgs()` stays
+synchronous: when one of them returns a promise, it throws an `Error` that
+names the option and asks for `parseArgsAsync()`.
 
 ### Options, dashes, and inline values
 
@@ -279,8 +372,13 @@ parseArgs({ args: ['x'], allowPositionals: false })
 
 Invalid input throws `ParseArgsError` (an `Error`) with:
 
+- `kind`: `unknown-option`, `unexpected-positional`, `invalid-group`,
+  `missing-value`, `invalid-value` or `missing-option`,
 - `option`: the option name (`undefined` for an unexpected positional),
-- `input`: the argument as written, e.g. `--n=abc`.
+- `input`: the argument as written, e.g. `--n=abc` (empty for a missing option),
+- `index`: for an array option, the index of the element that failed,
+- `issues`: the issues from a Standard Schema that failed. The message never
+  repeats a schema's text.
 
 A mistake in the declarations or grammar (duplicate alias, bad modifier) throws
 a plain `Error`. `parseArgs` never returns `NaN` or `undefined` for a declared
@@ -290,5 +388,6 @@ option.
 
 `args-minus` follows semantic versioning. These are stable and change only in a
 major version: the exports above, the token shapes and field names, the
-parsing rules in this document, and the error class and its fields. Error
-message text is informative; match on `ParseArgsError` and its fields instead.
+descriptor data, the parsing rules in this document, and the error class and
+its fields. Error message text is informative; match on `ParseArgsError` and
+its fields instead.

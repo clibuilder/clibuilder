@@ -1,6 +1,6 @@
 # RFC: slim clibuilder's runtime dependencies for the next major
 
-- **Status:** Accepted. Maintainer decisions recorded 2026-10-11; the items in [section 8](#8-open-questions), [section 9.9](#99-open-questions) and [section 10](#10-still-open) are still open. Design only; nothing is implemented yet.
+- **Status:** Accepted. Maintainer decisions recorded 2026-10-11; the items in [section 8](#8-open-questions), [section 9.9](#99-open-questions) and [section 10](#10-still-open) are still open. The `t` descriptors (sections 3.4 and 3.5) are implemented in `args-minus`; the rest is design only.
 - **Amended 2026-10-10:** [section 9](#9-amendment-move-all-plugin-support-out-of-core) moves plugin loading out of core as well as discovery. It supersedes section 5.3 and closes Q3.
 - **Target:** `clibuilder@12` (breaking), shipped with [axi-native](axi-native.md)
 - **Related:** [#639](https://github.com/clibuilder/clibuilder/issues/639) (AXI-native clibuilder), `@clibuilder/axi` (#630, #636)
@@ -25,6 +25,10 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 10 | Remove zod, standard-log, standard-log-color, tersify, type-plus, pad-right, wordwrap, tmp and tslib from core. | 2, 7 |
 | 11 | The descriptor introspection form is a public, read-only union keyed on `kind`. Its exact field names are finalized in the implementation PR. | 3.4 |
 | 12 | The level-to-stream routing behind the presets is internal in v12. | 4 |
+| 15 | `t.json(schema?)` is a builder: `t.json()` is `unknown`, `t.json<T>()` asserts `T`, and `t.json(schema)` is typed from the schema's output and uses it. | 3.4 |
+| 16 | A `t.array` element is any descriptor that is neither optional nor an array, including `t.custom` and `t.json`. | 3.4 |
+| 17 | A converter that throws or rejects with a plain `Error` reports `invalid-value` with its message; any other throw propagates. | 3.4 |
+| 18 | `args-minus` keeps `parseArgs` synchronous and adds `parseArgsAsync` for asynchronous converters and checks. | 3.5 |
 | 13 | The descriptor work lands in `args-minus` first; clibuilder then re-exports `t` and moves its parser onto `args-minus`. The zod path stays through v11 minors and is removed in v12. | 7 |
 
 ## 1. Summary
@@ -141,6 +145,7 @@ options: {
 | `t.enum([...])` | one string of a non-empty const tuple | `values` |
 | `t.array(element)` | the repeated values, each converted by `element` | `element` |
 | `t.custom(raw => value)` | whatever the function returns | `convert` |
+| `t.json(schema?)` | the parsed JSON value, or the schema's output | `schema?` |
 
 - **Two chained methods only.** `.optional()` and `.check()` are the only methods on a descriptor. There is no `.min().max()` chain.
 - **No string DSL.** An arktype-style string DSL was evaluated and rejected. Typing it needs a type-level string parser that costs more than the whole builder surface. The editor offers no completion inside the string, a regex inside it needs its escapes doubled, and help would need a runtime parser to read the constraints back out.
@@ -149,14 +154,14 @@ options: {
 - **`t.number` is strict.** An empty string, `NaN`, `Infinity` or trailing text fails as `invalid-value` (section 3.6).
 - **`t.literal`** infers through a const type parameter, so `t.literal(true)` is `true`, not `boolean`. As a bare option, `t.literal(true)` is a flag that must be present; it is mostly useful as an array element.
 - **`t.enum`** takes a non-empty const tuple of strings only. repobuddy's `z.union` of `z.literal`s becomes `t.enum`.
-- **`t.array`** takes a non-optional scalar, `t.int`, literal or enum element. Optional elements, nested arrays and `t.custom` elements are rejected. Each element is converted on its own, in order.
+- **`t.array`** takes any element that is neither optional nor an array, including `t.custom` and `t.json`. Optional elements and nested arrays are rejected. Each element is converted and checked on its own, in order, and an error names the element as `tag[2]`.
 - **No `.describe()` or `.default()`.** `default`, `alias` and `description` stay on the option entry beside the descriptor. A `default` makes the key required in the `args` output type.
 
 **Converting and validating are separate roles.**
 
 - **The descriptor converts.** It turns the raw argv string into the typed value. It carries its constraints (`min`, `max`, `pattern`, `values`) as plain readable data, so help and usage errors can show them, for example `--port <int 1..65535>`. Ranges and patterns are the only built-in constraints, because they are declarative data that help can display.
 - **`.check()` validates.** It runs on the converted value and never changes the value or its type. It takes one of:
-  - a function of the value that returns `true` or nothing to pass, `false` to fail with a generic invalid-value message, or a string to fail with that string as the message. It may also return a promise of any of these;
+  - a function of the value that returns `true` or nothing (`void`) to pass, `false` to fail with a generic invalid-value message, or a string to fail with that string as the message. It may also return a promise of any of these;
   - any Standard Schema, run for pass or fail only. A `validate` that returns a promise is awaited. **The schema's output is ignored.** A `transform`, `trim`, `default` or coercion in it does nothing here. Conversion belongs in the descriptor or in `t.custom`.
 - **Checks may be async.** `parse()` already awaits config loading and plugin activation, and the existing config validation already awaits an async `validate`, so awaiting a check adds little.
 - **Checks run in declaration order,** and the first failing check wins; later checks do not run.
@@ -177,24 +182,20 @@ Reading files, resolving paths against `cwd`, network calls, and anything that d
 
 **`t.custom` may be async.** The function may return a promise, which is awaited. `parse()` already awaits config loading and plugin activation, so this adds little. For the same reason, I/O in a converter is discouraged: it delays every parse that sets the option, and its failure is rarely one the caller can fix.
 
-**Converter failures.** *Proposed, the exact mechanism is finalized in the implementation PR:* a converter that throws, or rejects, with a plain `Error` (whose constructor is `Error` itself) reports `invalid-value`, with the error's message as the message. Any other throw or rejection, including a `TypeError` from a bug, a vendor's error class, or a value that is not an `Error`, is a runtime error and propagates as one.
+**Converter failures.** A converter that throws, or rejects, with a plain `Error` (whose constructor is `Error` itself) reports `invalid-value`, with the error's message as the message. Any other throw or rejection, including a `TypeError` from a bug, a vendor's error class, or a value that is not an `Error`, is a runtime error and propagates as one.
 
-A JSON option whose schema output matters, such as its defaults or transforms, goes through `t.custom`:
+**`t.json(schema?)`.** *Decided after this RFC was accepted.* A JSON option is a builder rather than a `t.custom` converter:
 
 ```ts
-payload: {
-  type: t.custom(raw => {
-    let value: unknown
-    try { value = JSON.parse(raw) } catch { throw new Error('is not valid JSON') }
-    const result = Payload.safeParse(value)
-    if (!result.success) throw new Error('does not match the payload shape')
-    return result.data
-  }),
-  description: '…'
-}
+payload: { type: t.json(Payload), description: '…' }      // typed from Payload's output
+raw:     { type: t.json(), description: '…' }             // unknown
+config:  { type: t.json<Config>(), description: '…' }     // author assertion; only JSON syntax is checked
 ```
 
-A built-in `t.json(schema)` is an open candidate (section 10).
+- Here the schema is the second half of the converter, so its **output is used**, unlike `.check()`, which ignores it. There is no input compatibility check, because `JSON.parse` yields `unknown`.
+- Text that is not JSON is `invalid-value` with a "not valid JSON" message. The schema's issues are `invalid-value` with the package's own message; the vendor's text is never forwarded raw.
+- The JSON text comes from the argv string only. Reading `@file` or stdin is I/O and belongs in `run()` or an async `t.custom`.
+- Its introspection form is `{ kind: 'json', schema? }`, and its help hint is `<json>`.
 
 **Not part of the design.** There is no option-level `schema:` field, no `refine` method and no `~standard` method on descriptors. No downstream CLI uses refinements, `z.object`, `z.coerce` or `.describe()` (section 7), and `.check()` covers validation without letting a schema change the value. A descriptor is a converter, not a Standard Schema.
 
@@ -211,7 +212,7 @@ A built-in `t.json(schema)` is an open candidate (section 10).
 ```ts
 type Data = (
   | StringData | NumberData | IntData | BooleanData
-  | LiteralData | EnumData | ArrayData | CustomData
+  | LiteralData | EnumData | ArrayData | CustomData | JsonData
 ) & { readonly isOptional: boolean; readonly checks: readonly Check[] }
 
 type StringData  = { readonly kind: 'string'; readonly pattern?: RegExp }
@@ -222,10 +223,13 @@ type LiteralData = { readonly kind: 'literal'; readonly value: string | number |
 type EnumData    = { readonly kind: 'enum'; readonly values: readonly [string, ...string[]] }
 type ArrayData   = { readonly kind: 'array'; readonly element: Data }
 type CustomData  = { readonly kind: 'custom'; readonly convert: (raw: string) => unknown }
-type Check       = { readonly type: 'fn' | 'schema' }
+type JsonData    = { readonly kind: 'json'; readonly schema?: StandardSchemaV1 }
+type Check       =
+  | { readonly type: 'fn'; readonly fn: (value: any) => boolean | string | void | Promise<boolean | string | void> }
+  | { readonly type: 'schema'; readonly schema: StandardSchemaV1 }
 ```
 
-`default`, `alias` and `description` come from the option entry, not from this form. The exact field names are proposed from the prototype and are finalized in the implementation PR (section 10).
+`default`, `alias` and `description` come from the option entry, not from this form. These field names are final. The descriptor's own enumerable fields are its `Data`, frozen, and `.optional()` and `.check()` live on its prototype, so spreading a descriptor gives the plain form.
 
 ### 3.5 Implementation rules for `t`
 
@@ -233,12 +237,14 @@ A prototype of `t` in this repo settled these rules:
 
 - **Inference stays exact** through `parseArgs<const O>(options: O)`. Option declarations written out of line, or spread from another object, infer too.
 - **Optionality is a type-level flag,** separate from the output type. `.optional()` sets the flag; it does not widen the output to `T | undefined` inside the descriptor.
-- **`t.enum` requires a non-empty const tuple.** A pre-widened `string[]` degrades to `string`. The implementation either rejects it at the type level or documents the degradation.
+- **`t.enum` requires a non-empty const tuple.** A pre-widened `string[]` would degrade to `string`, so it is rejected at the type level.
 - **No `?: never` keys** to forbid an option that does not apply to a kind, such as `pattern` on `t.number`. They ruin completion and error messages. The excess-property check rejects such keys in an object literal. A bag passed in from a variable is not rejected, and that is accepted.
 - **Definition-time checks throw.** `min <= max`, and integer bounds on `t.int`, are checked at runtime when the descriptor is created, because the type level cannot check them cheaply. The `T` of `t.string<T>` does not exist at runtime, so it stays an assertion.
-- **A typed `default` is not converted.** It is already a value. Its `.check()` calls run on it, and a failure is a programmer error, not a usage error. Because a check may be async, it cannot run when the command is defined. *Proposed:* the default's checks run once, at the first `parse()`, instead of at definition.
+- **A typed `default` is not converted.** It is already a value. Its `.check()` calls run on it, and a failure is a programmer error, not a usage error. Because a check may be async, it cannot run when the command is defined. The default's checks run once, at the first `parse()` that uses the declaration, instead of at definition.
 - **Array validation errors name the element value and its index,** for example `tag[2]`.
 - **A foreign schema's issues** are mapped into the `invalid-value` usage error. The vendor's text is never forwarded raw.
+- **Synchronous parsing stays.** *Decided in the implementation.* `args-minus` keeps `parseArgs` synchronous and adds `parseArgsAsync` with the same config and result. Both run one generator, so the rules cannot drift: `parseArgsAsync` awaits each converter, check and schema in input order, and `parseArgs` throws an `Error` naming the option and `parseArgsAsync` when one returns a promise. Declarations that need no async work, including every type-name declaration (`type: 'number'`), keep a fully synchronous path. clibuilder's `parse()` is already async and calls `parseArgsAsync`.
+- **Definition-time checks** also cover a non-empty `t.enum` and a scalar `t.literal`.
 - **`.check()` overloads** declare the Standard Schema overload first and the function overload last, so a type error reads about the function.
 - **Measured cost.** About 1.9k type instantiations for 12 real option declarations from this repo, and about 4.1k for 60 options. Checking takes about 0.13 s to 0.18 s on TypeScript 6 and about 0.01 s on TypeScript 7. Nothing recurses. The vendors' own schema types cost more than the descriptors: one arktype call costs more than the whole 60-option surface.
 
@@ -569,10 +575,11 @@ Items raised by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are
 
 Still open:
 
-7. **Exact introspection field names.** The names in section 3.4 come from the prototype and are finalized in the implementation PR. That the form is public and read-only is decided.
-8. **A built-in `t.json(schema)`.** A `t.custom` converter covers it today (section 3.4). A helper would also need to decide how a schema's output type and issues map to `args` and `invalid-value`.
-9. **`t.custom` as an array element.** Rejected in v12. Allowing it later needs a rule for reporting which element's conversion threw.
+7. ~~**Exact introspection field names.** The names in section 3.4 come from the prototype and are finalized in the implementation PR.~~ **Resolved:** the names in section 3.4 are final, with `JsonData` added and `Check` carrying its `fn` or `schema`.
+8. ~~**A built-in `t.json(schema)`.** A helper would need to decide how a schema's output type and issues map to `args` and `invalid-value`.~~ **Resolved:** `t.json(schema?)` is in. Its type is the schema's output, the output is used, and issues and invalid JSON are `invalid-value` (section 3.4).
+9. ~~**`t.custom` as an array element.** Rejected in v12.~~ **Resolved:** allowed, as is `t.json`. An error names the element and its index, such as `tag[2]` (section 3.4).
 10. ~~**Async Standard Schema in `.check()`.** Does `.check()` await a promise from `validate`, or reject an async schema?~~ **Resolved:** `.check()` may be async; a function check may return a promise and an async `validate` is awaited (section 3.4). How a default's async check runs is proposed in section 3.5.
 11. **Type-check cost on a CLI with many commands.** The cost in section 3.5 was measured for one set of options. A CLI with many commands, each with its own options, has not been measured.
 12. ~~**Async `t.custom`.** May the conversion return a promise?~~ **Resolved:** yes, it is awaited, as for `.check()`. I/O in a converter is discouraged (section 3.4).
-13. **How a converter marks a usage failure.** Section 3.4 proposes a plain `Error`; the exact mechanism is finalized in the implementation PR.
+13. ~~**How a converter marks a usage failure.**~~ **Resolved:** a throw or rejection whose constructor is exactly `Error` is `invalid-value` with its message; anything else propagates (section 3.4).
+14. ~~**Async checks and a synchronous `parseArgs`.**~~ **Resolved:** `args-minus` adds `parseArgsAsync` and keeps `parseArgs` synchronous (section 3.5).

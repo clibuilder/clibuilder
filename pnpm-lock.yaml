@@ -233,6 +233,9 @@ importers:
       '@repobuddy/typescript':
         specifier: ^2.2.3
         version: 2.2.3(typescript@5.9.3)
+      '@standard-schema/spec':
+        specifier: 1.1.0
+        version: 1.1.0
       '@types/node':
         specifier: ^24.12.2
         version: 24.12.2
@@ -257,6 +260,9 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
   packages/axi:
     dependencies:
