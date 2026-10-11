@@ -219,13 +219,15 @@ This is the design that sections 3.1 to 3.7 route through. It replaces standard-
 | Result channel: `result`, `document`, `empty`, `help[N]` (replaces `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines`) | yes | no |
 | Stream routing, `cli({ output, streams })` | yes | n/a |
 | Truncation, counts, `--full` | no | yes |
+| Output contract functions (`encode`, `errorOutput`, `printAnswer`, `formats`/`Format`, `CliError`/`isCliError`), re-exported only (#688) | yes | yes |
+| Headless runner `runScript` (#688) | no | yes |
 | `orEmpty`, home header, collapse | no | yes |
 | Exit codes 0, 1, 2 | yes | no |
 | Exit codes above 2 | no (each CLI's own) | none |
 | Help examples, structured help | yes | n/a |
 | Version fast path, EPIPE | yes | n/a |
 
-The line: **if it changes what `parse()` does, it is built into core. If it shapes the value a command returns, it is in the `clibuilder/axi` subpath.** The subpath is optional, and a CLI that does not import it gets conforming errors, usage errors and result output from core alone.
+The line: **if it changes what `parse()` does, it is built into core. If it is what a command or a standalone script imports, it is in the `clibuilder/axi` subpath.** The subpath is optional, and a CLI that does not import it gets conforming errors, usage errors and result output from core alone. The subpath is also usable without `cli()` (section 4.1, decision 5).
 
 ### 4.1 Decision: where `@clibuilder/axi`'s contents belong
 
@@ -249,17 +251,30 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 1. Core owns the AXI contract: error rendering, usage-error ranking, `--format`, the result channel, and the text and toon encoders (sections 3 and 4).
 2. The value helpers (truncation, counts, `orEmpty`, home header and collapse) move to a `clibuilder/axi` subpath of core. The subpath can be tree-shaken, and a CLI that does not import it does not pay for it.
 3. The framework-free modules in core import nothing from the framework. A lint or depcheck boundary rule enforces this, so a neutral package can later be extracted by moving files, not rewriting them. They live in `packages/clibuilder/src/axi/`, which imports only Node built-ins and its own files. A `noRestrictedImports` override in `biome.json` enforces this, and a spec repeats the check for `require()`, which the lint rule does not see. `fullOption` is declared with `t`, so it sits in the subpath entry (`src/axi.ts`) next to the re-exports of `result`, `document`, `empty` and `exitCodes`, not in the framework-free directory.
-4. `@clibuilder/axi` is deprecated on npm when v12 ships with the subpath, with a message that points at it. Until then it is not deprecated, and current users keep using it.
+4. `@clibuilder/axi` is deprecated on npm when v12 ships with the subpath, with a message that points at it. Until then it is not deprecated, and current users keep using it. Its final release is 0.3.0, the deprecation release ([#687](https://github.com/clibuilder/clibuilder/pull/687)).
+5. The subpath is usable without `cli()`. It exports the output contract functions (`encode`, `errorOutput`, `printAnswer`, `CliError`) and a headless runner, `runScript(command, { argv?, streams? })` ([#688](https://github.com/clibuilder/clibuilder/issues/688)). It takes the same `{ options, run }` object passed to `cli().command()`, so a command keeps one definition and two entries. The runner gives `run` a reduced `this` (`format` and `ui` on stderr, no `config`, no `keywords`), so a command that reads `this.config` is a type error when run headless. Items 1 to 3 of #688 are additive for 12.x.
+
+**Boundary tiers.** The framework-free rule (decision 3) has two tiers.
+
+- **Tier A**, `src/axi/`: Node built-ins and its own files only. Unchanged.
+- **Tier B**: `render/{encode,answer,text}.ts`, `app/errors.ts` and `src/script/`. They may import tier A, `@toon-format/toon` and `args-minus`, and never cli, app, invocation or config. The same `require()` spec check covers both tiers.
+
+**Decided before 12.0.0** (reversing either later would be a break):
+
+- `encode` and `printAnswer` stay synchronous, with `@toon-format/toon` imported statically. Lazy toon is rejected: it would make them async right after they become public, and toon is on the default path anyway (#688).
+- Config moves behind `.use(config())` in a `clibuilder/config` subpath of core, not a new package ([#692](https://github.com/clibuilder/clibuilder/issues/692)). This supersedes the earlier recommendation in #689 to keep config a `cli()` option. A CLI without the extension carries no loader, no find-up and no parsers. `jsonc-parser` is replaced by an internal stripper ([#693](https://github.com/clibuilder/clibuilder/issues/693), closes slim-dependencies Q4). The stripper has merged (#694); `.use(config())` is in flight and not yet merged.
 
 **Not doing.**
 
-- No separate neutral package now. About 150 lines are generic, and a package costs more in releases and docs than it saves. The four CLIs that hand-roll these pieces today do not depend on clibuilder. A neutral package is extracted only if one of them wants a shared helper.
+- No separate neutral package now. About 150 lines are generic, and a package costs more in releases and docs than it saves. The four CLIs that hand-roll these pieces today do not depend on clibuilder. A neutral package is extracted only if one of them wants a shared helper. A skill script bundles what it imports and carries no install cost, so it is not the framework-free consumer that would trigger extraction.
 - No dependency on, or wrapper around, axi-sdk-js. Core aligns the error keys and adds a conformance test (section 9).
 
 **Consequences.**
 
-- `@clibuilder/axi` has no v12 release. Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
-- The boundary rule is added to the repo's lint or depcheck configuration before the subpath is created.
+- `@clibuilder/axi` has no v12 release; 0.3.0 is its final, deprecation release. Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
+- The boundary rule is added to the repo's lint or depcheck configuration before the subpath is created (done; the subpath was created in #680).
+- The tier B boundary is added before the output functions are exported from the subpath.
+- The headless runner has a bundle-size test (runner entry at most about 22 KB minified).
 - An extracted neutral package, if one is ever needed, must never import clibuilder.
 - Deprecating `@clibuilder/axi` on npm needs an explicit decision when v12 is published.
 
@@ -294,6 +309,7 @@ Every step below is its own issue and PR. All but the last two land in v11 minor
 9. **Help examples and structured help** (3.7). Additive.
 10. **Flip the defaults in v12**, together with slim-dependencies' v12 step: `output: 'axi'` becomes the default, zod and standard-log are removed, and the value helpers ship in the `clibuilder/axi` subpath (section 4.1).
 11. **Codemod and migration guide**, written while 10 is in review, as one document for both RFCs.
+12. **Headless runner and output exports** (4.1, decision 5, #688). Additive, lands in a 12.x minor: export the output functions from `clibuilder/axi`, add the tier B boundary, then `runScript` with its size test.
 
 Steps 1 and 2 are independent of the rest and can ship first. Step 2 precedes 4 to 8, which all write through the routing table. Step 3 precedes 8, because usage errors read descriptor kinds. Steps 5 to 8 share the base-lookup change and should be reviewed in order.
 
@@ -350,4 +366,5 @@ Still open, all in [slim-dependencies section 10](slim-dependencies.md#10-still-
 20. ~~**Async Standard Schema in `.check()`:** awaited or rejected.~~ **Resolved:** awaited; a function check may also return a promise ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
 21. **Type-check cost on a CLI with many commands,** not yet measured.
 22. ~~**Async `t.custom`.**~~ **Resolved:** a converter may return a promise, which is awaited ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
-23. **How a converter marks a usage failure,** proposed as a plain `Error`.
+23. ~~**How a converter marks a usage failure,** proposed as a plain `Error`.~~ **Resolved:** a plain `Error`; see slim-dependencies decision 17.
+24. **`ref()` and `next[N]{run,why}`.** Adds a wire key that the AXI spec and axi-sdk-js do not have, and depends on a build-time map from universal-plugin#177. Split out of #688 item 4 into its own issue, gated on the ACED eval (#688 item 5). Not in v12.
