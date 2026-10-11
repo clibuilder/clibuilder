@@ -18,3 +18,17 @@ export type UI = {
 	showHelp(): void
 	showVersion(): void
 }
+
+/**
+ * The two streams a cli writes to.
+ * `process.stdout` and `process.stderr` by default.
+ */
+export type Streams = {
+	stdout: NodeJS.WritableStream
+	stderr: NodeJS.WritableStream
+}
+
+/**
+ * Where `ui` messages go: `'axi'` keeps stdout for answers, `'console'` keeps the v11 layout.
+ */
+export type Output = 'axi' | 'console'

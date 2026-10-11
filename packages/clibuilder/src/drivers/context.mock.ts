@@ -3,20 +3,32 @@ import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/
 import tmp from 'tmp'
 import { required } from 'type-plus'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
+import type { Streams } from '../core/ports.js'
 import { loadPlugins } from '../plugins/load.js'
 import type { RegistryOwner } from '../plugins/registry.js'
 import { getFixturePath } from '../test-utils/index.js'
 import type { Context } from './context.js'
 import { createBuilderUI, createUI } from './logger.js'
+import { createStreamUI } from './stream_ui.js'
+import { createSinks } from './streams.js'
 
 export namespace mockContext {
-	export type Params = { fixtureDir?: string; logLevel?: LogLevel }
+	export type Params = {
+		fixtureDir?: string
+		logLevel?: LogLevel
+		/**
+		 * Writes through the built-in ui to these streams, in `console` mode,
+		 * instead of recording into `sl`. `logLevel` is then not used, and `stdout` stays empty.
+		 */
+		streams?: Streams
+	}
 }
 
 export function mockContext(
 	params?: mockContext.Params
 ): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined; readonly stdout: string } {
-	const { fixtureDir, logLevel } = required({ logLevel: logLevels.info }, params)
+	const { fixtureDir, logLevel, streams } = required({ logLevel: logLevels.info }, params)
+	const sinks = streams && createSinks(streams)
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
 	const sl = createStandardLogForTest({ logLevel })
 	let exitCode: number | undefined
@@ -33,6 +45,7 @@ export function mockContext(
 	 * and never the loggers a test can actually see.
 	 */
 	function testUI(id: string) {
+		if (sinks) return createStreamUI(sinks, 'console')
 		const logger = sl.getLogger(id)
 		const ui = createUI(logger)
 		logger.level = logLevel
@@ -64,7 +77,8 @@ export function mockContext(
 			return exitCode
 		},
 		writeStdout(text: string) {
-			stdout += text
+			if (sinks) sinks.stdout.write(text)
+			else stdout += text
 		},
 		/**
 		 * Everything written through `writeStdout`, concatenated.

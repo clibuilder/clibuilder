@@ -26,6 +26,8 @@ namespace cli {
     config?: string | boolean
     keywords?: string[]
     onUsageError?: UsageErrorHandler
+    streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
+    output?: 'console' | 'axi'
   }
 }
 ```
@@ -38,9 +40,65 @@ namespace cli {
 | `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
 | `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. Planned for removal in v12, where it becomes an option of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
+| `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
+| `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
 
 Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI, unless the CLI
 uses [`@clibuilder/plugins`](/clibuilder/packages/plugins/), which adds its own.
+
+## Streams and output
+
+:::caution[Unreleased]
+`streams` and `output` are on `main` for the next `clibuilder` 11 minor, which is not published yet.
+:::
+
+`streams` sends everything the CLI writes to the two streams you pass, such as when you embed the
+CLI or capture its output:
+
+```ts
+import { Writable } from 'node:stream'
+
+let text = ''
+const capture = new Writable({
+  write(chunk, _encoding, done) {
+    text += chunk
+    done()
+  }
+})
+
+await cli({ name: 'app', version: '1.0.0', streams: { stdout: capture, stderr: process.stderr } })
+  .default({ run() { this.ui.info('hello') } })
+  .parse(process.argv)
+// text === 'hello\n'
+```
+
+`output` picks where each [`ui`](/clibuilder/api/ui/) message goes:
+
+| Method | `output: 'console'` (default) | `output: 'axi'` |
+| --- | --- | --- |
+| `ui.info`, `ui.debug` | stdout | stderr |
+| `ui.warn`, `ui.error` | stderr | stderr |
+| `ui.showHelp`, `ui.showVersion`, `--help`, `--version` | stdout | stdout |
+
+With `'axi'`, stdout is left for answers, so an agent or a script reading it never gets diagnostics
+mixed in. In this release `output` changes only where `ui` messages go. Returned values, errors and
+usage errors move to stdout in later releases, and `'axi'` becomes the default in v12. Both modes
+are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
+
+When you pass `streams` or set `output: 'axi'`, the CLI uses its built-in UI:
+
+- Each message is one line: the arguments joined by spaces, with objects shown through
+  `util.inspect`.
+- `error` is red and `warn` is yellow, but only on a terminal. A stream that is not a TTY never gets
+  colour. On a terminal, `FORCE_COLOR` decides when it is set (`0` or `false` turns colour off),
+  otherwise a non-empty `NO_COLOR` turns colour off.
+- It does not add the `clibuilder` prefix that the default UI puts on the framework's own messages.
+
+Without either option, the CLI writes exactly what it wrote before.
+
+If the reader of `process.stdout` closes early, as in `app | head -1`, the CLI drops the rest of its
+output and exits with code 0 instead of crashing on `EPIPE`. This applies whenever stdout is
+`process.stdout`. If you pass your own streams, handling their errors is up to you.
 
 ## `Builder`
 

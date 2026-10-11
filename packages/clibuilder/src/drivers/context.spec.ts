@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events'
 import { context } from './context.js'
 
 describe('exit()', () => {
@@ -28,5 +29,26 @@ describe('writeStdout()', () => {
 		} finally {
 			write.mockRestore()
 		}
+	})
+})
+
+describe('createCommandUI()', () => {
+	it('is the standard-log ui without streams or axi output', () => {
+		const ui = context().createCommandUI('cmd')
+		expect(ui.displayLevel).toBe('info')
+	})
+
+	it('writes to the given streams', () => {
+		let text = ''
+		const stream = Object.assign(new EventEmitter(), {
+			write(chunk: string) {
+				text += chunk
+				return true
+			}
+		}) as unknown as NodeJS.WritableStream
+		const ctx = context({ streams: { stdout: stream, stderr: stream }, output: 'axi' })
+		ctx.createCommandUI('cmd').info('hello')
+		ctx.writeStdout('1.0.0\n')
+		expect(text).toBe('hello\n1.0.0\n')
 	})
 })

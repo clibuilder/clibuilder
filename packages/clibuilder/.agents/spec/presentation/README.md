@@ -6,7 +6,8 @@ concept: [declaration-driven, error-reporting, agent-interface]
 # Presentation
 
 Governs `src/render/help.ts`, `src/render/format.ts`, `src/render/error.ts`,
-`src/drivers/logger.ts` and `src/core/ports.ts` — rendering help and usage,
+`src/drivers/logger.ts`, `src/drivers/stream_ui.ts`, `src/drivers/streams.ts`
+and `src/core/ports.ts` — rendering help and usage,
 describing a usage error in words, emitting messages at their log level, and
 serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.
@@ -186,6 +187,49 @@ every command that reports one, in whichever format the reader asked for.
 | `BuilderUI` | UC1 — the buffered ui, `createUI.UI` plus `dump` | — |
 | `createUI.UI` | UC3, UC5 — what the adapter returns, which is not the port | — |
 | `generateHelpMessage` | UC3 — the help text `showHelp` renders | — |
+| `cli({ streams })`, `Streams` in `core/ports.ts` | UC8 | — |
+| `cli({ output })`, `Output` in `core/ports.ts` | UC8 | — |
+| `createStreamUI` and the internal `routing` table | UC8 | — |
+| `shouldColour` / `createSinks` | UC8 | — |
+| `handleEpipe` | UC9 | — |
+
+### UC8 — the built-in ui: write to `cli({ streams })` by `cli({ output })`
+
+**Actor / goal.** A CLI author wants the output on streams they choose, and an
+agent reading stdout wants only answers there. Design: axi-native RFC sections
+3.9 and 3.10, slim-dependencies RFC section 4.
+
+| | |
+| --- | --- |
+| Trigger | `cli({ streams })` or `cli({ output: 'axi' })` |
+| Inputs | two writable streams (the process streams by default) and an output mode |
+| Outcome | each `ui` message written as one line to the stream its method routes to |
+
+**Extensions.**
+
+| Cause | Outcome |
+| --- | --- |
+| `output: 'console'` (default) | `info` and `debug` on stdout, `warn` and `error` on stderr |
+| `output: 'axi'` | every `ui` message on stderr |
+| `showHelp` / `showVersion` | stdout in either output: `--help` and `--version` are answers |
+| the stream is not a TTY | no colour, whatever `FORCE_COLOR` says |
+| the stream is a TTY | `FORCE_COLOR` decides when set (`0` or `false` is off), else a non-empty `NO_COLOR` turns colour off, else the terminal decides |
+| neither `streams` nor `output: 'axi'` is given | the v11 standard-log ui is used, unchanged; it is removed in v12 |
+
+The routing table behind each mode is internal; it is not a `cli()` option.
+A line is the arguments joined by spaces with objects inspected and no printf
+placeholders, which is the line `testCommand` has always captured.
+
+### UC9 — EPIPE on the process stdout
+
+**Actor / goal.** A user piping the CLI into `head` wants it to stop quietly
+when the reader has had enough.
+
+| Cause | Outcome |
+| --- | --- |
+| the reader of `process.stdout` closes early | later writes are dropped and the exit code is set to 0 |
+| any other error on `process.stdout` | it is rethrown |
+| a stream passed through `cli({ streams })` | not watched; it is the embedder's to handle |
 
 ### UC7 — `formatLookupError`: describe a usage error in words
 
@@ -488,3 +532,28 @@ graph TD
 | described as argument &lt;name&gt; | the key is a declared argument | `an invalid value on an argument is described as an argument` |
 | described as an option | the key is not a declared argument | `an invalid value on an option is described as an option` |
 | described as an option, always | any expect-single error | `too many values are described with the values that were given` |
+
+### UC8 — the built-in ui
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| write to the given streams | `streams` passed | `the ui writes to the streams the cli was given` |
+| info and debug to stdout, warn and error to stderr | `output: 'console'` | `console output writes info and debug to stdout and warn and error to stderr` |
+| every message to stderr | `output: 'axi'` | `axi output writes every ui message to stderr` |
+| follow the display level | `--silent`, nothing, `--verbose` | `the built-in ui follows the display level` |
+| help and version to the given stdout | `--help` or `--version` | `help and version are answers, written to the given stdout in either output` |
+| join with spaces, inspect objects | several arguments | `a line is its arguments joined by spaces, with objects inspected` |
+| red error, yellow warn | colour allowed | `error is red and warn is yellow on a stream that allows colour` |
+| no colour | not a TTY | `a stream that is not a TTY is never coloured` |
+| no colour | TTY with `NO_COLOR` | `NO_COLOR turns colour off on a TTY` |
+| colour unless 0 or false | TTY with `FORCE_COLOR` | `FORCE_COLOR decides colour on a TTY` |
+| standard-log, unchanged | neither `streams` nor `axi` | `without streams or axi output the v11 ui is used` |
+
+### UC9 — EPIPE
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| drop later writes, exit 0 | reader closes early | `a reader closing stdout early ends the cli quietly with exit 0` |
+| rethrow | any other error | `a stream error other than EPIPE is not swallowed` |
+| one handler | several clis | `the EPIPE handler is installed once on the process stdout` |
+| not watched | a stream passed in | `streams the cli was given are not watched for EPIPE` |

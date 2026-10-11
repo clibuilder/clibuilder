@@ -32,6 +32,10 @@ type UI = {
 
 All four logging methods take any number of arguments and join them, like `console.log`.
 
+By default `info` and `debug` go to stdout, and `warn` and `error` go to stderr. With
+`cli({ output: 'axi' })` (Unreleased), all of them go to stderr. See
+[Streams and output](/clibuilder/api/cli/#streams-and-output).
+
 ```ts
 run() {
   this.ui.debug('resolved config from', this.cwd)

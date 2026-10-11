@@ -72,3 +72,54 @@ test('get the version in messages when asked for it alone', async () => {
 	expect(result).toBeUndefined()
 	expect(exitCode).toBeUndefined()
 })
+
+test('get messages from stdout and stderr in the order they were said, one per line', async () => {
+	const { messages } = await testCommand(
+		command({
+			name: 'cmd',
+			run() {
+				this.ui.info('one')
+				this.ui.error('two')
+				this.ui.warn('three', { four: 4 })
+				this.ui.info('five')
+			}
+		}),
+		'cmd'
+	)
+	expect(messages).toBe('one\ntwo\nthree { four: 4 }\nfive')
+})
+
+test('get debug messages with --verbose', async () => {
+	const { messages } = await testCommand(
+		command({
+			name: 'cmd',
+			run() {
+				this.ui.debug('details')
+			}
+		}),
+		'cmd --verbose'
+	)
+	expect(messages).toContain('details')
+})
+
+test('write nothing to the process streams', async () => {
+	const stdout = vi.spyOn(process.stdout, 'write')
+	const stderr = vi.spyOn(process.stderr, 'write')
+	try {
+		await testCommand(
+			command({
+				name: 'cmd',
+				run() {
+					this.ui.info('info')
+					this.ui.error('error')
+				}
+			}),
+			'cmd'
+		)
+		expect(stdout).not.toHaveBeenCalled()
+		expect(stderr).not.toHaveBeenCalled()
+	} finally {
+		stdout.mockRestore()
+		stderr.mockRestore()
+	}
+})

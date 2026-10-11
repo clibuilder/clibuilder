@@ -392,3 +392,82 @@ Feature: Presentation
     Given a command whose config schema does not implement ~standard.jsonSchema, or whose conversion throws
     When its help is rendered
     Then there is no Config section
+
+  # ── UC8 — the built-in ui over cli({ streams }) and cli({ output }) ──
+
+  Scenario: the ui writes to the streams the cli was given
+    Given a cli built with its own stdout and stderr streams
+    When a command says something at each level
+    Then every message is written to those streams, one line each, and nothing to the process streams
+
+  Scenario: console output writes info and debug to stdout and warn and error to stderr
+    Given a cli whose output is console, the default
+    When a command says something at each level
+    Then info and debug are written to stdout, and warn and error to stderr
+
+  Scenario: axi output writes every ui message to stderr
+    Given a cli whose output is axi
+    When a command says something at each level
+    Then every message is written to stderr and nothing to stdout
+
+  Scenario: the built-in ui follows the display level
+    Given a cli using the built-in ui
+    When it is invoked with --silent, with nothing, or with --verbose
+    Then it says nothing, says info and above, or also says debug
+
+  Scenario: help and version are answers, written to the given stdout in either output
+    Given a cli built with its own streams, in either output
+    When it is invoked asking for help or the version
+    Then the help or the version is written to the given stdout and nothing to stderr
+
+  Scenario: a line is its arguments joined by spaces, with objects inspected
+    Given the built-in ui
+    When a message is said with several arguments, some of them objects
+    Then the line is the arguments joined by spaces, objects inspected, and no placeholder is read
+
+  Scenario: error is red and warn is yellow on a stream that allows colour
+    Given a stream that is a TTY with colour allowed
+    When an error and a warning are said
+    Then the error is red and the warning is yellow
+
+  Scenario: a stream that is not a TTY is never coloured
+    Given a stream that is not a TTY
+    When a message is said, even with FORCE_COLOR set
+    Then the line carries no colour
+
+  Scenario: NO_COLOR turns colour off on a TTY
+    Given a TTY stream and a non-empty NO_COLOR
+    When a message is said
+    Then the line carries no colour
+
+  Scenario: FORCE_COLOR decides colour on a TTY
+    Given a TTY stream and FORCE_COLOR set
+    When a message is said
+    Then it is coloured, unless FORCE_COLOR is 0 or false
+
+  Scenario: without streams or axi output the v11 ui is used
+    Given a cli built with neither streams nor output axi
+    When it says something
+    Then its output is the standard-log output it was before, byte for byte
+
+  # ── UC9 — EPIPE on the process stdout ──
+
+  Scenario: a reader closing stdout early ends the cli quietly with exit 0
+    Given a cli writing to the process stdout, piped to a reader
+    When the reader closes before the cli has finished writing
+    Then later writes are dropped, nothing is printed to stderr, and the process exits 0
+
+  Scenario: a stream error other than EPIPE is not swallowed
+    Given the process stdout
+    When it reports an error other than EPIPE
+    Then the error is rethrown
+
+  Scenario: the EPIPE handler is installed once on the process stdout
+    Given several clis built in one process
+    When each one sets up its streams
+    Then the process stdout carries one EPIPE handler
+
+  Scenario: streams the cli was given are not watched for EPIPE
+    Given a cli built with its own stdout stream
+    When it sets up its streams
+    Then no error handler is added to that stream

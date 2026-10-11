@@ -67,6 +67,7 @@ would, and assert on the outcome as values.
 | the command failed | the exit code is the one it set |
 | a config is passed | the command sees it, without a config file existing anywhere |
 | no config is passed | the command sees no config |
+| the command says things on stdout and on stderr | both streams are in-memory and share one buffer, so the messages keep the order they were said in, one line each, and nothing reaches the process streams |
 
 ### UC2 — `mockPluginContext`: exercise a plugin's activation
 
@@ -104,6 +105,7 @@ directory, a log, and an exit it controls.
 | --- | --- |
 | a fixture directory is named | the working directory is that fixture |
 | none is named | the working directory is a fresh temporary directory, so a test cannot see another's files |
+| streams are given | the ui is the built-in one, in `console` mode, writing to those streams; the log level and `sl` are not used |
 | a log level is given | the mock log keeps to that level |
 | none is given | it defaults to info, matching what a CLI shows its user before `--verbose` raises it |
 | the CLI exits | the code is recorded **and** reported through the UI, so the exit is visible in the captured messages as well as assertable on its own |
@@ -153,7 +155,8 @@ filed in this spec's ledger; the suite fixes current behavior.
 | `mockPluginContext` and its params | UC2 | — |
 | `mockContext` and its params | UC3 | — |
 | `mockContext.exitCode` | UC3 | — |
-| `mockContext.sl` | UC3 — the test log a caller reads the messages from | — |
+| `mockContext.sl` | UC3 — the test log a caller reads the messages from | `streams` |
+| `mockContext` `streams` param | UC1 — the in-memory streams `testCommand` captures through | `logLevel` |
 | `mockContext.createCommandUI` | UC3 — a per-command UI on its own named logger | — |
 | `argv` | UC4 | — (an argument containing a space is split, not refused) |
 | `getFixturePath` | UC4 | — |
@@ -240,6 +243,8 @@ graph TD
 | substitute config loading | a config passed to the helper | `a config passed to the helper reaches the command without a file existing` |
 | config loading returns nothing | no config passed | `a command tested without a config sees none` |
 | parse the argv | any invocation | `the argv string is parsed as though typed after the cli name` |
+| one buffer for stdout and stderr | a command saying things on both streams | `messages written to stdout and stderr are captured in the order they were said` |
+| in-memory streams | any command | `the test helper writes through in-memory streams, not the process streams` |
 
 ### UC2 — `mockPluginContext`
 

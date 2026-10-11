@@ -1,5 +1,6 @@
 import { type Logger, logLevels } from 'standard-log'
 import type { Command } from '../command/internal.js'
+import type { DisplayLevel } from '../core/ports.js'
 import { generateHelpMessage } from '../render/help.js'
 
 /**
@@ -33,7 +34,13 @@ export function createBuilderUI(ui: createUI.UI): BuilderUI {
 	}
 }
 
-export function createUI(log: Logger) {
+/**
+ * The standard-log engine behind the default `cli()` in v11.
+ *
+ * Removed in v12 with standard-log (slim-dependencies RFC section 4),
+ * when `createStreamUI` becomes the only engine.
+ */
+export function createUI(log: Logger): createUI.UI {
 	log.level = logLevels.info
 	return {
 		get displayLevel() {
@@ -72,5 +79,17 @@ export function createUI(log: Logger) {
 }
 
 export namespace createUI {
-	export type UI = ReturnType<typeof createUI>
+	/**
+	 * The ui the framework hands out, told what to render:
+	 * `showHelp` and `showVersion` take what the command-facing `UI` port fills in.
+	 */
+	export type UI = {
+		displayLevel: DisplayLevel
+		debug(...args: any[]): void
+		info(...args: any[]): void
+		warn(...args: any[]): void
+		error(...args: any[]): void
+		showHelp(cliName: string, command: Command): void
+		showVersion(version?: string): void
+	}
 }
