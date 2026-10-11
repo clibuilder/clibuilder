@@ -1,6 +1,6 @@
 require('clibuilder/compile-cache').enableCompileCache()
 
-const { cli } = require('clibuilder')
+const { CliError, cli } = require('clibuilder')
 
 const app = cli({
 	name: 'test-cli',
@@ -26,7 +26,10 @@ const app = cli({
 		name: 'config-value',
 		arguments: [{ name: 'name', description: 'config property name' }],
 		run({ name }) {
-			this.ui.info(`${name}: ${this.config[name]}`)
+			// the cli declares `keywords` but no `config`, so `this.config` is always undefined.
+			// Declaring `config` would also turn on config-driven plugin loading,
+			// and the cli would stop being a keywords-only fixture.
+			throw new CliError(`cannot read '${name}': test-cli declares no config`, { code: 'no-config' })
 		}
 	})
 

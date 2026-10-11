@@ -23,7 +23,8 @@
 		"release": "changeset publish",
 		"size": "turbo run size",
 		"test": "turbo run test",
-		"verify": "run-p lint verify:pkg",
+		"verify": "run-p lint verify:pkg && pnpm verify:apps",
+		"verify:apps": "turbo run test --filter=./test-apps/*",
 		"verify:pkg": "turbo run build coverage depcheck size --filter=!website",
 		"version": "changeset version",
 		"web": "pnpm run --filter=website"
