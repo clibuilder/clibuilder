@@ -246,6 +246,12 @@ export namespace cli {
 		arguments?: A
 		options?: O
 		/**
+		 * Example invocations, shown under the command's help and in its structured `--help`.
+		 * `command` is the full command line, written as the user types it.
+		 * A usage error handler reads them from `context.command.examples`.
+		 */
+		examples?: Command.Example[]
+		/**
 		 * Takes over how usage errors are reported for this command and its sub-commands.
 		 *
 		 * @see UsageErrorHandler
@@ -302,6 +308,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					examples?: Example[]
 					onUsageError?: UsageErrorHandler
 					commands?: Command[]
 					run(
@@ -331,6 +338,7 @@ export namespace cli {
 					config?: ConfigType
 					arguments?: A
 					options?: O
+					examples?: Example[]
 					onUsageError?: UsageErrorHandler
 					commands: Command[]
 			  }
@@ -342,6 +350,20 @@ export namespace cli {
 		 * The zod form is removed in v12.
 		 */
 		export type Type = z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> | AnyDescriptor
+
+		/**
+		 * An example invocation of a command.
+		 */
+		export type Example = {
+			/**
+			 * The full command line, such as `my-cli deploy --env prod`.
+			 */
+			command: string
+			/**
+			 * What the example does.
+			 */
+			description: string
+		}
 
 		export type Argument<Name extends string = string, T extends Type = Type> = {
 			name: Name

@@ -770,3 +770,41 @@ Feature: Execution
     And an issue without a path is printed under (config)
     And help is shown
     And the cli exits with the error code
+
+  # ── UC3 — core-owned --help and --version under output axi ──
+
+  Scenario: in axi output --help is an answer in the resolved format
+    Given a cli with output axi
+    When a command, a group or the root is invoked with --help, with --format toon or json, or none
+    Then stdout holds the structured help encoded in that format, else in the cli's format, ending on one newline
+    And nothing is written to stderr and the exit code is unset
+
+  Scenario: in axi output --help --format text is the text help, unchanged
+    Given a cli with output axi
+    When a command is invoked with --help and --format text
+    Then stdout holds the text help the console output shows for it, examples included
+
+  Scenario: in axi output --help is answered under --silent
+    Given a cli with output axi
+    When a command is invoked with --help and --silent
+    Then stdout still holds the help, because an answer is not a diagnostic
+
+  Scenario: in axi output --version is plain text in every format
+    Given a cli with output axi
+    When it is invoked with --version alone, or a command is invoked with --version and --format json
+    Then stdout holds the version as plain text, ending on one newline, and nothing is written to stderr
+
+  Scenario: in axi output ui.showHelp from run answers like --help
+    Given a cli with output axi
+    When a command's run calls ui.showHelp, with --format toon, json or text
+    Then stdout holds what --help answers for that command in that format, and nothing is written to stderr
+
+  Scenario: in axi output ui.showVersion from run prints the plain version
+    Given a cli with output axi
+    When a command's run calls ui.showVersion, with --format json
+    Then stdout holds the version as plain text, and nothing is written to stderr
+
+  Scenario: in console output ui.showHelp and ui.showVersion from run are unchanged
+    Given a cli with output console
+    When a command's run calls ui.showHelp and ui.showVersion
+    Then the text help and the version are written through the ui, as before

@@ -213,6 +213,10 @@ broken config or a slow plugin cannot fail or delay it. Because nothing is loade
 is always the version, even if a plugin, an extension or the config declares a `-v` of its own. With anything else on the command line,
 such as `my-cli deploy --version`, the version is answered after loading, as before.
 
+**Unreleased:** with `cli({ output: 'axi' })`, `--help` follows `--format` and `--version` is plain
+text in every format. See
+[`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi).
+
 One more is added only when the CLI declares `config`, since it would have nothing to report
 otherwise:
 

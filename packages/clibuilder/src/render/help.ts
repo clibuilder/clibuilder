@@ -6,7 +6,7 @@ import wordwrap from 'wordwrap'
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConstraint, takesValue } from '../descriptor.js'
-import { type AnyDescriptor, isDescriptor, type StandardSchemaV1 } from '../t.js'
+import { type AnyDescriptor, type DescriptorData, isDescriptor, type StandardSchemaV1 } from '../t.js'
 import {
 	isZod3Type,
 	isZodArray,
@@ -39,7 +39,8 @@ export function generateHelpMessage(cliName: string, command: Command) {
 		generateArgumentsSection(command),
 		generateOptionsSection(command),
 		generateAliasSection(command),
-		generateConfigSection(command)
+		generateConfigSection(command),
+		generateExamplesSection(command)
 	].filter((m) => !!m)
 	return `
 ${helpSections.join('\n\n')}
@@ -231,11 +232,24 @@ function generateAliasSection(command: Command) {
 }
 
 function generateConfigSection(command: Command) {
-	if (!command.config) return ''
-	const type = isZod3Type(command.config) ? toPrettyType(command.config) : describeStandardConfig(command.config)
+	const type = describeConfig(command)
 	if (type === undefined) return ''
 	return `Config:
 ${type}`
+}
+
+function describeConfig(command: Command) {
+	if (!command.config) return undefined
+	return isZod3Type(command.config) ? toPrettyType(command.config) : describeStandardConfig(command.config)
+}
+
+/**
+ * Each example as its description, then the command line indented under it, verbatim.
+ */
+function generateExamplesSection(command: Command) {
+	if (!command.examples || command.examples.length === 0) return ''
+	return `Examples:
+${command.examples.map((e) => `  ${e.description}\n    ${e.command}`).join('\n')}`
 }
 
 /**
@@ -314,4 +328,166 @@ function toTypeObject(t: z.ZodAny): any {
 	}
 	// istanbul ignore next
 	return ''
+}
+
+/**
+ * A command's help as a value: what the text help is rendered from, for `--help` under `toon` and `json`
+ * (axi-native RFC section 3.7).
+ *
+ * It carries no data the text help does not show. A key with nothing to say is left out.
+ */
+export type HelpModel = {
+	/**
+	 * The command as it is invoked: the cli name, then each command name, such as `my-cli deploy`.
+	 */
+	name: string
+	usage: string
+	description?: string
+	aliases?: string[]
+	/**
+	 * The sub-commands, each with its name and the first line of its description.
+	 */
+	commands?: HelpModel.CommandSummary[]
+	arguments?: HelpModel.Argument[]
+	options?: HelpModel.Option[]
+	/**
+	 * The type of the config, as the text help's `Config:` section shows it.
+	 */
+	config?: string
+	examples?: { command: string; description: string }[]
+	/**
+	 * The options every command accepts, listed once.
+	 */
+	globalOptions?: HelpModel.Option[]
+}
+
+export namespace HelpModel {
+	export type CommandSummary = { name: string; aliases?: string[]; description?: string }
+
+	/**
+	 * What an argument or option accepts.
+	 * `type` is the descriptor's kind, or the zod type the text help names; it is left out when unknown.
+	 * An array is described by its element, with `array: true`.
+	 */
+	export type Type = {
+		type?: string
+		array?: true
+		min?: number
+		max?: number
+		pattern?: string
+		values?: (string | number | boolean)[]
+	}
+
+	export type Argument = { name: string; required: boolean; description?: string } & Type
+
+	export type Option = {
+		name: string
+		aliases?: string[]
+		required: boolean
+		default?: unknown
+		description?: string
+		conflicts?: string[]
+	} & Type
+}
+
+/**
+ * Builds the structured help of `command`.
+ *
+ * @param globalOptions the base command's options, listed once under `globalOptions`.
+ * The root command declares them as its own, so they are left out of its `options`.
+ */
+export function generateHelpModel(cliName: string, command: Command, globalOptions?: cli.Command.Options): HelpModel {
+	const model: HelpModel = {
+		name: getCommandNameChain(cliName, command).join(' '),
+		usage: generateUsageSection(cliName, command).slice('Usage: '.length)
+	}
+	if (command.description) model.description = command.description
+	if (command.alias && command.alias.length > 0) model.aliases = [...command.alias]
+	if (command.commands && command.commands.length > 0) {
+		model.commands = command.commands.map((c) => {
+			const summary: HelpModel.CommandSummary = { name: c.name }
+			if (c.alias && c.alias.length > 0) summary.aliases = [...c.alias]
+			const line = c.description?.split('\n')[0]
+			if (line) summary.description = line
+			return summary
+		})
+	}
+	if (command.arguments && command.arguments.length > 0) {
+		model.arguments = command.arguments.map((a) => {
+			const argument: HelpModel.Argument = { name: a.name, required: isRequired(a, true), ...describeType(a.type) }
+			if (a.description) argument.description = a.description
+			return argument
+		})
+	}
+	const isRoot = !command.parent && !command.name
+	const options = optionModels(command.options, isRoot ? Object.keys(globalOptions ?? {}) : [])
+	if (options.length > 0) model.options = options
+	const config = describeConfig(command)
+	if (config !== undefined) model.config = config
+	if (command.examples && command.examples.length > 0) {
+		model.examples = command.examples.map(({ command, description }) => ({ command, description }))
+	}
+	const globals = optionModels(globalOptions, [])
+	if (globals.length > 0) model.globalOptions = globals
+	return model
+}
+
+function optionModels(options: cli.Command.Options | undefined, exclude: string[]) {
+	if (!options) return []
+	return Object.keys(options)
+		.filter((key) => !exclude.includes(key))
+		.map((key) => {
+			const entry = options[key]
+			const option = { name: key } as HelpModel.Option
+			const aliases = (entry.alias ?? [])
+				.map((a) => (typeof a === 'string' ? a : a.hidden ? undefined : a.alias))
+				.filter((a): a is string => !!a)
+			if (aliases.length > 0) option.aliases = aliases
+			Object.assign(option, describeType(entry.type))
+			option.required = isRequired(entry, false)
+			if (entry.default !== undefined) option.default = entry.default
+			if (entry.description) option.description = entry.description
+			const conflicts = conflictsOf(key, options)
+			if (conflicts.length > 0) option.conflicts = conflicts
+			return option
+		})
+}
+
+/**
+ * What a declaration accepts, from the same data the text help reads:
+ * a descriptor's introspection form, or the zod types `formatTypeHint()` names.
+ */
+function describeType(type: cli.Command.Type | undefined): HelpModel.Type {
+	if (!type) return {}
+	if (isDescriptor(type)) return describeData(type)
+	const t = isZodOptional(type) ? type._def.innerType : type
+	const isArray = isZodArray(t)
+	const at = isArray ? t.element : t
+	const typeName = isZodString(at) ? 'string' : isZodNumber(at) ? 'number' : isZodBoolean(at) ? 'boolean' : undefined
+	const result: HelpModel.Type = {}
+	if (typeName) result.type = typeName
+	if (isArray) result.array = true
+	return result
+}
+
+function describeData(data: DescriptorData): HelpModel.Type {
+	switch (data.kind) {
+		case 'string':
+			return data.pattern ? { type: 'string', pattern: String(data.pattern) } : { type: 'string' }
+		case 'number':
+		case 'int': {
+			const result: HelpModel.Type = { type: data.kind }
+			if (data.min !== undefined) result.min = data.min
+			if (data.max !== undefined) result.max = data.max
+			return result
+		}
+		case 'literal':
+			return { type: 'literal', values: [data.value] }
+		case 'enum':
+			return { type: 'enum', values: [...data.values] }
+		case 'array':
+			return { ...describeData(data.element), array: true }
+		default:
+			return { type: data.kind }
+	}
 }

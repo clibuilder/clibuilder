@@ -4,7 +4,7 @@
 	"tasks": {
 		"test": {
 			"dependsOn": ["^build"],
-			"inputs": ["package.json", "bin.*", "*.test.mjs"]
+			"inputs": ["package.json", "bin.*", "axi.js", "*.test.mjs"]
 		}
 	}
 }

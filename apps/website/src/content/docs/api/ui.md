@@ -14,7 +14,9 @@ type UI = {
   warn(...args: any[]): void
   error(...args: any[]): void
   debug(...args: any[]): void
+  /** @deprecated */
   showHelp(): void
+  /** @deprecated */
   showVersion(): void
 }
 ```
@@ -27,8 +29,8 @@ type UI = {
 | `warn(...)` | `info` and above | Something is off but survivable |
 | `info(...)` | `info` and above | Ordinary output — the default |
 | `debug(...)` | `debug` and above | Diagnostics the user asked for with `--verbose` |
-| `showHelp()` | — | Print the current command's generated help message |
-| `showVersion()` | — | Print the CLI's version |
+| `showHelp()` | — | Deprecated. Print the current command's generated help message |
+| `showVersion()` | — | Deprecated. Print the CLI's version |
 
 All four logging methods take any number of arguments and join them, like `console.log`.
 
@@ -64,6 +66,18 @@ is usually the better behavior.
 
 ## `showHelp()`
 
+:::caution[Deprecated, Unreleased]
+`showHelp()` and `showVersion()` are deprecated on `main` and leave `ui` in `clibuilder` 12, which
+carries only diagnostics. The CLI owns `--help` and `--version`. To answer with help or a version
+from `run()`, return it: `document(text)` prints text verbatim, and `result(value)` encodes a value in
+`this.format` (see [The result channel](/clibuilder/api/cli/#the-result-channel)).
+
+Until then, with `cli({ output: 'axi' })`, `showHelp()` from `run()` writes the help on stdout in
+`this.format`, like `--help`, and `showVersion()` writes the plain version on stdout (see
+[`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi)).
+With `output: 'console'` both behave as below.
+:::
+
 The help message is generated from the descriptions on the CLI, the resolved command, its arguments,
 and its options — you never write it by hand. It is printed automatically when a command has no
 `run`, when `--help` is passed, or when parsing fails.
@@ -90,6 +104,9 @@ Arguments and options are written in the same notation:
 | `[name]` | Optional — declared with `z.optional(...)` |
 | `=string`, `=number`, `=boolean` | The declared type, when there is one |
 | `...` | Variadic — declared with `z.array(...)` |
+
+A command that declares [`examples`](/clibuilder/api/command/#examples) (Unreleased) gets an
+`Examples:` section at the end.
 
 A boolean option is a flag, so it shows as `[--flag]` rather than `[--flag=boolean]`. An option with
 no declared type is a flag too, and an argument with no declared type is a required string.
