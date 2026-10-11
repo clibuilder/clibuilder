@@ -37,6 +37,9 @@ npm install @clibuilder/axi clibuilder
 `clibuilder` `^11.5.0` is a peer dependency of 0.2.1. Version 0.3.0, unreleased, needs `clibuilder`
 `^12`. Node.js 20.19 or newer is required.
 
+0.2.1 publishes ESM and CJS. 0.3.0 is ESM-only; `require('@clibuilder/axi')` still works through
+Node's `require(esm)`.
+
 ## Example
 
 Two commands: `list` cuts a long list and offers `--full`, and `show` reports a missing task as an

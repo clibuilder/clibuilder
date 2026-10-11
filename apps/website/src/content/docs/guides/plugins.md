@@ -324,8 +324,8 @@ to both `plugins list` and `plugins search`, no matter how correct the rest of t
   "name": "my-cli-plugin-git",
   "description": "git commands for my-cli",
   "keywords": ["my-cli-plugin", "git"],
-  "main": "./cjs/index.js",
-  "exports": { "import": "./esm/index.js", "require": "./cjs/index.js" }
+  "type": "module",
+  "exports": { "types": "./esm/index.d.ts", "default": "./esm/index.js" }
 }
 ```
 

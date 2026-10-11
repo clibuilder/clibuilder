@@ -22,7 +22,7 @@ Key highlights:
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
 - `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
-- Distribute `ESM` along with `CJS`.
+- Distribute `ESM` along with `CJS` (in v12, unreleased, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
 
 ## Feature Highlights
 

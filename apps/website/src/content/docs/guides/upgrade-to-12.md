@@ -508,6 +508,47 @@ import { testCommand } from 'clibuilder/testing'
 Source: [slim-dependencies section 5.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#51-trivial-removals-no-api-change).
 See [`testCommand()`](/clibuilder/api/test-command/).
 
+## ESM-only
+
+**On `main`.**
+
+**What changed.** `clibuilder`, `@clibuilder/plugins` and `@clibuilder/axi` no longer publish a
+CommonJS build. Each entry point in `exports` is `{ types, default }` and points at the ES module in
+`esm/`; the `import` and `require` conditions and the top-level `main` field are gone. `require()`
+keeps working: Node.js 20.19 and newer, the `engines` floor, load an ES module through
+`require(esm)`, so `require('clibuilder')`, `require('clibuilder/testing')` and the other entry
+points return the same exports as `import` does.
+
+The published `clibuilder` package unpacks to 393 kB in 187 files, down from 633 kB in 192 files.
+
+**Who is affected.**
+
+- Tests run by Jest's CommonJS runtime, without its ESM support. That runtime cannot load an ES
+  module. The 11.5.0 CJS build bundled its dependencies, so Jest could load it.
+- A CLI run on Node.js older than 20.19, where `require()` cannot load an ES module. `engines`
+  requires 20.19 or newer.
+- A CommonJS file type checked with `module: node16`, or with `module: nodenext` before TypeScript
+  5.8. TypeScript reports error TS1479, an ES module cannot be imported with `require`. 11.5.0 shipped
+  ESM declarations too, so the same setup reported the same error before.
+
+**Fix.**
+
+- Jest: run it with ESM support, or move the tests to a runner that loads ES modules, such as Vitest
+  or `node --test`.
+- Node.js: upgrade to 20.19 or newer.
+- TypeScript: use TypeScript 5.8 or newer with `module: nodenext`.
+
+A CommonJS CLI needs no change:
+
+```js
+// before and after
+const { cli, t } = require('clibuilder')
+const { testCommand } = require('clibuilder/testing')
+```
+
+Source: [slim-dependencies section 5.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#54-build-output).
+See [Installation](/clibuilder/getting-started/installation/#module-formats).
+
 ## Plugins move to `@clibuilder/plugins`
 
 **On `main`.**

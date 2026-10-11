@@ -345,7 +345,26 @@ For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) a
 
 ### 5.4 Build output
 
-`engines` is already `>= 20.19`, where `require(esm)` works unflagged. Dropping the CJS bundle in v12 roughly halves the published package and removes the double-shipping of bundled dependencies (Q6).
+`engines` is already `>= 20.19`, where `require(esm)` works unflagged. **Decided: v12 drops the CJS build** (Q6) for `clibuilder`, `@clibuilder/plugins` and `@clibuilder/axi`; `args-minus` never had one. Each entry point in `exports` is `{ types, default }` pointing at `esm/`, and `require()` loads it through `require(esm)`.
+
+The reasons:
+
+- By the time of the decision, the CJS bundle already `require()`d the ESM-only `args-minus`, so it needed `require(esm)` as much as the ESM build does, and gave no wider Node range.
+- Jest's CommonJS runtime cannot load an ES module, so that bundle did not help Jest users either.
+- The bundle caused the two-copies-of-`args-minus` release blocker fixed in #690: a `t` descriptor from one entry point was rejected by another.
+- Every known dependent is `"type": "module"`.
+
+A guard in `test-apps/test-cli` fails when a module reachable from a public entry point uses top-level await, which would make `require()` throw `ERR_REQUIRE_ASYNC_MODULE`.
+
+Measured with `npm pack --dry-run` on the v12 branch, before and after dropping the build:
+
+| Package | Before | After |
+| --- | --- | --- |
+| `clibuilder` | 633 kB, 192 files | 393 kB, 187 files |
+| `@clibuilder/plugins` | 110 kB, 44 files | 91 kB, 42 files |
+| `@clibuilder/axi` | 84 kB, 41 files | 73 kB, 39 files |
+
+The 1.7 MB in section 1 is `clibuilder@11.3.2`, whose CJS build bundled every dependency. By this decision the v12 CJS build bundled only `jsonc-parser` and `@toon-format/toon`, so dropping it saves 38% of `clibuilder`, not half.
 
 ### 5.5 Target dependency set
 
@@ -419,7 +438,7 @@ Common to all six:
    - Remove the zod path, and zod, standard-log, standard-log-color, type-plus, tersify, pad-right, wordwrap, tmp and tslib.
    - Make `js-yaml` an optional peer.
    - Remove plugin loading, `keywords` and the automatic `plugins` group from core (section 9).
-   - Optionally drop CJS.
+   - Drop the CJS build (section 5.4, Q6).
    - Add `@toon-format/toon` as a dependency, if the v11 `--format` step has not already.
    - Ship together with the #639 breaks so users take one major, not two.
 4. **Fold `@clibuilder/axi` into core.** Its value helpers ship in the `clibuilder/axi` subpath, and the package is deprecated on npm when v12 ships ([axi-native section 4.1](axi-native.md#41-decision-where-clibuilderaxis-contents-belong)).
@@ -431,7 +450,7 @@ Common to all six:
 3. ~~**Plugin loading.** Should it stay in core, keeping `import-meta-resolve`, or move entirely to `@clibuilder/plugins` for a zero-dependency core?~~ **Resolved by section 9:** it moves out.
 4. **JSONC.** Keep `jsonc-parser`, make it an optional peer, or use an internal stripper? YAML as an optional peer: acceptable friction for CLIs whose users write YAML config?
 5. ~~**`ui.info` routing under #639.** stdout or stderr, once a result channel owns stdout?~~ **Resolved:** stderr in `output: 'axi'` mode, stdout in `output: 'console'` mode (section 4). The same question as axi-native Q5.
-6. **Drop the CJS build in v12?** `engines >= 20.19` already guarantees `require(esm)`.
+6. ~~**Drop the CJS build in v12?** `engines >= 20.19` already guarantees `require(esm)`.~~ **Resolved:** yes, dropped (section 5.4).
 7. ~~**toon in core.** Does `@toon-format/toon` become a core dependency, or does core hand-roll toon or expose only a formatter hook?~~ **Resolved:** `@toon-format/toon` is core's single third-party dependency, used for all toon output (section 5.5).
 8. ~~**`args-minus`.** Should core's argv tokenizer move onto `args-minus` as part of the same rewrite of `invocation/lookup.ts`?~~ **Resolved:** yes, and `t` lives in `args-minus` (section 3.4).
 
@@ -565,7 +584,7 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 ## 10. Still open
 
-Items raised by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are also still open.
+Items raised by the 2026-10-11 decisions. Q4 (section 8) and section 9.9 are also still open.
 
 1. ~~**Name of the `quiet()` opt-out.**~~ **Resolved:** there is no opt-out wrapper; `result(value, { render })` controls the printed form ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)).
 2. ~~**Descriptor introspection form.** What does help read instead of descriptor internals?~~ **Resolved:** a public, read-only `Data` union keyed on `kind`, with `isOptional` and `checks` (section 3.4). Its exact field names are item 7.

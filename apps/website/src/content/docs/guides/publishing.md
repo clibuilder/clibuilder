@@ -29,7 +29,7 @@ have an equivalent.
   "version": "1.0.0",
   "type": "module",
   "bin": { "my-cli": "./esm/index.js" },
-  "files": ["esm", "cjs"]
+  "files": ["esm"]
 }
 ```
 
@@ -88,26 +88,27 @@ const { cli } = await import('clibuilder')
 ```
 
 The `await import` is load-bearing — a static `import` would compile `clibuilder` before the cache is
-on. See [`enableCompileCache()`](/clibuilder/api/compile-cache/) for the CJS form, the measured
+on. See [`enableCompileCache()`](/clibuilder/api/compile-cache/) for the CommonJS form, the measured
 numbers, and how users can point the cache elsewhere.
 
-## Ship both module formats
+## Export it as a library
 
 If you expect consumers to `import` your commands as a library as well as run the binary, publish ESM
-and CJS, as `clibuilder` itself does:
+with a `types` and a `default` condition, as `clibuilder` 12 (unreleased) does:
 
 ```json
 {
   "type": "module",
-  "main": "./cjs/index.js",
   "types": "./esm/index.d.ts",
   "exports": {
-    "types": "./esm/index.d.ts",
-    "import": "./esm/index.js",
-    "require": "./cjs/index.js",
-    "default": "./cjs/index.js"
+    ".": {
+      "types": "./esm/index.d.ts",
+      "default": "./esm/index.js"
+    },
+    "./package.json": "./package.json"
   }
 }
 ```
 
-If your package is only ever run as a command, one format is enough.
+A CommonJS consumer can still `require()` it on Node.js 20.19 and newer, through `require(esm)`, as
+long as no module it loads uses top-level await. You do not need a CommonJS build.

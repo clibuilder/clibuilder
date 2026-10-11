@@ -27,45 +27,33 @@
 	"exports": {
 		".": {
 			"types": "./esm/index.d.ts",
-			"import": "./esm/index.js",
-			"require": "./cjs/index.js",
-			"default": "./cjs/index.js"
+			"default": "./esm/index.js"
 		},
 		"./axi": {
 			"types": "./esm/axi.d.ts",
-			"import": "./esm/axi.js",
-			"require": "./cjs/axi.js",
-			"default": "./cjs/axi.js"
+			"default": "./esm/axi.js"
 		},
 		"./compile-cache": {
 			"types": "./esm/compile_cache.d.ts",
-			"import": "./esm/compile_cache.js",
-			"require": "./cjs/compile_cache.js",
-			"default": "./cjs/compile_cache.js"
+			"default": "./esm/compile_cache.js"
 		},
 		"./testing": {
 			"types": "./esm/testing/index.d.ts",
-			"import": "./esm/testing/index.js",
-			"require": "./cjs/testing/index.js",
-			"default": "./cjs/testing/index.js"
+			"default": "./esm/testing/index.js"
 		},
 		"./package.json": "./package.json"
 	},
-	"main": "./cjs/index.js",
 	"types": "./esm/index.d.ts",
 	"files": [
-		"cjs",
 		"esm",
 		"src",
 		"!**/*.internal.*",
 		"!**/*.{accept,integrate,spec,system,test,unit}.*"
 	],
 	"scripts": {
-		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild src/index.ts src/axi.ts src/compile_cache.ts src/testing/index.ts --bundle --platform=node --external:js-yaml --external:args-minus --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
-		"build:esm": "tsc",
+		"build": "tsc",
 		"build:watch": "tsc --watch",
-		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm tsconfig.tsbuildinfo",
+		"clean": "rimraf .nyc_output .ts coverage esm lib libm tsconfig.tsbuildinfo",
 		"coverage": "vitest run --coverage",
 		"depcheck": "depcheck",
 		"nuke": "run-s clean && rimraf node_modules",
@@ -90,7 +78,6 @@
 		"depcheck": "^1.4.3",
 		"esbuild": "^0.20.0",
 		"js-yaml": "^4.1.1",
-		"ncp": "^2.0.0",
 		"npm-run-all2": "^6.2.6",
 		"path-equal": "^1.2.8",
 		"rimraf": "^5.0.10",

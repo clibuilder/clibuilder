@@ -282,12 +282,6 @@ importers:
       depcheck:
         specifier: ^1.4.3
         version: 1.4.7(supports-color@8.1.1)
-      esbuild:
-        specifier: ^0.20.0
-        version: 0.20.2
-      ncp:
-        specifier: ^2.0.0
-        version: 2.0.0
       npm-run-all2:
         specifier: ^6.2.6
         version: 6.2.6
@@ -299,7 +293,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.20.2)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
   packages/clibuilder:
     dependencies:
@@ -343,9 +337,6 @@ importers:
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
-      ncp:
-        specifier: ^2.0.0
-        version: 2.0.0
       npm-run-all2:
         specifier: ^6.2.6
         version: 6.2.6
@@ -708,6 +699,9 @@ importers:
 
   test-apps/test-cli:
     dependencies:
+      '@clibuilder/axi':
+        specifier: workspace:*
+        version: link:../../packages/axi
       '@clibuilder/plugins':
         specifier: workspace:*
         version: link:../../packages/plugins
@@ -717,6 +711,10 @@ importers:
       clibuilder:
         specifier: workspace:*
         version: link:../../packages/clibuilder
+    devDependencies:
+      esbuild:
+        specifier: ^0.20.0
+        version: 0.20.2
 
   test-apps/test-cli-esm:
     dependencies:
@@ -4113,10 +4111,6 @@ packages:
   nanoid@3.3.17:
     resolution: {integrity: sha512-xQLf0A3HOMlgHq0n247/LRuAOYmB7dXJ/DvAxGvsSBij45XtBSmQycu+F8ODbHwns/XyFZagyL1+J0Offw1E0g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  ncp@2.0.0:
-    resolution: {integrity: sha512-zIdGUrPRFTUELUvr3Gmc7KZ2Sw/h1PiVM0Af/oHB6zgnV1ikqSfRk+TOufi79aHYCW3NiOXmr1BP5nWbzojLaA==}
     hasBin: true
 
   neotraverse@1.0.1:
@@ -9002,8 +8996,6 @@ snapshots:
   nanoid@3.3.12: {}
 
   nanoid@3.3.17: {}
-
-  ncp@2.0.0: {}
 
   neotraverse@1.0.1: {}
 

@@ -56,7 +56,8 @@ there is no second place to declare the shape of `args` — it is inferred from 
   not core.
 - **`keywords` drive plugin lookup.** The `plugins search` and `plugins list` commands use them. In
   `clibuilder` 12 (unreleased) `keywords` is an option of `plugins()`, not of `cli()`.
-- **ESM is distributed alongside CJS.**
+- **ESM is distributed alongside CJS.** `clibuilder` 12 (unreleased) is ESM-only, and `require()`
+  still loads it on Node.js 20.19 and newer.
 
 ## Where next
 
