@@ -45,8 +45,21 @@ export type UI = {
  * `process.stdout` and `process.stderr` by default.
  */
 export type Streams = {
-	stdout: NodeJS.WritableStream
-	stderr: NodeJS.WritableStream
+	stdout: WritableStream
+	stderr: WritableStream
+}
+
+/**
+ * The part of a Node.js writable stream a cli uses.
+ * It is declared here so the published types do not need `@types/node`.
+ */
+export type WritableStream = {
+	write(chunk: string): unknown
+	/**
+	 * Colour is off unless this is `true`.
+	 */
+	isTTY?: boolean
+	hasColors?(env?: Record<string, string | undefined>): boolean
 }
 
 /**

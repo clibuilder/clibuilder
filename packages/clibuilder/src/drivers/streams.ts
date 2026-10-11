@@ -5,7 +5,7 @@
  * whether colour is allowed, and what happens when the reader goes away (EPIPE).
  */
 
-import type { Streams } from '../core/ports.js'
+import type { Streams, WritableStream } from '../core/ports.js'
 
 /**
  * One stream as the cli writes to it.
@@ -22,11 +22,6 @@ export type Sinks = { stdout: Sink; stderr: Sink }
 
 type Env = Record<string, string | undefined>
 
-type MaybeTTY = NodeJS.WritableStream & {
-	isTTY?: boolean
-	hasColors?(env?: Env): boolean
-}
-
 /**
  * Whether text written to `stream` may carry colour.
  *
@@ -37,13 +32,12 @@ type MaybeTTY = NodeJS.WritableStream & {
  * then the terminal's own `hasColors()` decides.
  * This is the order Node applies for its own colour detection.
  */
-export function shouldColour(stream: NodeJS.WritableStream, env: Env = process.env) {
-	const s = stream as MaybeTTY
-	if (!s.isTTY) return false
+export function shouldColour(stream: WritableStream, env: Env = process.env) {
+	if (!stream.isTTY) return false
 	const force = env.FORCE_COLOR
 	if (force !== undefined) return force !== '0' && force !== 'false'
 	if (env.NO_COLOR) return false
-	return typeof s.hasColors === 'function' ? s.hasColors(env) : true
+	return typeof stream.hasColors === 'function' ? stream.hasColors(env) : true
 }
 
 export function createSinks(streams: Streams, env: Env = process.env): Sinks {
@@ -51,7 +45,7 @@ export function createSinks(streams: Streams, env: Env = process.env): Sinks {
 	return { stdout: createSink(streams.stdout, env), stderr: createSink(streams.stderr, env) }
 }
 
-function createSink(stream: NodeJS.WritableStream, env: Env): Sink {
+function createSink(stream: WritableStream, env: Env): Sink {
 	const colour = shouldColour(stream, env)
 	return {
 		colour,
@@ -62,8 +56,8 @@ function createSink(stream: NodeJS.WritableStream, env: Env): Sink {
 	}
 }
 
-const watched = new WeakSet<NodeJS.WritableStream>()
-const closed = new WeakSet<NodeJS.WritableStream>()
+const watched = new WeakSet<object>()
+const closed = new WeakSet<object>()
 
 /**
  * Ends output quietly when the reader of `stream` goes away, such as `cli | head -1`.
@@ -75,10 +69,10 @@ const closed = new WeakSet<NodeJS.WritableStream>()
  * Installed once per stream however many clis are built, and only on the
  * process's own stdout. A stream passed through `cli({ streams })` is the embedder's to handle.
  */
-export function handleEpipe(stream: NodeJS.WritableStream) {
+export function handleEpipe(stream: { on(event: 'error', listener: (err: { code?: string }) => void): unknown }) {
 	if (watched.has(stream)) return
 	watched.add(stream)
-	stream.on('error', (err: NodeJS.ErrnoException) => {
+	stream.on('error', (err) => {
 		if (err?.code !== 'EPIPE') throw err
 		closed.add(stream)
 		process.exitCode = 0

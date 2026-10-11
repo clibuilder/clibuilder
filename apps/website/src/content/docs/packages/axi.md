@@ -105,10 +105,10 @@ help[1]: Run `my-cli list` to see the open tasks
 `output.error()` writes the error on stdout and returns a `CliError` to throw. Its exit code is 1
 unless the report sets another.
 
-:::note[Unreleased: the error is reported once]
-With `clibuilder` 12 and the next `@clibuilder/axi` release, which are not published yet, the
+:::note[New in 12: the error is reported once]
+With `clibuilder` 12 and `@clibuilder/axi` 0.3.0, the
 returned error is a [`CliError.reported()`](/clibuilder/guides/failing/#an-error-already-reported), so the
-CLI prints nothing more for it. Until then the CLI also logs the error message on stderr as a
+CLI prints nothing more for it. With older versions the CLI also logs the error message on stderr as a
 diagnostic.
 :::
 
@@ -116,10 +116,10 @@ diagnostic.
 value as a usage error before `run()` is called. In `clibuilder` 12 the option conflicts with the
 global `--format` (see [below](#the-global---format-option)).
 
-:::note[Unreleased: the result is printed once]
-In `clibuilder` 12, which is not published yet, the default `output: 'axi'` prints the
-value `run()` returns ([the result channel](/clibuilder/api/cli/#the-result-channel)). With the next
-`@clibuilder/axi` release, `output.result()` returns the value marked as already written, so the CLI
+:::note[New in 12: the result is printed once]
+In `clibuilder` 12 the default `output: 'axi'` prints the
+value `run()` returns ([the result channel](/clibuilder/api/cli/#the-result-channel)). With
+`@clibuilder/axi` 0.3.0, `output.result()` returns the value marked as already written, so the CLI
 prints it once, and `parse()` still resolves to the value. Its return type becomes
 `OutputResult<T>`: return it from `run()` rather than reading fields from it. `output.result()` keeps
 writing the value itself, so `output: 'console'` and a custom writer are unchanged. A new CLI can
@@ -128,8 +128,8 @@ return `result(value, { help, render })` from `clibuilder` instead.
 
 ### The global `--format` option
 
-:::caution[Unreleased: `formatOption` conflicts with the global `--format`]
-In `clibuilder` 12, which is not published yet, every CLI has
+:::caution[New in 12: `formatOption` conflicts with the global `--format`]
+In `clibuilder` 12 every CLI has
 [`clibuilder`'s global `--format`](/clibuilder/api/cli/#the-global---format-option), in both output
 modes. A command that declares `format: formatOption` or `format: defineFormatOption()` fails the CLI at
 startup. Delete the option and pass `this.format` instead of `args.format`:

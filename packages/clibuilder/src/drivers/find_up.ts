@@ -2,7 +2,7 @@ import { type Dirent, readdirSync, statSync } from 'node:fs'
 import { dirname, join, parse, resolve } from 'node:path'
 
 export const ctx = {
-	platform: process.platform
+	platform: process.platform as string
 }
 
 /**
