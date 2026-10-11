@@ -83,7 +83,7 @@ function unknownFields(value: string | undefined) {
 	return new CliError(`unknown value for --fields: ${value}`, {
 		code: 'invalid-value',
 		exitCode: exitCodes.usage,
-		details: { option: 'fields', value: value ?? null },
+		details: { option: 'fields', value: String(value) },
 		help: 'The only extra field is `keywords`. Run `plugins search --fields keywords`'
 	})
 }

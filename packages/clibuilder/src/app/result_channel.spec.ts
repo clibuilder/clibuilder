@@ -366,6 +366,16 @@ describe('the builtin plugins commands under output axi', () => {
 		)
 	})
 
+	it('plugins search renders the found packages and their keywords as prose in text', async () => {
+		const r = await run(
+			search({ 'kw-a': ['pkg-x'], 'kw-b': ['pkg-x'] }) as any,
+			'search --fields keywords --format text'
+		)
+		expect(r.stdout).toBe(
+			'found one package: pkg-x (kw-a, kw-b)\n\nhelp:\n  - Run `plugins list` to see which of them are installed\n'
+		)
+	})
+
 	it('plugins search states nothing found as an empty state', async () => {
 		const r = await run(search({}) as any, 'search --format json')
 		expect(r.stdout).toBe('{"empty":"0 packages found with keywords: kw-a, kw-b"}\n')

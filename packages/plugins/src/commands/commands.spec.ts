@@ -458,6 +458,21 @@ describe('plugins list and search under output axi', () => {
 		expect(r.stderr).toBe('')
 	})
 
+	test('plugins search renders the found packages and their keywords as prose in text', async () => {
+		const r = await run(search(['pkg-x']), 'search --fields keywords --format text')
+		expect(r.stdout).toBe(
+			'found one package: pkg-x (kw-a)\n\nhelp:\n  - Run `plugins list` to see which of them are installed\n'
+		)
+		expect(r.value).toEqual({ packages: [{ name: 'pkg-x', keywords: ['kw-a'] }] })
+	})
+
+	test('plugins search renders the found names as prose in text', async () => {
+		const r = await run(search(['pkg-x', 'pkg-y']), 'search --format text')
+		expect(r.stdout).toBe(
+			'found the following packages:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `plugins list` to see which of them are installed\n'
+		)
+	})
+
 	test('plugins search states nothing found as an empty state', async () => {
 		const r = await run(search([]), 'search')
 		expect(r.stdout).toBe('empty: "0 packages found with keywords: kw-a"\n')
