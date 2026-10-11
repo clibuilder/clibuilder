@@ -39,3 +39,27 @@ it('captures what the extension says', () => {
 	mock.context.ui.info('hello')
 	expect(mock.messages).toBe('hello')
 })
+
+it('records every ui level and lets the extension change the display level', () => {
+	const mock = mockExtensionContext({ cwd: '/work', host: { name: 'my-cli', version: '2.0.0' } })
+	const { ui } = mock.context
+	ui.displayLevel = 'debug'
+	ui.debug('d')
+	ui.warn('w')
+	ui.error('e')
+	ui.showHelp()
+	ui.showVersion()
+
+	expect(ui.displayLevel).toBe('debug')
+	expect(mock.messages).toBe('d\nw\ne')
+	expect(mock.context.cwd).toBe('/work')
+	expect(mock.context.host).toEqual({ name: 'my-cli', version: '2.0.0' })
+})
+
+it('answers has() for a shared value', () => {
+	const key = defineKey<number>('example:n')
+	const { shared } = mockExtensionContext()
+	expect(shared.has(key)).toBe(false)
+	shared.set(key, 1)
+	expect(shared.has(key)).toBe(true)
+})
