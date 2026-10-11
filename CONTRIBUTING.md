@@ -7,7 +7,7 @@ Node and pnpm are pinned in `mise.toml` and managed by [mise](https://mise.jdx.d
 ```sh
 mise install  # node 24 + pnpm 12 at the pinned versions
 pnpm install
-pnpm verify   # lint + build + coverage + depcheck + size
+pnpm verify   # lint + build + coverage + depcheck + size, then the test-apps
 ```
 
 CI does not read `mise.toml`: it takes node from `.node-version` and pnpm from
@@ -34,6 +34,11 @@ separator is needed. The build's own output goes to `stderr`, so the CLI's
 ```sh
 pnpm -s cli plugins list --format json | jq .plugins
 ```
+
+The test-apps are also tested: `test-cli` and `test-cli-esm` run their real bin in a
+child process (`bin.test.mjs`, with `node --test`), and `ts-app` type checks against
+the built `clibuilder` types (`tsc`). `pnpm verify:apps` runs them, and `pnpm verify` runs
+it last.
 
 ## `clibuilder` dev dependencies
 
