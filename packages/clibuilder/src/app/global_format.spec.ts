@@ -141,9 +141,16 @@ describe.each([
 		])
 	})
 
-	it('prints a bad value through the existing usage-error report when no handler is declared', async () => {
+	it('prints a bad value through the usual usage-error report when no handler is declared', async () => {
 		const r = await runShow('show --format yaml', options)
 		expect(r.code).toBe(exitCodes.usage)
+		if ('output' in options && options.output === 'axi') {
+			// one coded error on stdout in the default format, nothing on stderr (axi-native RFC section 3.3)
+			expect(r.stderr).toBe('')
+			expect(countOf(r.stdout, 'code: invalid-value')).toBe(1)
+			expect(countOf(r.stdout, 'allowed for --format: toon, json, text')).toBe(1)
+			return
+		}
 		const out = r.stdout + r.stderr
 		expect(countOf(out, 'invalid value for option --format: expected one of: toon, json, text, received "yaml"')).toBe(
 			1

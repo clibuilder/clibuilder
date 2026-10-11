@@ -11,8 +11,14 @@ import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
 import { answerValue, printAnswer } from '../render/answer.js'
-import { encode, errorOutput, formats } from '../render/encode.js'
+import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
+import {
+	describeInvalidConfig,
+	describeMissingCommand,
+	describeUsageError,
+	topUsageError
+} from '../render/usage_error.js'
 import type { StandardSchemaV1 } from '../t.js'
 import { isZod3Type } from '../zod.js'
 import { type CliError, exitCodes, isCliError, isReportedCliError } from './errors.js'
@@ -191,6 +197,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				const code = await onUsageError(errors, { command, ui, format: globals.format, exitCode: exitCodes.usage })
 				return exit(typeof code === 'number' ? code : exitCodes.usage)
 			}
+			if (output === 'axi') {
+				// the top-ranked error alone, coded, on stdout, and no help dump (axi-native RFC section 3.3)
+				writeReport(describeUsageError(topUsageError(errors)!, command, s.name), globals.format)
+				return exit(exitCodes.usage)
+			}
 			for (const e of errors) ui.error(formatLookupError(e, command))
 			ui.showHelp()
 			return exit(exitCodes.usage)
@@ -198,10 +209,17 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (command.config) {
 			const configName = typeof s.configName === 'string' ? s.configName : s.name
-			const { config, errors } = await parseConfig(command.config, await context.loadConfig(configName))
+			const { config, errors, formErrors } = await parseConfig(command.config, await context.loadConfig(configName))
 			s.config = config
 
 			if (errors) {
+				if (output === 'axi') {
+					writeReport(
+						describeInvalidConfig(formErrors ? { '(config)': formErrors, ...errors } : errors),
+						globals.format
+					)
+					return exit(exitCodes.error)
+				}
 				context.ui.error('config fails validation:')
 				forEachKey(errors, (k) => context.ui.error(`  ${String(k)}: ${errors[k]}`))
 				createCommandInstance(context, s, r.command, registry).ui.showHelp()
@@ -213,7 +231,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		if (!commandInstance.run) {
 			// a command without `run` is a group: invoked bare, it is missing its
 			// sub command, so it is a usage error (#609). `--help` is handled above.
-			commandInstance.ui.showHelp()
+			if (output === 'axi') writeReport(describeMissingCommand(command, s.name), globals.format)
+			else commandInstance.ui.showHelp()
 			return exit(exitCodes.usage)
 		}
 		try {
@@ -264,6 +283,13 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	}
 
 	/**
+	 * Writes a report as an encoded answer on stdout, in `axi` output.
+	 */
+	function writeReport(report: ErrorFields, format: cli.Format) {
+		context.writeStdout(`${encode(errorOutput(report), format)}\n`)
+	}
+
+	/**
 	 * Prints what `run()` returned, once, as the answer on stdout in `axi` output (axi-native RFC section 3.5).
 	 * In `console` output nothing is printed, as before.
 	 * Either way `parse()` resolves to the value: the one `result()`, `document()` or `empty()` wraps, else the returned value.
@@ -295,12 +321,18 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 async function parseConfig(
 	schema: cli.ConfigSchema,
 	config: unknown
-): Promise<{ config: unknown; errors?: undefined } | { config?: undefined; errors: ConfigErrors }> {
+): Promise<
+	| { config: unknown; errors?: undefined; formErrors?: undefined }
+	| { config?: undefined; errors: ConfigErrors; formErrors?: string[] | undefined }
+> {
 	// the zod 3 path is removed in v12 (slim-dependencies RFC section 7)
 	if (isZod3Type(schema)) {
 		const r = schema.safeParse(config)
 		if (r.success) return { config: r.data }
-		return { errors: r.error.flatten().fieldErrors }
+		const { fieldErrors, formErrors } = r.error.flatten()
+		// the errors about the config as a whole are reported in `axi` output only, under `(config)` as the Standard Schema path keys them;
+		// `console` output prints the field errors alone, as before
+		return { errors: fieldErrors, formErrors: formErrors.length > 0 ? formErrors : undefined }
 	}
 	const r = await schema['~standard'].validate(config)
 	if (!r.issues) return { config: r.value }

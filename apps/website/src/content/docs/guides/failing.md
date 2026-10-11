@@ -66,6 +66,50 @@ The global options — `--help`, `--version`, `--verbose`, `--silent`, `--debug-
 `--version` are answered even when the rest of the command line is invalid, and both exit `0`:
 asking for help is not a usage error.
 
+### Usage errors with `output: 'axi'`
+
+:::note[Unreleased]
+On `main`, not in a published release. It ships in `clibuilder` 12.
+:::
+
+The above is the default [`output: 'console'`](/clibuilder/api/cli/#streams-and-output). With
+`cli({ output: 'axi' })` and no [`onUsageError`](#reporting-usage-errors-yourself) handler, clibuilder
+reports a usage error as one coded error on stdout, in the caller's
+[`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's `format`. It writes
+nothing to stderr, prints no help, and exits `2`:
+
+```sh
+$ my-cli deploy prod --port 70000
+error: "invalid value for option --port: expected an integer from 1 to 65535, received \"70000\""
+code: invalid-value
+option: "--port"
+value: "70000"
+help[2]: "Usage: my-cli deploy <arguments> [options]","expected for --port: int 1..65535 (received \"70000\")"
+```
+
+Only the first error is reported, ranked in this order: unknown option, conflicting options, invalid
+value, expect single, missing argument, extra arguments. A mistyped option often causes the errors
+after it, such as a value it swallowed being reported as a missing argument.
+
+| `code` | Fields | `help` after the usage line |
+| --- | --- | --- |
+| `unknown-option` | `option` | the command's options |
+| `conflicting-options` | `option`, `conflictsWith` | none |
+| `invalid-value` | `option` or `argument`, `value` (as typed) | `allowed for --level: low, high (received "x")` for a `t.enum` or `--format`, else the constraint of a `t` declaration, such as `int 1..65535` or `string /^v\d+$/` |
+| `expect-single` | `option` or `argument`, `value` | none |
+| `missing-argument` | `argument`, or `option` for a required `t` option | the command's arguments, or its options |
+| `extra-arguments` | `arguments` | the command's arguments, or a group's commands |
+| `missing-command` | `command` | the group's commands |
+
+`missing-command` is a command group invoked bare. A config that fails the command's schema is
+reported the same way, with code `invalid-config`, the messages for each failing key as fields, and
+exit code `1`. Neither prints the help.
+
+An `onUsageError` handler, on `cli()` or on a command, still takes over. `@clibuilder/axi`'s
+`createUsageErrorHandler()` writes the same fields, except that it joins every error into one
+message, codes an extra argument `unexpected-argument`, and has no usage line, `option`, `argument`
+or `value` fields.
+
 ### Reporting usage errors yourself
 
 To choose the format, the stream, and whether help is printed, declare an `onUsageError` handler.

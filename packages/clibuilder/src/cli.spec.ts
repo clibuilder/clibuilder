@@ -192,12 +192,12 @@ describe('streams and output', () => {
 		}
 	})
 
-	it('writes the help after a usage error to stdout and the error to stderr in axi mode', async () => {
+	it('writes a usage error as one coded error on stdout and nothing on stderr in axi mode', async () => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
 		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
-		expect(stderr.text).toBe('unknown option --bogus\n')
-		expect(stdout.text).toMatch(/^\nUsage: app/)
+		expect(stderr.text).toBe('')
+		expect(stdout.text).toMatch(/^error: unknown option --bogus\ncode: unknown-option\n/)
 		process.exitCode = undefined
 	})
 
