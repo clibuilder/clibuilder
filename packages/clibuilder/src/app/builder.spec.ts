@@ -4,6 +4,7 @@ import { testType } from 'type-plus/testing'
 import { z } from 'zod'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, t } from '../index.js'
+import { encode } from '../render/encode.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
 import { builder } from './builder.js'
 
@@ -1185,11 +1186,10 @@ describe('--show-config with output axi', () => {
 	it('answers the source and the config in toon on stdout, with nothing logged', async () => {
 		const ctx = await showConfig('has-json-config')
 
-		expect(ctx.stdout).toBe(
-			['source: file', `path: ${getFixturePath('has-json-config/show-config.json')}`, 'config:', '  a: 1', ''].join(
-				'\n'
-			)
-		)
+		// the path is encoded, so TOON quotes a Windows path with its backslashes escaped
+		const path = getFixturePath('has-json-config/show-config.json')
+		expect(ctx.stdout).toBe(`${encode({ source: 'file', path, config: { a: 1 } }, 'toon')}\n`)
+		expect(ctx.stdout).toMatch(/^source: file\npath: .+\nconfig:\n {2}a: 1\n$/)
 		expect(ctx.messages).toBe('')
 		expect(ctx.exitCode).toBeUndefined()
 	})
