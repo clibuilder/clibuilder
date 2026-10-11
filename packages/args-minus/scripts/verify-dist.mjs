@@ -25,7 +25,14 @@ for (const file of readdirSync(new URL('esm/', root))) {
 	if (forbidden.test(readFileSync(new URL(`esm/${file}`, root), 'utf8'))) fail(`esm/${file} uses a Node-only API`)
 }
 
-// 3. Each runtime imports the public API by package name.
+// 3. The shipped files point at no source map, as none is published.
+for (const file of readdirSync(new URL('esm/', root))) {
+	if (!/\.(?:js|d\.ts)$/.test(file) || /\.(?:spec|unit)\./.test(file)) continue
+	if (readFileSync(new URL(`esm/${file}`, root), 'utf8').includes('sourceMappingURL'))
+		fail(`esm/${file} points at a source map that is not published`)
+}
+
+// 4. Each runtime imports the public API by package name.
 const probe = `
 import { parseArgs, tokenizeArgs, ParseArgsError } from ${JSON.stringify(pkg.name)}
 const r = parseArgs({ args: ['--n', '1', 'x'], options: { n: { type: 'number' } } })

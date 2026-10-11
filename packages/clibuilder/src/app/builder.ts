@@ -337,12 +337,16 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
  *
  * The schema's output is what the command gets, so its defaults and transforms apply.
  * A failure is reported as the messages for each config key.
+ *
+ * With no config, a schema that rejects `undefined` validates `{}` instead,
+ * so a schema whose keys all have defaults passes, and one with a required key names that key.
  */
 async function parseConfig(
 	schema: cli.ConfigSchema,
 	config: unknown
 ): Promise<{ config: unknown; errors?: undefined } | { config?: undefined; errors: ConfigErrors }> {
-	const r = await schema['~standard'].validate(config)
+	let r = await schema['~standard'].validate(config)
+	if (r.issues && config === undefined) r = await schema['~standard'].validate({})
 	if (!r.issues) return { config: r.value }
 	return { errors: toConfigErrors(r.issues) }
 }

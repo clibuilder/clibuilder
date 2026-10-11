@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { CliError, command, exitCodes } from '../index.js'
 import { testCommand } from './index.js'
 
@@ -160,4 +161,19 @@ describe('output', () => {
 			'nope\ntry again\nexit with 1'
 		)
 	})
+})
+
+test('without a config, a command whose config schema is all defaults gets the defaults', async () => {
+	const { result, exitCode } = await testCommand(
+		command({
+			name: 'cmd',
+			config: z.object({ port: z.number().default(8080) }),
+			run() {
+				return this.config
+			}
+		}),
+		'cmd'
+	)
+	expect(exitCode).toBeUndefined()
+	expect(result).toEqual({ port: 8080 })
 })

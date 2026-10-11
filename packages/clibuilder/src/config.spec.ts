@@ -263,6 +263,20 @@ describe('resolveConfig() (#488)', () => {
 		expect(config).toBeUndefined()
 		expect(source).toEqual({ type: 'none' })
 	})
+
+	it('reports a missing config as a debug message, not a warning', async () => {
+		const name = nextConfigName()
+		const { cwd } = scaffold({})
+		const debugs: string[] = []
+		const warnings: string[] = []
+
+		await resolveConfig(
+			{ cwd, ui: { info() {}, debug: (m: string) => debugs.push(m), warn: (m: string) => warnings.push(m) } },
+			name
+		)
+		expect(warnings).toEqual([])
+		expect(debugs.join('\n')).toContain(`no config found under '${cwd}'`)
+	})
 })
 
 describe('getConfigFilenames()', () => {

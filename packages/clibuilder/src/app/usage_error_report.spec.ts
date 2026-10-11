@@ -328,11 +328,21 @@ describe('a config failing the command schema', () => {
 	})
 
 	it('reports an error about the config as a whole under (config), under output axi', async () => {
+		const r = await runWithConfig('not an object', 'axi', 'json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			error: 'config fails validation',
+			code: 'invalid-config',
+			'(config)': ['Expected object, received string']
+		})
+	})
+
+	it('names the required keys when there is no config, under output axi', async () => {
 		const r = await runWithConfig(undefined, 'axi', 'json')
 		expect(JSON.parse(r.stdout)).toEqual({
 			error: 'config fails validation',
 			code: 'invalid-config',
-			'(config)': ['Required']
+			port: ['Required'],
+			name: ['Required']
 		})
 	})
 

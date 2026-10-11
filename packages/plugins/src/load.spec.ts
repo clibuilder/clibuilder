@@ -57,7 +57,9 @@ it('reports and skips a plugin that cannot be imported', async () => {
 	const commands = await loadPlugins(context, ['not-an-installed-plugin'])
 
 	expect(commands).toEqual([])
-	expect(warnings.join('\n')).toContain('Unable to load plugin from not-an-installed-plugin')
+	expect(warnings.join('\n')).toContain(
+		'Unable to load plugin from not-an-installed-plugin. Please let the plugin author know about it.'
+	)
 	expect(warnings.join('\n')).toContain(`cwd: ${context.cwd}`)
 })
 

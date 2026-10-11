@@ -52,7 +52,7 @@ async function loadModule(cwd: string, ui: loadPlugins.Context['ui'], name: stri
 	try {
 		return await import(resolvePlugin(cwd, name))
 	} catch (e: any) {
-		ui.warn(`Unable to load plugin from ${name}. Please let the plugin author knows about it.`)
+		ui.warn(`Unable to load plugin from ${name}. Please let the plugin author know about it.`)
 		ui.warn(`cwd: ${cwd}`)
 		ui.warn('error: ', e.message || e)
 		return undefined
