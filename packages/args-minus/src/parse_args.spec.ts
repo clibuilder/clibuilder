@@ -1,4 +1,4 @@
-import { testType } from 'type-plus'
+import { testType } from 'type-plus/testing'
 import { type ArgsValue, type MultipleArgsValue, ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
 
 it('passes positional arguments into _ ', () => {

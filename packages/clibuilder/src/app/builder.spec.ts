@@ -1,5 +1,6 @@
 import { a } from 'assertron'
-import { required, testType } from 'type-plus'
+import { required } from 'type-plus'
+import { testType } from 'type-plus/testing'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, z } from '../index.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
