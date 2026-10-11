@@ -106,7 +106,8 @@ export function tokenizeArgs(args: string[], grammar?: Grammar): Token[] {
 				value: name || raw
 			})
 		else {
-			const [n, value] = name.split('=', 2)
+			const eq = name.indexOf('=')
+			const [n, value] = eq === -1 ? [name, undefined] : [StringSlice.call(name, 0, eq), StringSlice.call(name, eq + 1)]
 			ArrayPush.call(tokens, {
 				kind: 'option',
 				index,

@@ -378,7 +378,12 @@ Invalid input throws `ParseArgsError` (an `Error`) with:
 - `input`: the argument as written, e.g. `--n=abc` (empty for a missing option),
 - `index`: for an array option, the index of the element that failed,
 - `issues`: the issues from a Standard Schema that failed. The message never
-  repeats a schema's text.
+  repeats a schema's text,
+- `value`: the raw value that failed, as typed (`undefined` when none was given),
+- `detail`: what was wrong without the option and input framing of `message`:
+  what the descriptor expected (`expected an integer from 1 to 65535`), a
+  check's own message, or a converter's error message. A framework that reports
+  errors in its own words reads this instead of parsing `message`.
 
 A mistake in the declarations or grammar (duplicate alias, bad modifier) throws
 a plain `Error`. `parseArgs` never returns `NaN` or `undefined` for a declared

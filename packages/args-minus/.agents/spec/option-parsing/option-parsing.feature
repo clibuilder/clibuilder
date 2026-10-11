@@ -142,3 +142,16 @@ Feature: Option parsing with descriptors
     Given a builder call with min greater than max, a fractional t.int bound, an empty t.enum, or a non-scalar t.literal
     When the descriptor is built
     Then it throws
+
+  # ── Error fields ──
+
+  Scenario: a ParseArgsError names the raw value and what was wrong apart from its message
+    Given an option whose value fails conversion, a constraint or a check
+    When it is parsed
+    Then the ParseArgsError's value is the raw value as typed, or undefined when none was given
+    And its detail is what was expected, the check's message or the converter's message, without the option and input framing
+
+  Scenario: an inline value keeps every equals sign after the first
+    Given an option written as --opt=a=b
+    When it is tokenized
+    Then its value is a=b
