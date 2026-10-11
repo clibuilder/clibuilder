@@ -13,14 +13,14 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | # | Decision | Section |
 |---|---|---|
 | 1 | Default format is `toon`. The CLI author overrides it with `cli({ format })`. | 3.4 |
-| 2 | A plain non-`undefined` return from `run()` is printed in `this.format`. `quiet(value)` opts out (name open). `result()`, `document()` and `empty()` cover the other cases. A thrown `CliError` is rendered once by core. | 3.1, 3.5 |
+| 2 | A plain non-`undefined` return from `run()` is printed in `this.format`. `quiet(value)` opts out (name open, and it may be dropped). `result()`, `document()` and `empty()` cover the other cases. A thrown `CliError` is rendered once by core. | 3.1, 3.5 |
 | 3 | Core depends on `@toon-format/toon` and uses it for every toon output, including single objects and errors. | 3.4 |
 | 4 | A bad `--format` value is a usage error in the CLI's default format: exit 2, code `invalid-value`, with the valid choices. | 3.2 |
 | 5 | `-f` is not reserved for `--format`. | 3.4 |
 | 6 | Core keeps exit codes 0, 1 and 2 only. `CliError.exitCode` accepts any integer from 1 to 255. No named set above 2, in core or in axi. | 3.6 |
 | 7 | The version fast path answers only a bare `--version` or `-v`, before config and plugins load, in plain text. | 3.8 |
 | 8 | In `output: 'axi'` mode every `ui.*` call is a diagnostic on stderr. Answers go to stdout. | 3.10 |
-| 9 | `cli({ output: 'axi' \| 'console' })`, default `'axi'`. Both modes are permanent. `cli({ routing })` is an advanced override. | 3.10 |
+| 9 | `cli({ output: 'axi' \| 'console' })`, default `'axi'`. Both modes are permanent. The level-to-stream routing is internal in v12. | 3.10 |
 | 10 | standard-log is replaced by a built-in UI over `cli({ streams })`. | 3.10, [slim-dependencies section 4](slim-dependencies.md#4-logging-standard-log-and-standard-log-color) |
 | 11 | `showHelp` and `showVersion` leave `ui`. Core owns `--help` and `--version` as answers on stdout. Usage errors no longer print the full help. | 3.3, 3.7 |
 | 12 | `@clibuilder/axi` is absorbed into core in v12. axi keeps only what shapes a value. | 4 |
@@ -133,7 +133,7 @@ run() {
 - `result(value, { help, render })` attaches `help[N]:` lines inside the encoded output (omitted when empty, per upstream principle 9) and optional per-format renderers, for example `{ render: { text: (v) => table(v) } }`.
 - `document(content)` writes `content` verbatim, for output that is already the answer (markdown, a diff, a file).
 - `empty(message)` is a success with an explicit empty state. Empty is exit 0.
-- `quiet(value)` returns `value` to the caller of `parse()` without printing it. Its name is open (section 10).
+- `quiet(value)` returns `value` to the caller of `parse()` without printing it. Its name is open, and it may be dropped, because `result(value, { render })` already lets the printed form differ from the returned value (section 10).
 - These helpers absorb `@clibuilder/axi`'s `createOutput`, `writeResult`, `writeDocument`, `writeError` and `Output`, which are removed from axi.
 - **Core owns:** the envelope, `help[N]`, `result`, `document`, `empty`, `quiet`. **axi keeps:** `truncateText` and `truncateList` (`count: N of M total`, `--full`), `orEmpty`, `homeHeader`, `collapseHome`. They build the *value* a command returns. The `fullOption` stays a CLI-level option that the command reads.
 - A warning the agent must see goes in the result data. `ui.warn` is a diagnostic on stderr (section 3.10). The result has no reserved keys for messages.
@@ -186,7 +186,7 @@ run() {
 This is the design that sections 3.1 to 3.7 route through. It replaces standard-log (slim-dependencies section 4).
 
 - **Streams.** `cli({ streams: { stdout, stderr } })` takes any two writables, `process.stdout` and `process.stderr` by default. `testCommand` passes in-memory streams and keeps returning `messages`.
-- **Answers and diagnostics.** An answer is something the caller asked for: the returned value (plain, `result`, `document` or `empty`), a thrown `CliError` rendered once, `help[N]` lines, `--help` and `--version`. A diagnostic is everything said along the way: every `ui.*` call (`info`, `warn`, `error`, `debug`, `trace`).
+- **Answers and diagnostics.** An answer is something the caller asked for: the returned value (plain, `result`, `document` or `empty`), a thrown `CliError` rendered once, `help[N]` lines, `--help` and `--version`. A diagnostic is everything said along the way: every `ui.*` call (`info`, `warn`, `error`, `debug`). `trace` is a log level that `--debug-cli` raises, not a `ui` method.
 - **`cli({ output })`** picks one of two presets. Both are permanent and first-class.
 
 | | `output: 'axi'` (default) | `output: 'console'` |
@@ -196,11 +196,11 @@ This is the design that sections 3.1 to 3.7 route through. It replaces standard-
 | usage error | stdout, ranked and coded, exit 2 | prose plus full help on stderr, exit 2 |
 | `--help`, `--version` | stdout | stdout |
 | `ui.info`, `ui.debug` | stderr | stdout |
-| `ui.warn`, `ui.error`, `ui.trace` | stderr | stderr |
+| `ui.warn`, `ui.error` | stderr | stderr |
 
-`console` follows Node's `console` methods, which is today's behaviour. The difference between the two modes is the level-to-stream routing table above and the two usage-error renderers; everything else is shared.
+`console` keeps today's mapping, which follows standard-log's console reporter: `info` and `debug` on stdout (`console.debug` is an alias of `console.log` in Node), `warn` and `error` on stderr. The difference between the two modes is the level-to-stream routing table above and the two usage-error renderers; everything else is shared.
 
-- **`cli({ routing })`** is an advanced override: a map from level to `'stdout' | 'stderr'` applied on top of the chosen preset. Whether it is public in v12 is open (section 10).
+- **Routing is internal in v12.** The level-to-stream map behind each preset is not a public option. A CLI picks a preset with `cli({ output })`.
 - The levels still follow `--verbose`, `--silent` and `--debug-cli`, as today.
 
 ## 4. What moves, in one table
@@ -213,7 +213,7 @@ This is the design that sections 3.1 to 3.7 route through. It replaces standard-
 | Usage-error ranking and codes (`createUsageErrorHandler`, `describeUsageError`) | yes | removed |
 | `--format`, `this.format`, json, text, toon (`formatOption`, `parseFormat`, `renderText`) | yes | removed |
 | Result channel: `result`, `document`, `empty`, `quiet`, `help[N]` | yes | `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines` removed |
-| Stream routing, `cli({ output, streams, routing })` | yes | n/a |
+| Stream routing, `cli({ output, streams })` | yes | n/a |
 | Truncation, counts, `--full` | no | stays |
 | `orEmpty`, home header, collapse | no | stays |
 | Exit codes 0, 1, 2 | yes | the `exitCodes` re-export is removed |
@@ -296,7 +296,7 @@ Resolved on 2026-10-11:
 
 Still open:
 
-12. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value without printing it.
-13. **Descriptor introspection form.** Help and usage errors need a stable read of an option's descriptor. Proposed in [slim-dependencies section 3.4](slim-dependencies.md#34-design-c); not yet agreed.
-14. **Untested `t` typing.** The foreign-schema refinement typing and TS 7 (tsgo) were not tested in the prototype ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)). Check during implementation.
-15. **Is `cli({ routing })` public in v12?** It could ship as a documented option, or stay internal until a CLI needs it.
+12. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value without printing it. It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
+13. **Descriptor introspection field names.** The introspection form is public and read-only ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)); its exact field names are still a proposal.
+14. **Untested `t` typing.** The foreign-schema refinement typing is being tested separately, and TS 7 (tsgo) was not tested in the prototype ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
+15. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 3.10).

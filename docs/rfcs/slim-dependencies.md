@@ -22,6 +22,8 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 8 | `@toon-format/toon` is core's single third-party runtime dependency. | 5.5 |
 | 9 | `args-minus` inlines its one type helper. type-plus 8.0.0 stays only as a devDependency. | 5.1 |
 | 10 | Remove zod, standard-log, standard-log-color, tersify, type-plus, pad-right, wordwrap, tmp and tslib from core. | 2, 7 |
+| 11 | The descriptor introspection form is public and read-only. Its exact field names are still a proposal. | 3.4 |
+| 12 | The level-to-stream routing behind the presets is internal in v12. | 4 |
 
 ## 1. Summary
 
@@ -130,7 +132,7 @@ options: {
 - **Errors:** issues from a refinement or a config schema are mapped into clibuilder's own `invalid-value` usage error code. Following axi's rule, a dependency's text is never forwarded raw. `UsageError.keyType` becomes a kind string (`'string' | 'number' | 'boolean' | 'array' | 'enum'`) instead of a zod object.
 - **Types:** the Standard Schema v1 interfaces are vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency at all.
 
-**Introspection form (proposed).** Help, structured help and usage errors need one stable read of an option, so they do not reach into descriptor internals. The proposed shape, built from the descriptor and its option entry:
+**Introspection form.** Help, structured help and usage errors need one stable read of an option, so they do not reach into descriptor internals. The form is **public and read-only**, so other tools can build on `args-minus`. The exact field names below are a proposal; the shape is built from the descriptor and its option entry:
 
 ```ts
 type OptionInfo = {
@@ -145,7 +147,7 @@ type OptionInfo = {
 }
 ```
 
-This shape is not agreed yet (section 10).
+The field names are not agreed yet (section 10).
 
 **zod v3 vs v4.** Both majors work as `schema:` or `config:` values: zod ≥ 3.24 implements `~standard`, and zod 4 does natively. Inference uses `~standard.types`, so clibuilder's typings no longer import any zod type. CLIs that keep zod pick their own major.
 
@@ -158,7 +160,7 @@ A prototype of `t` settled these rules:
 - **`t.array` takes only non-optional scalar or enum elements.** `t.array(t.string().optional())` and nested arrays are rejected.
 - **Array validation errors report the element path,** for example `tag[2]`.
 - **Inference cost is trivial.** About 1.7k type instantiations and 0.10 s for 7 options, and the same for 60.
-- **Untested: refinement typing.** The typing of a foreign `schema:` refinement, and the claim that a schema with a wider input type passes through bivariance, were not tested. Check during implementation; comparing `StandardSchemaV1.InferInput` against the descriptor's output explicitly is the suggested check.
+- **Being tested: refinement typing.** The typing of a foreign `schema:` refinement, and the claim that a schema with a wider input type passes through bivariance, were not tested in the prototype and are being tested separately. Comparing `StandardSchemaV1.InferInput` against the descriptor's output explicitly is the suggested check.
 - **Untested: TS 7 (tsgo).** The prototype ran on the current TypeScript only.
 
 ## 4. Logging: standard-log and standard-log-color
@@ -191,9 +193,9 @@ type Streams = { stdout: Writable; stderr: Writable }   // injectable; process.s
 | returned result, `--help`, `--version` | stdout | stdout (returned values are not printed) |
 | thrown `CliError`, usage error | stdout, encoded | stderr, prose |
 | `ui.info`, `ui.debug` | stderr | stdout |
-| `ui.warn`, `ui.error`, `ui.trace` | stderr | stderr |
+| `ui.warn`, `ui.error` | stderr | stderr |
 
-`console` follows Node's `console` methods, which is today's behaviour. `cli({ routing })` overrides the level-to-stream map on top of either preset, as an advanced option. Removing standard-log is the prerequisite that makes this routing cheap.
+`console` keeps today's mapping from standard-log's console reporter: `info` and `debug` on stdout (`console.debug` is an alias of `console.log` in Node), `warn` and `error` on stderr. `trace` is a log level that `--debug-cli` raises, not a `ui` method. The level-to-stream map is internal in v12; a CLI picks a preset with `cli({ output })`. Removing standard-log is the prerequisite that makes this routing cheap.
 
 ## 5. The rest
 
@@ -452,7 +454,7 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 Items left open by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are also still open.
 
-1. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value from `run()` without printing it ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)).
-2. **Descriptor introspection form.** The `OptionInfo` shape in section 3.4 is a proposal. Help, structured help and usage errors depend on it, so it needs agreement before `t` ships.
-3. **Untested `t` typing.** Foreign-refinement typing (including the bivariance claim) and TS 7 (tsgo) were not tested in the prototype (section 3.5). Check during implementation.
-4. **Is `cli({ routing })` public in v12?** It could ship as a documented option, or stay internal until a CLI needs it (section 4).
+1. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value from `run()` without printing it ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)). It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
+2. **Descriptor introspection field names.** The form is public and read-only (section 3.4); the exact `OptionInfo` field names are a proposal and need agreement before `t` ships.
+3. **Untested `t` typing.** Foreign-refinement typing (including the bivariance claim) is being tested separately; TS 7 (tsgo) was not tested in the prototype (section 3.5).
+4. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 4).
