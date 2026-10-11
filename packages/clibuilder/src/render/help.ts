@@ -396,7 +396,7 @@ export namespace HelpModel {
  * @param globalOptions the base command's options, listed once under `globalOptions`.
  * The root command declares them as its own, so they are left out of its `options`.
  */
-export function generateHelpModel(cliName: string, command: Command, globalOptions?: cli.Command.Options): HelpModel {
+export function generateHelpModel(cliName: string, command: Command, globalOptions: cli.Command.Options): HelpModel {
 	const model: HelpModel = {
 		name: getCommandNameChain(cliName, command).join(' '),
 		usage: generateUsageSection(cliName, command).slice('Usage: '.length)
@@ -420,15 +420,14 @@ export function generateHelpModel(cliName: string, command: Command, globalOptio
 		})
 	}
 	const isRoot = !command.parent && !command.name
-	const options = optionModels(command.options, isRoot ? Object.keys(globalOptions ?? {}) : [])
+	const options = optionModels(command.options, isRoot ? Object.keys(globalOptions) : [])
 	if (options.length > 0) model.options = options
 	const config = describeConfig(command)
 	if (config !== undefined) model.config = config
 	if (command.examples && command.examples.length > 0) {
 		model.examples = command.examples.map(({ command, description }) => ({ command, description }))
 	}
-	const globals = optionModels(globalOptions, [])
-	if (globals.length > 0) model.globalOptions = globals
+	model.globalOptions = optionModels(globalOptions, [])
 	return model
 }
 

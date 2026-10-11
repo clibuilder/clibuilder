@@ -322,7 +322,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.writeStdout(
 			format === 'text'
 				? `${generateHelpMessage(s.name, command)}\n`
-				: `${encode(generateHelpModel(s.name, command, baseCommand.options), format)}\n`
+				: `${encode(generateHelpModel(s.name, command, baseCommand.options!), format)}\n`
 		)
 	}
 

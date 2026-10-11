@@ -156,7 +156,8 @@ describe('--help under output axi', () => {
 				arguments: [{ name: 'files', description: 'files', type: z.optional(z.array(z.string())) }],
 				options: {
 					name: { type: z.string(), description: 'a name', alias: ['n', { alias: 'secret', hidden: true }] },
-					all: { type: z.optional(z.boolean()), description: 'all', conflicts: ['name'] }
+					all: { type: z.optional(z.boolean()), description: 'all', conflicts: ['name'] },
+					size: { type: z.optional(z.number()), description: 'size' }
 				},
 				config: z.object({ a: z.string() }),
 				run() {}
@@ -168,7 +169,8 @@ describe('--help under output axi', () => {
 		])
 		expect(help.options).toEqual([
 			{ name: 'name', aliases: ['n'], type: 'string', required: true, description: 'a name', conflicts: ['all'] },
-			{ name: 'all', type: 'boolean', required: false, description: 'all', conflicts: ['name'] }
+			{ name: 'all', type: 'boolean', required: false, description: 'all', conflicts: ['name'] },
+			{ name: 'size', type: 'number', required: false, description: 'size' }
 		])
 		expect(help.config).toBe('{ a: string }')
 	})
@@ -193,6 +195,48 @@ describe('--help under output axi', () => {
 			{ name: 'mode', type: 'literal', values: ['fast'], required: false, description: 'mode' },
 			{ name: 'ports', type: 'int', min: 1, array: true, required: false, description: 'ports' },
 			{ name: 'dry', type: 'boolean', required: false, description: 'dry run' }
+		])
+	})
+
+	it('leaves out what a declaration does not say', async () => {
+		const r = await run(
+			'bare --help --format json',
+			{ output: 'axi' },
+			command({
+				name: 'bare',
+				arguments: [{ name: 'value', description: '' }],
+				options: {
+					level: { type: z.optional(z.enum(['a', 'b'])), description: '', alias: [{ alias: 'l', hidden: false }] }
+				},
+				commands: [command({ name: 'sub', run() {} })],
+				run() {}
+			})
+		)
+		const help = JSON.parse(r.stdout)
+		expect(help.description).toBeUndefined()
+		expect(help.arguments).toEqual([{ name: 'value', required: true }])
+		expect(help.options).toEqual([{ name: 'level', aliases: ['l'], required: false }])
+		expect(help.commands).toEqual([{ name: 'sub' }])
+	})
+
+	it('describes t.number and t.int with one bound or none', async () => {
+		const r = await run(
+			'nums --help --format json',
+			{ output: 'axi' },
+			command({
+				name: 'nums',
+				options: {
+					ratio: { type: t.number({ max: 1 }).optional(), description: 'ratio' },
+					count: { type: t.int().optional(), description: 'count' },
+					name: { type: t.string().optional(), description: 'name' }
+				},
+				run() {}
+			})
+		)
+		expect(JSON.parse(r.stdout).options).toEqual([
+			{ name: 'ratio', type: 'number', max: 1, required: false, description: 'ratio' },
+			{ name: 'count', type: 'int', required: false, description: 'count' },
+			{ name: 'name', type: 'string', required: false, description: 'name' }
 		])
 	})
 
@@ -232,6 +276,18 @@ describe('--version under output axi', () => {
 		expect(r.stdout).toBe('1.2.3\n')
 		expect(r.stderr).toBe('')
 		expect(r.exitCode).toBeUndefined()
+	})
+})
+
+describe('--version under output axi without a version', () => {
+	it('says so in plain text after a command', async () => {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		await cli({ name: 'app', version: '', streams: { stdout, stderr }, output: 'axi' })
+			.command(deploy)
+			.parse(['node', 'app', 'deploy', '--version'])
+		expect(stdout.text).toBe('not versioned\n')
+		expect(stderr.text).toBe('')
 	})
 })
 
