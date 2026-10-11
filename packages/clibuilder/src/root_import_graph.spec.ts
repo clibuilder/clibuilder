@@ -64,14 +64,14 @@ const configLoader = [
 	'src/drivers/find_up.ts',
 	'src/drivers/package_json.ts',
 	'src/drivers/read_file.ts',
-	'src/drivers/yaml.ts'
+	'src/drivers/yaml.ts',
+	'src/strip_jsonc.ts'
 ]
 
 describe('config loading', { timeout: 30_000 }, () => {
 	it('is not reached by the root entry, so a cli without .use(config()) does not contain it (#692)', async () => {
 		const graph = await importGraph('src/index.ts')
 		expect(graph.modules.filter((m) => configLoader.includes(m))).toEqual([])
-		expect(graph.packages).not.toContain('jsonc-parser')
 		expect(graph.packages).not.toContain('js-yaml')
 	})
 

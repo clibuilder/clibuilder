@@ -71,7 +71,7 @@ Footprint numbers come from installing each dependency alone with `npm install -
 | `tmp` 0.2.7 | `drivers/context.mock.ts`, reached from `testing/test_command.ts` | temp cwd for `testCommand` | no, but **leaks into the main entry**: `index.ts` re-exports `testing/test_command.js` | 1 | 56 KB | **remove**: `fs.mkdtempSync(os.tmpdir())`. Export `testCommand` from `clibuilder/testing` only. |
 | `tslib` ^2.5 | nowhere (no `importHelpers`; target ES2020) | none | no | 1 | 128 KB | **remove** (it is also listed in `devDependencies`) |
 | `js-yaml` 4.x | `config.ts` | `.yaml` / `.yml` config files | only when a cli sets `config` | 2 | 1.2 MB | optional peer (section 5.2) |
-| `jsonc-parser` 3.3.1 | `config.ts` | `.json` / `.jsonc` / `rc` config files with comments | only when a cli sets `config` | 1 | 256 KB | replaced by an internal `stripJsonc` plus `JSON.parse` (Q4 resolved, #693) |
+| `jsonc-parser` 3.3.1 | `config.ts` | `.json` / `.jsonc` / `rc` config files with comments | only when a cli has `.use(config())` | 1 | 256 KB | replaced by an internal `stripJsonc` plus `JSON.parse` (Q4 resolved, #693) |
 | `import-meta-resolve` 4.2.0 | `drivers/resolve_plugin.ts` | resolves plugin specifiers from the project cwd using ESM rules (`import.meta.resolve(spec, parent)` is still flagged in Node) | only when `config.plugins` is set | 1 | 140 KB | move to `@clibuilder/plugins` with plugin loading (section 9) |
 | `find-installed-packages` 4.0.1 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins list` | no | **18** | 704 KB | move to `@clibuilder/plugins` |
 | `search-packages` 2.2.3 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins search` | no | 1 | 120 KB | move to `@clibuilder/plugins` |
