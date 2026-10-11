@@ -119,7 +119,7 @@ describe('tier B', () => {
 					if (s === '@toon-format/toon' || s === 'args-minus') return false
 					if (!s.startsWith('.')) return true
 					const target = relative(src, resolve(dirname(file), s))
-						.replaceAll('\\', '/')
+						.replace(/\\/g, '/')
 						.replace(/\.js$/, '.ts')
 					return !allowed.some((a) => (a.endsWith('/') ? target.startsWith(a) : target === a))
 				})
