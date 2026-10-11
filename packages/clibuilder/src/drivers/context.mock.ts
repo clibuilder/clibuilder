@@ -15,11 +15,12 @@ export namespace mockContext {
 
 export function mockContext(
 	params?: mockContext.Params
-): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined } {
+): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined; readonly stdout: string } {
 	const { fixtureDir, logLevel } = required({ logLevel: logLevels.info }, params)
 	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
 	const sl = createStandardLogForTest({ logLevel })
 	let exitCode: number | undefined
+	let stdout = ''
 
 	/**
 	 * A ui on a test logger, kept at the level the caller asked for.
@@ -61,6 +62,15 @@ export function mockContext(
 		},
 		get exitCode() {
 			return exitCode
+		},
+		writeStdout(text: string) {
+			stdout += text
+		},
+		/**
+		 * Everything written through `writeStdout`, concatenated.
+		 */
+		get stdout() {
+			return stdout
 		},
 		createCommandUI(id: string) {
 			return testUI(id)

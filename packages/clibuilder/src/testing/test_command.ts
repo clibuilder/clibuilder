@@ -11,7 +11,9 @@ export async function testCommand(command: cli.Command, argv: string, config?: R
 	const result = await builder(ctx, { name: 'test-cli', version: '1.0.0' })
 		.command(command)
 		.parse(tu.argv(`test-cli ${argv}`))
-	const messages = ctx.sl.reporter.getLogMessage()
+	// `--version` alone is written straight to stdout rather than logged, so it is
+	// read from there too, keeping it in `messages` as before.
+	const messages = [ctx.stdout.replace(/\n$/, ''), ctx.sl.reporter.getLogMessage()].filter((m) => m).join('\n')
 	// `undefined` when the command did not fail, matching a process that exits 0.
 	return { result, messages, exitCode: ctx.exitCode }
 }

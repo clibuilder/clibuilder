@@ -95,15 +95,82 @@ describe('default()', () => {
 describe('version', () => {
 	it('accepts -v to show version', async () => {
 		const [builder, ctx] = setupBuilderTest()
-		const cli = builder.default({ run() {} })
-		await cli.parse(argv('test-cli -v'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+		const cli = builder.default({ run: () => expect.fail('should not reach') })
+		expect(await cli.parse(argv('test-cli -v'))).toBeUndefined()
+		expect(ctx.stdout).toEqual('1.0.0\n')
+		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('accepts --version to show version', async () => {
 		const [builder, ctx] = setupBuilderTest()
-		const cli = builder.default({ run() {} })
+		const cli = builder.default({ run: () => expect.fail('should not reach') })
 		await cli.parse(argv('test-cli --version'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+	})
+	it('writes the version as plain text to stdout, not through the logger', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.default({ run() {} }).parse(argv('test-cli --version'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+		expect(ctx.sl.reporter.logs).toEqual([])
+	})
+	it('says the cli is not versioned when it has no version', async () => {
+		const [builder, ctx] = setupBuilderTest(undefined, { version: '' })
+		await builder.default({ run() {} }).parse(argv('test-cli -v'))
+		expect(ctx.stdout).toEqual('not versioned\n')
+	})
+	it('answers --version even when the config loader rejects', async () => {
+		const ctx = mockContext()
+		ctx.loadConfig = async () => {
+			throw new Error('broken config')
+		}
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
+		await cli.parse(argv('test-cli --version'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	it('answers --version even when the config loader never resolves', async () => {
+		const ctx = mockContext()
+		ctx.loadConfig = () => new Promise(() => {})
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
+		await cli.parse(argv('test-cli --version'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+	})
+	it('answers -v without waiting for a plugin whose activation hangs', async () => {
+		const ctx = mockContext()
+		ctx.loadConfig = async () => ({ plugins: ['hanging-plugin'] })
+		ctx.loadPlugins = () => new Promise(() => {})
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
+		await cli.parse(argv('test-cli -v'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+	})
+	it('answers -v alone even when a command declares its own -v', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		const cli = builder.default({
+			options: { value: { type: z.optional(z.boolean()), description: 'v', alias: ['v'] } },
+			run: () => expect.fail('should not reach')
+		})
+		await cli.parse(argv('test-cli -v'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
+	})
+	it('takes the normal path for --version after a command', async () => {
+		const ctx = mockContext()
+		let loaded = false
+		ctx.loadConfig = async () => {
+			loaded = true
+			return {}
+		}
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true }).command({
+			name: 'cmd',
+			run: () => expect.fail('should not reach')
+		})
+		await cli.parse(argv('test-cli cmd --version'))
+		expect(loaded).toBe(true)
+		expect(ctx.stdout).toEqual('')
 		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+	})
+	it('takes the normal path when --version comes with other arguments', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.default({ run: () => expect.fail('should not reach') }).parse(argv('test-cli --version --silent'))
+		expect(ctx.stdout).toEqual('')
 	})
 })
 

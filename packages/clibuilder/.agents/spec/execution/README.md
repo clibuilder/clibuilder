@@ -136,7 +136,8 @@ inputs they gave, or to be told precisely what was wrong.
 | a display-level flag is given | the level is set and the flag is removed before the command is matched, so it is never reported as unknown |
 | `--show-config` on an application that takes config | the resolved config and its source are reported, and no command runs |
 | `--show-config` on an application that takes no config | the option was never declared, so it is a usage error like any other unknown option |
-| `--version` on the base command or the matched one | the version is shown, and no command runs |
+| `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the configured plugins or the `use()` extensions run, so a broken config or a hanging plugin or extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin, an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
+| `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
 | an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
 | an unknown-option error names a global option whose value the base command rejected | the base command's invalid-value error is reported in its place, so a malformed global flag fails under a sub-command as it does on the root (#614) |
@@ -255,7 +256,7 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `.use()` is called | `parse` is available, because an extension may supply every command |
 | several extensions are used | they run in the order `.use()` was called, each awaited before the next |
 | an extension adds a command | it comes after the host's own `.command()` and `.default()` commands |
-| the invocation is a bare `--version` | it is answered without running the extensions |
+| the invocation is a bare `--version` or `-v` | it is answered before anything loads, so the extensions do not run — see UC3 |
 | the invocation is `--help`, or names a command | the extensions run first, because the answer needs the command tree |
 | `parse` is called again | the extensions do not run again |
 | an extension throws | `parse` rejects with that error |
@@ -331,7 +332,9 @@ graph TD
 
 ```mermaid
 graph TD
-  P[parse argv] --> AW[await pending config and plugin work]
+  P[parse argv] --> FV{"only --version or -v?"}
+  FV -- yes --> FVW[write the version to stdout; stop without awaiting pending work]
+  FV -- no --> AW[await pending config work]
   AW --> TOK[tokenize argv] --> BASE[match against the base command for global flags]
   BASE --> DL{display-level flag given?}
   DL -- silent --> D1[level none] --> STRIP[remove the flag before matching]
@@ -433,14 +436,14 @@ callers.
 
 ```mermaid
 graph TD
-  GP[parse argv] --> GGF[global flags answered: silent, verbose, debug-cli, show-config]
+  GP[parse argv] --> GBV{is the invocation a bare --version?}
+  GBV -- yes --> GVER[answer the version before anything loads — sub-graph B]
+  GBV -- no --> GGF[global flags answered: silent, verbose, debug-cli, show-config]
   GGF --> GV1{"v11: is a @clibuilder/plugins extension used?"}
   GV1 -- yes --> GSKIP[drop the automatic plugins group; load no config plugins]
   GV1 -- no --> GCFG[load the plugins the config names]
-  GSKIP --> GBV
-  GCFG --> GBV{is the invocation a bare --version?}
-  GBV -- yes --> GVER[answer the version — sub-graph B]
-  GBV -- no --> GRAN{have the extensions run?}
+  GSKIP --> GRAN
+  GCFG --> GRAN{have the extensions run?}
   GRAN -- yes --> GLOOK
   GRAN -- no --> GEACH[run each extension in use order, awaiting each]
   GEACH --> GADD[its commands join after the host's own] --> GLOOK[match a command — sub-graph B]
@@ -486,8 +489,12 @@ graph TD
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
 | report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
 | show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
+| write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and plugins load` |
+| write the version to stdout; stop without awaiting pending work | `-v` alone, plugin activation never finishes | `version asked for alone does not wait for plugin activation` |
+| write the version to stdout; stop without awaiting pending work | `-v` alone, the default command declares `-v` | `the short version flag alone is the version even when a command declares it` |
 | show the version | `--version` on the base command | `version asked of the application shows its version` |
 | show the version | `--version` on the matched command | `version asked of a matched command shows the application version` |
+| only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and plugins` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
 | drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |

@@ -55,7 +55,13 @@ describe('use()', () => {
 		const extension = vi.fn()
 		await app.use(extension).parse(argv('test-cli --version'))
 		expect(extension).not.toHaveBeenCalled()
-		expect(ctx.sl.reporter.getLogMessage()).toContain('1.0.0')
+		expect(ctx.stdout).toEqual('1.0.0\n')
+	})
+
+	it('answers a bare -v without waiting for an extension that never finishes', async () => {
+		const [app, ctx] = setup()
+		await app.use(() => new Promise(() => {})).parse(argv('test-cli -v'))
+		expect(ctx.stdout).toEqual('1.0.0\n')
 	})
 
 	it('runs the extensions when --version follows a command, which needs the command tree', async () => {
