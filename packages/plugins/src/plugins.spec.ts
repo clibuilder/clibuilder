@@ -22,7 +22,10 @@ function setup({ config, pjson }: { config?: unknown; pjson?: Record<string, unk
 		cwd,
 		ui,
 		registry: createRegistry(),
+		shared: { get: () => undefined, set() {}, has: () => false },
 		addCommand: (c) => commands.push(c),
+		addGlobalOption() {},
+		beforeRun() {},
 		resolveConfig: async () =>
 			config === undefined
 				? { config: undefined, source: { type: 'none' }, candidates: [] }

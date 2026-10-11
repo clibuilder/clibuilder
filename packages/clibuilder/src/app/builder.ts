@@ -1,7 +1,8 @@
 import { getBaseCommand, yieldToGlobalFormat } from '../builtin/base_command.js'
-import type { cli, Extension, ExtensionContext } from '../cli.js'
+import type { BeforeRunHook, cli, Extension, ExtensionContext, GlobalOptionAnswer } from '../cli.js'
 import type { Command } from '../command/internal.js'
-import { type ConfigSource, describeConfigSource } from '../config.js'
+import { configKey } from '../config/key.js'
+import type { ConfigLoadResult } from '../config.js'
 import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
@@ -12,21 +13,12 @@ import { answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
 import { generateHelpMessage, generateHelpModel } from '../render/help.js'
-import {
-	describeInvalidConfig,
-	describeMissingCommand,
-	describeUsageError,
-	topUsageError
-} from '../render/usage_error.js'
-import type { StandardSchemaV1 } from '../t.js'
-import type { RequiredPick } from '../type_utils.js'
+import { describeMissingCommand, describeUsageError, topUsageError } from '../render/usage_error.js'
 import { type CliError, exitCodes, isCliError, isReportedCliError } from './errors.js'
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
-export function builder(context: Context, options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
-export function builder(context: Context, options: cli.Options): cli.Builder
-export function builder(context: Context, options: cli.Options): cli.Builder & cli.Executable {
+export function builder(context: Context, options: cli.Options): cli.Builder {
 	// set `clibuilder-debug` logs manually to logLevels.all,
 	// as user can run `config()` to set the log levels
 	// and override the log level for this logger.
@@ -38,27 +30,22 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		throw new TypeError(`cli({ format }) must be one of ${formats.join(', ')}, received ${String(format)}`)
 	}
 	const description = s.description
-	const pending: Promise<any>[] = []
 	const registry = createRegistry()
+	const shared = new Map<string, unknown>()
 	const extensions: Extension[] = []
+	// the global options extensions added, and how each is answered
+	const globalOptions: cli.Command.Options = {}
+	const globalAnswers: Record<string, GlobalOptionAnswer> = {}
+	const beforeRunHooks: BeforeRunHook[] = []
+	// the base command's own options: the root help lists the extensions' global options with them
+	const baseOptions = s.command.options!
 	let extending: Promise<void> | undefined
 	// whether an extension read the config, and so took charge of a `plugins` key in it
 	let configRead = false
-	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
-
-	if (loadingConfig) {
-		pending.push(
-			(async () => {
-				s.config = await loadingConfig
-			})()
-		)
-	}
 	return {
 		name: s.name,
 		version: s.version || '',
 		description,
-		// a cli with config is executable on its own: `--show-config` and `--help` need no command
-		parse: (s.configName ? parse : undefined) as any,
 		default(command) {
 			s.command = adjust(s.command, { ...s.command, ...command })
 			delete (this as any)['default']
@@ -70,7 +57,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		},
 		use(extension) {
 			extensions.push(extension)
-			return { ...this, parse }
+			return { ...this, parse } as any
 		}
 	}
 
@@ -86,18 +73,49 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				cwd: context.cwd,
 				ui: createExtensionUI(context, s),
 				registry,
+				shared: {
+					get: (key) => shared.get(key.id) as any,
+					set(key, value) {
+						shared.set(key.id, value)
+					},
+					has: (key) => shared.has(key.id)
+				},
 				addCommand(command) {
 					s.command.commands.push(adjust(s.command, command as Command))
 				},
+				addGlobalOption(name, entry, answer) {
+					globalOptions[name] = entry
+					globalAnswers[name] = answer
+				},
+				beforeRun(hook) {
+					beforeRunHooks.push(hook)
+				},
 				async resolveConfig() {
 					configRead = true
-					if (!s.configName) return { config: undefined, source: { type: 'none' }, candidates: [] }
-					return context.resolveConfig(s.configName)
+					return (
+						(shared.get(configKey.id) as ConfigLoadResult | undefined) ?? {
+							config: undefined,
+							source: { type: 'none' },
+							candidates: []
+						}
+					)
 				}
 			}
 			for (const extension of extensions) await extension(extensionContext)
+			listGlobalOptions()
 			warnUnloadedPlugins()
 		})())
+	}
+
+	/**
+	 * Lists the extensions' global options among the base command's own, before `--format`,
+	 * so the root help shows them with the others.
+	 */
+	function listGlobalOptions() {
+		if (Object.keys(globalOptions).length === 0) return
+		const { format: formatOption, ...rest } = baseOptions
+		for (const key of Object.keys(baseOptions)) delete baseOptions[key]
+		Object.assign(baseOptions, rest, globalOptions, { format: formatOption })
 	}
 
 	/**
@@ -108,7 +126,9 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	 * An extension that read the config is taken to handle its `plugins` key.
 	 */
 	function warnUnloadedPlugins() {
-		if (configRead || !Array.isArray(s.config?.plugins) || s.config.plugins.length === 0) return
+		const config: any = shared.get(configKey.id)
+		const plugins = config?.config?.plugins
+		if (configRead || !Array.isArray(plugins) || plugins.length === 0) return
 		context.ui.warn(
 			'the config lists plugins, but this cli loads none. ' +
 				'Plugin loading moved out of clibuilder 12 into @clibuilder/plugins: add .use(plugins()) to the cli.'
@@ -117,20 +137,19 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 	async function parse(argv: string[]) {
 		if (isBareVersion(argv)) {
-			// answered before the pending config and the `use()` extensions,
+			// answered before the `use()` extensions, the config among them,
 			// so a broken config or a hanging extension cannot fail or delay it.
-			// The config load is not awaited, so a rejection from it is marked handled here
-			// instead of crashing the process.
-			for (const p of pending) p.catch(() => {})
 			// the exit code is left unset, so the process exits 0, and parse resolves to
 			// `undefined` as it does when the version is answered on the normal path.
 			context.writeStdout(`${s.version || 'not versioned'}\n`)
 			return
 		}
-		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		const baseCommand = getBaseCommand(s.description, { config: !!s.configName, format })
+		// the extensions run first, as they may add global options.
+		// What they log is held until the logging flags below set the display level.
+		await extend()
+		const baseCommand = getBaseCommand(s.description, { format, options: globalOptions })
 		// the global options are read from the base command alone, before the matched
 		// command's usage errors are looked at (axi-native RFC section 3.2).
 		// A bad `--format` falls back to the `cli({ format })` default, so its usage error is reported in that.
@@ -150,9 +169,13 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.displayLevel = s.displayLevel
 		context.ui.dump()
 
-		if (s.configName && globals['show-config']) return showConfig(s.configName, globals.format)
-
-		await extend()
+		for (const name of Object.keys(globalAnswers)) {
+			const value = globals.values[name]
+			if (value === undefined) continue
+			// answered before the command runs, as the root command's own `ui` would answer it
+			const ui = createCommandUI(context, s, s.command)
+			return answer(await globalAnswers[name]!({ value, format: globals.format, output, ui }), globals.format)
+		}
 
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
@@ -195,22 +218,24 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			return exit(exitCodes.usage)
 		}
 
-		if (command.config) {
-			const configName = typeof s.configName === 'string' ? s.configName : s.name
-			const { config, errors } = await parseConfig(command.config, await context.loadConfig(configName))
-			s.config = config
-
-			if (errors) {
-				if (output === 'axi') {
-					writeReport(describeInvalidConfig(errors), globals.format)
-					return exit(exitCodes.error)
-				}
-				context.ui.error('config fails validation:')
-				for (const k of Object.keys(errors)) context.ui.error(`  ${k}: ${errors[k]}`)
-				createCommandInstance(context, s, r.command, registry).ui.showHelp()
-				return exit(exitCodes.error)
+		if (command.config && !shared.has(configKey.id)) {
+			const label = command.name ? `command '${command.name}'` : 'the default command'
+			throw new Error(
+				`${label} declares config, but the cli does not load config. ` +
+					"Add .use(config()) from 'clibuilder/config' to the cli."
+			)
+		}
+		if (beforeRunHooks.length > 0) {
+			const ui = createCommandInstance(context, s, r.command, registry).ui
+			const run = { command, config: s.config, format: globals.format, output, ui }
+			try {
+				for (const hook of beforeRunHooks) await hook(run)
+			} catch (e) {
+				if (!isCliError(e)) throw e
+				reportCliError(e, globals.format, ui)
+				return exit(e.exitCode)
 			}
-			s.config = config
+			s.config = run.config
 		}
 		const commandInstance = createCommandInstance(context, s, command, registry, globals.format, output)
 		if (!commandInstance.run) {
@@ -234,31 +259,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			reportCliError(e, globals.format, commandInstance.ui)
 			return exit(e.exitCode)
 		}
-	}
-
-	/**
-	 * Reports the resolved config and its provenance.
-	 *
-	 * The resolution itself is `context.resolveConfig`, the same call the cli
-	 * already makes to load its config, so this reports what the cli actually
-	 * uses rather than re-deriving it.
-	 *
-	 * In `axi` output it is an answer on stdout, whatever the display level: `text` is the
-	 * `console` rendering, and `toon` and `json` encode the source and the config.
-	 * In `console` output it is written through `ui.info`, as before.
-	 */
-	async function showConfig(configName: string, format: cli.Format) {
-		const { config, source } = await context.resolveConfig(configName)
-		const lines = [`config: ${describeConfigSource(source)}`]
-		if (source.type !== 'none') lines.push(JSON.stringify(config, undefined, 2))
-		if (output === 'axi') {
-			context.writeStdout(
-				format === 'text' ? `${lines.join('\n')}\n` : `${encode(configReport(source, config), format)}\n`
-			)
-			return
-		}
-		const ui = createCommandUI(context, s, s.command)
-		for (const line of lines) ui.info(line)
 	}
 
 	/**
@@ -329,61 +329,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 	function adjust<C extends Command>(base: Command, command: C): C {
 		return adjustCommand(base, command)
-	}
-}
-
-/**
- * Validates the loaded config against the command's `config` schema.
- *
- * The schema's output is what the command gets, so its defaults and transforms apply.
- * A failure is reported as the messages for each config key.
- *
- * With no config, a schema that rejects `undefined` validates `{}` instead,
- * so a schema whose keys all have defaults passes, and one with a required key names that key.
- */
-async function parseConfig(
-	schema: cli.ConfigSchema,
-	config: unknown
-): Promise<{ config: unknown; errors?: undefined } | { config?: undefined; errors: ConfigErrors }> {
-	let r = await schema['~standard'].validate(config)
-	if (r.issues && config === undefined) r = await schema['~standard'].validate({})
-	if (!r.issues) return { config: r.value }
-	return { errors: toConfigErrors(r.issues) }
-}
-
-/**
- * The messages for each config key, keyed by the dotted path of the value that failed.
- */
-type ConfigErrors = Record<string, string[] | undefined>
-
-/**
- * Maps a Standard Schema's issues to the messages for each key, with the key read from each issue's path.
- * An issue without a path is about the config as a whole and is keyed `(config)`.
- */
-function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors {
-	const errors: ConfigErrors = {}
-	for (const issue of issues) {
-		const key = issue.path?.length
-			? issue.path.map((p) => String(typeof p === 'object' ? p.key : p)).join('.')
-			: '(config)'
-		;(errors[key] ??= []).push(String(issue.message))
-	}
-	return errors
-}
-
-/**
- * The resolved config as a value: where it came from, then the config itself.
- * `path` and `property` are present only for the sources that have them,
- * and `config` is `null` when nothing matched.
- */
-function configReport(source: ConfigSource, config: unknown) {
-	switch (source.type) {
-		case 'file':
-			return { source: source.type, path: source.path, config: config ?? null }
-		case 'package.json':
-			return { source: source.type, path: source.path, property: source.property, config: config ?? null }
-		default:
-			return { source: source.type, config: null }
 	}
 }
 

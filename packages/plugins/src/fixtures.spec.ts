@@ -7,7 +7,7 @@ const exec = promisify(execFile)
 /**
  * Runs a fixture cli in its own process, from its own folder,
  * so its plugins resolve from the fixture's `node_modules` as a real project's would.
- * Each fixture cli is `cli({ config: true }).use(plugins())`, and its config names the plugins.
+ * Each fixture cli is `cli().use(config()).use(plugins())`, and its config names the plugins.
  */
 async function run(fixture: string, ...args: string[]) {
 	const cwd = join(import.meta.dirname, '..', 'fixtures', fixture)

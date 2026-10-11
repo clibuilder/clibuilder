@@ -1,19 +1,13 @@
-import { a } from 'assertron'
 import { isGlobalFormatEntry } from '../builtin/base_command.js'
 import { state } from './state.js'
 
-it('reads the config by the cli name when config is true', () => {
-	const r = state({ name: 'foo', config: true, version: '1.0.0' })
-	a.satisfies(r, { configName: 'foo' })
-})
-
-it('reads the config by the given name', () => {
-	const r = state({ name: 'foo', config: 'bar', version: '1.0.0' })
-	a.satisfies(r, { configName: 'bar' })
+it('has no config name: config loads through .use(config()) from clibuilder/config since v12', () => {
+	const r = state({ name: 'foo', version: '1.0.0' })
+	expect(r).not.toHaveProperty('configName')
 })
 
 it('has no keywords: they are an option of plugins() from @clibuilder/plugins since v12', () => {
-	const r = state({ name: 'foo', config: true, version: '1.0.0' })
+	const r = state({ name: 'foo', version: '1.0.0' })
 	expect(r).not.toHaveProperty('keywords')
 })
 

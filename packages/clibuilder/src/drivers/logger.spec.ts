@@ -1,6 +1,20 @@
 import { z as z4 } from 'zod4'
 import { command, t } from '../index.js'
+import { createBuilderUI } from './logger.js'
 import { createStreamUI } from './stream_ui.js'
+
+describe('createBuilderUI()', () => {
+	it('holds the messages until dump(), then releases them once', () => {
+		const { ui, messages } = testUI()
+		const builderUI = createBuilderUI(ui)
+		builderUI.warn('held')
+		expect(messages()).toEqual('')
+		builderUI.dump()
+		builderUI.dump()
+		builderUI.info('after')
+		expect(messages()).toEqual('held\nafter')
+	})
+})
 
 describe('showVersion', () => {
 	test('undefined version shows "not versioned"', () => {
