@@ -169,7 +169,7 @@ export function transformPlugins(context: FileContext, options: { addPlugins: bo
 			context.flag(
 				config!,
 				'plugins',
-				"clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, add `.use(plugins())` from '@clibuilder/plugins' and the dependency (or rerun the codemod with `--add-plugins`)."
+				"clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, `.use(plugins())` from '@clibuilder/plugins' is required: add it and the dependency, or rerun the codemod with `--add-plugins`."
 			)
 			return
 		}

@@ -396,19 +396,20 @@ See [Streams and output](/clibuilder/api/cli/#streams-and-output).
 
 ## Plugins move to `@clibuilder/plugins`
 
-**On `main`:** [`@clibuilder/plugins`](/clibuilder/packages/plugins/) (released as 0.1.0) and
-[`use()`](/clibuilder/api/cli/#useextension). **Pending:** the removal of plugin loading,
-`keywords`, `this.keywords` and the automatic `plugins` group from core.
+**On `main`.**
 
-**What changed.** Core no longer loads plugins from `config`, and no longer adds a `plugins` command
-group. A CLI opts in with `.use(plugins())`. A plugin's `activate()` is unchanged, and
-`PluginActivationContext` stays importable from `clibuilder` as a deprecated copy until 13.
+**What changed.** Core no longer loads plugins from `config`, the `keywords` option and
+`this.keywords` are removed, and core no longer adds the `plugins` command group. A CLI loads
+plugins with `.use(plugins())` from `@clibuilder/plugins`, which needs `clibuilder` 12.
 
-**Who is affected.** A CLI that sets `config` or `keywords` and relies on plugins loading. The
-codemod rewrites `keywords`. It flags `config`, because it cannot tell whether the CLI loads
-plugins; rerun it with `--add-plugins` if it does.
+**Who is affected.** A CLI that sets `config` or `keywords` and loads plugins, such as
+repobuddy/buddy. For such a CLI, adding `plugins()` is required: without it the plugins stop
+loading, and `clibuilder` 12 warns once. The codemod rewrites `keywords` to
+`plugins({ keywords })`. It flags `config` alone, because it cannot tell whether the CLI loads
+plugins; rerun it with `--add-plugins` if it does. Either rewrite also adds `@clibuilder/plugins`
+to `package.json`.
 
-**Fix.** Add `@clibuilder/plugins` and `.use(plugins())`.
+**Fix.** Add `.use(plugins())`.
 
 ```ts
 // before
@@ -419,7 +420,8 @@ import { plugins } from '@clibuilder/plugins'
 cli({ name: 'my-cli', version: '1.0.0', config: true }).use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
-Source: [slim-dependencies section 9](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#9-amendment-move-all-plugin-support-out-of-core).
+The details, including what stays in core, are in
+[Moving from the plugin support in `clibuilder` 11](/clibuilder/packages/plugins/#moving-from-the-plugin-support-in-clibuilder-11).
 
 ## `@clibuilder/axi` moves into `clibuilder`
 

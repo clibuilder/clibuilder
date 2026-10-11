@@ -1,9 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** The version range the codemod adds for each package it starts importing. */
+/** The version range the codemod adds for each package it starts importing: the first releases that support clibuilder 12. */
 export const DEPENDENCY_RANGES: Record<string, string> = {
-	'@clibuilder/plugins': '^0.1.0'
+	'@clibuilder/plugins': '^0.2.0'
 }
 
 /** The nearest `package.json` at or above `dir`. */

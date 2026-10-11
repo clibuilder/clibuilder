@@ -46,7 +46,7 @@ export const app = cli({
 	version: '1.0.0',
 	description: 'Your repo buddy',
 	// Load-bearing: this is how clibuilder finds the plugin commands other packages contribute.
-	// TODO(clibuilder-12): clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, add `.use(plugins())` from '@clibuilder/plugins' and the dependency (or rerun the codemod with `--add-plugins`).
+	// TODO(clibuilder-12): clibuilder 12 no longer loads plugins from `config`. If this CLI loads plugins, `.use(plugins())` from '@clibuilder/plugins' is required: add it and the dependency, or rerun the codemod with `--add-plugins`.
 	config: true,
 })
 	.command(testScripts)

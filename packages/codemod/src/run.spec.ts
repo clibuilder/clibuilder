@@ -43,7 +43,7 @@ describe('runCodemod', () => {
 		expect(summary).toEqual({ scanned: 3, changed: 2, rewritten: 9, flagged: 0, review: 2, failed: 0 })
 		expect(stdout.text).toContain('--- a/src/app.ts\n+++ b/src/app.ts\n')
 		expect(stdout.text).toContain("-import { CliError, cli, command, exitCodes, z } from 'clibuilder'\n")
-		expect(stdout.text).toContain('+    "@clibuilder/plugins": "^0.1.0",')
+		expect(stdout.text).toContain('+    "@clibuilder/plugins": "^0.2.0",')
 		expect(stderr.text).toContain('src/app.ts\n  5 rewrite(s)\n  38:11    review  printed-return `return report`')
 		expect(stderr.text).toContain('3 file(s) scanned, 2 would change.')
 		expect(readFileSync(join(cwd, 'src/app.ts'), 'utf8')).toBe(
@@ -61,7 +61,7 @@ describe('runCodemod', () => {
 			readFileSync(join(fixtures, 'repobuddy-typescript/output.ts'), 'utf8')
 		)
 		expect(JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')).dependencies).toEqual({
-			'@clibuilder/plugins': '^0.1.0',
+			'@clibuilder/plugins': '^0.2.0',
 			clibuilder: '^11.5.0'
 		})
 		expect(stdout.text).toContain('package.json\n  rewrite  added @clibuilder/plugins to dependencies')
@@ -122,7 +122,7 @@ describe('addDependencies', () => {
 	it('adds a missing dependency, sorted, keeping tabs', () => {
 		const text = '{\n\t"dependencies": { "zz": "1" }\n}'
 		expect(addDependencies(text, ['@clibuilder/plugins', 'other'])).toBe(
-			'{\n\t"dependencies": {\n\t\t"@clibuilder/plugins": "^0.1.0",\n\t\t"other": "*",\n\t\t"zz": "1"\n\t}\n}'
+			'{\n\t"dependencies": {\n\t\t"@clibuilder/plugins": "^0.2.0",\n\t\t"other": "*",\n\t\t"zz": "1"\n\t}\n}'
 		)
 	})
 
