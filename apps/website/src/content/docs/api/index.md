@@ -36,13 +36,15 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | [`cli.Options`](/clibuilder/api/cli/#options) | Options accepted by `cli()` |
 | [`cli.UsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | One usage error found while parsing, as passed to `onUsageError` |
 | [`cli.UsageErrorHandler`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | The signature of `onUsageError`, on `cli()` options and on a command |
+| [`cli.UsageErrorContext`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | The second argument of `onUsageError`: `command`, `ui`, `format`, `exitCode` (unreleased) |
+| [`cli.Format`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) | `'toon' \| 'json' \| 'text'` (unreleased) |
 | [`cli.Command`](/clibuilder/api/command/#clicommand) | The shape of a command |
 | [`cli.Command.Argument`](/clibuilder/api/command/#arguments) | A positional argument declaration |
 | [`cli.Command.Options`](/clibuilder/api/command/#options) | The options record declaration |
 | [`UI`](/clibuilder/api/ui/) | The object on `this.ui` inside `run()` |
 | [`DisplayLevel`](/clibuilder/api/ui/#displaylevel) | `'none' \| 'info' \| 'debug' \| 'trace'` |
-| [`Extension`](/clibuilder/api/cli/#useextension) | A function passed to `.use()` (unreleased, 11.5.0) |
-| [`ExtensionContext`](/clibuilder/api/cli/#useextension) | What an extension receives (unreleased, 11.5.0) |
+| [`Extension`](/clibuilder/api/cli/#useextension) | A function passed to `.use()` (11.5.0) |
+| [`ExtensionContext`](/clibuilder/api/cli/#useextension) | What an extension receives (11.5.0) |
 | [`PluginActivationContext`](/clibuilder/api/command/#pluginactivationcontext) | What a plugin's `activate()` receives |
 | `Registry` | Read-only values and contributions available as `this.registry` in commands |
 

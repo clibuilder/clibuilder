@@ -11,12 +11,8 @@ zod in `clibuilder` 12 (see the [v12 roadmap](/clibuilder/roadmap/v12/)). The pa
 [readme](https://github.com/clibuilder/clibuilder/tree/main/packages/args-minus#readme) is the full
 reference for `tokenizeArgs()`, grammars, aliases and short groups.
 
-:::caution[Unreleased]
-The `t` descriptors and `parseArgsAsync()` are on `main` for `args-minus` 0.2.0, and the `t`
-re-export is on `main` for `clibuilder` 11.5.0. Neither is published yet. npm has only the `0.0.0`
-placeholder of `args-minus`, and the published `clibuilder` 11 declares options with
-[`z`](/clibuilder/api/zod/) only.
-:::
+The `t` descriptors and `parseArgsAsync()` are available in `args-minus` 0.2.0, and the `t`
+re-export is available in `clibuilder` 11.5.0.
 
 ## Using `t` in clibuilder
 

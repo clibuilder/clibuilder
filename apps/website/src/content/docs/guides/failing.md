@@ -93,16 +93,44 @@ cli({
 
 Each error is a `cli.UsageError`, identified by its `type`:
 
-| `type` | Fields |
-| --- | --- |
-| `invalid-key` | `key`: the unknown option, without dashes |
-| `missing-argument` | `name`: the argument |
-| `extra-arguments` | `name`, `values`: the arguments nothing declared |
-| `invalid-value` | `key`, `value`, `message` |
-| `expect-single` | `key`, `value`, `keyType` |
+| `type` | `code` (Unreleased) | Fields |
+| --- | --- | --- |
+| `invalid-key` | `unknown-option` | `key`: the unknown option, without dashes |
+| `conflicting-options` | `conflicting-options` | `key`, `conflictsWith`: the two options, as typed |
+| `missing-argument` | `missing-argument` | `name`: the argument |
+| `extra-arguments` | `extra-arguments` | `name`, `values`: the arguments nothing declared |
+| `invalid-value` | `invalid-value` | `key`, `value`, `message` |
+| `expect-single` | `expect-single` | `key`, `value`, `keyKind` |
 
 `command` is the command the invocation matched, with its declared `arguments` and `options`. Call
 `ui.showHelp()` to print that command's help.
+
+:::note[Unreleased: `code`, `format` and `exitCode`]
+On `main`, for the next `clibuilder` 11 minor:
+
+- Each error also has `code`, a stable kebab-case string. It is the same as `type`, except that
+  `invalid-key` is `unknown-option`. Branch on `code` in new handlers: it is the name `clibuilder` 12
+  reports. In 11 it is not enumerable, so `JSON.stringify(error)` and equality checks give what they
+  did before.
+- The second argument also has `format`, the format the cli reports in, and `exitCode`, the code the
+  cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is `'toon'` until
+  `cli({ format })` and the global `--format` option land.
+- The global options are read before the handler runs. `--silent` and `--verbose` are already applied
+  to the `ui` it receives, and a malformed global flag, such as `--verbose=maybe`, is one of the
+  errors, reported once as an `invalid-value`.
+
+```ts
+cli({
+  name: 'my-cli',
+  version: '1.0.0',
+  onUsageError(errors, { format, exitCode }) {
+    const [e] = errors
+    process.stdout.write(format === 'json' ? `${JSON.stringify({ code: e.code })}\n` : `code: ${e.code}\n`)
+    return exitCode
+  }
+})
+```
+:::
 
 A command can declare its own handler. It covers that command and its sub-commands. clibuilder calls
 exactly one handler, the first it finds in this order:

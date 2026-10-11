@@ -20,6 +20,15 @@ export namespace lookupCommand {
 		 */
 		descriptors: DescriptorInput[]
 	}
+	/**
+	 * One error found while parsing the arguments.
+	 *
+	 * `code` is the error's stable kebab-case name, the one an agent or a runtime branches on:
+	 * `unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`.
+	 * It sits next to `type`, which keeps its v11 values (`invalid-key` is `unknown-option`).
+	 * clibuilder sets it on the errors it hands to `onUsageError`. It is optional only so that code building
+	 * an error keeps compiling, and in v11 it is not enumerable, so spreading or serializing an error is unchanged.
+	 */
 	export type Error =
 		| InvalidKey
 		| InvalidValueType
@@ -29,10 +38,14 @@ export namespace lookupCommand {
 		| ConflictingOptions
 	export type InvalidKey = {
 		type: 'invalid-key'
+		/** @see Error.code */
+		code?: 'unknown-option'
 		key: string
 	}
 	export type ExpectSingle = {
 		type: 'expect-single'
+		/** @see Error.code */
+		code?: 'expect-single'
 		key: string
 		/**
 		 * What the option takes, as a kind string:
@@ -52,6 +65,8 @@ export namespace lookupCommand {
 	}
 	export type InvalidValueType = {
 		type: 'invalid-value'
+		/** @see Error.code */
+		code?: 'invalid-value'
 		key: string
 		/**
 		 * What was wrong, in the caller's terms.
@@ -82,6 +97,8 @@ export namespace lookupCommand {
 	}
 	export type ExtraArguments = {
 		type: 'extra-arguments'
+		/** @see Error.code */
+		code?: 'extra-arguments'
 		name: string
 		values: string[]
 	}
@@ -91,11 +108,15 @@ export namespace lookupCommand {
 	 */
 	export type ConflictingOptions = {
 		type: 'conflicting-options'
+		/** @see Error.code */
+		code?: 'conflicting-options'
 		key: string
 		conflictsWith: string
 	}
 	export type MissingArgument = {
 		type: 'missing-argument'
+		/** @see Error.code */
+		code?: 'missing-argument'
 		name: string
 	}
 }

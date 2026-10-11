@@ -16,7 +16,7 @@ There are three formats. `toon` is the default: [TOON](https://github.com/toon-f
 compact encoding that costs an agent fewer tokens to read. `json` is compact JSON, for a pipe into
 `jq`. `text` is an aligned report for a person.
 
-`@clibuilder/axi` 0.2.0 is published and available. It is planned to be folded into `clibuilder` core
+`@clibuilder/axi` 0.2.1 is published and available. It is planned to be folded into `clibuilder` core
 in v12: the output, error, usage-error and format parts become built-in, and the value helpers
 (truncation, counts, `orEmpty` and the home helpers) are available from a `clibuilder/axi` subpath.
 The package is not deprecated on npm yet, so keep using it until v12 ships. Source:
@@ -28,8 +28,7 @@ The package is not deprecated on npm yet, so keep using it until v12 ships. Sour
 npm install @clibuilder/axi clibuilder
 ```
 
-`clibuilder` 11 is a peer dependency: `^11.3.3` for the published 0.2.0, and `^11.4.0` on `main` for
-the next release. Node.js 20.19 or newer is required.
+`clibuilder` `^11.5.0` is a peer dependency. Node.js 20.19 or newer is required.
 
 ## Example
 

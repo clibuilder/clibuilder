@@ -143,9 +143,7 @@ See [`command()`](/clibuilder/api/command/) for the full shape.
 
 ### `.use(extension)`
 
-:::caution[Unreleased]
-`.use()` is on `main` for `clibuilder` 11.5.0, which is not published yet.
-:::
+`.use()` is available from `clibuilder` 11.5.0.
 
 Adds an extension: a function that adds commands and registry entries before `parse()` picks the
 command to run. [`@clibuilder/plugins`](/clibuilder/packages/plugins/) is one.

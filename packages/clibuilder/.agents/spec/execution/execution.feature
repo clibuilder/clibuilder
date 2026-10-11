@@ -172,6 +172,24 @@ Feature: Execution
     And the sub-command does not run
     And the cli exits with the usage code
 
+  Scenario: global flags apply before a sub-command's usage errors are reported
+    Given a sub-command declaring no options of its own
+    When it is invoked with the silent flag and an unknown option
+    Then the silent level is in effect when the usage error is reported
+    And the silent flag is not reported as unknown
+
+  Scenario: a malformed global option and a sub-command's own error are each reported once
+    Given a sub-command declaring no options of its own
+    When it is invoked with a global option carrying a value of the wrong type and an unknown option
+    Then the invalid value of the global option is reported once
+    And the unknown option is reported once
+    And no unknown-option error names the global option
+
+  Scenario: a sub-command's own option named like a global one is not the global option
+    Given a sub-command declaring its own string option named like a global flag
+    When it is invoked with that option and a value the global flag would reject
+    Then no usage error is reported for it
+
   Scenario: a usage error is printed with help and exits with the usage code
     Given an invocation carrying an unknown option that is not global
     When it is run
@@ -369,6 +387,19 @@ Feature: Execution
     Then the handler receives an unknown-option error naming that option and a missing-argument error naming that argument
     And the matched command it receives lists the declared named option
     And the output is empty
+
+  Scenario: a handler receives the resolved format and the usage exit code
+    Given an application declaring a usage-error handler and no format of its own
+    When an invocation with an unknown option reaches it
+    Then the handler's context carries the format toon
+    And it carries the usage exit code
+
+  Scenario: each usage error a handler receives carries its stable code
+    Given an application declaring a usage-error handler
+    When an invocation reaches it with usage errors of each type
+    Then an invalid-key error carries the code unknown-option
+    And every other error carries a code equal to its type
+    And comparing or serializing an error gives what it gave before the code existed
 
   Scenario: a handler that returns nothing leaves the usage exit code
     Given a usage-error handler that returns no value

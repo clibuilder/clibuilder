@@ -207,7 +207,7 @@ Every command inherits these; you don't declare them, and you shouldn't shadow t
 
 `args.help` is always present in the inferred type for that reason.
 
-From `clibuilder` 11.5.0 (unreleased), when `--version` or `-v` is the only argument, the CLI prints the version to stdout as plain text
+From `clibuilder` 11.5.0, when `--version` or `-v` is the only argument, the CLI prints the version to stdout as plain text
 and exits 0 before it loads its config, activates any plugin or runs any `.use()` extension, so a
 broken config or a slow plugin cannot fail or delay it. Because nothing is loaded yet, a bare `-v`
 is always the version, even if a plugin, an extension or the config declares a `-v` of its own. With anything else on the command line,

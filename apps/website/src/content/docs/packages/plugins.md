@@ -8,15 +8,11 @@ the `plugins list` and `plugins search` commands. A CLI opts in with one call to
 [`.use()`](/clibuilder/api/cli/#useextension). A CLI that does not call it has no plugin system to
 learn.
 
-:::caution[Unreleased]
-`@clibuilder/plugins` 0.1.0 is on `main` but not published to npm yet. It needs `clibuilder` 11.5.0,
-which is also unreleased. Until both are published, use the
-[plugin support built into `clibuilder` 11](/clibuilder/guides/plugins/).
-:::
+`@clibuilder/plugins` 0.1.0 is published to npm. It needs `clibuilder` 11.5.0 or later.
 
 ## Install
 
-Once 0.1.0 is published:
+Install it with:
 
 ```sh
 npm install @clibuilder/plugins clibuilder

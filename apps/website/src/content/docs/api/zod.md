@@ -12,8 +12,8 @@ rather than adding zod as your own dependency — that guarantees the schemas yo
 of the same zod the library validates with, which is the usual cause of "this schema isn't being
 recognized" bugs.
 
-:::note[Unreleased: `t` beside `z`]
-`clibuilder` 11.5.0, on `main` and not yet published, also accepts the
+:::note[`t` beside `z`]
+`clibuilder` 11.5.0 also accepts the
 [`t` option descriptors](/clibuilder/packages/args-minus/#using-t-in-clibuilder) in an argument's or
 option's `type`. `z` keeps working unchanged, and a command can mix both. `clibuilder` 12 is planned
 to remove zod and the `z` re-export. See the [v12 roadmap](/clibuilder/roadmap/v12/#zod-is-replaced-by-t).

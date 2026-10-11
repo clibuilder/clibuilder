@@ -8,13 +8,14 @@ import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
 import { convertDescriptors } from '../invocation/descriptors.js'
-import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
+import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
 import { formatLookupError } from '../render/error.js'
 import type { StandardSchemaV1 } from '../t.js'
 import { isZod3Type } from '../zod.js'
 import { exitCodes, isCliError } from './errors.js'
 import { state } from './state.js'
+import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
 /**
  * Marks the extension `@clibuilder/plugins` returns from `plugins()`.
@@ -135,23 +136,26 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
 		const baseCommand = getBaseCommand(s.description, { config: !!s.configName })
-		const { args: baseArgs, errors: baseErrors } = lookupCommand(baseCommand, rawArgs)
-		if (baseArgs.silent) {
+		// the global options are read from the base command alone, before the matched
+		// command's usage errors are looked at (axi-native RFC section 3.2).
+		// There is no `cli({ format })` or `--format` yet, so the format is the default.
+		const globals = resolveGlobalOptions(baseCommand, rawArgs, 'toon')
+		if (globals.silent) {
 			delete rawArgs.silent
 			s.displayLevel = 'none'
 		}
-		if (baseArgs.verbose) {
+		if (globals.verbose) {
 			delete rawArgs.verbose
 			s.displayLevel = 'debug'
 		}
-		if (baseArgs['debug-cli']) {
+		if (globals['debug-cli']) {
 			delete rawArgs['debug-cli']
 			s.displayLevel = 'trace'
 		}
 		context.ui.displayLevel = s.displayLevel
 		context.ui.dump()
 
-		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
+		if (s.configName && globals['show-config']) return showConfig(s.configName)
 
 		await loadConfiguredPlugins()
 		await extend()
@@ -159,28 +163,24 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
 
-		if (baseArgs.version || args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
+		if (globals.version || args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
 		// `--help` is answered before the errors are reported: it is the one flag
 		// that is always valid, and asking for help is not a usage error.
-		if (baseArgs.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+		if (globals.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
 
 		// declarations with `t` are converted and checked by `args-minus`, which may await a converter or a check,
 		// so it runs after `--help` and `--version` are answered
 		await convertDescriptors(r)
 
-		// the global options live on the base command, so a sub command that declares
-		// no options of its own reports them as unknown. They are always accepted,
-		// but a malformed value on one is still a usage error: the base command's
-		// lookup reports it, so that error stands in for the unknown-option one (#614).
-		const errors = r.errors.flatMap((e) => {
-			if (e.type !== 'invalid-key' || !lookupOptions(baseCommand, e.key)[0]) return [e]
-			return baseErrors.filter((b) => 'key' in b && b.key === e.key)
-		})
+		// the global options live on the base command, so its errors win for a global key:
+		// a well-formed global flag is not unknown under a sub command,
+		// and a malformed one is reported as the base command reports it (#614).
+		const errors = resolveUsageErrors(r.errors, command, baseCommand, globals)
 		if (errors.length > 0) {
 			const ui = createCommandInstance(context, s, r.command, registry).ui
 			const onUsageError = findUsageErrorHandler(command) ?? options.onUsageError
 			if (onUsageError) {
-				const code = await onUsageError(errors, { command, ui })
+				const code = await onUsageError(errors, { command, ui, format: globals.format, exitCode: exitCodes.usage })
 				return exit(typeof code === 'number' ? code : exitCodes.usage)
 			}
 			for (const e of errors) ui.error(formatLookupError(e, command))

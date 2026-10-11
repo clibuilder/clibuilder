@@ -139,8 +139,8 @@ inputs they gave, or to be told precisely what was wrong.
 | `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the configured plugins or the `use()` extensions run, so a broken config or a hanging plugin or extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin, an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
-| an unknown-option error names a global option | it is dropped: the global options live on the base command, so a sub-command declaring none of its own would otherwise report them as unknown |
-| an unknown-option error names a global option whose value the base command rejected | the base command's invalid-value error is reported in its place, so a malformed global flag fails under a sub-command as it does on the root (#614) |
+| any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the default, `toon`, until `cli({ format })` and `--format` exist |
+| a usage error names a global key: one only the base command declares | base errors win for global keys: it is replaced by the base command's errors for that key. A well-formed global flag has none, so a sub-command declaring no options of its own does not report it as unknown; a malformed one is reported as the invalid value it is, once, as on the root (#614). A key the matched command declares itself is its own option, not the global one |
 | any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code |
 | any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
@@ -194,11 +194,19 @@ reads the same shape for every failure.
 | --- | --- |
 | Trigger | `parse(argv)` finds a usage error that survives the global-option filter (UC3) |
 | Inputs | a handler declared on the matched command, on one of the commands enclosing it, or on `cli()`'s options |
-| Outcome | the handler receives the errors, the matched command, and that command's `ui`; the framework prints nothing of its own; the CLI exits with the usage code |
+| Outcome | the handler receives the errors, each with its `code`, and a context of the matched command, that command's `ui`, the resolved `format`, and the `exitCode` the CLI uses; the framework prints nothing of its own; the CLI exits with the usage code |
 
 A **usage error** is one entry of the list the parser produces; its kinds and
-fields are defined by `input-parsing/` (UC2, `lookupCommand`). The **matched command**
-is passed whole, so the handler can read the arguments and options it declares.
+fields are defined by `input-parsing/` (UC2, `lookupCommand`). Each error handed to
+a handler also carries a stable kebab-case **`code`** next to its `type`:
+`unknown-option` for `invalid-key`, and the same string as `type` for
+`conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` and
+`extra-arguments` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.3).
+In v11 `code` is not enumerable, so comparing or serializing an error gives what it did
+before `code` existed. The **matched command** is passed whole, so the handler can read
+the arguments and options it declares. `format` is the format the CLI reports in,
+resolved with the global options before the handler runs, and `exitCode` is the code the
+CLI exits with when the handler returns none (`exitCodes.usage`).
 
 **Which handler.** The rule is one ordered lookup, first match wins:
 
@@ -349,7 +357,7 @@ graph TD
   VER -- yes --> SV[show the version; stop]
   VER -- no --> HLP{help asked for?}
   HLP -- yes --> SH[show help; stop]
-  HLP -- no --> FILT[drop unknown-option errors naming a global option, keeping the base command's invalid-value error for it]
+  HLP -- no --> FILT[replace the errors on a global key with the base command's errors for it; give each its code]
   FILT --> ERR{any error left?}
   ERR -- yes --> RES[resolve a usage-error handler — sub-graph F]
   RES -- none found --> UE[print each, show help, exit with the usage code]
@@ -378,7 +386,7 @@ graph TD
   UP -- no --> CL{cli options declare one?}
   CL -- yes --> HC[use the cli's]
   CL -- no --> DEF[none found: the default report of sub-graph B]
-  HM --> CALL[call it with the errors, the matched command, and its ui; print nothing]
+  HM --> CALL[call it with the coded errors and the matched command, its ui, the format and the exit code; print nothing]
   HP --> CALL
   HC --> CALL
   CALL --> OUT{how does the handler finish?}
@@ -497,8 +505,11 @@ graph TD
 | only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and plugins` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
-| drop unknown-option errors naming a global option | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
-| keep the base command's invalid-value error | a sub-command declaring no options, given a global flag with a malformed value | `a malformed value on a global option given to a sub-command is a usage error` |
+| replace the errors on a global key — none for a well-formed flag | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
+| replace the errors on a global key — the base command's invalid value | a sub-command declaring no options, given a global flag with a malformed value | `a malformed value on a global option given to a sub-command is a usage error` |
+| resolve the global options before the usage errors | a sub-command given a display-level flag and an unknown option | `global flags apply before a sub-command's usage errors are reported` |
+| replace the errors on a global key — reported once | a sub-command given a malformed global flag and an unknown option | `a malformed global option and a sub-command's own error are each reported once` |
+| replace the errors on a global key — the command's own option | a sub-command declaring an option named like a global one | `a sub-command's own option named like a global one is not the global option` |
 | none found: print each, show help, exit usage | an unknown option that is not global, and no handler declared anywhere | `a usage error is printed with help and exits with the usage code` |
 | print each failing field, exit error | matched command declares config, config invalid | `a config failing the command's schema is reported field by field` |
 | config valid? — yes | matched command declares config, config valid | `a config satisfying the command's schema lets the command run` |
@@ -549,6 +560,8 @@ graph TD
 | use the nearest enclosing command's | the matched command was added by a plugin under a group declaring a handler | `a handler on a plugin's group takes over its sub-command's usage errors` |
 | use the cli's | only the cli declares a handler | `the cli's handler takes over when no command in the chain declares one` |
 | call it with the errors, the matched command, and its ui; print nothing | any handler found | `a handler receives each error and the matched command, and the framework prints nothing` |
+| call it with the format and the exit code | any handler found | `a handler receives the resolved format and the usage exit code` |
+| call it with the coded errors | each kind of usage error | `each usage error a handler receives carries its stable code` |
 | exit with the usage code | the handler returns nothing | `a handler that returns nothing leaves the usage exit code` |
 | exit with that number | the handler returns a number | `a handler that returns an exit code sets it` |
 | propagate to the caller | the handler throws | `a handler that throws propagates to the caller` |
