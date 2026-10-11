@@ -30,7 +30,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 16 | A `t.array` element is any descriptor that is neither optional nor an array, including `t.custom` and `t.json`. | 3.4 |
 | 17 | A converter that throws or rejects with a plain `Error` reports `invalid-value` with its message; any other throw propagates. | 3.4 |
 | 18 | `args-minus` keeps `parseArgs` synchronous and adds `parseArgsAsync` for asynchronous converters and checks. | 3.5 |
-| 19 | Config moves behind `.use(config())` in a `clibuilder/config` subpath of core, and `jsonc-parser` is replaced by an internal stripper (#692, in flight; #693 merged in #694). | 5.2 |
+| 19 | Config moves behind `.use(config())` in a `clibuilder/config` subpath of core, and `jsonc-parser` is replaced by an internal stripper (#692; #693 merged in #694). | 5.2 |
 | 20 | `encode` and `printAnswer` stay synchronous, with `@toon-format/toon` imported statically. Lazy toon is rejected (#688). | 5.5 |
 | 13 | The descriptor work lands in `args-minus` first; clibuilder then re-exports `t` and moves its parser onto `args-minus`. The zod path stays through v11 minors and is removed in v12. | 7 |
 
@@ -329,8 +329,6 @@ Also stop re-exporting `testCommand` from the main entry, so test-only code stay
 
 ### 5.2 Config loading
 
-Per [#692](https://github.com/clibuilder/clibuilder/issues/692), the loader lives in the `clibuilder/config` subpath and a CLI adds it with `.use(config())`. A CLI without it contains no loader, no find-up and no parsers. The table below describes what the loader reads.
-
 A subpath export alone **does not** reduce install size, because `dependencies` are installed whatever is imported. Only a separate package or an optional peer does.
 
 | Format | Core v12 |
@@ -341,8 +339,7 @@ A subpath export alone **does not** reduce install size, because `dependencies` 
 
 `js-yaml` is already an optional peer loaded with a dynamic `import()`. A consumer that bundles a CLI inlines that import unless it is marked external (about 100 KB), so a bundled CLI must list `js-yaml` as external (for example `external: ['js-yaml']`) and install it only when it ships YAML config. Core documents this (#689).
 
-Config loading moves behind `.use(config())` in a `clibuilder/config` subpath of core (#692, in flight, not yet merged), so a CLI without the extension carries no loader, no find-up and no parsers. This supersedes the earlier idea of keeping config a `cli()` option.
-
+Config loading moves behind `.use(config())` in a `clibuilder/config` subpath of core (#692), so a CLI without the extension carries no loader, no find-up and no parsers. This supersedes the earlier idea of keeping config a `cli()` option.
 
 Q4 is resolved: core replaces `jsonc-parser` with a small internal comment and trailing-comma stripper (`stripJsonc`) feeding `JSON.parse` (#693). `jsonc-parser` is not a dependency.
 
