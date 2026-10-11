@@ -343,6 +343,9 @@ importers:
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
+      rolldown:
+        specifier: 1.2.13
+        version: 1.2.13
       type-plus:
         specifier: 8.0.0
         version: 8.0.0(typescript@5.9.3)

@@ -252,12 +252,12 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 2. The value helpers (truncation, counts, `orEmpty`, home header and collapse) move to a `clibuilder/axi` subpath of core. The subpath can be tree-shaken, and a CLI that does not import it does not pay for it.
 3. The framework-free modules in core import nothing from the framework. A lint or depcheck boundary rule enforces this, so a neutral package can later be extracted by moving files, not rewriting them. They live in `packages/clibuilder/src/axi/`, which imports only Node built-ins and its own files. A `noRestrictedImports` override in `biome.json` enforces this, and a spec repeats the check for `require()`, which the lint rule does not see. `fullOption` is declared with `t`, so it sits in the subpath entry (`src/axi.ts`) next to the re-exports of `result`, `document`, `empty` and `exitCodes`, not in the framework-free directory.
 4. `@clibuilder/axi` is deprecated on npm when v12 ships with the subpath, with a message that points at it. Until then it is not deprecated, and current users keep using it. Its final release is 0.3.0, the deprecation release ([#687](https://github.com/clibuilder/clibuilder/pull/687)).
-5. The subpath is usable without `cli()`. It exports the output contract functions (`encode`, `errorOutput`, `printAnswer`, `CliError`) and a headless runner, `runScript(command, { argv?, streams? })` ([#688](https://github.com/clibuilder/clibuilder/issues/688)). It takes the same `{ options, run }` object passed to `cli().command()`, so a command keeps one definition and two entries. The runner gives `run` a reduced `this` (`format` and `ui` on stderr, no `config`, no `keywords`), so a command that reads `this.config` is a type error when run headless. Items 1 to 3 of #688 are additive for 12.x.
+5. The subpath is usable without `cli()`. It exports the output contract functions (`encode`, `errorOutput`, `printAnswer`, `CliError`) and a headless runner, `runScript(command, { argv?, streams? })` ([#688](https://github.com/clibuilder/clibuilder/issues/688)). It takes the same `{ options, run }` object passed to `cli().command()`, so a command keeps one definition and two entries. The runner gives `run` a reduced `this` (`format` and `ui` on stderr, no `config`, no `keywords`), so a command that reads `this.config` is a type error when run headless. Items 1 to 3 of #688 are additive for 12.x and are implemented. The runner is async (it awaits `parseArgsAsync`) and resolves to the exit code without setting `process.exitCode`. A bad invocation is reported with code `usage` and exit 2, without usage-error ranking. Positional `arguments`, `conflicts` and an own `format` option are rejected.
 
 **Boundary tiers.** The framework-free rule (decision 3) has two tiers.
 
 - **Tier A**, `src/axi/`: Node built-ins and its own files only. Unchanged.
-- **Tier B**: `render/{encode,answer,text}.ts`, `app/errors.ts` and `src/script/`. They may import tier A, `@toon-format/toon` and `args-minus`, and never cli, app, invocation or config. The same `require()` spec check covers both tiers.
+- **Tier B**: `render/{encode,answer,text}.ts`, `app/errors.ts` and `src/script/`. They may import tier A, `@toon-format/toon` and `args-minus`, and never cli, app, invocation, config or help. `biome.json` enforces it with a `noRestrictedImports` override per group, and a spec in `axi.spec.ts` repeats the check for `require()`.
 
 **Decided before 12.0.0** (reversing either later would be a break):
 
@@ -274,7 +274,7 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 - `@clibuilder/axi` has no v12 release; 0.3.0 is its final, deprecation release. Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
 - The boundary rule is added to the repo's lint or depcheck configuration before the subpath is created (done; the subpath was created in #680).
 - The tier B boundary is added before the output functions are exported from the subpath.
-- The headless runner has a bundle-size test (runner entry at most about 22 KB minified).
+- The headless runner has a bundle-size test (`script/bundle_size.spec.ts`: runner entry at most 22 KB minified, rolldown).
 - An extracted neutral package, if one is ever needed, must never import clibuilder.
 - Deprecating `@clibuilder/axi` on npm needs an explicit decision when v12 is published.
 

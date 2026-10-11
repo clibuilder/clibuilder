@@ -61,12 +61,57 @@ help[1]: Run `my-cli list --full` to see every task
 | `homeHeader({ description, bin?, home? })` | `bin` and `description`, for what the CLI shows when run with no arguments |
 | `collapseHome(path, home?)` | Shortens a path under the home directory to `~/...` |
 | `result`, `document`, `empty` | The [result channel](/clibuilder/api/cli/#the-result-channel) helpers, re-exported from `clibuilder` |
-| `exitCodes` | Re-exported from `clibuilder` |
+| `exitCodes`, `CliError`, `isCliError` | Re-exported from `clibuilder` |
+| `encode(value, format)`, `errorOutput(fields)`, `printAnswer(returned, format)` | The output contract: encode a value, build the error report, and turn what `run()` returned into the text `output: 'axi'` prints. All synchronous |
+| `formats`, `Format` | The formats an answer is encoded in: `toon`, `json`, `text` |
+| `runScript(command, { argv?, streams? })` | Runs a command without `cli()`. See [Run a command as a script](#run-a-command-as-a-script) |
+
+## Run a command as a script
+
+`runScript()` runs the same `{ options, run }` object you pass to `cli().command()`, so a command has one
+definition and two entries: the cli and a plain script.
+
+```ts
+import { t } from 'clibuilder'
+import { result, runScript } from 'clibuilder/axi'
+
+process.exitCode = await runScript({
+  options: { name: { description: 'Who to greet', type: t.string() } },
+  run({ name }) {
+    return result({ greeting: `hello ${name}` })
+  }
+})
+```
+
+```sh
+$ node greet.js --name bob
+greeting: hello bob
+$ node greet.js --name bob --format json
+{"greeting":"hello bob"}
+```
+
+It parses `--format` and the command's options from `argv` (default `process.argv.slice(2)`), calls `run()`,
+prints the answer the way `output: 'axi'` does, and resolves to the exit code. It does not set `process.exitCode`.
+
+- `this` is `{ format, ui }` and nothing else. `this.ui` writes to stderr. There is no `config`, `cwd` or `registry`,
+  so a command that reads `this.config` is a type error.
+- A thrown `CliError` is printed with `errorOutput()` on stdout and resolves to its `exitCode`.
+- A bad invocation is printed the same way with code `usage` and resolves to 2. It is a plain
+  [args-minus](/clibuilder/packages/args-minus/) message: no ranking and no `help` list.
+- Positional `arguments`, `conflicts` and an option named `format` are not supported.
+- Any other error rejects.
+
+The runner and the output contract import only `args-minus`, `@toon-format/toon` and each other, so a script
+that imports `clibuilder/axi` does not load `cli()`. A test keeps the bundled and minified runner under 22 KB.
 
 ## No framework imports
 
 The helpers live in `packages/clibuilder/src/axi/`. Those files import only Node built-ins and each
 other, never the rest of `clibuilder`, and a lint rule in `biome.json` enforces that. A package that
 does not use `clibuilder` can later reuse them by moving the files. Only the subpath entry adds
-`fullOption` and the re-exports. Source:
+`fullOption` and the re-exports.
+
+A second tier is also kept free of the framework: `render/{encode,answer,text}.ts`, `app/errors.ts` and
+`src/script/`. They may import `args-minus`, `@toon-format/toon` and the files above, and never `cli`, `app`,
+`invocation`, `config` or `help`. Source:
 [axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#41-decision-where-clibuilderaxis-contents-belong).

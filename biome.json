@@ -93,9 +93,77 @@
 		},
 		{
 			"includes": [
+				"packages/clibuilder/src/render/encode.ts",
+				"packages/clibuilder/src/render/answer.ts",
+				"packages/clibuilder/src/render/text.ts",
+				"packages/clibuilder/src/app/errors.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"**",
+											"!@toon-format/toon",
+											"!args-minus",
+											"!./encode.js",
+											"!./answer.js",
+											"!./text.js",
+											"!../axi/**"
+										],
+										"message": "This file is part of the framework-free output contract that clibuilder/axi exports (axi-native RFC section 4.1, tier B). Import only args-minus, @toon-format/toon, src/axi and the other contract files."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/clibuilder/src/script/**", "!packages/clibuilder/src/script/**/*.spec.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"**",
+											"!@toon-format/toon",
+											"!args-minus",
+											"!./**",
+											"!../axi/**",
+											"!../render/encode.js",
+											"!../render/answer.js",
+											"!../render/text.js",
+											"!../app/errors.js"
+										],
+										"message": "script/ is the headless runner and must not reach cli, app, builder, invocation, config or help (axi-native RFC section 4.1, tier B). Import only args-minus, @toon-format/toon, src/axi, render/{encode,answer,text} and app/errors."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": [
 				"packages/clibuilder/src/**",
 				"!packages/clibuilder/src/drivers/**",
 				"!packages/clibuilder/src/axi/**",
+				"!packages/clibuilder/src/script/**",
+				"!packages/clibuilder/src/render/encode.ts",
+				"!packages/clibuilder/src/render/answer.ts",
+				"!packages/clibuilder/src/render/text.ts",
+				"!packages/clibuilder/src/app/errors.ts",
 				"!packages/clibuilder/src/compile_cache_impl.ts",
 				"!packages/clibuilder/src/testing/**",
 				"!packages/clibuilder/src/**/*.spec.ts",

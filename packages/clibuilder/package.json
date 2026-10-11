@@ -84,6 +84,7 @@
 		"npm-run-all2": "^6.2.6",
 		"path-equal": "^1.2.8",
 		"rimraf": "^5.0.10",
+		"rolldown": "1.2.13",
 		"type-plus": "8.0.0",
 		"typescript": "^5.9.3",
 		"valibot": "^1.5.0",
