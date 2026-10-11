@@ -465,7 +465,7 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 Items left open by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are also still open.
 
-1. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value from `run()` without printing it ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)). It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
+1. ~~**Name of the `quiet()` opt-out.**~~ **Resolved:** there is no opt-out wrapper; `result(value, { render })` controls the printed form ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)).
 2. **Descriptor introspection field names.** The form is public and read-only (section 3.4); the exact `OptionInfo` field names are a proposal and need agreement before `t` ships.
 3. ~~**Untested `t` typing.** Foreign-refinement typing and TS 7 (tsgo).~~ **Resolved:** tested on TS 6.0.3 and 7.0.2; the bivariance claim was false, and the refinement uses an explicit input check (section 3.5).
 4. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 4).

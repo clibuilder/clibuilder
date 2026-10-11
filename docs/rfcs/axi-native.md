@@ -13,7 +13,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | # | Decision | Section |
 |---|---|---|
 | 1 | Default format is `toon`. The CLI author overrides it with `cli({ format })`. | 3.4 |
-| 2 | A plain non-`undefined` return from `run()` is printed in `this.format`. `quiet(value)` opts out (name open, and it may be dropped). `result()`, `document()` and `empty()` cover the other cases. A thrown `CliError` is rendered once by core. | 3.1, 3.5 |
+| 2 | A plain non-`undefined` return from `run()` is printed in `this.format`. `result(value, { render })` controls the printed form; `document()` and `empty()` cover the other cases. In `console` mode returns are not printed. A thrown `CliError` is rendered once by core. | 3.1, 3.5 |
 | 3 | Core depends on `@toon-format/toon` and uses it for every toon output, including single objects and errors. | 3.4 |
 | 4 | A bad `--format` value is a usage error in the CLI's default format: exit 2, code `invalid-value`, with the valid choices. | 3.2 |
 | 5 | `-f` is not reserved for `--format`. | 3.4 |
@@ -44,7 +44,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 2 | Usage errors ignore `--format` | Resolve global options before usage errors are reported | core |
 | 3 | Usage errors are prose on stderr | Built-in ranked, coded error on stdout, exit 2 | core |
 | 4 | `--format` is not first-class | One global `--format`, resolved value on `this.format` | core (option, json, text, toon) |
-| 5 | No result channel | A returned value is printed; `result`, `document`, `empty`, `quiet` | core (envelope, `help[N]`); axi (truncation, counts, home) |
+| 5 | No result channel | A returned value is printed; `result`, `document`, `empty` | core (envelope, `help[N]`); axi (truncation, counts, home) |
 | 6 | Exit codes stop at 2 | Core keeps 0, 1, 2; `exitCode` is open from 1 to 255 | core |
 | 7 | Help is not agent-shaped | `examples` field, structured `--help` under `--format` | core |
 | 8 | No version fast path | Answer a bare `--version` before config and plugins load | core |
@@ -124,7 +124,6 @@ run() {
 	// return result({ items }, { help: ['run `cli show <id>` for one'] })
 	// return document(markdown)                                      // → stdout, verbatim
 	// return empty('no plugins installed')                           // → stdout, exit 0
-	// return quiet(value)                                            // → nothing printed
 	// return undefined                                               // → nothing printed
 }
 ```
@@ -133,9 +132,8 @@ run() {
 - `result(value, { help, render })` attaches `help[N]:` lines inside the encoded output (omitted when empty, per upstream principle 9) and optional per-format renderers, for example `{ render: { text: (v) => table(v) } }`.
 - `document(content)` writes `content` verbatim, for output that is already the answer (markdown, a diff, a file).
 - `empty(message)` is a success with an explicit empty state. Empty is exit 0.
-- `quiet(value)` returns `value` to the caller of `parse()` without printing it. Its name is open, and it may be dropped, because `result(value, { render })` already lets the printed form differ from the returned value (section 10).
 - These helpers absorb `@clibuilder/axi`'s `createOutput`, `writeResult`, `writeDocument`, `writeError` and `Output`, which are removed from axi.
-- **Core owns:** the envelope, `help[N]`, `result`, `document`, `empty`, `quiet`. **axi keeps:** `truncateText` and `truncateList` (`count: N of M total`, `--full`), `orEmpty`, `homeHeader`, `collapseHome`. They build the *value* a command returns. The `fullOption` stays a CLI-level option that the command reads.
+- **Core owns:** the envelope, `help[N]`, `result`, `document`, `empty`. **axi keeps:** `truncateText` and `truncateList` (`count: N of M total`, `--full`), `orEmpty`, `homeHeader`, `collapseHome`. They build the *value* a command returns. The `fullOption` stays a CLI-level option that the command reads.
 - A warning the agent must see goes in the result data. `ui.warn` is a diagnostic on stderr (section 3.10). The result has no reserved keys for messages.
 - In `output: 'console'` mode returned values are not printed, as today.
 - The risk is commands that already return values for programmatic use and now print them. A codemod flags every `return <expr>` in a `run()` for review; see section 5.
@@ -212,7 +210,7 @@ This is the design that sections 3.1 to 3.7 route through. It replaces standard-
 | Error report shape and rendering (`ErrorReport`, `errorOutput`) | yes | removed |
 | Usage-error ranking and codes (`createUsageErrorHandler`, `describeUsageError`) | yes | removed |
 | `--format`, `this.format`, json, text, toon (`formatOption`, `parseFormat`, `renderText`) | yes | removed |
-| Result channel: `result`, `document`, `empty`, `quiet`, `help[N]` | yes | `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines` removed |
+| Result channel: `result`, `document`, `empty`, `help[N]` | yes | `createOutput`, `writeResult`, `writeError`, `writeDocument`, `Output`, `withHelp`, `helpLines` removed |
 | Stream routing, `cli({ output, streams })` | yes | n/a |
 | Truncation, counts, `--full` | no | stays |
 | `orEmpty`, home header, collapse | no | stays |
@@ -227,7 +225,7 @@ The line: **if it changes what `parse()` does, it is core. If it shapes the valu
 
 1. **Usage errors and errors print to stdout, exit codes unchanged.** Prose on stderr and the full help after a usage error are gone. *Migrate:* none needed for agents; for scripts that read stderr, `cli({ output: 'console' })`.
 2. **`ui.*` is on stderr in `axi` mode.** `ui.info` no longer reaches stdout. *Migrate:* return the value instead, or use `output: 'console'`.
-3. **A non-`undefined` return from `run()` is printed.** *Migrate:* return `undefined`, or wrap with `quiet(value)`. This is the most likely to surprise, so it ships with a codemod that flags every `return <expr>` in a `run()` for review.
+3. **A non-`undefined` return from `run()` is printed.** *Migrate:* return `undefined` when nothing should print, use `result(value, { render })` to control the printed form, or use `output: 'console'`. This is the most likely to surprise, so it ships with a codemod that flags every `return <expr>` in a `run()` for review.
 4. **`CliError` message and help no longer go to stderr.** They are rendered once as a report on stdout.
 5. **A global `--format` exists, default `toon`.** A command that declares its own `format` is a startup error. *Migrate:* delete the local declaration and read `this.format`.
 6. **`showHelp` and `showVersion` leave `ui`.** Usage errors, config-validation failures and a bare command group no longer print the full help.
@@ -249,7 +247,7 @@ Every step below is its own issue and PR. All but the last two land in v11 minor
 4. **Structured `CliError`** (3.1), rendered once on stdout under `output: 'axi'`.
 5. **Global-option resolution before usage errors**, with `format` passed to `onUsageError` (3.2). Includes folding the #634 swap-in into it.
 6. **`--format` global option and the toon, json and text encoders** (3.4), active under `output: 'axi'` or when `cli({ format })` is set. Adds `@toon-format/toon` as a dependency.
-7. **Result channel** (3.5): printed returns, `result`, `document`, `empty`, `quiet`, under `output: 'axi'`.
+7. **Result channel** (3.5): printed returns, `result`, `document`, `empty`, under `output: 'axi'`.
 8. **Built-in ranked usage errors** (3.3) and core-owned `--help` and `--version` (3.7), under `output: 'axi'`.
 9. **Help examples and structured help** (3.7). Additive.
 10. **Flip the defaults in v12**, together with slim-dependencies' v12 step: `output: 'axi'` becomes the default, zod and standard-log are removed, `@clibuilder/axi` is reduced to its value helpers and releases with peer `^12` in the same train.
@@ -283,7 +281,7 @@ From the #639 survey and the slimming RFC's dependent list:
 Resolved on 2026-10-11:
 
 1. ~~**Default format.** `toon` or `text` by default?~~ **Resolved:** `toon`; the CLI author overrides it with `cli({ format })` (section 3.4).
-2. ~~**Non-`undefined` return is printed.** Or require an explicit `result()` wrapper first?~~ **Resolved:** a plain return is printed; `quiet(value)` opts out (section 3.5).
+2. ~~**Non-`undefined` return is printed.** Or require an explicit `result()` wrapper first?~~ **Resolved:** a plain return is printed in `axi` mode; `result(value, { render })` controls the printed form (section 3.5).
 3. ~~**toon in core.** A hand-rolled subset, or `@toon-format/toon`?~~ **Resolved:** `@toon-format/toon`, as core's single third-party runtime dependency (section 3.4).
 4. ~~**Single-object and error output.** Plain `key: value` for those, TOON only for collections?~~ **Resolved:** the official encoder for everything (section 3.4).
 5. ~~**`ui.info` routing.** Does `ui.info` move to stderr?~~ **Resolved:** in `axi` mode every `ui.*` call goes to stderr; in `console` mode `ui.info` stays on stdout (section 3.10). Shared with slim-dependencies Q5.
@@ -296,7 +294,7 @@ Resolved on 2026-10-11:
 
 Still open:
 
-12. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value without printing it. It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
+12. ~~**Name of the `quiet()` opt-out.**~~ **Resolved:** there is no opt-out wrapper; `result(value, { render })` controls the printed form (section 3.5).
 13. **Descriptor introspection field names.** The introspection form is public and read-only ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)); its exact field names are still a proposal.
 14. ~~**Untested `t` typing.**~~ **Resolved:** the refinement typing was tested on TS 6.0.3 and 7.0.2 and uses an explicit input check ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
 15. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 3.10).
