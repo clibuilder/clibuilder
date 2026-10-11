@@ -255,7 +255,7 @@ graph TD
   FMT -- "js, cjs, mjs" --> MOD[import it, as a file URL so an absolute Windows path is not read as a bare specifier] --> ACT{exports activate?}
   ACT -- yes --> WHOLE[the module itself]
   ACT -- no --> DEF[its default export]
-  FMT -- "json, jsonc" --> JS[parse permissively] --> ERR{the parser reported errors?}
+  FMT -- "json, jsonc" --> JS[strip comments and trailing commas, then JSON.parse] --> ERR{JSON.parse threw?}
   ERR -- yes --> THROW[raise it, so the fallback chain can fire]
   ERR -- no --> VAL[the value]
   FMT -- "yml, yaml" --> LY{"js-yaml installed?"}

@@ -1,10 +1,10 @@
 import { extname } from 'node:path'
-import { type ParseError, parse as parseJsonc, printParseErrorCode } from 'jsonc-parser'
 import type { UI } from './core/ports.js'
 import { findAnyFileUp } from './drivers/find_up.js'
 import { findPackageJson, getPackageJson } from './drivers/package_json.js'
 import { importModule, readTextFile } from './drivers/read_file.js'
 import { loadYaml } from './drivers/yaml.js'
+import { stripJsonc } from './strip_jsonc.js'
 
 export const ctx = {
 	findPackageJson,
@@ -206,17 +206,13 @@ async function readModuleConfig(configFilePath: string) {
 }
 
 /**
- * `jsonc-parser` recovers from syntax errors instead of throwing — a JS module
- * parses to `{}` and a YAML list to its first scalar. The `errors` array is the
- * only reliable signal, so a non-empty one has to become a throw for the
- * format-inference fallback above to work.
+ * `JSON.parse` throws on a JS module or a YAML list, which the format-inference
+ * fallback above relies on.
  */
 function parseJsoncOrThrow(content: string, configFilePath: string) {
-	const errors: ParseError[] = []
-	const value = parseJsonc(content, errors, { allowTrailingComma: true, disallowComments: false })
-	if (errors.length > 0) {
-		const [{ error, offset }] = errors
-		throw new Error(`Unable to parse ${configFilePath} as JSON: ${printParseErrorCode(error)} at offset ${offset}`)
+	try {
+		return JSON.parse(stripJsonc(content))
+	} catch (e) {
+		throw new Error(`Unable to parse ${configFilePath} as JSON: ${(e as Error).message}`)
 	}
-	return value
 }
