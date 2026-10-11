@@ -252,36 +252,7 @@ whatever the `--format`, as in 11.5.0.
 
 ## Reading the config yourself
 
-`clibuilder/config` exports its config resolution, so a plugin or a tool can ask the same questions the CLI
-asks — including *where* an answer came from.
-
-```ts
-import { lookupConfig, resolveConfig } from 'clibuilder/config'
-
-// where would the config come from? (no file is read)
-const { source, candidates } = lookupConfig({ cwd: process.cwd() }, 'app')
-
-// the config plus its provenance
-const { config } = await resolveConfig({ cwd: process.cwd(), ui }, 'app')
-```
-
-`source` is one of:
-
-| `source.type` | Fields | Meaning |
-| --- | --- | --- |
-| `file` | `path`, `format` | a config file matched |
-| `package.json` | `path`, `property` | the `package.json` fallback was used |
-| `none` | — | nothing matched |
-
-`candidates` is every filename that was searched for, in priority order.
-
-Also exported from `clibuilder/config`: `loadConfig` (the config value alone), `readConfigFile` (parse one known file),
-`getConfigFilenames`, `getConfigFormat`, and `describeConfigSource` (render a `source` as one line).
-
-:::note
-These are read-only. Writing config back to disk is not supported yet — see
-[#488](https://github.com/clibuilder/clibuilder/issues/488).
-:::
+`clibuilder/config` also exports the functions the CLI uses to find and read config, such as `lookupConfig()` and `resolveConfig()`. See [`clibuilder/config`](/clibuilder/api/config/).
 
 ## The `plugins` key
 

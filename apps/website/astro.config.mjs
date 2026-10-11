@@ -69,6 +69,7 @@ export default defineConfig({
 						{ label: 'parseArgv()', slug: 'api/parse-argv' },
 						{ label: 'enableCompileCache()', slug: 'api/compile-cache' },
 						{ label: 'clibuilder/axi', slug: 'api/axi' },
+						{ label: 'clibuilder/config', slug: 'api/config' },
 						{ label: 't', slug: 'api/t' }
 					]
 				},
@@ -81,7 +82,7 @@ export default defineConfig({
 							slug: 'packages/plugins',
 							badge: { text: 'unreleased', variant: 'caution' }
 						},
-						{ label: 'args-minus', slug: 'packages/args-minus', badge: { text: 'unreleased', variant: 'caution' } }
+						{ label: 'args-minus', slug: 'packages/args-minus' }
 					]
 				},
 				{

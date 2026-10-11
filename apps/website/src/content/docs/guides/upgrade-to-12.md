@@ -56,7 +56,7 @@ What it rewrites and what it flags:
 | value helpers from `@clibuilder/axi` | moved to `clibuilder/axi` |
 | other imports from `@clibuilder/axi` | flagged ([`@clibuilder/axi` moves into `clibuilder`](#clibuilderaxi-moves-into-clibuilder)) |
 | `cli({ keywords })` | rewritten to `.use(plugins({ keywords }))` ([plugins move out of core](#plugins-move-to-clibuilderplugins)) |
-| `cli({ config })` | rewritten to `.use(config())` ([config loads through `.use(config())`](#config-loads-through-useconfig)); with `--add-plugins`, also adds `.use(plugins())` |
+| `cli({ config })` | rewritten to `.use(config())` ([config loads through `.use(config())`](#config-loads-through-useconfig)); with `--add-plugins`, also adds `.use(plugins())`, and without it flags the call, since 12 no longer loads plugins from `config` |
 | config functions imported from `clibuilder` | moved to `clibuilder/config` |
 | `this.keywords` | flagged |
 | `import { testCommand } from 'clibuilder'` | moved to `clibuilder/testing` ([`testCommand` is only in `clibuilder/testing`](#testcommand-is-only-in-clibuildertesting)) |

@@ -34,6 +34,8 @@ cli({ name: 'app', version: '1.0.0' })
 
 In CommonJS:
 
+In CommonJS, `require()` loads the ESM build through `require(esm)` on Node 20.19 or later; clibuilder 12 ships no CJS build.
+
 ```js
 #!/usr/bin/env node
 require('clibuilder/compile-cache').enableCompileCache()
