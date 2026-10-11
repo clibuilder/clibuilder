@@ -1,8 +1,5 @@
-import type { Command } from '../command/internal.js'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Output, Streams } from '../core/ports.js'
-import { loadPlugins } from '../plugins/load.js'
-import type { RegistryOwner } from '../plugins/registry.js'
 import { type BuilderUI, createBuilderUI, type createUI } from './logger.js'
 import { createStreamUI } from './stream_ui.js'
 import { createSinks } from './streams.js'
@@ -27,7 +24,6 @@ export function context(options: context.Options = {}): Context {
 	// the resolution is cached as a promise so concurrent callers share one filesystem walk,
 	// and so a config that is legitimately falsy is not re-resolved on every call.
 	let resolvingConfig: Promise<ConfigLoadResult>
-	let loadingCommands: Promise<Command[]>
 	return {
 		async loadConfig(configName: string) {
 			return (await this.resolveConfig(configName)).config
@@ -38,12 +34,6 @@ export function context(options: context.Options = {}): Context {
 		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
 			if (resolvingConfig) return resolvingConfig
 			return (resolvingConfig = resolveConfig({ cwd, ui: this.ui }, configName))
-		},
-		// ignoring coverage. Test are done through `@unional/fixture` `execCommand()`
-		// istanbul ignore next
-		async loadPlugins(pluginNames: string[], registry: RegistryOwner, host: { name: string; version: string }) {
-			if (loadingCommands) return loadingCommands
-			return (loadingCommands = loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames))
 		},
 		cwd,
 		/**
@@ -68,7 +58,7 @@ export function context(options: context.Options = {}): Context {
 
 /**
  * What the framework needs from the outside world: a working directory, the
- * config and plugin loading it defers, somewhere to log, and a way to end.
+ * config loading it defers, somewhere to log, and a way to end.
  *
  * Declared here rather than derived from `context()` with `ReturnType`. A port
  * taken from one implementation is not a contract — the other implementation
@@ -82,11 +72,6 @@ export type Context = {
 	 * Resolves the config along with where it came from.
 	 */
 	resolveConfig(configName: string): Promise<ConfigLoadResult>
-	loadPlugins(
-		pluginNames: string[],
-		registry: RegistryOwner,
-		host: { name: string; version: string }
-	): Promise<Command[]>
 	/**
 	 * Records the code the cli should exit with, rather than ending the process.
 	 */

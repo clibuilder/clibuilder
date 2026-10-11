@@ -1,5 +1,4 @@
 import { Writable } from 'node:stream'
-import { listPluginsCommand } from '../builtin/plugin_commands/list.js'
 import { CliError, cli, command, exitCodes, z } from '../index.js'
 
 function memoryStream() {
@@ -188,50 +187,6 @@ describe.each([
 			})
 			.parse(['node', 'app', 'show'])
 		await expect(parse).rejects.toThrow(/command 'show' declares its own option 'format'/)
-	})
-
-	it('lets the builtin plugins list read this.format instead of its own option', async () => {
-		const { app, stdout, stderr } = setup({ ...options, keywords: ['app-plugin'] })
-		await app
-			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(['pkg-x']) } })
-			.parse(['node', 'app', 'list', '--format', 'json'])
-		expect(process.exitCode).toBeUndefined()
-		// logged as indented json in console output, printed as the compact answer under output axi
-		expect(stdout.text + stderr.text).toMatch(/"plugins": ?\[\s*"pkg-x"\s*\]/)
-	})
-
-	it('reports the builtin plugins list in the default format when --format is not passed', async () => {
-		const { app, stdout, stderr } = setup({ ...options, keywords: ['app-plugin'] })
-		await app
-			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(['pkg-x']) } })
-			.parse(['node', 'app', 'list'])
-		const out = stdout.text + stderr.text
-		if (defaultFormat === 'json') expect(out).toMatch(/"plugins": ?\[/)
-		if (defaultFormat === 'toon') expect(out).toContain('plugins[1]: pkg-x')
-		if (defaultFormat === 'text') expect(out).toContain('found one plugin: pkg-x')
-	})
-
-	it('shows the builtin plugins list help without its own --format', async () => {
-		const { app, stdout, stderr } = setup({ ...options, keywords: ['app-plugin'] })
-		await (app as cli.Builder & cli.Executable).parse(['node', 'app', 'plugins', 'list', '--help'])
-		expect(stdout.text + stderr.text).not.toContain('--format')
-	})
-})
-
-describe('the builtin plugins list in the default console output', () => {
-	it('keeps its own --format, default toon', async () => {
-		const { app, stdout } = setup({ keywords: ['app-plugin'] })
-		await (app as cli.Builder & cli.Executable).parse(['node', 'app', 'plugins', 'list', '--help'])
-		expect(countOf(stdout.text, '--format')).toBe(1)
-		expect(stdout.text).toContain('(default toon)')
-	})
-
-	it('reads its own --format', async () => {
-		const { app, stdout } = setup({ keywords: ['app-plugin'] })
-		await app
-			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(['pkg-x']) } })
-			.parse(['node', 'app', 'list', '--format', 'json'])
-		expect(stdout.text).toContain('"plugins": [')
 	})
 })
 

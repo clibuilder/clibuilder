@@ -1,13 +1,6 @@
 ignores:
   - "@typescript-eslint/parser"
   - "@vitest/coverage-istanbul"
-  - clibuilder-plugin-dummy
   - standard-log-color
   - tslib
-  - async-plugin
-  - bad-plugin
-  - bad-plugin-no-index
-  - cjs-plugin
-  - esm-plugin
-  - plugin-two
   - rimraf

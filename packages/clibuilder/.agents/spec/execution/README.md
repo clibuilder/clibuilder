@@ -14,8 +14,8 @@ with its context, and reporting failure as an exit code.
 This is the capability that turns a pile of declarations into a running
 program. It has two halves separated in time. **Assembly** happens when the
 author calls `cli(options)` and registers commands: state is derived from the
-options, the built-in commands are installed, and any configuration and plugin
-loading is started. **Invocation** happens when `parse(argv)` is called: the
+options, the built-in commands are installed, and any configuration loading is
+started. **Invocation** happens when `parse(argv)` is called: the
 global flags are answered, a command is matched, its inputs are checked, and it
 is either run or refused.
 
@@ -34,7 +34,8 @@ could not finish, it was called wrong and retrying identically will not help.
 **Non-goals.** Classifying argv and coercing values belong to `input-parsing/`.
 Finding and reading a config file belongs to `configuration/`; this node only
 decides *when* to load one and what to do when it fails validation. Resolving
-plugin packages belongs to `plugins/`. Rendering help text and messages belongs
+and activating plugin packages belongs to `@clibuilder/plugins`; core offers
+them the registry (`registry/`) and `.use()` (UC7). Rendering help text and messages belongs
 to `presentation/`. What the built-in commands *do* belongs to
 `builtin-commands/`.
 
@@ -42,7 +43,7 @@ to `presentation/`. What the built-in commands *do* belongs to
 options; every application has one. **Assembly** is everything before `parse`;
 **pending work** is the config loading started during assembly that
 `parse` must await. A **command instance** is a matched declaration bound to its
-`ui`, `config`, `keywords`, `cwd`, and `registry`.
+`ui`, `config`, `cwd`, and `registry`.
 
 ## Use Cases
 
@@ -53,10 +54,10 @@ options; every application has one. **Assembly** is everything before `parse`;
 | CLI author | `cli(options)`, `.command()`, `.default()`, `parse(argv)` | assemble an application from declarations and hand it argv |
 | CLI author | `cli({ onUsageError })` | report every wrong invocation in one format of their choosing — for example a coded line an agent can read — instead of the framework's message and help |
 | Command author | throws `CliError` from `run` | fail the CLI with a message the user can act on, and a chosen exit code |
-| Command author, including a plugin author | declares `onUsageError` on a command | have a wrong invocation of their commands reported in their own format, whichever application hosts them |
+| Command author, including an extension author | declares `onUsageError` on a command | have a wrong invocation of their commands reported in their own format, whichever application hosts them |
 | CLI end user | invokes the built program | reach the command they meant, or be told what was wrong and how to fix it |
 | Agent or script driving the CLI through a shell | reads the process exit code | tell "it worked" from "it failed" from "I called it wrong" without parsing prose |
-| `configuration` / `plugins` | are called during assembly and parse | be asked for their work once, at the right moment |
+| `configuration` / extensions | are called during assembly and parse | be asked for their work once, at the right moment |
 
 The agent is the stakeholder that justifies the three-way exit code split; a
 capability reporting only success-or-failure would serve the human user equally
@@ -65,13 +66,13 @@ well and leave the agent unable to decide whether to retry.
 ### UC1 — `cli`: assemble an application
 
 **Actor / goal.** A CLI author wants a runnable application derived from a name,
-a version, and a statement of whether it takes configuration or plugins.
+a version, and a statement of whether it takes configuration.
 
 | | |
 | --- | --- |
 | Trigger | `cli(options)` |
-| Inputs | `name`, `version`, optional `description`, `config`, `keywords`, `onUsageError` |
-| Outcome | a builder; when the application can accept plugins, it is already executable |
+| Inputs | `name`, `version`, optional `description`, `config`, `onUsageError` |
+| Outcome | a builder; when the application takes config, it is already executable |
 
 **Extensions.**
 
@@ -80,13 +81,11 @@ a version, and a statement of whether it takes configuration or plugins.
 | `config` is `true` | the config name is the CLI's own name |
 | `config` is a string | that string is the config name |
 | `config` is omitted | there is no config name, and nothing is loaded for one |
-| keywords are given | they are kept as given rather than defaulted |
-| `config` is set and no keywords are given | the keywords default to the CLI's name, so plugin discovery has something to search for |
-| the application can accept plugins | the built-in `plugins` command is registered, and `parse` is available immediately |
-| the application takes neither config nor keywords | no `plugins` command, and `parse` becomes available only once a command is registered |
-| the application declares keywords but no config name | nothing is loaded; the plugins to search for come from the keywords alone |
-| the loaded config names no plugins | no plugin activation is attempted |
-| a loaded config names plugins | their commands are registered before `parse` proceeds |
+| `config` is set | the config is loaded for the commands, no `plugins` command group is added, and `parse` is available immediately, so `--show-config` and `--help` work with no command registered |
+| `config` is omitted | `parse` becomes available only once a command is registered |
+| the loaded config lists plugins, and no `.use()` extension read the config through `resolveConfig()` (as `plugins()` does) | the cli warns once, through `ui.warn`, that the config lists plugins but this cli loads none, and to add `.use(plugins())` from `@clibuilder/plugins`. Plugin loading moved out of core in v12 |
+| an extension read the config | no warning: something is handling the `plugins` list |
+| the loaded config lists no plugins | no warning |
 
 ### UC2 — `.command()` / `.default()`: register commands
 
@@ -136,13 +135,13 @@ inputs they gave, or to be told precisely what was wrong.
 | a display-level flag is given | the level is set and the flag is removed before the command is matched, so it is never reported as unknown |
 | `--show-config` on an application that takes config | the resolved config and its source are reported, and no command runs |
 | `--show-config` on an application that takes no config | the option was never declared, so it is a usage error like any other unknown option |
-| `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the configured plugins or the `use()` extensions run, so a broken config or a hanging plugin or extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin, an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
+| `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the `use()` extensions run, so a broken config or a hanging extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
 | any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the caller's `--format` when the global option is active, else the `cli({ format })` value, `toon` by default |
 | the global `--format` is active: under `output: 'axi'`, or when `cli({ format })` is set | the base command declares `--format <toon\|json\|text>`, with no `-f` alias, defaulting to the CLI's format; every command accepts it, help shows it once with the global options, and `run()` reads the resolved value as `this.format` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). In the default `console` output with no `cli({ format })` the base command declares no `--format`, so v11 behaviour is unchanged, and `this.format` is the default, `toon` |
 | `--format` is given a value other than toon, json or text, or more than once | it is a usage error on the global key, code `invalid-value` (or `expect-single`), naming the option, the raw value and the allowed formats; the format falls back to the CLI's default, so the error is reported in that and cannot loop, and it flows through the usage-error report below |
-| the global `--format` is active and a command declares its own `format` option | the CLI fails at startup — when the command is added, or when a plugin or extension adds it — with an error pointing at axi-native RFC section 3.4 that says to delete the local declaration and read `this.format`. The `plugins` builtins in core and in `@clibuilder/plugins` mark their own option as giving way: it is dropped from the command, and they read `this.format` |
+| the global `--format` is active and a command declares its own `format` option | the CLI fails at startup — when the command is added, or when an extension adds it — with an error pointing at axi-native RFC section 3.4 that says to delete the local declaration and read `this.format`. The `plugins` commands of `@clibuilder/plugins` mark their own option as giving way with core's `defersToGlobalFormat` marker: it is dropped from the command, and they read `this.format` |
 | a global option comes before the command path or inside it (`app --verbose show`, `app --format json group sub`) | it applies as it does after the command: the base command passes to the lookup as the fallback, so the option takes only the tokens its declaration says and the next token still names the command. A command's own option before the command ends the path there, so it stays an unknown option of the command reached so far |
 | a usage error names a global key: one only the base command declares | base errors win for global keys: it is replaced by the base command's errors for that key. A well-formed global flag has none, so a sub-command declaring no options of its own does not report it as unknown; a malformed one is reported as the invalid value it is, once, as on the root (#614). A key the matched command declares itself is its own option, not the global one |
 | any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code. This is the `console` output (the default) |
@@ -198,7 +197,7 @@ can substitute in tests, and wants expensive resolution done once.
 | --- | --- |
 | Trigger | `context()` at construction |
 | Inputs | the process's working directory |
-| Outcome | a context carrying `cwd`, config and plugin loading, `exit`, and UI factories |
+| Outcome | a context carrying `cwd`, config, `exit`, and UI factories |
 
 **Extensions.** Config resolution is cached **as a promise**, so concurrent
 callers share one filesystem walk and a config that is legitimately falsy is not
@@ -208,8 +207,8 @@ whatever is still buffered on stdout.
 
 ### UC6 — `onUsageError`: take over how usage errors are reported
 
-**Actor / goal.** A CLI author, or the author of a command (a plugin's commands
-included), wants a wrong invocation reported in a fixed format of their own —
+**Actor / goal.** A CLI author, or the author of a command (an extension's
+commands included), wants a wrong invocation reported in a fixed format of their own —
 on the stream they choose, with or without help — so a caller such as an agent
 reads the same shape for every failure.
 
@@ -238,8 +237,8 @@ CLI exits with when the handler returns none (`exitCodes.usage`).
 3. otherwise the handler on `cli()`'s options;
 4. otherwise none — the default report of UC3 applies.
 
-A command a plugin adds is linked into the tree at registration like any other
-(UC2), so the lookup treats it the same way: a handler on a plugin's group
+A command an extension adds is linked into the tree at registration like any other
+(UC2), so the lookup treats it the same way: a handler on an extension's group
 command covers that group's sub-commands. A nameless command records no parent
 (UC2), so the lookup goes from it straight to step 3. The **most specific handler
 wins** because the command's author knows its options and codes; an application
@@ -273,12 +272,7 @@ The extensions run **on the first `parse` that needs the command tree**, not at
 commands come after them, and constructing the application does no work on the
 extension's behalf. They run **in the order `.use()` was called, each awaited
 before the next**, so the command order is the same on every run — the rule
-`loadPlugins` follows for plugins.
-
-**v11 coexistence.** The extension `@clibuilder/plugins` returns carries a
-marker. When one is used, assembly's config-driven plugin loading and its
-automatic `plugins` group (UC1) are skipped, so nothing loads twice. Both, and
-the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
+that keeps command order deterministic.
 
 **Extensions.**
 
@@ -295,8 +289,6 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | an extension logs through its `ui` | the message follows `--silent`, `--verbose`, and `--debug-cli` like the framework's own |
 | the application sets no `config` | `resolveConfig` reports no source and no config |
 | the application sets `config` | `resolveConfig` resolves it with where it came from |
-| the `@clibuilder/plugins` extension is used | the config-driven plugin loading and the automatic `plugins` group are skipped |
-| another extension is used | the config-driven plugin loading and the automatic `plugins` group stay |
 
 **Surface trace.**
 
@@ -305,7 +297,6 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `cli.Options.name` / `.version` | UC1 | — |
 | `cli.Options.description` | UC1 (help text) | — |
 | `cli.Options.config` | UC1, UC3 (`--show-config`) | — |
-| `cli.Options.keywords` | UC1 (plugin discovery) | — |
 | `cli.Options.onUsageError` | UC6 — the application-wide handler | — (a command's own handler takes precedence) |
 | a command's `onUsageError` | UC6 — the per-command handler; its declaration is `command-definition/`'s | — (the nearest one in the chain is the only one called) |
 | `cli.UsageError`, `cli.UsageErrorHandler` | UC6 — the handler's error entries and its signature, shared by both places it is declared | — |
@@ -322,7 +313,7 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `isCliError` | UC4 | — |
 | `result`, `document`, `empty`, `Answer`, `Renderer` | UC3 — the result channel, printed under `output: 'axi'`; the tagged answers are recognized by a `Symbol.for` key, so across copies of clibuilder | — |
 | `this.output` | UC3 — the cli's output mode, `'console'` by default | — |
-| `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
+| `context().exit` / `.resolveConfig` | UC5 | — |
 | `context().createCommandUI` | UC2 — each command gets its own ui before it runs | — |
 
 ## Control Flow
@@ -335,26 +326,20 @@ graph TD
   CN -- "string" --> CS[config name is that string]
   CN -- "true" --> CT[config name is the cli name]
   CN -- no --> CU[no config name]
-  CS --> KW{keywords given?}
-  CT --> KW
-  KW -- no --> KD[keywords default to the cli name]
-  KW -- yes --> KK[keywords kept as given]
-  KD --> PL{config name or keywords present?}
-  KK --> PL
-  CU --> PL
-  PL -- yes --> PC[register the built-in plugins command; expose parse now]
-  PL -- no --> PN[no plugins command; parse exposed on first registration]
-  PC --> LC{config name present?}
+  CS --> LC
+  CT --> LC{config name present?}
+  CU --> LC
+  LC -- yes --> LOAD["start loading config as pending work, add no plugins group, expose parse now"]
+  LC -- no --> NOLOAD[nothing to load, parse exposed on first registration]
+  LOAD --> HASP{"config lists plugins, and no extension read the config?"}
+  HASP -- yes --> WARN["warn once: the config lists plugins but this cli loads none — add .use(plugins()); on the first parse, sub-graph G"]
+  HASP -- no --> NOWARN[no warning]
   UIB[build the ui a matched command runs with] --> UIN{command has a name?}
   UIN -- yes --> UIC[a logger named for the command]
   UIN -- no --> UIA[a logger named for the application]
   UIC --> UIL[it starts at the application's current display level]
   UIA --> UIL
   UIL --> UIW[showHelp and showVersion are bound to this command, so it calls them with no arguments]
-  LC -- no --> NOLOAD[nothing to load; plugins come from keywords alone]
-  LC -- yes --> LOAD[start loading config as pending work] --> HASP{config names plugins?}
-  HASP -- yes --> LP[load them and register their commands, on the first parse — sub-graph G]
-  HASP -- no --> NOP2[no plugins to load]
   REG[".command / .default"] --> ADJ{command is named?}
   ADJ -- yes --> PAR[set its parent]
   ADJ -- no --> NOP[leave parent unset]
@@ -428,8 +413,8 @@ graph TD
   SHQ -- no --> SHN[no help is shown]
 ```
 
-"Enclosing" follows the parent links set at registration (UC2), so a command a
-plugin adds, and its sub-commands, resolve exactly like the application's own.
+"Enclosing" follows the parent links set at registration (UC2), so a command an
+extension adds, and its sub-commands, resolve exactly like the application's own.
 
 ### Sub-graph D — failing on purpose (`CliError`, `exitCodes`), entered by UC4
 
@@ -459,9 +444,6 @@ graph TD
   RC2[resolve the config] --> CACHE{"already resolving?"}
   CACHE -- yes --> SAME[return the same promise; one filesystem walk is shared]
   CACHE -- no --> START[start it, and keep the promise]
-  LPG[load the plugins] --> LCACHE{"already loading?"}
-  LCACHE -- yes --> LSAME[return the same promise]
-  LCACHE -- no --> LSTART[start the activation pass, and keep the promise]
   EX["exit(code)"] --> RECORD["record it as the process exit code"]
   RECORD --> NOTKILL["the process is never ended on the spot, so buffered output still reaches stdout"]
 ```
@@ -477,15 +459,13 @@ graph TD
   GP[parse argv] --> GBV{is the invocation a bare --version?}
   GBV -- yes --> GVER[answer the version before anything loads — sub-graph B]
   GBV -- no --> GGF[global flags answered: silent, verbose, debug-cli, show-config]
-  GGF --> GV1{"v11: is a @clibuilder/plugins extension used?"}
-  GV1 -- yes --> GSKIP[drop the automatic plugins group; load no config plugins]
-  GV1 -- no --> GCFG[load the plugins the config names]
-  GSKIP --> GRAN
-  GCFG --> GRAN{have the extensions run?}
+  GGF --> GRAN{have the extensions run?}
   GRAN -- yes --> GLOOK
   GRAN -- no --> GEACH[run each extension in use order, awaiting each]
-  GEACH --> GADD[its commands join after the host's own] --> GLOOK[match a command — sub-graph B]
+  GEACH --> GADD[its commands join after the host's own] --> GWARN{"config lists plugins, and did no extension read the config?"}
   GEACH -- throws --> GREJ[parse rejects]
+  GWARN -- yes --> GW[warn once through ui.warn] --> GLOOK[match a command — sub-graph B]
+  GWARN -- no --> GLOOK
 ```
 
 ## Scenario map
@@ -497,14 +477,11 @@ graph TD
 | config name is that string | `config` is a string | `a string config option names the config file` |
 | config name is the cli name | `config` is true | `config given as true names the config after the cli` |
 | no config name | `config` omitted | `an application declaring no config has no config name` |
-| keywords default to the cli name | config set, keywords omitted | `an application with config and no keywords searches under its own name` |
-| keywords kept as given | keywords declared | `declared keywords are kept as given` |
-| register the built-in plugins command; expose parse now | config name or keywords present | `an application that can accept plugins gets the built-in plugins command` |
-| no plugins command | neither config nor keywords | `an application that cannot accept plugins gets no plugins command` |
+| add no plugins group; expose parse now | config name present | `an application with config loads it for its commands and adds no plugins group` |
 | start loading config as pending work | a config name | `parse waits for the config started during assembly` |
-| load them and register their commands | the loaded config names plugins | `commands from configured plugins are registered before parse proceeds` |
-| nothing to load; plugins come from keywords alone | keywords declared and no config name | `an application with keywords and no config name loads no config` |
-| no plugins to load | the loaded config names none | `a config naming no plugins activates none` |
+| warn once | the loaded config lists plugins and no extension read the config | `a config listing plugins warns once when the cli loads none` |
+| no warning | the loaded config lists plugins and an extension read the config | `an extension that reads the config silences the plugins warning` |
+| no warning | the loaded config lists no plugins | `a config that lists no plugins does not warn` |
 
 ### UC2 — register commands
 
@@ -516,7 +493,7 @@ graph TD
 | nothing further to link | a registered command declaring no sub-commands | `a command with no sub-commands has nothing further linked` |
 | remove `.default` | `.default` was called | `the default command may be registered only once` |
 | `.default` stays available | `.command` was called | `registering an ordinary command leaves default still available` |
-| parse exposed on first registration | an application that cannot accept plugins | `registering a command makes the application executable` |
+| parse exposed on first registration | an application declaring no config | `registering a command makes the application executable` |
 
 ### UC3 — `parse`: run an invocation
 
@@ -527,12 +504,11 @@ graph TD
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
 | report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
 | show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
-| write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and plugins load` |
-| write the version to stdout; stop without awaiting pending work | `-v` alone, plugin activation never finishes | `version asked for alone does not wait for plugin activation` |
+| write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and extensions load` |
 | write the version to stdout; stop without awaiting pending work | `-v` alone, the default command declares `-v` | `the short version flag alone is the version even when a command declares it` |
 | show the version | `--version` on the base command | `version asked of the application shows its version` |
 | show the version | `--version` on the matched command | `version asked of a matched command shows the application version` |
-| only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and plugins` |
+| only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and extensions` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
 | answer the structured help, encoded in the resolved format | output axi, `--help` on a command, a group or the root | `in axi output --help is an answer in the resolved format` |
@@ -625,8 +601,6 @@ graph TD
 | --- | --- | --- |
 | return the same promise; one filesystem walk is shared | config already being resolved | `concurrent config resolution shares one filesystem walk` |
 | start it, and keep the promise | config not yet being resolved | `the first config resolution starts the walk and keeps its promise` |
-| start the activation pass, and keep the promise | plugins not yet being loaded | `the first plugin load starts the activation pass and keeps its promise` |
-| return the same promise | plugins already being loaded | `concurrent plugin loading shares one activation pass` |
 | record it as the process exit code | `exit` called | `exiting records the code rather than ending the process` |
 
 ### UC6 — `onUsageError`
@@ -635,7 +609,7 @@ graph TD
 | --- | --- | --- |
 | use the matched command's | the matched command, its enclosing command, and the cli each declare a handler | `the matched command's own handler takes over its usage errors` |
 | use the nearest enclosing command's | the matched command declares none; its enclosing command and the cli each declare one | `an enclosing command's handler takes over its sub-command's usage errors` |
-| use the nearest enclosing command's | the matched command was added by a plugin under a group declaring a handler | `a handler on a plugin's group takes over its sub-command's usage errors` |
+| use the nearest enclosing command's | the matched command was added by an extension under a group declaring a handler | `a handler on an extension's group takes over its sub-command's usage errors` |
 | use the cli's | only the cli declares a handler | `the cli's handler takes over when no command in the chain declares one` |
 | call it with the errors, the matched command, and its ui; print nothing | any handler found | `a handler receives each error and the matched command, and the framework prints nothing` |
 | call it with the format and the exit code | any handler found | `a handler receives the resolved format and the usage exit code` |
@@ -664,6 +638,3 @@ graph TD
 | the context | an extension logging at debug | `an extension logs through the framework ui` |
 | the context | no `config` | `resolveConfig reports no source when the application sets no config` |
 | the context | `config` set | `resolveConfig resolves the application config and its source` |
-| drop the automatic plugins group; load no config plugins | the `@clibuilder/plugins` extension | `the plugins extension replaces the config-driven plugin loading` |
-| drop the automatic plugins group | the `@clibuilder/plugins` extension | `the plugins extension replaces the automatic plugins group` |
-| load the plugins the config names | another extension | `another extension leaves the config-driven plugin loading in place` |

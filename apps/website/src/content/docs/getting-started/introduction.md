@@ -33,7 +33,8 @@ there is no second place to declare the shape of `args` — it is inferred from 
   `run()` is reached. See [Arguments & Options](/clibuilder/guides/arguments-and-options/).
 - **Config files** — `JSON`, `YAML`, `cjs`, or `mjs`, resolved by convention from the CLI name, and
   validated per command against a zod schema. See [Configuration](/clibuilder/guides/configuration/).
-- **Plugins** — commands published as separate packages, loaded through the config file. See
+- **Plugins** — commands published as separate packages, loaded by [`@clibuilder/plugins`](/clibuilder/packages/plugins/)
+  when a CLI opts in. See
   [Plugins](/clibuilder/guides/plugins/).
 - **A generated help message** — `--help` at every level, built from the descriptions you already
   wrote.
@@ -51,8 +52,10 @@ there is no second place to declare the shape of `args` — it is inferred from 
   single-file CLI works without shipping its manifest.
 - **Plugins are loaded through config.** Earlier versions scanned `node_modules` to discover
   plugins. Now the config file lists them explicitly, which is dramatically faster to start and works
-  with Yarn PnP and pnpm.
-- **`keywords` drive plugin lookup.** The `plugins search` and `plugins list` commands use them.
+  with Yarn PnP and pnpm. In `clibuilder` 12 (unreleased) `@clibuilder/plugins` does this loading,
+  not core.
+- **`keywords` drive plugin lookup.** The `plugins search` and `plugins list` commands use them. In
+  `clibuilder` 12 (unreleased) `keywords` is an option of `plugins()`, not of `cli()`.
 - **ESM is distributed alongside CJS.**
 
 ## Where next

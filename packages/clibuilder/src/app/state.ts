@@ -11,7 +11,6 @@ export namespace state {
 		description: string
 		configName?: string
 		config?: any
-		keywords: string[]
 		displayLevel: DisplayLevel
 		/**
 		 * The cli's default format while the global `--format` is active
@@ -23,8 +22,7 @@ export namespace state {
 }
 
 export function state(options: cli.Options): state.Result {
-	const { name, description = '', version, config, keywords = [] } = options
-	if (config && keywords.length === 0) keywords.push(name)
+	const { name, description = '', version, config } = options
 	const configName = typeof config === 'string' ? config : config ? name : undefined
 	const globalFormat = globalFormatOf(options)
 	return {
@@ -32,7 +30,6 @@ export function state(options: cli.Options): state.Result {
 		description,
 		version,
 		configName,
-		keywords,
 		displayLevel: 'info',
 		globalFormat,
 		command: getBaseCommand(description, { config: !!configName, format: globalFormat }) as any

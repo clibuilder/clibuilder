@@ -13,7 +13,7 @@ const globalFormat = Symbol.for('clibuilder.global-format')
 /**
  * Marks a command's own `format` option that gives way to the global `--format` when it is active:
  * the option is dropped from the command and `run()` reads `this.format`.
- * Only the `plugins` builtins in core and in `@clibuilder/plugins` carry it.
+ * The `plugins` commands of `@clibuilder/plugins` carry it.
  * It is a `Symbol.for` key so a copy of `@clibuilder/plugins` built against another copy of clibuilder still matches.
  */
 export const defersToGlobalFormat = Symbol.for('clibuilder.defers-to-global-format')

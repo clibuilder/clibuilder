@@ -5,13 +5,12 @@ enableCompileCache()
 // `import` compiles the whole graph before this module runs, so the cache would
 // come too late. `await import` keeps clibuilder out of that graph.
 const { CliError, cli } = await import('clibuilder')
+const { plugins } = await import('@clibuilder/plugins')
 
 const app = cli({
 	name: 'test-cli',
 	version: '1.0.0',
-	// enables the built-in `plugins` command, so `pnpm cli plugins list` and
-	// `pnpm cli plugins search` are reachable by hand.
-	keywords: ['test-cli']
+	config: true
 })
 	.default({
 		run() {
@@ -30,11 +29,12 @@ const app = cli({
 		name: 'config-value',
 		arguments: [{ name: 'name', description: 'config property name' }],
 		run({ name }) {
-			// the cli declares `keywords` but no `config`, so `this.config` is always undefined.
-			// Declaring `config` would also turn on config-driven plugin loading,
-			// and the cli would stop being a keywords-only fixture.
-			throw new CliError(`cannot read '${name}': test-cli declares no config`, { code: 'no-config' })
+			if (!this.config) throw new CliError(`cannot read '${name}': no test-cli config found`, { code: 'no-config' })
+			this.ui.info(`${name}: ${this.config[name]}`)
 		}
 	})
+	// loads the plugins the config names and adds the `plugins` group,
+	// so `pnpm cli plugins list` and `pnpm cli plugins search` are reachable by hand.
+	.use(plugins({ keywords: ['test-cli'] }))
 
 app.parse(process.argv)

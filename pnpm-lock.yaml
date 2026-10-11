@@ -309,21 +309,12 @@ importers:
       args-minus:
         specifier: workspace:^
         version: link:../args-minus
-      find-installed-packages:
-        specifier: ^4.0.1
-        version: 4.0.1
-      import-meta-resolve:
-        specifier: ^4.2.0
-        version: 4.2.0
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
-      search-packages:
-        specifier: ^2.2.3
-        version: 2.2.3
       tersify:
         specifier: ^4.0.8
         version: 4.0.8
@@ -352,30 +343,12 @@ importers:
       assertron:
         specifier: ^11.7.2
         version: 11.7.2(typescript@5.9.3)
-      async-plugin:
-        specifier: workspace:*
-        version: link:../../test-plugins/async-plugin
-      bad-plugin:
-        specifier: workspace:*
-        version: link:../../test-plugins/bad-plugin
-      bad-plugin-no-index:
-        specifier: workspace:*
-        version: link:../../test-plugins/bad-plugin-no-index
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../test-plugins/cjs-plugin
-      clibuilder-plugin-dummy:
-        specifier: ^1.0.1
-        version: 1.0.1
       depcheck:
         specifier: ^1.4.3
         version: 1.4.7(supports-color@8.1.1)
       esbuild:
         specifier: ^0.20.0
         version: 0.20.2
-      esm-plugin:
-        specifier: workspace:*
-        version: link:../../test-plugins/esm-plugin
       ncp:
         specifier: ^2.0.0
         version: 2.0.0
@@ -385,9 +358,6 @@ importers:
       path-equal:
         specifier: ^1.2.8
         version: 1.2.8
-      plugin-two:
-        specifier: workspace:*
-        version: link:../../test-plugins/plugin-two
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
@@ -403,81 +373,6 @@ importers:
       zod4:
         specifier: npm:zod@^4.4.3
         version: zod@4.4.3
-
-  packages/clibuilder/fixtures/bad-plugin:
-    dependencies:
-      bad-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/bad-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/bad-plugin-no-index:
-    dependencies:
-      bad-plugin-no-index:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/bad-plugin-no-index
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/cli-no-plugin:
-    devDependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/cli-with-async-plugin:
-    devDependencies:
-      async-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/async-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/cli-with-extra-plugin:
-    devDependencies:
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-      plugin-two:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/plugin-two
-
-  packages/clibuilder/fixtures/cli-with-one-esm-plugin:
-    devDependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-      esm-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/esm-plugin
-
-  packages/clibuilder/fixtures/cli-with-one-plugin:
-    devDependencies:
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/cli-with-two-plugins:
-    devDependencies:
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-      plugin-two:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/plugin-two
 
   packages/clibuilder/fixtures/empty-config: {}
 
@@ -673,26 +568,11 @@ importers:
         specifier: workspace:*
         version: link:../..
 
-  packages/clibuilder/fixtures/missing-plugin:
-    devDependencies:
-      test-cli:
-        specifier: workspace:*
-        version: link:../../../../test-apps/test-cli
-
   packages/clibuilder/fixtures/multi-bin: {}
 
   packages/clibuilder/fixtures/no-bin: {}
 
   packages/clibuilder/fixtures/no-nothing: {}
-
-  packages/clibuilder/fixtures/one-plugin:
-    dependencies:
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
 
   packages/clibuilder/fixtures/single-bin: {}
 
@@ -738,17 +618,89 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.12.2)(@vitest/coverage-istanbul@4.1.11)(@vitest/coverage-v8@4.1.11)(vite@8.2.1(@types/node@24.12.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
+  packages/plugins/fixtures/bad-plugin:
+    dependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../..
+      bad-plugin:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/bad-plugin
+      clibuilder:
+        specifier: workspace:*
+        version: link:../../../clibuilder
+
+  packages/plugins/fixtures/bad-plugin-no-index:
+    dependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../..
+      bad-plugin-no-index:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/bad-plugin-no-index
+      clibuilder:
+        specifier: workspace:*
+        version: link:../../../clibuilder
+
+  packages/plugins/fixtures/cli-with-async-plugin:
+    devDependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../..
+      async-plugin:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/async-plugin
+      clibuilder:
+        specifier: workspace:*
+        version: link:../../../clibuilder
+
+  packages/plugins/fixtures/cli-with-one-esm-plugin:
+    devDependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../..
+      clibuilder:
+        specifier: workspace:*
+        version: link:../../../clibuilder
+      esm-plugin:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/esm-plugin
+
+  packages/plugins/fixtures/cli-with-one-plugin:
+    devDependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../..
+      cjs-plugin:
+        specifier: workspace:*
+        version: link:../../../../test-plugins/cjs-plugin
+      clibuilder:
+        specifier: workspace:*
+        version: link:../../../clibuilder
+
   test-apps/test-cli:
     dependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
+      cjs-plugin:
+        specifier: workspace:*
+        version: link:../../test-plugins/cjs-plugin
       clibuilder:
         specifier: workspace:*
         version: link:../../packages/clibuilder
 
   test-apps/test-cli-esm:
     dependencies:
+      '@clibuilder/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
       clibuilder:
         specifier: workspace:*
         version: link:../../packages/clibuilder
+      esm-plugin:
+        specifier: workspace:*
+        version: link:../../test-plugins/esm-plugin
 
   test-apps/ts-app:
     dependencies:
@@ -2909,9 +2861,6 @@ packages:
   ci-info@4.4.0:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
-
-  clibuilder-plugin-dummy@1.0.1:
-    resolution: {integrity: sha512-6cAHXzSvl4otqJM+6WG9+zZY+qIWJEIz3tx5kAW/SbO/N+GMrDiaPrtw6D20FzCPMeUA6KXDKH00fYHOcJhIXg==}
 
   clibuilder@11.3.3:
     resolution: {integrity: sha512-7hgRZA89+5wVrK5A+Ltvj+A2eL8thwQ8c3IE5lZLCWbunkdsnlJQE557UXn2XyD+Zc84a0tlpgD8AzgVUO+eHg==}
@@ -7400,8 +7349,6 @@ snapshots:
       readdirp: 5.1.1
 
   ci-info@4.4.0: {}
-
-  clibuilder-plugin-dummy@1.0.1: {}
 
   clibuilder@11.3.3(typescript@5.9.3):
     dependencies:

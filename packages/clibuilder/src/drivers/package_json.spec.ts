@@ -12,7 +12,7 @@ describe('findPackageJson()', () => {
 
 describe('getPackageJson()', () => {
 	it('reads package.json', () => {
-		const jsonPath = findPackageJson(getFixturePath('cli-with-one-plugin'))!
+		const jsonPath = findPackageJson(getFixturePath('has-pjson-config'))!
 		const pjson = getPackageJson(jsonPath)
 		expect(pjson.type).toEqual('commonjs')
 	})

@@ -1,6 +1,5 @@
 import { forEachKey, type RequiredPick } from 'type-plus'
 import { getBaseCommand, yieldToGlobalFormat } from '../builtin/base_command.js'
-import { pluginsCommand } from '../builtin/plugin_commands/group.js'
 import type { cli, Extension, ExtensionContext } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConfigSource } from '../config.js'
@@ -26,19 +25,7 @@ import { type CliError, exitCodes, isCliError, isReportedCliError } from './erro
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
-/**
- * Marks the extension `@clibuilder/plugins` returns from `plugins()`.
- *
- * When one is used, core skips its own config-driven plugin loading and its automatic
- * `plugins` group, so nothing loads twice (slim-dependencies RFC section 9.8).
- * Both go away in v12, and this marker with them.
- */
-const pluginsExtensionMarker = Symbol.for('clibuilder.plugins-extension')
-
-export function builder(
-	context: Context,
-	options: RequiredPick<cli.Options, 'config'> | RequiredPick<cli.Options, 'keywords'>
-): cli.Builder & cli.Executable
+export function builder(context: Context, options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
 export function builder(context: Context, options: cli.Options): cli.Builder
 export function builder(context: Context, options: cli.Options): cli.Builder & cli.Executable {
 	// set `clibuilder-debug` logs manually to logLevels.all,
@@ -55,14 +42,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	const pending: Promise<any>[] = []
 	const registry = createRegistry()
 	const extensions: Extension[] = []
-	let loadingPlugins: Promise<void> | undefined
 	let extending: Promise<void> | undefined
+	// whether an extension read the config, and so took charge of a `plugins` key in it
+	let configRead = false
 	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
-	const mayAcceptPlugins = s.configName || s.keywords.length > 0
-	// v11 plugin path: the automatic `plugins` group. Removed in v12 (slim-dependencies RFC section 9.8).
-	// a copy, because `adjustCommand` links and may rewrite the commands it is given, and the builtin is shared by every cli
-	const autoPluginsCommand = mayAcceptPlugins ? adjust(s.command, copyCommand(pluginsCommand)) : undefined
-	if (autoPluginsCommand) s.command.commands.push(autoPluginsCommand)
 
 	if (loadingConfig) {
 		pending.push(
@@ -75,7 +58,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		name: s.name,
 		version: s.version || '',
 		description,
-		parse: (mayAcceptPlugins ? parse : undefined) as any,
+		// a cli with config is executable on its own: `--show-config` and `--help` need no command
+		parse: (s.configName ? parse : undefined) as any,
 		default(command) {
 			s.command = adjust(s.command, { ...s.command, ...command })
 			delete (this as any)['default']
@@ -89,26 +73,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			extensions.push(extension)
 			return { ...this, parse }
 		}
-	}
-
-	/**
-	 * v11 plugin path: loads the plugins the config names, and keeps the automatic `plugins` group.
-	 * Both are skipped when `@clibuilder/plugins` takes over, so nothing loads twice.
-	 * Removed in v12 (slim-dependencies RFC section 9.8): delete this function and its call.
-	 */
-	function loadConfiguredPlugins() {
-		return (loadingPlugins ??= (async () => {
-			if (extensions.some((e) => (e as any)[pluginsExtensionMarker])) {
-				s.command.commands = s.command.commands.filter((c) => c !== autoPluginsCommand)
-				return
-			}
-			if (!s.config?.plugins) return
-			const commands = await context.loadPlugins(s.config.plugins, registry, {
-				name: s.name,
-				version: s.version || ''
-			})
-			s.command.commands.push(...commands.map((c) => adjust(s.command, c)))
-		})())
 	}
 
 	/**
@@ -127,18 +91,35 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 					s.command.commands.push(adjust(s.command, command as Command))
 				},
 				async resolveConfig() {
+					configRead = true
 					if (!s.configName) return { config: undefined, source: { type: 'none' }, candidates: [] }
 					return context.resolveConfig(s.configName)
 				}
 			}
 			for (const extension of extensions) await extension(extensionContext)
+			warnUnloadedPlugins()
 		})())
+	}
+
+	/**
+	 * Warns once when the config names plugins that nothing loads.
+	 *
+	 * clibuilder 11 loaded them itself. In 12 that moved to `@clibuilder/plugins`,
+	 * and without this warning the plugins would silently stop loading (slim-dependencies RFC section 9.8).
+	 * An extension that read the config is taken to handle its `plugins` key.
+	 */
+	function warnUnloadedPlugins() {
+		if (configRead || !Array.isArray(s.config?.plugins) || s.config.plugins.length === 0) return
+		context.ui.warn(
+			'the config lists plugins, but this cli loads none. ' +
+				'Plugin loading moved out of clibuilder 12 into @clibuilder/plugins: add .use(plugins()) to the cli.'
+		)
 	}
 
 	async function parse(argv: string[]) {
 		if (isBareVersion(argv)) {
-			// answered before the pending config, the configured plugins and the `use()` extensions,
-			// so a broken config or a hanging plugin or extension cannot fail or delay it.
+			// answered before the pending config and the `use()` extensions,
+			// so a broken config or a hanging extension cannot fail or delay it.
 			// The config load is not awaited, so a rejection from it is marked handled here
 			// instead of crashing the process.
 			for (const p of pending) p.catch(() => {})
@@ -172,7 +153,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (s.configName && globals['show-config']) return showConfig(s.configName)
 
-		await loadConfiguredPlugins()
 		await extend()
 
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
@@ -397,7 +377,7 @@ function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors
  * Anything else, `cli <cmd> --version` included, needs the command tree,
  * because a sub-command may declare `-v` or `--version` as its own option.
  * Nothing is loaded when the bare form is answered, so a bare `-v` is the version
- * even if a plugin, an extension or the config declares `-v`.
+ * even if an extension or the config declares `-v`.
  */
 function isBareVersion(argv: string[]) {
 	const tokens = argv.slice(2)
@@ -450,7 +430,6 @@ function createCommandInstance(
 		format,
 		output,
 		config: state.config,
-		keywords: state.keywords,
 		cwd: ctx.cwd,
 		registry
 	}
@@ -482,11 +461,4 @@ function adjustCommand<C extends Command>(base: Command, command: C, globalForma
 		command.commands = command.commands.map((c) => adjustCommand(command, c, globalFormat))
 	}
 	return command
-}
-
-/**
- * Copies a command tree, so linking it does not touch the original.
- */
-function copyCommand<C extends cli.Command>(command: C): C {
-	return command.commands ? { ...command, commands: command.commands.map(copyCommand) } : { ...command }
 }

@@ -188,11 +188,12 @@ exactly one handler, the first it finds in this order:
 
 If none is found, clibuilder prints the errors and the help as described above.
 
-This is how a plugin keeps its error format in any cli that loads it. Declare the handler on the
+This is how a plugin keeps its error format in any cli that loads it with
+[`@clibuilder/plugins`](/clibuilder/packages/plugins/). Declare the handler on the
 plugin's group command:
 
 ```ts
-import type { PluginActivationContext } from 'clibuilder'
+import type { PluginActivationContext } from '@clibuilder/plugins'
 import { list, send } from './commands.js'
 
 export function activate(ctx: PluginActivationContext) {

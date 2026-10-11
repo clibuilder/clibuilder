@@ -17,8 +17,8 @@ published files that make `@clibuilder/plugins` consumable.
   `zod`, which is `clibuilder`'s dependency, not this package's.
 - Exports: `plugins`, `pluginsCommand`, `loadPlugins`, and the type
   `PluginActivationContext`.
-- `clibuilder` is a peer dependency at `^11.5.0 || ^12.0.0`: 11.5.0 is the
-  release that adds `use()`, which `plugins()` plugs into.
+- `clibuilder` is a peer dependency at `^12.0.0`: 12 removed plugin
+  support from core, and `use()`, which `plugins()` plugs into, is core's.
 - `import-meta-resolve`, `find-installed-packages` and `search-packages` are
   dependencies. The last two are imported lazily, only when `plugins list` or
   `plugins search` runs.

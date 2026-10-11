@@ -28,9 +28,9 @@ it('can specify a specific config file', () => {
 	a.satisfies(app, { name: 'app', version: '1.0.0' })
 })
 
-it('can specify keywords for plugin discovery', () => {
-	const app = cli({ name: 'app', version: '1.0.0', keywords: ['my-app', 'linting'] })
-	a.satisfies(app, { name: 'app', version: '1.0.0' })
+it('has no keywords option: plugin keywords are an option of plugins() from @clibuilder/plugins since v12', () => {
+	// @ts-expect-error `keywords` is not a cli option
+	cli({ name: 'app', version: '1.0.0', keywords: ['my-app'] })
 })
 
 it('can specify type of the arguments and options. The command will receive the typed `args`', () => {

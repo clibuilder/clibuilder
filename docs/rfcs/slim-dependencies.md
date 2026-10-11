@@ -490,7 +490,7 @@ cli({ name: 'my-cli', version: '1.0.0' })
 
 - Extensions run in the order `.use()` was called. Each one is awaited before the next starts, so the command order is the same on every run. This is the same rule `loadPlugins` follows today.
 - Commands added by extensions come after the host's own `.command()` and `.default()` commands.
-- `.use()` makes `.parse()` available with no commands of its own, as `config` and `keywords` do today, because an extension may supply all of them.
+- `.use()` makes `.parse()` available with no commands of its own, as `config` and `keywords` do today, because an extension may supply all of them. In v12 `config` still does, so `--show-config` and `--help` work on a CLI with no commands of its own.
 - `--version` returns before any extension runs. This is the fast path #639 asks for (item 8). `--help` waits for extensions, because it has to list their commands.
 
 The hook is not plugin-specific. It is also the natural seam for lazy commands.
@@ -554,6 +554,7 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 - **v11 minor.** Add `use()`. Publish `@clibuilder/plugins` with a peer range of `clibuilder ^11.<that minor> || ^12`. When a `plugins()` extension is present, core skips its own config-driven loading and its automatic `plugins` group, so nothing loads twice. A CLI can switch early.
 - **v12.** Remove core's loading, `keywords`, `this.keywords` and the automatic `plugins` group. A CLI that sets `config` and has a `plugins` key in its config, but no `plugins()` extension, gets a one-time warning naming `@clibuilder/plugins`. Without it, the plugins would silently stop loading.
+  - *Implementation note.* With the v11 marker gone, core cannot tell a `plugins()` extension from any other. It warns when the config's `plugins` key is a non-empty list and no extension called `resolveConfig()`, the call `plugins()` makes to read it. `plugins()` then needs `clibuilder ^12` as its peer, since a v11 core would load the plugins a second time.
 - **v13.** Remove the deprecated `PluginActivationContext` copy from core.
 
 ### 9.9 Open questions

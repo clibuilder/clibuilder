@@ -144,7 +144,3 @@ it('lets config exclude a plugin from the other sources with a ! prefix', async 
 	await plugins({ include: ['plugin-a', 'plugin-b'], command: false })(context)
 	expect(names()).toEqual(['plugin-b'])
 })
-
-it('marks itself, so clibuilder 11 skips its own plugin loading', () => {
-	expect((plugins() as any)[Symbol.for('clibuilder.plugins-extension')]).toBe(true)
-})

@@ -3,9 +3,9 @@ Feature: Presentation
 
   Everything the cli says. Messages are buffered until argv has settled how
   much to say, then replayed. Help is generated from the declaration rather
-  than written by hand. Reported collections are rendered in the format the
-  reader asked for, defaulting to the structured one because a cli's own
-  metadata is read by an agent more often than by a person.
+  than written by hand. Answers are encoded in the format the reader asked for,
+  defaulting to the structured one because a cli's own metadata is read by an
+  agent more often than by a person.
 
   # ── UC1 — createBuilderUI: say things before the level is known ──
 
@@ -252,63 +252,6 @@ Feature: Presentation
     Given an application built without a version
     When its version is shown
     Then it reports that there is no version
-
-  # ── UC6 — the output helpers ──
-
-  Scenario: a value that could read as two entries is quoted and escaped
-    Given a value containing a comma, a quote, or a backslash
-    When it is rendered
-    Then it is quoted and escaped so it cannot read as two entries
-
-  Scenario: a value surrounded by whitespace is quoted
-    Given a value beginning or ending with whitespace
-    When it is rendered
-    Then it is quoted
-
-  Scenario: an ordinary value is left unquoted
-    Given a value with nothing ambiguous in it
-    When it is rendered
-    Then it appears unquoted
-
-  Scenario: a rendered array carries its count, so nothing looks truncated
-    Given a collection rendered as an array
-    When it is written
-    Then the count is part of the line
-
-  Scenario: a rendered table names its columns and indents one row per entry
-    Given a collection rendered as a table
-    When it is written
-    Then a header names the columns and carries the count, and each entry is one indented row
-
-  Scenario: a help line is counted like any other rendered list
-    Given a next-step suggestion
-    When it is rendered
-    Then it carries a count, so one suggestion is distinguishable from several
-
-  Scenario: prose for an empty collection names the keywords searched
-    Given prose output and a collection with nothing in it
-    When it is reported
-    Then the wording says none were found and names the keywords searched
-
-  Scenario: prose for one item describes it in the singular
-    Given prose output and a collection of exactly one
-    When it is reported
-    Then the wording is singular and the item is described
-
-  Scenario: prose for several items lists them under a plural heading
-    Given prose output and a collection of several
-    When it is reported
-    Then a plural heading is followed by the items, one per line
-
-  Scenario: json output carries the payload alone
-    Given json asked for
-    When a collection is reported
-    Then the output is the payload as JSON with no help line
-
-  Scenario: every command reporting a collection offers the same three formats and defaults to toon
-    Given any command that reports a collection
-    When its format option is read
-    Then it offers the same three formats, worded the same way, defaulting to the structured one
 
   # ── UC7 — describing a usage error ──
 

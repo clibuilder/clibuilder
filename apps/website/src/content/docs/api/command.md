@@ -139,7 +139,6 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | `this.ui` | [`UI`](/clibuilder/api/ui/) | Output — `info`, `warn`, `error`, `debug`, and the deprecated `showHelp`, `showVersion`. |
 | `this.config` | `z.infer<ConfigType>` | The loaded, validated config. `undefined` when the command declared no `config`. |
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
-| `this.keywords` | `string[]` | The CLI's plugin keywords. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
 | `this.format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else the CLI's `format`, `'toon'` by default. |
 | `this.output` | `'console' \| 'axi'` | **Unreleased.** The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'console'` by default. |
@@ -162,7 +161,14 @@ they wrap. See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
 ## `PluginActivationContext`
 
-The argument a [plugin's](/clibuilder/guides/plugins/) `activate()` receives:
+The argument a [plugin's](/clibuilder/guides/plugins/) `activate()` receives. Import the type from
+[`@clibuilder/plugins`](/clibuilder/packages/plugins/#writing-a-plugin).
+
+:::caution[Unreleased]
+In `clibuilder` 12 (unreleased) `this.keywords` is removed, and `PluginActivationContext` is
+exported from `clibuilder` only as a deprecated copy that 13 removes. In `clibuilder` 11,
+`this.keywords` holds the CLI's plugin keywords.
+:::
 
 ```ts
 type PluginActivationContext = {
@@ -176,7 +182,8 @@ type PluginActivationContext = {
 ```
 
 ```ts
-import { command, type PluginActivationContext } from 'clibuilder'
+import { command } from 'clibuilder'
+import type { PluginActivationContext } from '@clibuilder/plugins'
 
 export function activate({ addCommand }: PluginActivationContext) {
   addCommand(command({ name: 'sing', description: 'sing a song', run() { this.ui.info('🎵') } }))

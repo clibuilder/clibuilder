@@ -118,7 +118,6 @@ function — that binding is the point.
 | `this.ui` | The [UI](/clibuilder/api/ui/) — `info`, `warn`, `error`, `debug`, `showHelp`, `showVersion` |
 | `this.config` | The loaded, validated [config](/clibuilder/guides/configuration/), typed from the command's `config` schema |
 | `this.cwd` | The directory the CLI was invoked from |
-| `this.keywords` | The `keywords` declared on the CLI, used for [plugin](/clibuilder/guides/plugins/) lookup |
 | `this.context` | Whatever you put in the command's `context` — see below |
 
 The first parameter, `args`, holds the parsed

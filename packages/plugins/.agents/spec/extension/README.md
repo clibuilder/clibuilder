@@ -23,10 +23,9 @@ then `dependencies` in `package.json` order, then config, each package once at
 its first position.
 
 **Non-goals.** Importing and activating a plugin is `loadPlugins`, whose
-behaviour is `packages/clibuilder`'s `plugins/` node, unchanged. What `plugins
-list` and `plugins search` report is `packages/clibuilder`'s
-`builtin-commands/` node; here they read their keywords from the extension's
-options instead of `this.keywords`.
+behaviour is this package's `loading/` node. What `plugins list` and `plugins
+search` report is its `commands/` node; here they read their keywords from the
+extension's options.
 
 **Known gap — Yarn PnP.** The `dependencies` source finds a dependency's
 `package.json` by walking `node_modules`, and so does `plugins list`. Under Yarn
@@ -45,7 +44,6 @@ places are marked in `src/dependencies.ts` and `src/commands/npm.ts`.
 | CLI author | `cli().use(plugins(options))` | give the CLI plugins, from the sources they choose |
 | CLI end user | the `plugins` key in the CLI's config | add a plugin, or exclude one the CLI or project brings |
 | Host building its own loading | `pluginsCommand({ keywords })`, `loadPlugins` | reuse the pieces without the extension |
-| `clibuilder` 11 | reads the extension's marker | skip its own plugin loading, so nothing loads twice |
 
 ### UC1 — `plugins()`: load plugins into a CLI
 
@@ -90,19 +88,11 @@ places are marked in `src/dependencies.ts` and `src/commands/npm.ts`.
 | a listed package is not installed, or declares no keywords | it is skipped |
 | there is no `package.json` | nothing is found |
 
-### UC3 — coexisting with `clibuilder` 11
-
-| | |
-| --- | --- |
-| Trigger | `plugins()` |
-| Inputs | none |
-| Outcome | the returned extension carries the marker `Symbol.for('clibuilder.plugins-extension')` |
-
 **Surface trace.**
 
 | Element | Required by | May not combine with |
 | --- | --- | --- |
-| `plugins(options)` | UC1, UC3 | — |
+| `plugins(options)` | UC1 | — |
 | `plugins.Options.keywords` / `include` / `dependencies` / `config` / `command` | UC1, UC2 | — |
 | `pluginsCommand({ keywords })` | UC1 | — |
 | `loadPlugins` | UC1 | — |
@@ -175,10 +165,3 @@ graph TD
 | look in node_modules here and above | hoisted, with `package.json` above cwd | `the nearest package.json and ancestor node_modules are used` |
 | skip it | not installed, or no keywords | `a missing package or one without keywords is skipped` |
 | nothing found | no `package.json` | `nothing is found without a package.json` |
-
-### UC3 — coexisting with `clibuilder` 11
-
-| Edge | Path (Given) | Scenario |
-| --- | --- | --- |
-| the marker | any | `the extension carries the marker clibuilder 11 looks for` |
-| the marker | a CLI with keywords, and one using `plugins()` | `plugins list and search behave the same as the built-in group` |

@@ -12,9 +12,11 @@ project-path: packages/clibuilder
 
 `clibuilder` is a command line application framework. It owns the layers a CLI
 author should not have to rebuild — command definition and routing, input
-parsing and validation, configuration loading, plugin discovery, help and
+parsing and validation, configuration loading, help and
 output rendering — and defers the application's own behavior to the commands it
-runs.
+runs. Plugin discovery and loading are not a core layer: core offers
+`cli().use(extension)` and the registry, and `@clibuilder/plugins` builds plugin
+support on them.
 
 Where a parsing library stops at "what did the user type", `clibuilder`
 continues to "which command is that, are its inputs valid, what does this
@@ -30,7 +32,7 @@ Strategy: **capability-first**.
 | Turning an argv vector into a matched command with typed inputs | `input-parsing/` |
 | Assembling the application and running a matched command | `execution/` |
 | Discovering, reading, and reporting the source of configuration files | `configuration/` |
-| Discovering and activating third-party command packages | `plugins/` |
+| Sharing contributions between extensions and plugins through typed keys | `registry/` |
 | The commands `clibuilder` itself ships | `builtin-commands/` |
 | Rendering help, messages, and machine-readable output | `presentation/` |
 | Helpers that let a command author test their own commands | `testing/` |
@@ -52,7 +54,7 @@ Nodes are at most two levels below this spec root. Cross-cutting concerns use
 | `config-lifecycle` | `builtin-commands/` (behavior) · `configuration/` (behavior) · `execution/` (behavior) |
 | `declaration-driven` | `command-definition/` (behavior) · `execution/` (behavior) · `input-parsing/` (behavior) · `presentation/` (behavior) |
 | `error-reporting` | `execution/` (behavior) · `input-parsing/` (behavior) · `presentation/` (behavior) |
-| `extensibility` | `builtin-commands/` (behavior) · `execution/` (behavior) · `plugins/` (behavior) |
+| `extensibility` | `builtin-commands/` (behavior) · `execution/` (behavior) · `registry/` (behavior) |
 | `packaging` | `distribution/` (reference) · `tooling/` (reference) |
 | `test-doubles` | `execution/` (behavior) · `testing/` (behavior) |
 

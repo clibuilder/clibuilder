@@ -51,7 +51,7 @@ Feature: Command definition
     Given a declaration naming a command
     When it declares a run function
     Then the declaration is accepted
-    And run's `this` carries the ui, config, keywords, cwd, context, and registry
+    And run's `this` carries the ui, config, cwd, context, and registry
 
   Scenario: a declaration with both run and commands is accepted and still types its run
     Given a declaration carrying a run and a commands list

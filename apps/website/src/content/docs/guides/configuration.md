@@ -4,8 +4,9 @@ description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs 
 ---
 
 A CLI opts into config by declaring `config` on [`cli()`](/clibuilder/api/cli/). Doing so also makes
-`.parse()` available immediately, since a config-driven CLI can get all of its commands from
-[plugins](/clibuilder/guides/plugins/).
+`.parse()` available immediately, since a config-driven CLI can get all of its commands from an
+extension such as [plugins](/clibuilder/guides/plugins/). Config loads for the commands only. It
+does not load plugins.
 
 ```ts
 cli({ name: 'app', version: '1.0.0', config: true })
@@ -247,8 +248,15 @@ These are read-only. Writing config back to disk is not supported yet — see
 
 ## The `plugins` key
 
-One key is reserved by `clibuilder` itself: `plugins`. It lists the packages whose commands get
-loaded into the CLI. See [Plugins](/clibuilder/guides/plugins/).
+:::caution[Unreleased]
+In `clibuilder` 11, `plugins` is reserved by `clibuilder` itself and lists the packages whose
+commands get loaded. In `clibuilder` 12 (unreleased) core no longer reserves it and loads nothing.
+[`plugins()`](/clibuilder/packages/plugins/) from `@clibuilder/plugins` reads it from the resolved
+config. If the config lists plugins and the CLI loads none, it warns once.
+:::
+
+A CLI that calls `.use(plugins())` reads a `plugins` key that lists the packages whose commands get
+loaded. See [Plugins](/clibuilder/guides/plugins/).
 
 ```json
 {

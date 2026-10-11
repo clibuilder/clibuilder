@@ -34,7 +34,8 @@ answers, and the type distinguishes them.
 **Non-goals.** Validating the config against a command's schema belongs to
 `execution/`, which owns the decision to load one at all. Printing the resolved
 config belongs to `builtin-commands/` and `presentation/`. Reading the `plugins`
-property to resolve packages belongs to `plugins/`.
+property to resolve packages belongs to `@clibuilder/plugins` (`packages/plugins`,
+its `extension/` node).
 
 **Key terms.** A **candidate** is one filename the search will accept. The
 **source** is where a value came from — a file, a `package.json` property, or
