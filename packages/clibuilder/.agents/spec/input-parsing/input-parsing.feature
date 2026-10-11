@@ -114,6 +114,33 @@ Feature: Input parsing
     When the invocation names that name
     Then the later-declared sub-command is the match
 
+  Scenario: a global option before a sub-command name does not take the name as its value
+    Given a command declaring a sub-command, and a fallback declaring a global flag
+    When the global flag comes before the sub-command's name
+    Then the sub-command is the match
+    And the tokens after its name are left for its own arguments
+
+  Scenario: a global option's value before a sub-command name is not taken as the name
+    Given a command declaring a sub-command, and a fallback declaring a global option that takes a value
+    When the global option and its value come before the sub-command's name
+    Then the sub-command is the match
+
+  Scenario: a global option between a group and its sub-command
+    Given a group declaring a sub-command, and a fallback declaring a global option
+    When the global option comes between the group's name and the sub-command's name
+    Then the sub-command is the match
+
+  Scenario: a command's own option before the command name ends the command path
+    Given a command declaring a sub-command that declares its own option
+    When that option comes before the sub-command's name
+    Then the command itself is the match
+    And the option is reported as invalid with the sub-command's name as its value
+
+  Scenario: a command name after the terminator is not matched
+    Given a command declaring a sub-command, and a fallback declaring a global flag
+    When the sub-command's name comes after the terminator, with or without the global flag before it
+    Then the command itself is the match
+
   # ── UC2 — lookupCommand, filling ──
 
   Scenario: a declared argument takes the next positional

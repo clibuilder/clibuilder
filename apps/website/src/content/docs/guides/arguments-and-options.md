@@ -227,3 +227,24 @@ startup.
 | Flag | Alias | Effect |
 | --- | --- | --- |
 | `--format <toon\|json\|text>` | | The format to answer in — see [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |
+
+### Where the built-in options go
+
+**Unreleased:** a built-in option may come before the command, after it, or between a group and its
+sub-command. These run the same command:
+
+```sh
+my-cli deploy prod --verbose
+my-cli --verbose deploy prod
+my-cli --format json plugins list
+my-cli plugins --format json list
+```
+
+A built-in option that takes a value, such as `--format json`, takes only that value, so the next
+word still names the command. A command's own options go after the command: `my-cli --force deploy`
+is a usage error that names `--force` as unknown. Words after `--` never name a command.
+
+In `clibuilder` 11.5 and earlier, a built-in option before the command took the command name as its
+value, so `my-cli --verbose deploy` was a usage error. If the default command takes an argument,
+`my-cli --verbose deploy` used to give it `deploy`; it now runs the `deploy` command, as
+`my-cli deploy` does.

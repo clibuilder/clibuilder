@@ -84,8 +84,8 @@ failure collected.
 
 | | |
 | --- | --- |
-| Trigger | `lookupCommand(command, args)` |
-| Inputs | the root command declaration and the tokenized args |
+| Trigger | `lookupCommand(command, args, fallback?)` |
+| Inputs | the root command declaration, the tokenized args, and optionally a fallback command whose options apply to every command (`execution` passes the base command, so these are the global options) |
 | Outcome | `{ command, args, errors }` — errors empty on a clean invocation |
 
 **Extensions.**
@@ -93,6 +93,9 @@ failure collected.
 | Cause | Outcome |
 | --- | --- |
 | no sub-command matches the first positional | the current command is the match; positionals stay for its arguments |
+| a fallback option comes before or inside the command path (`app --format json group sub`) | it takes as many following tokens as its declaration says (the matched command's own declaration of that key, else the fallback's), and the next token can still name a sub-command |
+| an option the fallback does not declare comes before the command path | the command path ends there: a command's own option is only valid after the command, so it is matched against the command reached so far |
+| a sub-command's name comes after the terminator | it is not matched: the path never reads the terminator's remainder |
 | a required argument has no positional left | `missing-argument` |
 | positionals remain after every declared argument is filled | `extra-arguments` |
 | an option key matches no declared name or alias | `invalid-key` |
@@ -202,13 +205,35 @@ graph TD
   M[command with sub-commands] --> IT[scan sub-commands last to first]
   IT --> NN{sub-command has no name?}
   NN -- yes --> DEF["match it; consume nothing (position decides: declared last it shadows, declared first it is the fallback)"]
-  NN -- no --> NM{"first positional equals its name or alias?"}
+  NN -- no --> NM{"next path token equals its name or alias? — sub-graph B2"}
   NM -- no --> IT
-  NM -- yes --> SH[consume that positional] --> NEST{has sub-commands?}
+  NM -- yes --> SH[consume that token] --> NEST{has sub-commands?}
   NEST -- yes --> REC[recurse; deepest match wins]
   NEST -- no --> HIT[matched]
   IT --> EXH[none matched: the current command is the match]
 ```
+
+### Sub-graph B2 — the next path token, entered from B
+
+The path tokens are read in command line order: the positionals before the first
+option, then the tokens each fallback option does not take as its value.
+
+```mermaid
+graph TD
+  P[next path token] --> POS{"a positional before the first option is left?"}
+  POS -- yes --> TOK[that positional]
+  POS -- no --> OCC{"an option occurrence is left?"}
+  OCC -- no --> NONE[none: the path ends]
+  OCC -- yes --> FB{"the fallback declares its key?"}
+  FB -- no --> NONE
+  FB -- yes --> AR["skip the tokens it takes: the arity of the current command's own declaration of the key, else the fallback's"]
+  AR --> LEFT{"a following token is left?"}
+  LEFT -- yes --> TOK2[that token]
+  LEFT -- no --> OCC
+```
+
+Without a fallback no option is walked, so only the positionals before the
+first option can name the path.
 
 ### Sub-graph C — fill (`processCommand`), entered by UC2
 
@@ -334,6 +359,11 @@ are matched, and `hidden` affects only how `presentation/` lists it.
 | sub-command has no name | declared after its named siblings | `a nameless sub-command declared last shadows its named siblings` |
 | recurse, deepest match wins | a matched sub-command that itself nests | `an invocation naming a nested path matches the deepest command` |
 | scan last to first | two sub-commands declared under one name | `the later of two sub-commands sharing a name wins` |
+| skip the tokens it takes; that token (B2) | a fallback flag before a sub-command's name | `a global option before a sub-command name does not take the name as its value` |
+| skip the tokens it takes (B2) | a fallback option taking a value before a sub-command's name | `a global option's value before a sub-command name is not taken as the name` |
+| skip the tokens it takes; recurse (B, B2) | a fallback option between a group and its sub-command | `a global option between a group and its sub-command` |
+| the fallback declares its key? — no (B2) | a sub-command's own option before its name | `a command's own option before the command name ends the command path` |
+| none: the path ends (B2) | the sub-command's name after the terminator | `a command name after the terminator is not matched` |
 
 ### UC2 — `lookupCommand`, filling
 

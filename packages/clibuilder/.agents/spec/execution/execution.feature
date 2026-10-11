@@ -190,6 +190,31 @@ Feature: Execution
     When it is invoked with that option and a value the global flag would reject
     Then no usage error is reported for it
 
+  Scenario: a global flag before the command name applies and the command runs
+    Given an application with a command and a group holding a sub-command
+    When the verbose, silent or debug flag comes before the command name, or between the group and its sub-command
+    Then the display level is set by the flag
+    And the named command runs
+
+  Scenario: the global format before the command name sets the format the command runs in
+    Given an application under output axi with a command and a group holding a sub-command
+    When the format option and its value come before the command name, or between the group and its sub-command
+    Then the named command runs
+    And it reads that format as this.format
+
+  Scenario: help asked before the command name shows that command's help
+    Given an application with a command
+    When the help flag comes before the command name
+    Then the command's help is shown
+    And no command runs
+
+  Scenario: a command's own option before the command name stays a usage error
+    Given an application with a command declaring its own option
+    When that option comes before the command name
+    Then it is reported as an unknown option of the application
+    And no command runs
+    And the cli exits with the usage code
+
   Scenario: a usage error is printed with help and exits with the usage code
     Given an invocation carrying an unknown option that is not global
     When it is run

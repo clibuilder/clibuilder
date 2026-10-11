@@ -56,3 +56,20 @@ test('an unknown command is a usage error', () => {
 	assert.equal(r.code, 2)
 	assert.match(r.stdout + r.stderr, /no-such-command/)
 })
+
+test('a global flag before the command applies, and the command runs', () => {
+	const r = run('--silent', 'echo', 'hi')
+	assert.deepEqual(r, { code: 0, stdout: '', stderr: '' })
+})
+
+test('--help before a group and its sub-command shows the sub-command help', () => {
+	const r = run('--help', 'plugins', 'list')
+	assert.equal(r.code, 0)
+	assert.match(r.stdout, /Usage: test-cli plugins list/)
+})
+
+test("a command's own option before the command stays a usage error", () => {
+	const r = run('--format', 'json', 'plugins', 'list')
+	assert.equal(r.code, 2)
+	assert.match(r.stderr, /unknown option --format/)
+})
