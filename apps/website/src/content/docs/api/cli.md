@@ -50,6 +50,7 @@ type Builder = {
   readonly description: string
   default(command): Omit<this, 'default'> & Executable
   command(command): this & Executable
+  use(extension): this & Executable
 }
 ```
 
@@ -80,6 +81,32 @@ cli({ name: 'app', version: '1.0.0' })
 ```
 
 See [`command()`](/clibuilder/api/command/) for the full shape.
+
+### `.use(extension)`
+
+Adds an extension: a function that adds commands and registry entries before `parse()` picks the
+command to run. [`@clibuilder/plugins`](/clibuilder/guides/plugins/#loading-plugins-with-clibuilderplugins)
+is one.
+
+```ts
+import type { Extension } from 'clibuilder'
+
+const hello: Extension = ({ addCommand }) => {
+  addCommand({ name: 'hello', run: () => 'world' })
+}
+
+cli({ name: 'app', version: '1.0.0' }).use(hello).parse(process.argv)
+```
+
+The extension receives an `ExtensionContext`: `host` (the CLI's `name` and `version`), `cwd`, `ui`,
+`registry`, `addCommand(command)`, and `resolveConfig()`, which resolves to the CLI's config and
+where it came from (`source.type` is `'none'` when the CLI sets no `config`).
+
+- Extensions run in the order `.use()` was called, each awaited before the next.
+- Their commands come after the CLI's own `.command()` and `.default()` commands.
+- They run once, on the first `parse()` that needs the command tree. A bare `--version` is answered
+  without running them; `--help` waits for them, because it lists their commands.
+- `.use()` makes `parse()` available, because an extension may supply every command.
 
 ## `Executable`
 

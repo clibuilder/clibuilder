@@ -1,9 +1,10 @@
 import { forEachKey, type RequiredPick } from 'type-plus'
 import { getBaseCommand } from '../builtin/base_command.js'
 import { pluginsCommand } from '../builtin/plugin_commands/group.js'
-import type { cli } from '../cli.js'
+import type { cli, Extension, ExtensionContext } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import { describeConfigSource } from '../config.js'
+import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
@@ -12,6 +13,15 @@ import { formatLookupError } from '../render/error.js'
 import type { z } from '../zod.js'
 import { exitCodes, isCliError } from './errors.js'
 import { state } from './state.js'
+
+/**
+ * Marks the extension `@clibuilder/plugins` returns from `plugins()`.
+ *
+ * When one is used, core skips its own config-driven plugin loading and its automatic
+ * `plugins` group, so nothing loads twice (slim-dependencies RFC section 9.8).
+ * Both go away in v12, and this marker with them.
+ */
+const pluginsExtensionMarker = Symbol.for('clibuilder.plugins-extension')
 
 export function builder(
 	context: Context,
@@ -27,22 +37,19 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	const description = s.description
 	const pending: Promise<any>[] = []
 	const registry = createRegistry()
+	const extensions: Extension[] = []
+	let loadingPlugins: Promise<void> | undefined
+	let extending: Promise<void> | undefined
 	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
 	const mayAcceptPlugins = s.configName || s.keywords.length > 0
-	if (mayAcceptPlugins) s.command.commands.push(adjustCommand(s.command, pluginsCommand))
+	// v11 plugin path: the automatic `plugins` group. Removed in v12 (slim-dependencies RFC section 9.8).
+	const autoPluginsCommand = mayAcceptPlugins ? adjustCommand(s.command, pluginsCommand) : undefined
+	if (autoPluginsCommand) s.command.commands.push(autoPluginsCommand)
 
 	if (loadingConfig) {
 		pending.push(
 			(async () => {
-				const config = await loadingConfig
-				s.config = config
-				if (config?.plugins) {
-					const commands = await context.loadPlugins(config.plugins, registry, {
-						name: s.name,
-						version: s.version || ''
-					})
-					s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c)))
-				}
+				s.config = await loadingConfig
 			})()
 		)
 	}
@@ -59,7 +66,55 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		command(command) {
 			s.command.commands.push(adjustCommand(s.command, command))
 			return { ...this, parse }
+		},
+		use(extension) {
+			extensions.push(extension)
+			return { ...this, parse }
 		}
+	}
+
+	/**
+	 * v11 plugin path: loads the plugins the config names, and keeps the automatic `plugins` group.
+	 * Both are skipped when `@clibuilder/plugins` takes over, so nothing loads twice.
+	 * Removed in v12 (slim-dependencies RFC section 9.8): delete this function and its call.
+	 */
+	function loadConfiguredPlugins() {
+		return (loadingPlugins ??= (async () => {
+			if (extensions.some((e) => (e as any)[pluginsExtensionMarker])) {
+				s.command.commands = s.command.commands.filter((c) => c !== autoPluginsCommand)
+				return
+			}
+			if (!s.config?.plugins) return
+			const commands = await context.loadPlugins(s.config.plugins, registry, {
+				name: s.name,
+				version: s.version || ''
+			})
+			s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c)))
+		})())
+	}
+
+	/**
+	 * Runs every `use()` extension in the order it was added, each awaited before the next.
+	 *
+	 * Runs once, on the first `parse()` that needs the command tree.
+	 */
+	function extend() {
+		return (extending ??= (async () => {
+			const extensionContext: ExtensionContext = {
+				host: { name: s.name, version: s.version || '' },
+				cwd: context.cwd,
+				ui: createExtensionUI(context, s),
+				registry,
+				addCommand(command) {
+					s.command.commands.push(adjustCommand(s.command, command as Command))
+				},
+				async resolveConfig() {
+					if (!s.configName) return { config: undefined, source: { type: 'none' }, candidates: [] }
+					return context.resolveConfig(s.configName)
+				}
+			}
+			for (const extension of extensions) await extension(extensionContext)
+		})())
 	}
 
 	async function parse(argv: string[]) {
@@ -84,6 +139,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.dump()
 
 		if (s.configName && baseArgs['show-config']) return showConfig(s.configName)
+
+		// a bare `--version` does not need the command tree, so it is answered without the extensions:
+		// a slow or broken one cannot make `cli --version` hang or fail.
+		await loadConfiguredPlugins()
+		if (!isBareVersion(argv)) await extend()
 
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
@@ -171,6 +231,39 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		}
 		const errors = r.error.flatten().fieldErrors
 		return { errors }
+	}
+}
+
+/**
+ * Whether the only token after the binary is `--version` or `-v`.
+ *
+ * Anything else, `cli <cmd> --version` included, needs the command tree,
+ * because a sub-command may declare `-v` or `--version` as its own option.
+ */
+function isBareVersion(argv: string[]) {
+	const tokens = argv.slice(2)
+	return tokens.length === 1 && (tokens[0] === '--version' || tokens[0] === '-v')
+}
+
+/**
+ * The ui an extension logs through: the framework's own,
+ * so its messages follow `--silent`, `--verbose` and `--debug-cli` like the framework's do.
+ */
+function createExtensionUI(ctx: Context, state: state.Result): UI {
+	const ui = ctx.ui
+	return {
+		get displayLevel() {
+			return ui.displayLevel
+		},
+		set displayLevel(level) {
+			ui.displayLevel = level
+		},
+		info: (...args) => ui.info(...args),
+		warn: (...args) => ui.warn(...args),
+		error: (...args) => ui.error(...args),
+		debug: (...args) => ui.debug(...args),
+		showHelp: () => ui.showHelp(state.name, state.command),
+		showVersion: () => ui.showVersion(state.version)
 	}
 }
 

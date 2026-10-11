@@ -1,0 +1,84 @@
+{
+	"name": "@clibuilder/plugins",
+	"version": "0.0.0",
+	"description": "Plugin loading and the plugins command group for clibuilder CLIs",
+	"keywords": [
+		"cli",
+		"clibuilder",
+		"plugin",
+		"plugins"
+	],
+	"homepage": "https://github.com/clibuilder/clibuilder/tree/main/packages/plugins",
+	"bugs": {
+		"url": "https://github.com/clibuilder/clibuilder/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/clibuilder/clibuilder.git",
+		"directory": "packages/plugins"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./esm/index.d.ts",
+			"import": "./esm/index.js",
+			"require": "./cjs/index.js",
+			"default": "./cjs/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"main": "./cjs/index.js",
+	"types": "./esm/index.d.ts",
+	"files": [
+		"cjs",
+		"esm",
+		"src",
+		"!**/*.internal.*",
+		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+	],
+	"scripts": {
+		"build": "run-p build:tsdown typecheck",
+		"build:tsdown": "tsdown",
+		"build:watch": "tsdown --watch",
+		"clean": "rimraf .turbo coverage cjs esm",
+		"coverage": "vitest run --coverage",
+		"depcheck": "depcheck",
+		"nuke": "run-s clean && rimraf node_modules",
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"watch": "vitest",
+		"w": "pnpm watch"
+	},
+	"dependencies": {
+		"find-installed-packages": "^4.0.1",
+		"import-meta-resolve": "^4.2.0",
+		"search-packages": "^2.2.3"
+	},
+	"devDependencies": {
+		"@types/node": "^24.12.2",
+		"@vitest/coverage-istanbul": "^4.1.11",
+		"clibuilder": "workspace:*",
+		"depcheck": "^1.4.3",
+		"npm-run-all2": "^6.2.6",
+		"rimraf": "^5.0.10",
+		"tsdown": "^0.23.0",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.11"
+	},
+	"peerDependencies": {
+		"clibuilder": "^11.5.0 || ^12.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">= 20.19"
+	}
+}
