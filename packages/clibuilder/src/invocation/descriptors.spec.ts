@@ -281,6 +281,36 @@ describe('usage errors from t', () => {
 		])
 	})
 
+	it('reports a flag given a value other than true or false', async () => {
+		const cmd = echo({ dry: { description: 'd', type: t.boolean().optional() } })
+		expect((await parse(cmd, 'echo --dry=yes')).errors).toEqual([
+			{
+				type: 'invalid-value',
+				key: 'dry',
+				message: 'expected no value, true or false',
+				value: 'yes',
+				keyKind: 'boolean',
+				constraint: 'boolean'
+			}
+		])
+	})
+
+	it('reports every value of an argument when a check on the whole array fails', async () => {
+		const cmd = echo({}, [
+			{ name: 'ids', description: 'd', type: t.array(t.int()).check((v) => v.length < 2 || 'at most one') }
+		])
+		expect((await parse(cmd, 'echo 1 2')).errors).toEqual([
+			{
+				type: 'invalid-value',
+				key: 'ids',
+				message: 'at most one',
+				value: ['1', '2'],
+				keyKind: 'array',
+				constraint: 'int'
+			}
+		])
+	})
+
 	it('reports a scalar given twice as expect-single with its kind', async () => {
 		const cmd = echo({ port: { description: 'd', type: t.int() } })
 		expect((await parse(cmd, 'echo --port 1 --port 2')).errors).toEqual([
