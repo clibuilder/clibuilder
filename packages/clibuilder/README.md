@@ -16,7 +16,7 @@ A highly customizable command line application builder.
 
 📖 **[Documentation](https://clibuilder.github.io/clibuilder/)**
 
-## What's new in v12 (unreleased)
+## What's new in v12
 
 - Agent-facing output is the default (`cli({ output: 'axi' })`):
   - a value returned from `run()` is printed on stdout, in the format the caller asked for with the global `--format <toon|json|text>`;
@@ -32,11 +32,11 @@ Key highlights:
 
 - Support standalone CLI
   - `name` and `version` are now required and not read from `package.json`.
-- Plugins are loaded through config (in v12, unreleased, by `@clibuilder/plugins`)
+- Plugins are loaded through config (in v12, by `@clibuilder/plugins`)
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
-- `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
-- Distribute `ESM` along with `CJS` (in v12, unreleased, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
+- `keywords` are now used for plugin lookup (in v12, an option of `plugins()`).
+- Distribute `ESM` along with `CJS` (in v12, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
 
 ## Feature Highlights
 
@@ -203,7 +203,7 @@ Every declaration follows `args-minus`:
   with the option's `constraint` (and `allowed` values for `t.enum`).
   A converter that throws a plain `Error` reports its message; any other throw is a bug and propagates.
 
-In v12 (unreleased) `t` is the only way to declare a type: `z` and zod are removed.
+In v12 `t` is the only way to declare a type: `z` and zod are removed.
 An argument without a `type` is a string, and an option without a `type` is an optional flag.
 
 A cli loads config with `.use(config())` from `clibuilder/config`.
@@ -230,7 +230,7 @@ cli({ ... })
 ## Config
 
 Config file can be written in `JSON`, `YAML`, `cjs`, or `mjs`.
-In v12 (unreleased) `js-yaml` is an optional peer dependency:
+In v12 `js-yaml` is an optional peer dependency:
 a cli whose users write a `.yaml` or `.yml` config installs it next to `clibuilder` (`npm install js-yaml`).
 Without it, reading a YAML config fails with a `CliError` whose code is `missing-peer-dependency`.
 Common filename are supported:
@@ -258,7 +258,7 @@ Plugins are defined inside the config:
 ```
 
 Plugin support is moving to [`@clibuilder/plugins`](https://github.com/clibuilder/clibuilder/tree/main/packages/plugins), which a CLI adds with
-`.use(plugins())`. Both ways work in v11. In v12 (unreleased) core loads no plugins, and `cli({ keywords })` and `this.keywords` are removed: add
+`.use(plugins())`. Both ways work in v11. In v12 core loads no plugins, and `cli({ keywords })` and `this.keywords` are removed: add
 `.use(plugins({ keywords: ['my-cli-plugin'] }))` to the cli. See the [v12 migration](https://clibuilder.github.io/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins).
 
 ## Defining Plugins
