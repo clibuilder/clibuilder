@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import fs, { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { unifiedDiff } from './diff.js'
@@ -102,6 +102,19 @@ describe('expandPatterns', () => {
 		}
 		expect(expandPatterns(['.'], dir)).toEqual([join(dir, 'a.ts'), join(dir, 'b.mjs'), join(dir, 'sub/e.tsx')])
 		expect(expandPatterns(['**/*.ts'], dir)).toEqual([join(dir, 'a.ts')])
+	})
+})
+
+describe('expandPatterns on Node.js before 22', () => {
+	it('asks for the shell to expand a glob', () => {
+		const original = fs.globSync
+		// @ts-expect-error simulate a Node.js without fs.globSync
+		delete fs.globSync
+		try {
+			expect(() => expandPatterns(['src/*.ts'], '.')).toThrow('Globs need Node.js 22 or newer')
+		} finally {
+			fs.globSync = original
+		}
 	})
 })
 

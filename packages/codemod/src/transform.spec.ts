@@ -128,6 +128,18 @@ describe('zod', () => {
 		expect(result.output).toBe("import { t as ct } from 'clibuilder'\nconst t = 1\nct.string()\n")
 	})
 
+	it('numbers t when t and ct are both taken', () => {
+		const result = transform("import { z } from 'clibuilder'\nconst t = 1, ct = 2\nz.string()\n", 'x.ts')
+		expect(result.output).toBe("import { t as t2 } from 'clibuilder'\nconst t = 1, ct = 2\nt2.string()\n")
+	})
+
+	it('removes an unused z import', () => {
+		expect(transform("import { z } from 'clibuilder'\nexport {}\n", 'x.ts').output).toBe('export {}\n')
+		expect(transform("import { cli, z } from 'clibuilder'\ncli\n", 'x.ts').output).toBe(
+			"import { cli } from 'clibuilder'\ncli\n"
+		)
+	})
+
 	it('leaves z from zod alone', () => {
 		const source = "import { command } from 'clibuilder'\nimport { z } from 'zod'\nz.string().email()\n"
 		expect(transform(source, 'x.ts').output).toBe(source)
