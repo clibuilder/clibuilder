@@ -586,9 +586,10 @@ import { config } from 'clibuilder/config'
 cli({ name: 'my-cli', version: '1.0.0' }).use(config())
 ```
 
-Add `.use(config())` before the `.command()` and `.default()` calls that declare `config`. A command
-that declares `config` on a CLI without `.use(config())` is a type error when `.use(config())` comes
-before it, and fails at run time otherwise:
+Add `.use(config())` before the `.command()` and `.default()` calls that declare `config`. A
+`.command()` or `.default()` that declares `config` before `.use(config())`, or on a CLI without it,
+is a type error. A sub-command or a command an extension adds is checked at run time instead, and
+fails with:
 
 ```
 Error: command 'x' declares config, but the cli does not load config. Add .use(config()) from 'clibuilder/config' to the cli.
