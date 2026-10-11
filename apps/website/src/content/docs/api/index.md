@@ -41,6 +41,8 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | [`cli.Command.Options`](/clibuilder/api/command/#options) | The options record declaration |
 | [`UI`](/clibuilder/api/ui/) | The object on `this.ui` inside `run()` |
 | [`DisplayLevel`](/clibuilder/api/ui/#displaylevel) | `'none' \| 'info' \| 'debug' \| 'trace'` |
+| [`Extension`](/clibuilder/api/cli/#useextension) | A function passed to `.use()` (unreleased, 11.5.0) |
+| [`ExtensionContext`](/clibuilder/api/cli/#useextension) | What an extension receives (unreleased, 11.5.0) |
 | [`PluginActivationContext`](/clibuilder/api/command/#pluginactivationcontext) | What a plugin's `activate()` receives |
 | `Registry` | Read-only values and contributions available as `this.registry` in commands |
 

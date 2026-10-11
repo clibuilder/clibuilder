@@ -15,24 +15,11 @@ Two mechanisms are involved, and it helps to keep them apart:
 
 ## Loading plugins with `@clibuilder/plugins`
 
-`@clibuilder/plugins` moves plugin support out of `clibuilder`. In `clibuilder` 12 it is the only way
-to load plugins; in 11 both ways work, and the rest of this page describes the built-in one.
-
-```ts
-import { cli } from 'clibuilder'
-import { plugins } from '@clibuilder/plugins'
-
-cli({ name: 'my-cli', version: '1.0.0', config: true })
-  .use(plugins({ keywords: ['my-cli-plugin'] }))
-  .parse(process.argv)
-```
-
-`plugins()` adds the same `plugins` command and loads the plugins named in config, as below. It can
-also load plugins the CLI ships with (`include`), and, when asked, the project's direct dependencies
-that carry one of the keywords (`dependencies: true`). Once a CLI uses it, `clibuilder` skips its
-own plugin loading and its own `plugins` command, so nothing loads twice. See the
-[package README](https://github.com/clibuilder/clibuilder/tree/main/packages/plugins) for the
-options.
+[`@clibuilder/plugins`](/clibuilder/packages/plugins/) moves plugin support out of `clibuilder` into
+a package a CLI opts into with `.use(plugins())`. It is on `main` but not published yet. In
+`clibuilder` 11 the built-in plugin support described on the rest of this page keeps working.
+`clibuilder` 12 is planned to remove it, which makes `@clibuilder/plugins` the only way to load
+plugins (see the [v12 roadmap](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins)).
 
 ## Enabling plugins in your CLI
 
