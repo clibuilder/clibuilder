@@ -54,7 +54,8 @@ import { testCommand } from 'clibuilder/testing'
 | [`Extension`](/clibuilder/api/cli/#useextension) | A function passed to `.use()` (11.5.0) |
 | [`ExtensionContext`](/clibuilder/api/cli/#useextension) | What an extension receives (11.5.0) |
 | [`PluginActivationContext`](/clibuilder/api/command/#pluginactivationcontext) | What a plugin's `activate()` receives |
-| `mockPluginContext()` | A plugin activation context for testing a plugin's `activate()`, from `clibuilder/testing` ([Plugins](/clibuilder/guides/plugins/)) |
+| [`mockExtensionContext()`](/clibuilder/api/test-command/#mockextensioncontext) | A context for testing an extension passed to `.use()`, from `clibuilder/testing` |
+| [`mockPluginContext()`](/clibuilder/guides/plugins/) | A context for testing a deprecated plugin's `activate()`, from `clibuilder/testing` |
 | `Registry` | Read-only values and contributions available as `this.registry` in commands |
 
 Most of the command types live under the `cli` namespace rather than at the top level, so you rarely
