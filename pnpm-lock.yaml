@@ -303,6 +303,9 @@ importers:
 
   packages/clibuilder:
     dependencies:
+      args-minus:
+        specifier: workspace:^
+        version: link:../args-minus
       find-installed-packages:
         specifier: ^4.0.1
         version: 4.0.1

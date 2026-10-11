@@ -436,3 +436,45 @@ describe('default', () => {
 		expect((await parseArgsAsync({ args: [], options })).options).toEqual({ n: 1 })
 	})
 })
+
+describe('ParseArgsError value and detail', () => {
+	it('names the raw value and what was expected, apart from the message', () => {
+		const error = errorOf(() => parseArgs({ args: ['--port', 'abc'], options: { port: { type: t.int({ min: 1 }) } } }))
+		expect(error.value).toBe('abc')
+		expect(error.detail).toBe('expected an integer of at least 1')
+		expect(error.message).toBe(
+			"Invalid value for option 'port': expected an integer of at least 1, got 'abc' (from '--port')"
+		)
+	})
+	it('has no value when none was given', () => {
+		const error = errorOf(() => parseArgs({ args: ['--port'], options: { port: { type: t.int() } } }))
+		expect(error).toMatchObject({ kind: 'missing-value', value: undefined, detail: 'a value is required' })
+	})
+	it("is a check's own message", () => {
+		const error = errorOf(() =>
+			parseArgs({ args: ['--n=3'], options: { n: { type: t.int().check((v) => v % 2 === 0 || 'must be even') } } })
+		)
+		expect(error).toMatchObject({ value: '3', detail: 'must be even' })
+	})
+	it('says the text is not JSON without repeating it', () => {
+		const error = errorOf(() => parseArgs({ args: ['--j={'], options: { j: { type: t.json() } } }))
+		expect(error).toMatchObject({ value: '{', detail: 'not valid JSON' })
+		expect(error.message).toContain("'{' is not valid JSON")
+	})
+	it('reports a missing option and a misplaced group member', () => {
+		expect(errorOf(() => parseArgs({ args: [], options: { n: { type: t.int() } } }))).toMatchObject({
+			kind: 'missing-option',
+			detail: 'a value is required'
+		})
+		expect(
+			errorOf(() => parseArgs({ args: ['-nv'], options: { n: { type: t.int() }, v: { type: t.boolean() } } }))
+		).toMatchObject({ kind: 'invalid-group', detail: 'takes a value, so it can only be the last option in a group' })
+	})
+	it('carries the raw value of a type-name option', () => {
+		const error = errorOf(() => parseArgs({ args: ['--n=x'], options: { n: { type: 'number' } } }))
+		expect(error).toMatchObject({ value: 'x', detail: 'x' })
+	})
+	it('defaults the detail to the message', () => {
+		expect(new ParseArgsError('message', 'n', '--n').detail).toBe('message')
+	})
+})

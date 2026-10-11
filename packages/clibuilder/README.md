@@ -154,6 +154,48 @@ cli({... }).default({
 })
 ```
 
+### Option types with `t`
+
+`t` declares an argument or option type without zod.
+Each descriptor converts the raw value, carries its constraints as data that help and usage errors show,
+and gives `run()` the exact type.
+It comes from [`args-minus`](../args-minus/readme.md), which converts and checks every declaration made with it.
+
+```ts
+import { t } from 'clibuilder'
+
+cli({ ... }).command({
+  name: 'serve',
+  arguments: [{ name: 'root', description: 'root folder', type: t.string() }],
+  options: {
+    port: { description: 'port', type: t.int({ min: 1, max: 65535 }), default: 8080, alias: ['p'] },
+    format: { description: 'format', type: t.enum(['toon', 'text', 'json']).optional() },
+    tag: { description: 'tags', type: t.array(t.string()).optional() },
+    timeout: { description: 'e.g. 1m30s', type: t.custom(parseDuration).optional() },
+    email: { description: 'email', type: t.string().optional().check(z.string().email()) }
+  },
+  run(args) {
+    // args.port: number, args.format: 'toon' | 'text' | 'json' | undefined, args.tag: string[] | undefined
+  }
+})
+```
+
+Help shows each constraint, e.g. `[-p|--port <int 1..65535>]` and `[--format <toon|text|json>]`.
+
+A command can mix `z` and `t`: each argument and option is parsed by its own type,
+and declarations with `z` behave exactly as before.
+Declarations with `t` follow `args-minus`:
+
+- an option that is neither `.optional()` nor given a `default` must be passed, and is reported as missing otherwise;
+- `t.boolean()` is a flag: it takes no following value, but `--dry=false` is accepted;
+- `t.array()` takes one value per occurrence: `--tag a --tag b`;
+- `.check()` and `t.custom()` may be async; they run after `--help` and `--version` are answered;
+- a value that fails conversion, a constraint or a check is an `invalid-value` usage error
+  with the option's `constraint` (and `allowed` values for `t.enum`).
+  A converter that throws a plain `Error` reports its message; any other throw is a bug and propagates.
+
+The `z` form is removed in v12.
+
 If you invoke a command expecting a `config`,
 the config will be loaded.
 Each command defines their own config.

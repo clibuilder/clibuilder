@@ -1,3 +1,4 @@
+import type { DefaultOf } from 'args-minus'
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
 import type { ConfigLoadResult } from './config.js'
@@ -5,6 +6,7 @@ import type { UI } from './core/ports.js'
 import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
+import type { AnyDescriptor, OutputOf } from './t.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
@@ -76,7 +78,7 @@ export namespace cli {
 	/**
 	 * One error found while parsing the arguments.
 	 * `type` tells which kind it is: `invalid-key`, `missing-argument`,
-	 * `extra-arguments`, `invalid-value`, or `expect-single`.
+	 * `extra-arguments`, `invalid-value`, `conflicting-options`, or `expect-single`.
 	 */
 	export type UsageError = lookupCommand.Error
 
@@ -166,6 +168,14 @@ export namespace cli {
 	)
 
 	export namespace Command {
+		/**
+		 * The value a descriptor declaration gives `run()`: its output type,
+		 * or that or `undefined` when the value may be absent.
+		 */
+		export type DescriptorValue<D extends AnyDescriptor, Present extends boolean> =
+			// the unknown descriptor of the default `Options`
+			0 extends 1 & OutputOf<D> ? any : Present extends true ? OutputOf<D> : OutputOf<D> | undefined
+
 		export type DefaultCommand<
 			ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
 			A extends Argument[] = Argument[],
@@ -200,24 +210,34 @@ export namespace cli {
 					commands: Command[]
 			  }
 
-		export type Argument<
-			Name extends string = string,
-			Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>
-		> = { name: Name; description: string; type?: Type }
+		/**
+		 * What an argument or option can be declared with in `type`:
+		 * a zod type, or a descriptor from `t`.
+		 * A command can mix both; each declaration is parsed by its own type.
+		 * The zod form is removed in v12.
+		 */
+		export type Type = z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> | AnyDescriptor
 
-		export type Options<
-			Name extends string = string,
-			Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>
-		> = Record<Name, Options.Entry<Type>>
+		export type Argument<Name extends string = string, T extends Type = Type> = {
+			name: Name
+			description: string
+			type?: T
+		}
+
+		export type Options<Name extends string = string, T extends Type = Type> = Record<Name, Options.Entry<T>>
 
 		export namespace Options {
 			export type Default = {
 				help: boolean | undefined
 			}
-			export type Entry<Type extends z.ZodType<any> | z.ZodOptionalType<z.ZodType<any>> = z.ZodType<any>> = {
+			export type Entry<T extends Type = Type> = {
 				description: string
-				type?: Type
-				default?: z.infer<Type>
+				type?: T
+				/**
+				 * The value used when the option is not passed.
+				 * With a descriptor from `t` it is not converted, but the descriptor's checks run on it.
+				 */
+				default?: T extends AnyDescriptor ? DefaultOf<OutputOf<T>> : T extends z.ZodTypeAny ? z.infer<T> : never
 				alias?: Alias[]
 				/**
 				 * Names of the options this one cannot be used with.
@@ -232,15 +252,22 @@ export namespace cli {
 			? O extends Options<infer OName>
 				? {
 						[k in AName]: Extract<UnionOfValues<A>, { name: k }>['type'] extends infer AT
-							? AT extends z.ZodType<any>
-								? z.infer<AT>
-								: string
+							? AT extends AnyDescriptor
+								? DescriptorValue<AT, AT extends { isOptional: false } ? true : false>
+								: AT extends z.ZodType<any>
+									? z.infer<AT>
+									: string
 							: never
 					} & {
 						[k in OName]: O[k]['type'] extends infer OT
-							? OT extends z.ZodType<any>
-								? z.infer<OT>
-								: boolean | undefined
+							? OT extends AnyDescriptor
+								? DescriptorValue<
+										OT,
+										O[k] extends { default: unknown } ? true : OT extends { isOptional: false } ? true : false
+									>
+								: OT extends z.ZodType<any>
+									? z.infer<OT>
+									: boolean | undefined
 							: never
 					} & (string extends OName ? Options.Default : Omit<Options.Default, OName>)
 				: never

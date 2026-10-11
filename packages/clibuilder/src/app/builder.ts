@@ -7,6 +7,7 @@ import { describeConfigSource } from '../config.js'
 import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
+import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
 import { formatLookupError } from '../render/error.js'
@@ -161,6 +162,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		// `--help` is answered before the errors are reported: it is the one flag
 		// that is always valid, and asking for help is not a usage error.
 		if (baseArgs.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+
+		// declarations with `t` are converted and checked by `args-minus`, which may await a converter or a check,
+		// so it runs after `--help` and `--version` are answered
+		await convertDescriptors(r)
 
 		// the global options live on the base command, so a sub command that declares
 		// no options of its own reports them as unknown. They are always accepted,

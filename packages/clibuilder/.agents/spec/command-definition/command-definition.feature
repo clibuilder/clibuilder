@@ -149,3 +149,21 @@ Feature: Command definition
     Given an author writing a declaration literal
     When the literal sets a parent of its own
     Then the declaration does not type-check
+
+  # ── UC3 — declaring types with t ──
+
+  Scenario: an option or argument type may be a t descriptor
+    Given t is imported from clibuilder
+    When an option or argument declares its type with a t descriptor
+    Then the declaration is accepted alongside zod declarations in the same command
+
+  Scenario: run arguments are inferred exactly from a t declaration
+    Given a command declaring options and arguments with t
+    When its run arguments are inferred
+    Then each has the descriptor's output type
+    And it includes undefined only when the declaration is optional() and has no default
+
+  Scenario: a command with t declarations fits where a cli.Command is expected
+    Given a command declaring options with t
+    When it is placed among a group's sub-commands
+    Then it type-checks as a cli.Command

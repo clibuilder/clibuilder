@@ -44,7 +44,7 @@ function isOption(value: string) {
 function startOption(result: parseArgv.State, value: string, occurrences: OptionOccurrence[]) {
 	const bundled = /^-\w+/.test(value)
 	result = bundled ? startSingleCharacterOptions(result, value, occurrences) : startMultiCharacterOptions(result, value)
-	occurrences.push({ key: result.key, inline: [...result.values], following: [] })
+	occurrences.push({ key: result.key, raw: value, inline: [...result.values], following: [] })
 	return result
 }
 
@@ -55,7 +55,7 @@ function startSingleCharacterOptions(result: parseArgv.State, value: string, occ
 		eqIndex > 0 ? [value.slice(1, eqIndex), [value.slice(eqIndex + 1)]] : [value.slice(1), []]
 	const keys = keyString.split('')
 	const lastKey = keys.pop()!
-	for (const key of keys) occurrences.push({ key, inline: ['true'], following: [] })
+	for (const key of keys) occurrences.push({ key, raw: value, inline: ['true'], following: [] })
 	result = addBooleanOptions(result, keys)
 	result.key = lastKey
 	result.values = lastValues

@@ -137,6 +137,15 @@ export class ParseArgsError extends Error {
 	 * The message never repeats their text.
 	 */
 	public readonly issues: readonly StandardSchemaV1.Issue[] | undefined
+	/**
+	 * The raw value that failed, as typed. `undefined` when no value was given.
+	 */
+	public readonly value: string | undefined
+	/**
+	 * What was wrong, without the option and input framing of `message`:
+	 * what the descriptor expected, a check's own message, or a converter's error message.
+	 */
+	public readonly detail: string
 
 	constructor(
 		message: string,
@@ -154,6 +163,8 @@ export class ParseArgsError extends Error {
 			kind?: ParseArgsErrorKind | undefined
 			index?: number | undefined
 			issues?: readonly StandardSchemaV1.Issue[] | undefined
+			value?: string | undefined
+			detail?: string | undefined
 		} = {}
 	) {
 		super(message)
@@ -161,6 +172,8 @@ export class ParseArgsError extends Error {
 		this.kind = details.kind ?? 'invalid-value'
 		this.index = details.index
 		this.issues = details.issues
+		this.value = details.value
+		this.detail = details.detail ?? message
 	}
 }
 
@@ -316,7 +329,7 @@ function* parse(config: ParseArgsConfig): Steps<ParsedArgs> {
 							`Invalid option group '${token.raw}': '${raw}' takes a value, so it can only be the last option in a group`,
 							name,
 							token.raw,
-							{ kind: 'invalid-group' }
+							{ kind: 'invalid-group', detail: 'takes a value, so it can only be the last option in a group' }
 						)
 					}
 					const value = isLast ? (token.value ?? takeFollowingValue(declaration, remainingTokens)) : undefined
@@ -361,7 +374,10 @@ function* parse(config: ParseArgsConfig): Steps<ParsedArgs> {
 			if (descriptor) yield* checkDefault(declaration as DescriptorDeclaration, name)
 			options[name] = Array.isArray(declaration.default) ? [...declaration.default] : declaration.default
 		} else if (descriptor && !descriptor.isOptional) {
-			throw new ParseArgsError(`Missing required option '${name}'`, name, '', { kind: 'missing-option' })
+			throw new ParseArgsError(`Missing required option '${name}'`, name, '', {
+				kind: 'missing-option',
+				detail: 'a value is required'
+			})
 		}
 	}
 	const result: ParsedArgs = { _, __, options }
@@ -469,9 +485,11 @@ function convert(
 	}
 }
 
-function invalid(name: string, detail: string, token: OptionToken, kind: ParseArgsErrorKind = 'invalid-value') {
+function invalid(name: string, detail: string, token: OptionToken, kind: ParseArgsErrorKind, value?: string) {
 	return new ParseArgsError(`Invalid value for option '${name}': ${detail} (from '${token.raw}')`, name, token.raw, {
-		kind
+		kind,
+		value,
+		detail
 	})
 }
 
@@ -482,7 +500,7 @@ function toNumber(value: string) {
 function convertNumber(name: string, value: string | undefined, token: OptionToken) {
 	if (value === undefined) throw invalid(name, 'a number is required', token, 'missing-value')
 	const num = toNumber(value)
-	if (!Number.isFinite(num)) throw invalid(name, value, token)
+	if (!Number.isFinite(num)) throw invalid(name, value, token, 'invalid-value', value)
 	return num
 }
 
@@ -492,7 +510,7 @@ function convertBoolean(name: string, value: string | undefined, token: OptionTo
 	if (value === 'true' || value === 't') return true
 	const num = toNumber(value)
 	if (!Number.isNaN(num)) return num > 0
-	throw invalid(name, value, token)
+	throw invalid(name, value, token, 'invalid-value', value)
 }
 
 // ---------------------------------------------------------------------------
@@ -505,7 +523,11 @@ function convertBoolean(name: string, value: string | undefined, token: OptionTo
  */
 type Site = { name: string; label: string; index: number | undefined; token: OptionToken }
 
-type Fail = (detail: string, issues?: readonly StandardSchemaV1.Issue[]) => Error
+/**
+ * Builds the usage error for a failed value.
+ * `text` is what the message says when it differs from `detail`, such as the value it got.
+ */
+type Fail = (detail: string, issues?: readonly StandardSchemaV1.Issue[], text?: string) => Error
 
 function usageError(
 	name: string,
@@ -516,14 +538,19 @@ function usageError(
 		kind?: ParseArgsErrorKind
 		index?: number | undefined
 		issues?: readonly StandardSchemaV1.Issue[] | undefined
-	}
+		value?: string | undefined
+	},
+	text = detail
 ) {
-	return new ParseArgsError(`Invalid value for option '${label}': ${detail} (from '${input}')`, name, input, details)
+	return new ParseArgsError(`Invalid value for option '${label}': ${text} (from '${input}')`, name, input, {
+		...details,
+		detail
+	})
 }
 
 function* convertAndCheck(data: Data, raw: string | undefined, site: Site): Steps<unknown> {
-	const fail: Fail = (detail, issues) =>
-		usageError(site.name, site.label, site.token.raw, detail, { index: site.index, issues })
+	const fail: Fail = (detail, issues, text) =>
+		usageError(site.name, site.label, site.token.raw, detail, { index: site.index, issues, value: raw }, text)
 	const value = yield* convertDescriptor(data, raw, site, fail)
 	yield* runChecks(data, value, site.label, fail)
 	return value
@@ -560,11 +587,13 @@ function describeExpected(data: Exclude<Data, { kind: 'array' | 'custom' | 'json
 
 function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fail: Fail): Steps<unknown> {
 	const expected = (data: Parameters<typeof describeExpected>[0]) =>
-		fail(`expected ${describeExpected(data)}, got ${quote(raw!)}`)
+		fail(`expected ${describeExpected(data)}`, undefined, `expected ${describeExpected(data)}, got ${quote(raw!)}`)
 	if (data.kind === 'boolean' || (data.kind === 'literal' && typeof data.value === 'boolean')) {
 		const value = raw === undefined || raw === 'true' ? true : raw === 'false' ? false : undefined
 		if (value === undefined || (data.kind === 'literal' && value !== data.value)) {
-			throw raw === undefined ? fail(`expected ${describeExpected(data)}, got no value`) : expected(data)
+			throw raw === undefined
+				? fail(`expected ${describeExpected(data)}`, undefined, `expected ${describeExpected(data)}, got no value`)
+				: expected(data)
 		}
 		return value
 	}
@@ -607,7 +636,7 @@ function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fai
 			try {
 				value = JSON.parse(raw)
 			} catch {
-				throw fail(`${quote(raw)} is not valid JSON`)
+				throw fail('not valid JSON', undefined, `${quote(raw)} is not valid JSON`)
 			}
 			if (!data.schema) return value
 			const result = (yield {

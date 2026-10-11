@@ -1,4 +1,4 @@
-import { command, exitCodes, testCommand, z } from 'clibuilder'
+import { command, exitCodes, t, testCommand, z } from 'clibuilder'
 import { describe, expect, it, vi } from 'vitest'
 import { formatOption } from './format.js'
 import { createUsageErrorHandler, describeUsageError } from './usage.js'
@@ -97,6 +97,20 @@ describe('describeUsageError', () => {
 		name: 'show',
 		arguments: [{ name: 'id', description: 'the id', type: z.optional(z.number()) }],
 		run() {}
+	})
+
+	it('reads the optionality of an argument declared with t', () => {
+		const tcmd = command({
+			name: 'show',
+			arguments: [
+				{ name: 'id', description: 'the id', type: t.int() },
+				{ name: 'tag', description: 'the tag', type: t.string().optional() }
+			],
+			run() {}
+		})
+		expect(describeUsageError({ type: 'missing-argument', name: 'id' }, tcmd).help).toEqual([
+			'`show` takes: <id> [tag]'
+		])
 	})
 
 	it('codes every kind of usage error', () => {

@@ -152,3 +152,13 @@ function testTokenize(args: string[], expected: Token[], parseArgsOptions: Parse
 	}
 	expect(result).toEqual(expected)
 }
+
+it('keeps every = after the first in the value', () => {
+	testTokenize(
+		['--opt=a=b', '-o=c=d'],
+		[
+			{ kind: 'option', name: 'opt', raw: '--opt=a=b', index: 0, dashes: 2, value: 'a=b' },
+			{ kind: 'option', name: 'o', raw: '-o=c=d', index: 1, dashes: 1, value: 'c=d' }
+		]
+	)
+})

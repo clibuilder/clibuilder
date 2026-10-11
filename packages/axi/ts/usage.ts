@@ -11,8 +11,13 @@ function keyName(key: string, command: cli.Command) {
 	return command.arguments?.some((a) => a.name === key) ? `argument <${key}>` : `option ${optionName(key)}`
 }
 
+// a zod type answers `isOptional()`, a `t` descriptor has an `isOptional` field
+function isOptional(type: cli.Command.Type | undefined) {
+	return typeof type?.isOptional === 'function' ? type.isOptional() : !!type?.isOptional
+}
+
 function argumentsHelp(command: cli.Command) {
-	const args = (command.arguments ?? []).map((a) => (a.type?.isOptional() ? `[${a.name}]` : `<${a.name}>`))
+	const args = (command.arguments ?? []).map((a) => (isOptional(a.type) ? `[${a.name}]` : `<${a.name}>`))
 	return args.length > 0 ? `\`${command.name}\` takes: ${args.join(' ')}` : `\`${command.name}\` takes no arguments`
 }
 

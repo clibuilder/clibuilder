@@ -10,6 +10,10 @@ import type { parseArgv } from './argv.js'
  */
 export type OptionOccurrence = {
 	key: string
+	/**
+	 * The argv token that opened the option, e.g. `--key=value` or the whole `-abc` cluster.
+	 */
+	raw: string
 	inline: string[]
 	following: string[]
 }
