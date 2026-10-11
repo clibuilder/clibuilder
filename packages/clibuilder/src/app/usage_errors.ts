@@ -3,6 +3,7 @@ import type { cli } from '../cli.js'
 import type { parseArgv } from '../invocation/argv.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { formats } from '../render/encode.js'
+import { usageErrorCode } from '../render/usage_error.js'
 
 /**
  * The global options, resolved from the base command's lookup alone.
@@ -82,21 +83,7 @@ export function resolveUsageErrors(
 		.map(withCode)
 }
 
-const codes = {
-	'invalid-key': 'unknown-option',
-	'conflicting-options': 'conflicting-options',
-	'invalid-value': 'invalid-value',
-	'expect-single': 'expect-single',
-	'missing-argument': 'missing-argument',
-	'extra-arguments': 'extra-arguments'
-} as const satisfies Record<lookupCommand.Error['type'], string>
-
-/**
- * The stable kebab-case code of a usage error.
- */
-export function usageErrorCode<E extends lookupCommand.Error>(error: E): NonNullable<E['code']> {
-	return codes[error.type] as any
-}
+export { usageErrorCode }
 
 /**
  * Sets `code` on the error, not enumerable, so equality checks and

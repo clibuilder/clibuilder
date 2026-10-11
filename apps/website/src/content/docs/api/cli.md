@@ -87,7 +87,9 @@ mixed in. With `'axi'`, a `CliError` thrown from `run()` is also an answer: it i
 stdout in the CLI's `format`, and nothing is written to stderr for it (see
 [Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)). So is a value
 returned from `run()`: it is printed once on stdout (see [The result channel](#the-result-channel)).
-Usage errors move to stdout in a later release, and `'axi'` becomes the default in v12. Both modes
+So is a usage error: the top-ranked one is one coded error on stdout, with no help (see
+[Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors-with-output-axi)).
+`'axi'` becomes the default in v12. Both modes
 are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
 
 When you pass `streams` or set `output: 'axi'`, the CLI uses its built-in UI:
@@ -152,6 +154,9 @@ in the CLI's default format, never in the bad one:
 $ app list --format yaml
 invalid value for option --format: expected one of: toon, json, text, received "yaml"
 ```
+
+With `output: 'axi'` it is a [coded error on stdout](/clibuilder/guides/failing/#usage-errors-with-output-axi),
+with `allowed for --format: toon, json, text (received "yaml")` in its `help`.
 
 An `onUsageError` handler gets the error with `allowed: ['toon', 'json', 'text']`.
 

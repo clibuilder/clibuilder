@@ -46,7 +46,7 @@ ${helpSections.join('\n\n')}
 `
 }
 
-function generateUsageSection(cliName: string, command: Command) {
+export function generateUsageSection(cliName: string, command: Command) {
 	const nameChain = getCommandNameChain(cliName, command)
 	const hasCommand = command.commands && command.commands.length > 0
 	let message = `Usage: ${nameChain.join(' ')}${hasCommand ? ' <command>' : ''}`

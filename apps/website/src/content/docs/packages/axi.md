@@ -171,6 +171,15 @@ cli({ name: 'my-cli', version: '1.0.0', onUsageError: createUsageErrorHandler() 
 The handler runs before `--format` is parsed, so it writes `toon` unless you build it with another
 `format`.
 
+:::note[Unreleased: core reports usage errors itself]
+On `main`, not in a published release. With `cli({ output: 'axi' })`, `clibuilder` reports usage
+errors itself, in the caller's `--format`, so you do not need this handler. If you pass it, it still
+takes over. Core reports only the top-ranked error, codes an extra argument `extra-arguments`, and
+adds the usage line, the offending `option` or `argument`, and for an invalid value the allowed values
+or the constraint. See
+[Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors-with-output-axi).
+:::
+
 ### Format
 
 | Export | Purpose |

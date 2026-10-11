@@ -399,6 +399,56 @@ Feature: Execution
     Then the cli fails with an error saying to delete the local declaration and read this.format
     And the error points at axi-native RFC section 3.4
 
+  Scenario: in axi output a usage error is reported once on stdout with its code
+    Given a cli with output axi and no usage-error handler
+    When a command is invoked with an unknown option, conflicting options, an invalid value, a repeated single option, a missing argument or an extra argument
+    Then stdout holds one error with the code unknown-option, conflicting-options, invalid-value, expect-single, missing-argument or extra-arguments
+    And it names the offending option or argument, and the value as typed
+    And its help leads with the command's usage line, then the valid options for an unknown option and the arguments for a missing or extra argument
+    And nothing is written to stderr, no help is shown, the command does not run and the cli exits with the usage code
+
+  Scenario: in axi output only the top-ranked usage error is reported
+    Given a cli with output axi and no usage-error handler
+    When a command is invoked with several usage errors at once
+    Then only one error is reported
+    And it is the first by the rank unknown option, conflicting options, invalid value, expect single, missing argument, extra arguments
+
+  Scenario: in axi output an invalid value lists the allowed values or the violated constraint
+    Given a cli with output axi and a command declaring a t.enum, a t.int with a range and a t.string with a pattern
+    When each is given a value it rejects
+    Then the help lists the allowed values of the enum, with the value as typed
+    And the help states the range or the pattern, with the value as typed
+
+  Scenario: in axi output a usage error is encoded in the resolved format
+    Given a cli with output axi
+    When a command is invoked with a usage error, with --format toon, json or text, or none
+    Then the error is encoded in that format, else in the cli's format
+    And a bad --format value is reported in the cli's format with the allowed formats
+
+  Scenario: in axi output a usage-error handler still takes over
+    Given a cli with output axi and a usage-error handler on the cli or on the command
+    When the command is invoked with a usage error
+    Then the handler is called with the errors, the format and the usage exit code
+    And core writes nothing of its own
+
+  Scenario: in axi output a group command invoked bare is a missing-command error
+    Given a cli with output axi and a group command, or no default command
+    When the group, or the cli, is invoked bare
+    Then stdout holds one error with the code missing-command naming the command as typed
+    And its help holds the usage line and the valid sub-commands
+    And no help is shown, nothing is written to stderr and the cli exits with the usage code
+
+  Scenario: in axi output a config failing the command's schema is one coded error
+    Given a cli with output axi and a matched command declaring a config schema
+    When the loaded config does not satisfy it
+    Then stdout holds one error with the code invalid-config and the messages for each failing key
+    And no help is shown and the cli exits with the error code
+
+  Scenario: in console output usage errors, a bare group and a failing config are reported as before
+    Given a cli in the default console output
+    When it meets a usage error, a bare group or a config failing the schema
+    Then every error or failing field is printed and the full help is shown, as before
+
   Scenario: in axi output a CliError is rendered in the format of the invocation
     Given a cli with output axi
     When it is invoked with --format json and its command throws a CliError

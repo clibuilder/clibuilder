@@ -4,7 +4,7 @@
 	"bin": "./bin.mjs",
 	"type": "module",
 	"scripts": {
-		"test": "node --test bin.test.mjs"
+		"test": "node --test bin.test.mjs axi.test.mjs"
 	},
 	"dependencies": {
 		"clibuilder": "workspace:*"
