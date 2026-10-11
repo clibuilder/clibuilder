@@ -303,9 +303,6 @@ importers:
       args-minus:
         specifier: workspace:^
         version: link:../args-minus
-      jsonc-parser:
-        specifier: ^3.3.1
-        version: 3.3.1
     devDependencies:
       '@repobuddy/vitest':
         specifier: ^3.0.1

@@ -20,8 +20,7 @@ there is no `z`, no `isZod*` guard and no `src/zod.ts`. `t` is the only way to
 declare an argument or option type, and a command's `config` is any Standard
 Schema, which the consumer brings.
 
-The runtime dependencies are `@toon-format/toon`, `args-minus` and
-`jsonc-parser`. There is no `zod`, `type-plus` or `tersify` dependency.
+The runtime dependencies are `@toon-format/toon` and `args-minus`. There is no `zod`, `type-plus` or `tersify` dependency.
 `js-yaml` is an optional peer dependency, loaded only when a YAML config file is
 read. When it is not installed, reading a
 YAML config file fails with a `CliError` whose code is `missing-peer-dependency`

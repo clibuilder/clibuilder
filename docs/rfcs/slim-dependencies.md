@@ -68,7 +68,7 @@ Footprint numbers come from installing each dependency alone with `npm install -
 | `tmp` 0.2.7 | `drivers/context.mock.ts`, reached from `testing/test_command.ts` | temp cwd for `testCommand` | no, but **leaks into the main entry**: `index.ts` re-exports `testing/test_command.js` | 1 | 56 KB | **remove**: `fs.mkdtempSync(os.tmpdir())`. Export `testCommand` from `clibuilder/testing` only. |
 | `tslib` ^2.5 | nowhere (no `importHelpers`; target ES2020) | none | no | 1 | 128 KB | **remove** (it is also listed in `devDependencies`) |
 | `js-yaml` 4.x | `config.ts` | `.yaml` / `.yml` config files | only when a cli sets `config` | 2 | 1.2 MB | optional peer (section 5.2) |
-| `jsonc-parser` 3.3.1 | `config.ts` | `.json` / `.jsonc` / `rc` config files with comments | only when a cli sets `config` | 1 | 256 KB | core, optional peer, or a tiny internal parser (open question Q4) |
+| `jsonc-parser` 3.3.1 | `config.ts` | `.json` / `.jsonc` / `rc` config files with comments | only when a cli sets `config` | 1 | 256 KB | replaced by an internal `stripJsonc` plus `JSON.parse` (Q4 resolved, #693) |
 | `import-meta-resolve` 4.2.0 | `drivers/resolve_plugin.ts` | resolves plugin specifiers from the project cwd using ESM rules (`import.meta.resolve(spec, parent)` is still flagged in Node) | only when `config.plugins` is set | 1 | 140 KB | move to `@clibuilder/plugins` with plugin loading (section 9) |
 | `find-installed-packages` 4.0.1 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins list` | no | **18** | 704 KB | move to `@clibuilder/plugins` |
 | `search-packages` 2.2.3 | `builtin/plugin_commands/npm.ts` (lazy `import()`) | `plugins search` | no | 1 | 120 KB | move to `@clibuilder/plugins` |
@@ -332,9 +332,9 @@ A subpath export alone **does not** reduce install size, because `dependencies` 
 |---|---|
 | `package.json` field, `.json`, `.js` / `.mjs` / `.cjs` | built in, no dependencies |
 | `.yaml` / `.yml` | `js-yaml` as an **optional peer** (`peerDependenciesMeta.optional`), loaded with dynamic `import()`. A missing peer gives a coded error naming the package to install: a `CliError` with code `missing-peer-dependency` and `details: { package: 'js-yaml' }` (decided in the implementation). |
-| `.jsonc` / rc with comments | see Q4 |
+| `.jsonc` / rc with comments | built in: an internal `stripJsonc` feeds `JSON.parse`, no dependency |
 
-For Q4 the choices are: keep `jsonc-parser` (0 deps, 256 KB, good error codes) as a regular dependency, make it an optional peer like js-yaml, or replace it with a small internal comment and trailing-comma stripper feeding `JSON.parse`.
+Q4 is resolved: core replaces `jsonc-parser` with a small internal comment and trailing-comma stripper (`stripJsonc`) feeding `JSON.parse` (#693). `jsonc-parser` is not a dependency.
 
 ### 5.3 Plugins
 
@@ -370,7 +370,7 @@ The 1.7 MB in section 1 is `clibuilder@11.3.2`, whose CJS build bundled every de
 
 | Package | `dependencies` | optional `peerDependencies` | install (est.) |
 |---|---|---|---|
-| `clibuilder@12` | `@toon-format/toon` (0 deps, ~120 KB), `args-minus` (in-house, 0 deps) | `js-yaml`, (`jsonc-parser` under Q4) | **3 packages, ~0.6 MB**, down from 43 packages and ~54 MB |
+| `clibuilder@12` | `@toon-format/toon` (0 deps, ~120 KB), `args-minus` (in-house, 0 deps) | `js-yaml` | **3 packages, ~0.6 MB**, down from 43 packages and ~54 MB |
 | `@clibuilder/plugins` (new) | `import-meta-resolve`, `find-installed-packages`, `search-packages` | `clibuilder ^12` | opt-in |
 
 `@toon-format/toon` is core's single third-party dependency. The AXI-native output encodes every toon value with it ([axi-native section 3.4](axi-native.md#34---format-is-not-first-class-6394)), the same choice the reference axi-sdk-js makes. It replaces a hand-rolled encoder, which could disagree with the spec.
@@ -448,7 +448,7 @@ Common to all six:
 1. ~~**Descriptor naming.** `t`, `arg`, or keep the name `z` as a compatible subset?~~ **Resolved:** `t`, plus the codemod (section 3.4).
 2. ~~**Bare Standard Schema as `type`.** Allowed, with shape from `~standard.jsonSchema`, or must shape always come from a descriptor?~~ **Resolved:** shape always comes from a descriptor; a foreign schema is accepted only in `.check()` and as `config` (section 3.4).
 3. ~~**Plugin loading.** Should it stay in core, keeping `import-meta-resolve`, or move entirely to `@clibuilder/plugins` for a zero-dependency core?~~ **Resolved by section 9:** it moves out.
-4. **JSONC.** Keep `jsonc-parser`, make it an optional peer, or use an internal stripper? YAML as an optional peer: acceptable friction for CLIs whose users write YAML config?
+4. ~~**JSONC.** Keep `jsonc-parser`, make it an optional peer, or use an internal stripper?~~ **Resolved:** an internal `stripJsonc` feeding `JSON.parse` (#693). Still open: is YAML as an optional peer acceptable friction for CLIs whose users write YAML config?
 5. ~~**`ui.info` routing under #639.** stdout or stderr, once a result channel owns stdout?~~ **Resolved:** stderr in `output: 'axi'` mode, stdout in `output: 'console'` mode (section 4). The same question as axi-native Q5.
 6. ~~**Drop the CJS build in v12?** `engines >= 20.19` already guarantees `require(esm)`.~~ **Resolved:** yes, dropped (section 5.4).
 7. ~~**toon in core.** Does `@toon-format/toon` become a core dependency, or does core hand-roll toon or expose only a formatter hook?~~ **Resolved:** `@toon-format/toon` is core's single third-party dependency, used for all toon output (section 5.5).
