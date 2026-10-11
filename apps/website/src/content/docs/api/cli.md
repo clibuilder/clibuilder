@@ -104,8 +104,8 @@ where it came from (`source.type` is `'none'` when the CLI sets no `config`).
 
 - Extensions run in the order `.use()` was called, each awaited before the next.
 - Their commands come after the CLI's own `.command()` and `.default()` commands.
-- They run once, on the first `parse()` that needs the command tree. A bare `--version` is answered
-  without running them; `--help` waits for them, because it lists their commands.
+- They run once, on the first `parse()` that needs the command tree. A bare `--version` or `-v` is
+  answered before anything loads, so they do not run; `--help` waits for them, because it lists their commands.
 - `.use()` makes `parse()` available, because an extension may supply every command.
 
 ## `Executable`
