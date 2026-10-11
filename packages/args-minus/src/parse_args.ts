@@ -257,14 +257,10 @@ export async function parseArgsAsync<const O extends OptionDeclarations = Option
 	const steps = parse(config)
 	let next = steps.next()
 	while (!next.done) {
-		let value: unknown
-		try {
-			value = await next.value.value
-		} catch (error) {
-			next = steps.throw(error)
-			continue
-		}
-		next = steps.next(value)
+		next = await Promise.resolve(next.value.value).then(
+			(value) => steps.next(value),
+			(error: unknown) => steps.throw(error)
+		)
 	}
 	return next.value as ParsedArgs<O>
 }
@@ -540,7 +536,7 @@ function quote(raw: string) {
 /**
  * Describes what a descriptor expects, for error messages.
  */
-function describeExpected(data: Data): string {
+function describeExpected(data: Exclude<Data, { kind: 'array' | 'custom' | 'json' }>): string {
 	switch (data.kind) {
 		case 'string':
 			return data.pattern ? `a string matching ${data.pattern}` : 'a string'
@@ -558,21 +554,16 @@ function describeExpected(data: Data): string {
 			return typeof data.value === 'string' ? quote(data.value) : String(data.value)
 		case 'enum':
 			return `one of ${data.values.map(quote).join(', ')}`
-		case 'array':
-			return describeExpected(data.element)
-		case 'custom':
-			return 'a value'
-		case 'json':
-			return 'JSON'
 	}
 }
 
 function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fail: Fail): Steps<unknown> {
-	const expected = () => fail(`expected ${describeExpected(data)}, got ${quote(raw!)}`)
+	const expected = (data: Parameters<typeof describeExpected>[0]) =>
+		fail(`expected ${describeExpected(data)}, got ${quote(raw!)}`)
 	if (data.kind === 'boolean' || (data.kind === 'literal' && typeof data.value === 'boolean')) {
 		const value = raw === undefined || raw === 'true' ? true : raw === 'false' ? false : undefined
 		if (value === undefined || (data.kind === 'literal' && value !== data.value)) {
-			throw raw === undefined ? fail(`expected ${describeExpected(data)}, got no value`) : expected()
+			throw raw === undefined ? fail(`expected ${describeExpected(data)}, got no value`) : expected(data)
 		}
 		return value
 	}
@@ -586,23 +577,23 @@ function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fai
 		case 'string':
 			if (data.pattern) {
 				data.pattern.lastIndex = 0
-				if (!data.pattern.test(raw)) throw expected()
+				if (!data.pattern.test(raw)) throw expected(data)
 			}
 			return raw
 		case 'number':
 		case 'int': {
 			const num = toNumber(raw)
-			if (!Number.isFinite(num) || (data.kind === 'int' && !Number.isInteger(num))) throw expected()
-			if ((data.min !== undefined && num < data.min) || (data.max !== undefined && num > data.max)) throw expected()
+			if (!Number.isFinite(num) || (data.kind === 'int' && !Number.isInteger(num))) throw expected(data)
+			if ((data.min !== undefined && num < data.min) || (data.max !== undefined && num > data.max)) throw expected(data)
 			return num
 		}
 		case 'literal': {
 			const value = typeof data.value === 'number' ? toNumber(raw) : raw
-			if (value !== data.value) throw expected()
+			if (value !== data.value) throw expected(data)
 			return value
 		}
 		case 'enum':
-			if (!data.values.includes(raw)) throw expected()
+			if (!data.values.includes(raw)) throw expected(data)
 			return raw
 		case 'custom':
 			try {
@@ -626,8 +617,6 @@ function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fai
 			return result.value
 		}
 	}
-	/* istanbul ignore next */
-	throw new TypeError(`Unknown descriptor kind '${(data as { kind: string }).kind}'`)
 }
 
 /**
