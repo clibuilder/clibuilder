@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import test from 'node:test'
+import { fileURLToPath } from 'node:url'
 
-const bin = new URL('./bin.js', import.meta.url).pathname
-const cwd = new URL('.', import.meta.url).pathname
+const bin = fileURLToPath(new URL('./bin.js', import.meta.url))
+const cwd = fileURLToPath(new URL('.', import.meta.url))
 
 /**
  * Runs the real bin in its own process, as a user would.
