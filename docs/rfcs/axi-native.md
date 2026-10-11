@@ -269,7 +269,7 @@ From the #639 survey and the slimming RFC's dependent list:
 ## 8. Interaction with slim-dependencies
 
 - **Streams.** The routing in section 3.10 is a table over `cli({ streams })`; EPIPE lives in the same driver. [slim-dependencies section 4](slim-dependencies.md#4-logging-standard-log-and-standard-log-color) describes the same two presets.
-- **toon.** `@toon-format/toon` is core's single runtime dependency (section 3.4). This resolves slim-dependencies Q7.
+- **toon.** `@toon-format/toon` is core's single third-party runtime dependency (section 3.4). This resolves slim-dependencies Q7.
 - **`ui.info`.** Slim-dependencies Q5 and this RFC's Q5 are the same question, resolved by section 3.10.
 - **`t`.** zod is replaced by descriptors that live in `args-minus` and are re-exported by clibuilder. Usage errors and structured help read their introspection form.
 - **One major.** Both break the same release; the migration guide is a single document.
