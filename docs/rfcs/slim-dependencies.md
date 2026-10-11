@@ -14,7 +14,8 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 |---|---|---|
 | 1 | zod is replaced by `t` descriptors: `t.string`, `t.number`, `t.int`, `t.boolean`, `t.literal`, `t.enum`, `t.array` and `t.custom`, with an options bag per kind, plus `.optional()` and `.check()`. They live in `packages/args-minus` and clibuilder re-exports them as `t`. No chained `.min().max()` and no string DSL. | 3.4 |
 | 2 | The descriptor converts the raw argv string and carries its constraints (`min`, `max`, `pattern`, `values`) as readable data. `.check()` only validates, never changes the value or its type, and accepts a function or any Standard Schema whose output is ignored. | 3.4 |
-| 3 | `t.custom(raw => value)` is the conversion hook for pure, synchronous functions of one raw string. Anything else belongs in `run()` and throws a `CliError`. No built-in formats and no coercion. | 3.4 |
+| 3 | `t.custom(raw => value)` is the conversion hook for a function of the one raw string, and may be async. A conversion that reads files, resolves paths against `cwd`, calls the network or depends on other options belongs in `run()` and throws a `CliError`. No built-in formats and no coercion. | 3.4 |
+| 14 | `.check()` and `t.custom` may be async. A function check or converter may return a promise, and a Standard Schema whose `validate` returns a promise is awaited. Checks run in declaration order and the first failing check wins. | 3.4 |
 | 4 | `config` is Standard Schema only, with no `t.object`. The validator's output is stored. Options have no `schema:` field and no `refine`, and descriptors do not implement `~standard`. | 3.4 |
 | 5 | The Standard Schema v1 interface is vendored verbatim, so there is no dependency for it. | 3.4 |
 | 6 | The prototype's findings are implementation rules for `t`. | 3.5 |
@@ -148,40 +149,58 @@ options: {
 - **`t.number` is strict.** An empty string, `NaN`, `Infinity` or trailing text fails as `invalid-value` (section 3.6).
 - **`t.literal`** infers through a const type parameter, so `t.literal(true)` is `true`, not `boolean`. As a bare option, `t.literal(true)` is a flag that must be present; it is mostly useful as an array element.
 - **`t.enum`** takes a non-empty const tuple of strings only. repobuddy's `z.union` of `z.literal`s becomes `t.enum`.
-- **`t.array`** takes a non-optional scalar, `t.int`, literal or enum element. Optional elements, nested arrays and `t.custom` elements are rejected.
+- **`t.array`** takes a non-optional scalar, `t.int`, literal or enum element. Optional elements, nested arrays and `t.custom` elements are rejected. Each element is converted on its own, in order.
 - **No `.describe()` or `.default()`.** `default`, `alias` and `description` stay on the option entry beside the descriptor. A `default` makes the key required in the `args` output type.
 
 **Converting and validating are separate roles.**
 
 - **The descriptor converts.** It turns the raw argv string into the typed value. It carries its constraints (`min`, `max`, `pattern`, `values`) as plain readable data, so help and usage errors can show them, for example `--port <int 1..65535>`. Ranges and patterns are the only built-in constraints, because they are declarative data that help can display.
 - **`.check()` validates.** It runs on the converted value and never changes the value or its type. It takes one of:
-  - a function of the value that returns `true` or nothing to pass, `false` to fail with a generic invalid-value message, or a string to fail with that string as the message;
-  - any Standard Schema, run for pass or fail only. **The schema's output is ignored.** A `transform`, `trim`, `default` or coercion in it does nothing here. Conversion belongs in the descriptor or in `t.custom`.
-- **Checks chain.** Several `.check()` calls run in order. On an array descriptor a check applies to the whole array; a check for each element goes on the element descriptor.
+  - a function of the value that returns `true` or nothing to pass, `false` to fail with a generic invalid-value message, or a string to fail with that string as the message. It may also return a promise of any of these;
+  - any Standard Schema, run for pass or fail only. A `validate` that returns a promise is awaited. **The schema's output is ignored.** A `transform`, `trim`, `default` or coercion in it does nothing here. Conversion belongs in the descriptor or in `t.custom`.
+- **Checks may be async.** `parse()` already awaits config loading and plugin activation, and the existing config validation already awaits an async `validate`, so awaiting a check adds little.
+- **Checks run in declaration order,** and the first failing check wins; later checks do not run.
+- **A thrown error is not a usage error.** Only a returned `false`, a returned string, or a schema's issues are an `invalid-value` usage error. A check that throws, or whose promise rejects, is a runtime error and propagates as one.
+- **Checks chain.** Several `.check()` calls can be declared. On an array descriptor a check applies to the whole array; a check for each element goes on the element descriptor.
 - **No built-in formats.** There is no email, URL or UUID kind. The author passes `z.email()`, a valibot pipe, an arktype type or a function to `.check()`.
 - **No coercion.** argv values are strings and the descriptor converts them, so a coercing schema such as `z.coerce.number()` in `.check()` only ever sees a value that is already converted.
 
-**`t.custom` and what belongs in the parser.** `t.custom(raw => value)` is the conversion hook for what the built-in kinds do not cover: a date, a URL, `1k` to `1000`, a duration. The function's return type is the option's type in `args`, and a throw becomes `invalid-value`.
+**`t.custom` and what belongs in the parser.** `t.custom(raw => value)` is the conversion hook for what the built-in kinds do not cover: a date, a URL, `1k` to `1000`, a duration. The function's return type, or the type its promise resolves to, is the option's type in `args`.
 
 A conversion belongs in the parser when all three hold:
 
-1. it is a pure, synchronous function of the one raw string;
+1. it is a function of the one raw string, and does not depend on other options, on the filesystem layout, or on the network as a side channel for the command;
 2. its failure is a usage error that the caller can fix;
 3. its result should appear in the typed `args`.
 
-Anything that reads a file, resolves a path against `cwd`, uses the network, depends on another option or is async belongs in `run()`, which throws a `CliError` on failure ([axi-native section 3.1](axi-native.md#31-errors-are-reported-twice-6391)).
+Reading files, resolving paths against `cwd`, network calls, and anything that depends on other options belong in `run()`, which throws a `CliError` on failure ([axi-native section 3.1](axi-native.md#31-errors-are-reported-twice-6391)).
+
+**`t.custom` may be async.** The function may return a promise, which is awaited. `parse()` already awaits config loading and plugin activation, so this adds little. For the same reason, I/O in a converter is discouraged: it delays every parse that sets the option, and its failure is rarely one the caller can fix.
+
+**Converter failures.** *Proposed, the exact mechanism is finalized in the implementation PR:* a converter that throws, or rejects, with a plain `Error` (whose constructor is `Error` itself) reports `invalid-value`, with the error's message as the message. Any other throw or rejection, including a `TypeError` from a bug, a vendor's error class, or a value that is not an `Error`, is a runtime error and propagates as one.
 
 A JSON option whose schema output matters, such as its defaults or transforms, goes through `t.custom`:
 
 ```ts
-payload: { type: t.custom(raw => Payload.parse(JSON.parse(raw))), description: '…' }
+payload: {
+  type: t.custom(raw => {
+    let value: unknown
+    try { value = JSON.parse(raw) } catch { throw new Error('is not valid JSON') }
+    const result = Payload.safeParse(value)
+    if (!result.success) throw new Error('does not match the payload shape')
+    return result.data
+  }),
+  description: '…'
+}
 ```
+
+A built-in `t.json(schema)` is an open candidate (section 10).
 
 **Not part of the design.** There is no option-level `schema:` field, no `refine` method and no `~standard` method on descriptors. No downstream CLI uses refinements, `z.object`, `z.coerce` or `.describe()` (section 7), and `.check()` covers validation without letting a schema change the value. A descriptor is a converter, not a Standard Schema.
 
 **`config`.** It takes any Standard Schema, or none; there is no `t.object`. Validation uses `~standard.validate`, and the validator's **output** is stored, which fixes the dropped defaults and transforms bug (section 2). The help `Config:` section is generated from `~standard.jsonSchema` when the vendor implements it, and omitted otherwise. That removes `tersify`.
 
-**Errors.** A failed conversion, constraint, check or `t.custom` call is reported as clibuilder's own `invalid-value` usage error. A check function's string is the author's message and is used as given. A foreign schema's issues, from `.check()` or from `config`, are mapped into the same error; following axi's rule, a dependency's text is never forwarded raw. The error's fields are in [axi-native section 3.3](axi-native.md#33-usage-errors-default-to-prose-plus-help-on-stderr-6393). `UsageError.keyType` becomes the descriptor's `kind` string instead of a zod object.
+**Errors.** A failed conversion, constraint or check, and a `t.custom` failure marked as above, is reported as clibuilder's own `invalid-value` usage error. A check function's string is the author's message and is used as given. A foreign schema's issues, from `.check()` or from `config`, are mapped into the same error; following axi's rule, a dependency's text is never forwarded raw. The error's fields are in [axi-native section 3.3](axi-native.md#33-usage-errors-default-to-prose-plus-help-on-stderr-6393). `UsageError.keyType` becomes the descriptor's `kind` string instead of a zod object.
 
 **Standard Schema types.** The Standard Schema v1 interface is vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency for it. The copy is **verbatim** from `@standard-schema/spec` 1.1.0, including `PathSegment` in `Issue.path` (`PropertyKey | PathSegment`) and the `options` parameter of `validate`. A hand-trimmed copy rejects every real library.
 
@@ -217,7 +236,7 @@ A prototype of `t` in this repo settled these rules:
 - **`t.enum` requires a non-empty const tuple.** A pre-widened `string[]` degrades to `string`. The implementation either rejects it at the type level or documents the degradation.
 - **No `?: never` keys** to forbid an option that does not apply to a kind, such as `pattern` on `t.number`. They ruin completion and error messages. The excess-property check rejects such keys in an object literal. A bag passed in from a variable is not rejected, and that is accepted.
 - **Definition-time checks throw.** `min <= max`, and integer bounds on `t.int`, are checked at runtime when the descriptor is created, because the type level cannot check them cheaply. The `T` of `t.string<T>` does not exist at runtime, so it stays an assertion.
-- **A typed `default` is not converted.** It is already a value. `.check()` runs on it when the command is defined, so a bad default is a programmer error, not a usage error.
+- **A typed `default` is not converted.** It is already a value. Its `.check()` calls run on it, and a failure is a programmer error, not a usage error. Because a check may be async, it cannot run when the command is defined. *Proposed:* the default's checks run once, at the first `parse()`, instead of at definition.
 - **Array validation errors name the element value and its index,** for example `tag[2]`.
 - **A foreign schema's issues** are mapped into the `invalid-value` usage error. The vendor's text is never forwarded raw.
 - **`.check()` overloads** declare the Standard Schema overload first and the function overload last, so a type error reads about the function.
@@ -232,7 +251,7 @@ type RefineCompatible<Out, S extends StandardSchemaV1> =
   : { readonly '~refine': ['schema input', StandardSchemaV1.InferInput<S>, 'is unrelated to option value', Out] }
 
 check<S extends StandardSchemaV1>(schema: S & RefineCompatible<Out, S>): Descriptor<K, Out, Opt>
-check(fn: (value: Out) => boolean | string | void): Descriptor<K, Out, Opt>
+check(fn: (value: Out) => boolean | string | void | Promise<boolean | string | void>): Descriptor<K, Out, Opt>
 ```
 
 A schema whose input is wider than the option value (`unknown`) or narrower (a literal union on a string option) is accepted. A disjoint input is a compile error with a readable message. The rule was verified against zod 3.25, zod 4.6, valibot 1.5 and arktype 2.2, including brands, transforms and optional chaining. The return type keeps `Out`, because a check never changes the type.
@@ -551,7 +570,9 @@ Items raised by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are
 Still open:
 
 7. **Exact introspection field names.** The names in section 3.4 come from the prototype and are finalized in the implementation PR. That the form is public and read-only is decided.
-8. **A built-in `t.json(schema)`.** `t.custom(raw => schema.parse(JSON.parse(raw)))` covers it today. A helper would also need to decide how a schema's output type and issues map to `args` and `invalid-value`.
+8. **A built-in `t.json(schema)`.** A `t.custom` converter covers it today (section 3.4). A helper would also need to decide how a schema's output type and issues map to `args` and `invalid-value`.
 9. **`t.custom` as an array element.** Rejected in v12. Allowing it later needs a rule for reporting which element's conversion threw.
-10. **Async Standard Schema in `.check()`.** A vendor's `validate` may return a promise. Whether `.check()` awaits it or rejects an async schema is not decided; `t.custom` is synchronous either way.
+10. ~~**Async Standard Schema in `.check()`.** Does `.check()` await a promise from `validate`, or reject an async schema?~~ **Resolved:** `.check()` may be async; a function check may return a promise and an async `validate` is awaited (section 3.4). How a default's async check runs is proposed in section 3.5.
 11. **Type-check cost on a CLI with many commands.** The cost in section 3.5 was measured for one set of options. A CLI with many commands, each with its own options, has not been measured.
+12. ~~**Async `t.custom`.** May the conversion return a promise?~~ **Resolved:** yes, it is awaited, as for `.check()`. I/O in a converter is discouraged (section 3.4).
+13. **How a converter marks a usage failure.** Section 3.4 proposes a plain `Error`; the exact mechanism is finalized in the implementation PR.

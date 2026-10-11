@@ -25,7 +25,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 11 | `showHelp` and `showVersion` leave `ui`. Core owns `--help` and `--version` as answers on stdout. Usage errors no longer print the full help. | 3.3, 3.7 |
 | 12 | `@clibuilder/axi` is absorbed into core in v12. axi keeps only what shapes a value. | 4 |
 | 13 | clibuilder does not wrap or depend on axi-sdk-js. It aligns the error keys and adds a conformance test. | 9 |
-| 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Anything that is not a pure, synchronous function of one raw string belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
+| 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Both may be async. A conversion that reads files, resolves paths against `cwd`, calls the network or depends on other options belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
 | 15 | Only the top-ranked usage error is reported. It carries a `help` list with the command's usage line and, for `invalid-value`, the option, the raw value, and the violated constraint or the allowed values. | 3.3 |
 
 ## 1. Summary
@@ -76,7 +76,7 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 - `throw new CliError(report)` is the only way a command reports a failure. Core encodes it once, in the resolved format, on stdout (section 3.4), and writes nothing to stderr for it.
 - The encoded keys are `error` (the message), `code`, the `details` fields, and `help[N]`. These match axi-sdk-js (section 9).
 - A debugging copy is available under `--verbose`, as a `debug` line on stderr.
-- A failure the parser cannot detect is a `CliError` from `run()`: a check that reads a file, resolves a path against `cwd`, uses the network, depends on another option, or is async. The parser handles only pure, synchronous conversions and checks of one raw string ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
+- A failure the parser cannot detect is a `CliError` from `run()`: a check that reads a file, resolves a path against `cwd`, uses the network or depends on another option. The parser handles only conversions of one raw string and checks of the converted value; both may be async. A check that throws or rejects is a runtime error, not a usage error ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
 - In `output: 'console'` mode the message and help go to stderr as today (section 3.10).
 
 **In core:** the report shape and the encoding, absorbed from axi's `ErrorReport` and `errorOutput`. Translating backend failures into reports ("backend text must be translated, not forwarded") is a convention for the CLI author, not a framework feature.
@@ -101,7 +101,7 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 - **The error carries enough to fix more than one mistake.** Its `help` list holds the command's usage line, and for `invalid-value` the allowed values or the violated constraint, for example `allowed: low, normal, high` or the range. An agent with two independent mistakes can often fix both in one turn.
 - Output: `error`, `code`, the offending key or name, and `help[N]` lines. Exit 2, stdout, in the resolved format.
 - **Codes stay separate:** `unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument`, `extra-arguments`. A runtime can map each one on its own.
-- **`invalid-value` fields:** the option name, the raw value as typed, the violated constraint or the check's message, and the allowed values when the option is an enum. A failed descriptor conversion, range, pattern, `.check()` or `t.custom` all report this code. A foreign schema's issues are mapped into it, never forwarded raw.
+- **`invalid-value` fields:** the option name, the raw value as typed, the violated constraint or the check's message, and the allowed values when the option is an enum. A failed descriptor conversion, range, pattern or `.check()` reports this code, and so does a `t.custom` that throws a plain `Error` (proposed). A foreign schema's issues are mapped into it, never forwarded raw.
 - The full help is no longer printed after a usage error, after a config-validation failure, or for a bare command group. The coded error lists the valid options or arguments instead, which is what the agent needed from the help.
 - `cli({ onUsageError })` stays, for CLIs that want their own rendering. `UsageError` gains the `code` strings above next to the existing `type`, and its `keyType` becomes the descriptor's `kind` string (slim-dependencies section 3.4).
 - `@clibuilder/axi`'s `createUsageErrorHandler` and `describeUsageError` are absorbed into core and removed from axi.
@@ -237,7 +237,7 @@ The line: **if it changes what `parse()` does, it is core. If it shapes the valu
 6. **`showHelp` and `showVersion` leave `ui`.** Usage errors, config-validation failures and a bare command group no longer print the full help.
 7. **`UsageError` gains `code`;** `keyType` becomes the descriptor's `kind` string; `onUsageError` context gains `format`. Only the top-ranked usage error is reported, with a `help` list.
 8. **`@clibuilder/axi` is absorbed.** Its output, error, format and usage exports are removed; import them from `clibuilder`.
-9. **zod is replaced by `t`** (slim-dependencies section 3). Validation that is not a pure, synchronous function of one raw string moves into `run()` as a `CliError`.
+9. **zod is replaced by `t`** (slim-dependencies section 3). Conversion that reads files, resolves paths, calls the network or depends on other options moves into `run()` as a `CliError`.
 10. **`builder()` no longer loads config on construction.** Observable only to tests that inspected the I/O.
 11. Plus the rest of what slim-dependencies breaks (standard-log, `testCommand` export, plugins).
 
@@ -311,5 +311,7 @@ Still open, all in [slim-dependencies section 10](slim-dependencies.md#10-still-
 17. **Exact introspection field names,** finalized in the implementation PR.
 18. **A built-in `t.json(schema)` helper.**
 19. **`t.custom` as an array element** after v12.
-20. **Async Standard Schema in `.check()`:** awaited or rejected.
+20. ~~**Async Standard Schema in `.check()`:** awaited or rejected.~~ **Resolved:** awaited; a function check may also return a promise ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
 21. **Type-check cost on a CLI with many commands,** not yet measured.
+22. ~~**Async `t.custom`.**~~ **Resolved:** a converter may return a promise, which is awaited ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)).
+23. **How a converter marks a usage failure,** proposed as a plain `Error`.
