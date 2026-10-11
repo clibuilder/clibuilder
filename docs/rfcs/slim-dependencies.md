@@ -12,18 +12,19 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 
 | # | Decision | Section |
 |---|---|---|
-| 1 | zod is replaced by `t` descriptors (`t.string`, `t.number`, `t.boolean`, `t.array`, `t.enum`, `.optional()`). They live in `packages/args-minus` and clibuilder re-exports them. | 3.4 |
-| 2 | Each descriptor is plain data and implements Standard Schema. The `args-minus` tokenizer replaces zod introspection in the same rewrite. | 3.4 |
-| 3 | Shape always comes from a descriptor. A foreign Standard Schema is accepted only as an option's `schema:` refinement and as `config`. | 3.4 |
-| 4 | `config` is Standard Schema only, with no `t.object`. The validator's output is stored. | 3.4 |
-| 5 | The Standard Schema v1 interface is vendored, so there is no dependency for it. | 3.4 |
+| 1 | zod is replaced by `t` descriptors: `t.string`, `t.number`, `t.int`, `t.boolean`, `t.literal`, `t.enum`, `t.array` and `t.custom`, with an options bag per kind, plus `.optional()` and `.check()`. They live in `packages/args-minus` and clibuilder re-exports them as `t`. No chained `.min().max()` and no string DSL. | 3.4 |
+| 2 | The descriptor converts the raw argv string and carries its constraints (`min`, `max`, `pattern`, `values`) as readable data. `.check()` only validates, never changes the value or its type, and accepts a function or any Standard Schema whose output is ignored. | 3.4 |
+| 3 | `t.custom(raw => value)` is the conversion hook for pure, synchronous functions of one raw string. Anything else belongs in `run()` and throws a `CliError`. No built-in formats and no coercion. | 3.4 |
+| 4 | `config` is Standard Schema only, with no `t.object`. The validator's output is stored. Options have no `schema:` field and no `refine`, and descriptors do not implement `~standard`. | 3.4 |
+| 5 | The Standard Schema v1 interface is vendored verbatim, so there is no dependency for it. | 3.4 |
 | 6 | The prototype's findings are implementation rules for `t`. | 3.5 |
 | 7 | standard-log and standard-log-color are replaced by a built-in UI over `cli({ streams })`, with two routing presets, `axi` and `console`. | 4 |
 | 8 | `@toon-format/toon` is core's single third-party runtime dependency. | 5.5 |
 | 9 | `args-minus` inlines its one type helper. type-plus 8.0.0 stays only as a devDependency. | 5.1 |
 | 10 | Remove zod, standard-log, standard-log-color, tersify, type-plus, pad-right, wordwrap, tmp and tslib from core. | 2, 7 |
-| 11 | The descriptor introspection form is public and read-only. Its exact field names are still a proposal. | 3.4 |
+| 11 | The descriptor introspection form is a public, read-only union keyed on `kind`. Its exact field names are finalized in the implementation PR. | 3.4 |
 | 12 | The level-to-stream routing behind the presets is internal in v12. | 4 |
+| 13 | The descriptor work lands in `args-minus` first; clibuilder then re-exports `t` and moves its parser onto `args-minus`. The zod path stays through v11 minors and is removed in v12. | 7 |
 
 ## 1. Summary
 
@@ -41,8 +42,8 @@ clibuilder itself unpacks to 1.7 MB, mainly because the CJS build bundles every 
 **Design.**
 
 - **Core `clibuilder@12` has one third-party runtime dependency, `@toon-format/toon`,** which the AXI-native output needs ([axi-native section 3.4](axi-native.md#34---format-is-not-first-class-6394)). Plugin loading moves out with discovery (section 9).
-- **Options:** zod is replaced by **built-in type descriptors**, `t`, that also implement [Standard Schema](https://standardschema.dev). They live in `args-minus`, whose tokenizer replaces zod introspection. Option (c) below.
-- **Validation:** any Standard Schema validator (zod ≥ 3.24, zod 4, valibot, arktype, …) is accepted as an option's `schema:` refinement and as `config`.
+- **Options:** zod is replaced by **built-in type descriptors**, `t`, that convert argv strings. They live in `args-minus`, whose tokenizer replaces zod introspection. Option (c) below.
+- **Validation:** any [Standard Schema](https://standardschema.dev) validator (zod ≥ 3.24, zod 4, valibot, arktype, …) is accepted in an option's `.check()` and as `config`.
 - **Logging:** standard-log is replaced by a small built-in `UI` over injectable `stdout`/`stderr` streams, routed by one of two presets.
 - **Small helpers:** inline them.
 - **Plugins:** all plugin support (loading, keywords, the activation context, and the `plugins list` / `plugins search` builtins) moves to `@clibuilder/plugins`, attached through a new `use()` hook. The registry stays in core (section 9).
@@ -52,7 +53,7 @@ Footprint numbers come from installing each dependency alone with `npm install -
 
 | Dependency | Used in (`packages/clibuilder/src/…`) | Why | Hot path? | pkgs | node_modules | Plan |
 |---|---|---|---|---|---|---|
-| `zod` ^3.22 (3.25.76) | `zod.ts`, `cli.ts` (all public command types), `invocation/lookup.ts`, `render/help.ts`, `app/builder.ts` (`config` validation), `builtin/base_command.ts`, `render/format.ts`, `builtin/plugin_commands/search.ts` | option, argument and config types; argv conversion by introspection; help rendering | **yes**, every parse | 1 | 5.1 MB | **remove**: `t` descriptors plus Standard Schema (section 3) |
+| `zod` ^3.22 (3.25.76) | `zod.ts`, `cli.ts` (all public command types), `invocation/lookup.ts`, `render/help.ts`, `app/builder.ts` (`config` validation), `builtin/base_command.ts`, `render/format.ts`, `builtin/plugin_commands/search.ts` | option, argument and config types; argv conversion by introspection; help rendering | **yes**, every parse | 1 | 5.1 MB | **remove**: `t` descriptors, with Standard Schema in `.check()` and `config` (section 3) |
 | `standard-log` 13.3.1 | `drivers/context.ts`, `drivers/logger.ts`, `drivers/context.mock.ts` (`standard-log/testing`), `testing/test_command.ts` | level filtering for `ui`, console reporter, capturing messages in `testCommand` | **yes**, imported at startup | 10 | 44 MB (via type-plus → typescript) | **remove**: built-in UI (section 4) |
 | `standard-log-color` 13.3.1 | `drivers/context.ts` | colours clibuilder's own messages | yes | 14 | 45 MB (shares the above) | **remove**: `node:util` `styleText` |
 | `type-plus` 8.0.0-beta.12 | `cli.ts`, `app/state.ts`, `app/builder.ts` (`RequiredPick`, `UnionOfValues`, `forEachKey`); `invocation/lookup.ts` (`findKey`, `reduceByKey`); `render/help.ts` (`reduceByKey`, `someKey`); `drivers/context.mock.ts` (`required`) | 2 utility types and 5 one-line object helpers | yes | 6 | 43 MB with beta.12 (peer `typescript`). type-plus 8.0.0 declares `typescript` as an optional peer (`peerDependenciesMeta.typescript.optional`) and unpacks to ~2.1 MB in 1358 files with one dependency (`unpartial`). | **remove**: inline them (~30 lines). The reason is breadth, not size: standard-log and tersify go anyway, and core needs only a few one-line helpers. 8.0.0 stays as a devDependency for `testType` in specs (section 5.1). |
@@ -103,76 +104,150 @@ Standard Schema (`~standard: { version, vendor, validate, types }`) provides **o
 |---|---|---|---|---|---|---|
 | **a** | Standard Schema only: users bring zod, valibot, arktype… | 0 (`@standard-schema/spec` is types-only; copy the interface) | yes, via `StandardSchemaV1.InferOutput` | not available in general. Needs the JSON Schema extension, or a separate `kind` field anyway. | users add a validator dependency | incomplete on its own |
 | **b** | zod as a `peerDependency` | 0 installed by clibuilder, but users must install zod | yes | introspection kept | add `zod` to each CLI and import from it | still locks to one zod major; the introspection rewrite for v4 is still needed. Moves the weight without removing it. |
-| **c** | **built-in descriptors, plus optional Standard Schema refinement** | 0 | yes, from the descriptor; a refinement's output type wins when given | owned by `args-minus` | mechanical rename (section 7) | **chosen** |
+| **c** | **built-in descriptors that convert argv, plus `.check()` that accepts any Standard Schema** | 0 | yes, from the descriptor | owned by `args-minus` | mechanical rename (section 7) | **chosen** |
 | **d** | keep zod 3 | 5 MB | yes | yes | none | v3 is in maintenance, and v4 users get type errors. This is the main complaint. |
 
 ### 3.4 Design (c)
 
-The descriptor builders, `t`, live in `packages/args-minus` and clibuilder re-exports them. The published `args-minus` is only a placeholder, so its API can change freely. `t` covers exactly what the parser understands, in a zod-like builder style rather than a string DSL:
+The descriptor builders live in `packages/args-minus`, and clibuilder re-exports them as `t`. The published `args-minus` is only a placeholder, so its API is free to change.
 
 ```ts
 import { t } from 'clibuilder'
+import { z } from 'zod'
 
 options: {
-  format: { type: t.enum(['toon', 'text', 'json']), default: 'toon', description: '…' },
-  tag:    { type: t.array(t.string()), description: '…' },
-  port:   { type: t.number(), description: '…' },
-  email:  { type: t.string().optional(), schema: z.string().email(), description: '…' },
-  dry:    { type: t.boolean().optional(), description: '…' }   // also the default when `type` is omitted
+  format:  { type: t.enum(['toon', 'text', 'json']), default: 'toon', description: '…' },
+  tag:     { type: t.array(t.string()), description: '…' },
+  port:    { type: t.int({ min: 1, max: 65535 }), default: 8080, description: '…' },
+  ratio:   { type: t.number({ min: 0, max: 1 }).optional(), description: '…' },
+  release: { type: t.string<`v${number}`>({ pattern: /^v\d+$/ }), description: '…' },
+  email:   { type: t.string().optional().check(z.email()), description: '…' },
+  timeout: { type: t.custom(parseDuration).optional(), description: '…' },  // '1m30s' to milliseconds
+  dry:     { type: t.boolean().optional(), description: '…' }   // also the default when `type` is omitted
 }
 ```
 
-- **Builders:** `t.string()`, `t.number()`, `t.boolean()`, `t.array(x)`, `t.enum([...])` over a non-empty const tuple, and `.optional()`. repobuddy's `z.union` of `z.literal`s becomes `t.enum`.
-- **No `.describe()` or `.default()`.** An option entry already has `description` and `default` fields. A `default` makes the key required in the `args` output type.
-- **Plain data and Standard Schema.** Each descriptor is plain data (`kind`, `isOptional`, `element` for arrays, `values` for enums, and a slot for the `schema` refinement) and implements `~standard` (`validate` and `types`). The parser reads the data; validation goes through `~standard.validate`, so descriptors and refinements share one code path.
-- **Tokenizer.** The `args-minus` tokenizer replaces the zod introspection in `invocation/lookup.ts` in the same rewrite. It reads `kind` to decide whether a key takes a value, repeats, or converts to a number.
-- **Shape always comes from a descriptor.** A foreign Standard Schema (zod ≥ 3.24, zod 4, valibot, arktype) is never used as `type`.
-- **Refinement:** an entry may carry `schema?: StandardSchemaV1`. It runs after argv conversion, on the converted value. When present, its output type becomes the `args` type, so `schema: z.string().email()` or a valibot pipe works with any vendor and any zod major. Async `validate` is awaited.
-- **`config`:** takes a `StandardSchemaV1` only; there is no `t.object`. Validation uses `~standard.validate`, and the validator's **output** is stored, which fixes the dropped-defaults bug (section 2). The help `Config:` section is generated from `~standard.jsonSchema` when the vendor implements it, and omitted otherwise. That removes `tersify`.
-- **Errors:** issues from a refinement or a config schema are mapped into clibuilder's own `invalid-value` usage error code. Following axi's rule, a dependency's text is never forwarded raw. `UsageError.keyType` becomes a kind string (`'string' | 'number' | 'boolean' | 'array' | 'enum'`) instead of a zod object.
-- **Types:** the Standard Schema v1 interfaces are vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency at all. The copy is **verbatim** from `@standard-schema/spec` 1.1.0, including `PathSegment` in `Issue.path` (`PropertyKey | PathSegment`) and the `options` parameter of `validate`. The prototype's hand-trimmed copy rejected every real library.
+**Builders.** Each kind takes its constraints in one options bag.
 
-**Introspection form.** Help, structured help and usage errors need one stable read of an option, so they do not reach into descriptor internals. The form is **public and read-only**, so other tools can build on `args-minus`. The exact field names below are a proposal; the shape is built from the descriptor and its option entry:
+| Builder | Converts the raw string to | Constraint data |
+|---|---|---|
+| `t.string(opts?)` | the string | `pattern?: RegExp` |
+| `t.string<T extends string>({ pattern })` | `T`, a template literal type | `pattern` |
+| `t.number(opts?)` | a finite number | `min?`, `max?` |
+| `t.int(opts?)` | an integer | `min?`, `max?` |
+| `t.boolean()` | `true` when the flag is present; takes no value | none |
+| `t.literal(value)` | one string, number or boolean literal | `value` |
+| `t.enum([...])` | one string of a non-empty const tuple | `values` |
+| `t.array(element)` | the repeated values, each converted by `element` | `element` |
+| `t.custom(raw => value)` | whatever the function returns | `convert` |
+
+- **Two chained methods only.** `.optional()` and `.check()` are the only methods on a descriptor. There is no `.min().max()` chain.
+- **No string DSL.** An arktype-style string DSL was evaluated and rejected. Typing it needs a type-level string parser that costs more than the whole builder surface. The editor offers no completion inside the string, a regex inside it needs its escapes doubled, and help would need a runtime parser to read the constraints back out.
+- **`t.int` is its own builder,** not an `int` flag on `t.number`, so the kind alone tells help and errors what is expected.
+- **`t.string<T>({ pattern })` is an author assertion.** TypeScript cannot check a template literal type against a regex, so `T` is the author's claim about what the pattern admits.
+- **`t.number` is strict.** An empty string, `NaN`, `Infinity` or trailing text fails as `invalid-value` (section 3.6).
+- **`t.literal`** infers through a const type parameter, so `t.literal(true)` is `true`, not `boolean`. As a bare option, `t.literal(true)` is a flag that must be present; it is mostly useful as an array element.
+- **`t.enum`** takes a non-empty const tuple of strings only. repobuddy's `z.union` of `z.literal`s becomes `t.enum`.
+- **`t.array`** takes a non-optional scalar, `t.int`, literal or enum element. Optional elements, nested arrays and `t.custom` elements are rejected.
+- **No `.describe()` or `.default()`.** `default`, `alias` and `description` stay on the option entry beside the descriptor. A `default` makes the key required in the `args` output type.
+
+**Converting and validating are separate roles.**
+
+- **The descriptor converts.** It turns the raw argv string into the typed value. It carries its constraints (`min`, `max`, `pattern`, `values`) as plain readable data, so help and usage errors can show them, for example `--port <int 1..65535>`. Ranges and patterns are the only built-in constraints, because they are declarative data that help can display.
+- **`.check()` validates.** It runs on the converted value and never changes the value or its type. It takes one of:
+  - a function of the value that returns `true` or nothing to pass, `false` to fail with a generic invalid-value message, or a string to fail with that string as the message;
+  - any Standard Schema, run for pass or fail only. **The schema's output is ignored.** A `transform`, `trim`, `default` or coercion in it does nothing here. Conversion belongs in the descriptor or in `t.custom`.
+- **Checks chain.** Several `.check()` calls run in order. On an array descriptor a check applies to the whole array; a check for each element goes on the element descriptor.
+- **No built-in formats.** There is no email, URL or UUID kind. The author passes `z.email()`, a valibot pipe, an arktype type or a function to `.check()`.
+- **No coercion.** argv values are strings and the descriptor converts them, so a coercing schema such as `z.coerce.number()` in `.check()` only ever sees a value that is already converted.
+
+**`t.custom` and what belongs in the parser.** `t.custom(raw => value)` is the conversion hook for what the built-in kinds do not cover: a date, a URL, `1k` to `1000`, a duration. The function's return type is the option's type in `args`, and a throw becomes `invalid-value`.
+
+A conversion belongs in the parser when all three hold:
+
+1. it is a pure, synchronous function of the one raw string;
+2. its failure is a usage error that the caller can fix;
+3. its result should appear in the typed `args`.
+
+Anything that reads a file, resolves a path against `cwd`, uses the network, depends on another option or is async belongs in `run()`, which throws a `CliError` on failure ([axi-native section 3.1](axi-native.md#31-errors-are-reported-twice-6391)).
+
+A JSON option whose schema output matters, such as its defaults or transforms, goes through `t.custom`:
 
 ```ts
-type OptionInfo = {
-  name: string
-  kind: 'string' | 'number' | 'boolean' | 'array' | 'enum'
-  optional: boolean
-  element?: { kind: 'string' | 'number' | 'boolean' | 'enum'; values?: readonly string[] }
-  values?: readonly string[]       // enum
-  default?: unknown                // from the option entry
-  description?: string             // from the option entry
-  alias?: readonly string[]
-}
+payload: { type: t.custom(raw => Payload.parse(JSON.parse(raw))), description: '…' }
 ```
 
-The field names are not agreed yet (section 10).
+**Not part of the design.** There is no option-level `schema:` field, no `refine` method and no `~standard` method on descriptors. No downstream CLI uses refinements, `z.object`, `z.coerce` or `.describe()` (section 7), and `.check()` covers validation without letting a schema change the value. A descriptor is a converter, not a Standard Schema.
 
-**zod v3 vs v4.** Both majors work as `schema:` or `config:` values: zod ≥ 3.24 implements `~standard`, and zod 4 does natively. Inference uses `~standard.types`, so clibuilder's typings no longer import any zod type. CLIs that keep zod pick their own major.
+**`config`.** It takes any Standard Schema, or none; there is no `t.object`. Validation uses `~standard.validate`, and the validator's **output** is stored, which fixes the dropped defaults and transforms bug (section 2). The help `Config:` section is generated from `~standard.jsonSchema` when the vendor implements it, and omitted otherwise. That removes `tersify`.
+
+**Errors.** A failed conversion, constraint, check or `t.custom` call is reported as clibuilder's own `invalid-value` usage error. A check function's string is the author's message and is used as given. A foreign schema's issues, from `.check()` or from `config`, are mapped into the same error; following axi's rule, a dependency's text is never forwarded raw. The error's fields are in [axi-native section 3.3](axi-native.md#33-usage-errors-default-to-prose-plus-help-on-stderr-6393). `UsageError.keyType` becomes the descriptor's `kind` string instead of a zod object.
+
+**Standard Schema types.** The Standard Schema v1 interface is vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency for it. The copy is **verbatim** from `@standard-schema/spec` 1.1.0, including `PathSegment` in `Issue.path` (`PropertyKey | PathSegment`) and the `options` parameter of `validate`. A hand-trimmed copy rejects every real library.
+
+**zod v3 and v4.** Both majors work in `.check()` and as `config`: zod ≥ 3.24 implements `~standard`, and zod 4 does natively. The `config` type is inferred through `~standard.types`, so clibuilder's typings import no zod type. CLIs that keep zod pick their own major.
+
+**Introspection.** Help, structured help and usage errors read one form of each descriptor instead of its internals. The form is **public and read-only**, so other tools can build on `args-minus`. It is a flat union keyed on `kind`:
+
+```ts
+type Data = (
+  | StringData | NumberData | IntData | BooleanData
+  | LiteralData | EnumData | ArrayData | CustomData
+) & { readonly isOptional: boolean; readonly checks: readonly Check[] }
+
+type StringData  = { readonly kind: 'string'; readonly pattern?: RegExp }
+type NumberData  = { readonly kind: 'number'; readonly min?: number; readonly max?: number }
+type IntData     = { readonly kind: 'int'; readonly min?: number; readonly max?: number }
+type BooleanData = { readonly kind: 'boolean' }
+type LiteralData = { readonly kind: 'literal'; readonly value: string | number | boolean }
+type EnumData    = { readonly kind: 'enum'; readonly values: readonly [string, ...string[]] }
+type ArrayData   = { readonly kind: 'array'; readonly element: Data }
+type CustomData  = { readonly kind: 'custom'; readonly convert: (raw: string) => unknown }
+type Check       = { readonly type: 'fn' | 'schema' }
+```
+
+`default`, `alias` and `description` come from the option entry, not from this form. The exact field names are proposed from the prototype and are finalized in the implementation PR (section 10).
 
 ### 3.5 Implementation rules for `t`
 
-A prototype of `t`, and a follow-up check of the refinement typing on TypeScript 6.0.3 and 7.0.2 (tsgo) with identical results, settled these rules:
+A prototype of `t` in this repo settled these rules:
 
+- **Inference stays exact** through `parseArgs<const O>(options: O)`. Option declarations written out of line, or spread from another object, infer too.
 - **Optionality is a type-level flag,** separate from the output type. `.optional()` sets the flag; it does not widen the output to `T | undefined` inside the descriptor.
 - **`t.enum` requires a non-empty const tuple.** A pre-widened `string[]` degrades to `string`. The implementation either rejects it at the type level or documents the degradation.
-- **`t.array` takes only non-optional scalar or enum elements.** `t.array(t.string().optional())` and nested arrays are rejected.
-- **Array validation errors report the element path,** for example `tag[2]`.
-- **Inference cost is trivial.** About 1.7k type instantiations and 0.10 s for 7 options, and the same for 60.
-- **Refinement typing compares input and output explicitly.** Bivariance does not let a schema with a wider input through: `S extends StandardSchemaV1<Out, any>` rejects zod 4's `z.coerce.number()`, whose input is `unknown`. The refinement is typed with an explicit check instead:
+- **No `?: never` keys** to forbid an option that does not apply to a kind, such as `pattern` on `t.number`. They ruin completion and error messages. The excess-property check rejects such keys in an object literal. A bag passed in from a variable is not rejected, and that is accepted.
+- **Definition-time checks throw.** `min <= max`, and integer bounds on `t.int`, are checked at runtime when the descriptor is created, because the type level cannot check them cheaply. The `T` of `t.string<T>` does not exist at runtime, so it stays an assertion.
+- **A typed `default` is not converted.** It is already a value. `.check()` runs on it when the command is defined, so a bad default is a programmer error, not a usage error.
+- **Array validation errors name the element value and its index,** for example `tag[2]`.
+- **A foreign schema's issues** are mapped into the `invalid-value` usage error. The vendor's text is never forwarded raw.
+- **`.check()` overloads** declare the Standard Schema overload first and the function overload last, so a type error reads about the function.
+- **Measured cost.** About 1.9k type instantiations for 12 real option declarations from this repo, and about 4.1k for 60 options. Checking takes about 0.13 s to 0.18 s on TypeScript 6 and about 0.01 s on TypeScript 7. Nothing recurses. The vendors' own schema types cost more than the descriptors: one arktype call costs more than the whole 60-option surface.
 
-  ```ts
-  type RefineCompatible<Out, S extends StandardSchemaV1> =
-    [Out] extends [StandardSchemaV1.InferInput<S>] ? unknown
-    : [StandardSchemaV1.InferInput<S>] extends [Out] ? unknown
-    : { readonly '~refine': ['refinement input', StandardSchemaV1.InferInput<S>, 'is incompatible with descriptor output', Out] }
+**Schema compatibility for `.check()`.** A study of foreign-schema typing on TypeScript 6.0.3 and 7.0.2 (tsgo), with identical results, showed that bivariance does not let a schema with a wider input through: `S extends StandardSchemaV1<Out, any>` rejects zod 4's `z.coerce.number()`, whose input is `unknown`. `.check()` uses an explicit comparison instead:
 
-  refine<S extends StandardSchemaV1>(schema: S & RefineCompatible<Out, S>): Descriptor<K, StandardSchemaV1.InferOutput<S>, Opt>
-  ```
+```ts
+type RefineCompatible<Out, S extends StandardSchemaV1> =
+  [Out] extends [StandardSchemaV1.InferInput<S>] ? unknown
+  : [StandardSchemaV1.InferInput<S>] extends [Out] ? unknown
+  : { readonly '~refine': ['schema input', StandardSchemaV1.InferInput<S>, 'is unrelated to option value', Out] }
 
-  The refinement's input may be wider than the descriptor's output (`unknown`) or narrower (a literal union on `string`). A disjoint input is rejected with a readable message. Verified against zod 3.25, zod 4.6, valibot 1.5 and arktype 2.2, including brands, transforms and optional chaining.
-- **TS 7 (tsgo)** gives the same results as TS 6 for the refinement typing.
+check<S extends StandardSchemaV1>(schema: S & RefineCompatible<Out, S>): Descriptor<K, Out, Opt>
+check(fn: (value: Out) => boolean | string | void): Descriptor<K, Out, Opt>
+```
+
+A schema whose input is wider than the option value (`unknown`) or narrower (a literal union on a string option) is accepted. A disjoint input is a compile error with a readable message. The rule was verified against zod 3.25, zod 4.6, valibot 1.5 and arktype 2.2, including brands, transforms and optional chaining. The return type keeps `Out`, because a check never changes the type.
+
+### 3.6 How other parsers convert and validate
+
+Nine parsers were checked against their current source: commander 15, yargs 18, minimist 1.2.8, mri 1.2.0, cac 7, citty 0.2.2, clipanion 4 rc with typanion 3.14, @stricli/core 1.3, and `node:util` `parseArgs`.
+
+- **Converting apart from validating.** Only yargs (`coerce`, then `choices` or `check`) and typanion's cascade keep the two apart, and neither enforces it. commander, stricli and cac use one function for both.
+- **Standard Schema.** None supports it. stricli's docs tell users to wrap zod in its `parse` function.
+- **Constraints.** Ranges and formats ship only in typanion, so leaving formats to the author is the norm. Choices, required and default are expected everywhere.
+- **Numbers.** yargs' `number` silently yields `NaN`, minimist and mri keep the string, and stricli's `numberParser` accepts an empty string and `Infinity`. A strict `t.number()` that fails loudly is a differentiator.
+- **Exit codes.** stricli is the only one with a usage-specific exit code (-4).
+
+The gap the survey exposed was a custom converter, which `t.custom` fills.
 
 ## 4. Logging: standard-log and standard-log-color
 
@@ -296,26 +371,27 @@ Common to all six:
 
 | Package | `type: z.` uses | ui / testing | plugins / config | Cost |
 |---|---|---|---|---|
-| cyber-mux | ~50; also annotates `z.ZodOptional<z.ZodEnum<…>>`; reads `command.options` | — | `activate` | **high**, but mechanical |
-| agent-harness | ~17 | — | own discovery | med |
-| buddy-agent-harness | ~22; a test reads `options.format.default` | — | — | med |
+| cyber-mux | ~50; also annotates `z.ZodOptional<z.ZodEnum<…>>`; reads `command.options` | none | `activate` | **high**, but mechanical |
+| agent-harness | ~17 | none | own discovery | med |
+| buddy-agent-harness | ~22; a test reads `options.format.default` | none | none | med |
 | repobuddy/buddy | 3 (`.optional()` chain) | `ui.info`; one spec asserts `messages`; `testCommand` from the root entry | **`config: true` is load-bearing** for plugin loading | med |
 | repobuddy/typescript | 3 (`z.union` of literals) | `ui.info`; `testCommand` from `clibuilder/testing` | `activate` | low |
-| cyber-sdd | 0 | `showHelp` (leaves `ui`) | — | low |
-| `@clibuilder/axi` (in repo) | `format.ts`, `truncate.ts` | uses `cli.UsageError` (`keyType` changes); its output, error, format and usage modules move into core | — | low; release in lockstep |
+| cyber-sdd | 0 | `showHelp` (leaves `ui`) | none | low |
+| `@clibuilder/axi` (in repo) | `format.ts`, `truncate.ts` | uses `cli.UsageError` (`keyType` changes); its output, error, format and usage modules move into core | none | low; release in lockstep |
 
 ### Migration path
 
 1. **v11 minor (non-breaking prep).**
-   - Add `t` to `args-minus` and re-export it, with the `schema:` field, Standard Schema `config`, and the `args-minus` tokenizer, alongside the zod path.
+   - Land the descriptor work in `args-minus` first: the `t` builders and their constraints, `.check()`, `t.custom`, the introspection form, and the vendored Standard Schema interface.
+   - Then re-export `t` from clibuilder, move its parser onto the `args-minus` tokenizer, and accept a Standard Schema as `config`. The zod path stays alongside through the v11 minors.
    - Add `cli({ streams })` with the two routing presets, `output: 'console'` as the v11 default ([axi-native section 6](axi-native.md#6-sequencing)).
    - Add the `use()` hook and publish `@clibuilder/plugins` against it, so a CLI can switch to `.use(plugins())` before v12 (section 9.6).
    - Mark the `z` re-export and the root `testCommand` export `@deprecated`.
    - Fix the `parseConfig` output bug.
    - Users can migrate at their own pace and get v4-compatible validation early.
-2. **Codemod.** `z.<kind>(` → `t.<kind>(` for the supported kinds, `z.union` of `z.literal`s → `t.enum`, `z.optional(x)` → `x.optional()`, and `import { z } from 'clibuilder'` → `import { t } from 'clibuilder'`. Anything outside the supported subset is flagged rather than rewritten. Type annotations such as cyber-mux's `z.ZodOptional<…>` become `t.Optional<…>` or are dropped in favour of `satisfies`.
+2. **Codemod.** `z.<kind>(` → `t.<kind>(` for the supported kinds, `z.number().int()` → `t.int()`, `.min(a).max(b)` → `{ min: a, max: b }`, `.regex(r)` → `{ pattern: r }`, `z.literal(x)` → `t.literal(x)`, `z.union` of string `z.literal`s → `t.enum`, `z.optional(x)` → `x.optional()`, and `import { z } from 'clibuilder'` → `import { t } from 'clibuilder'`. Anything outside the supported subset is flagged rather than rewritten. Type annotations such as cyber-mux's `z.ZodOptional<…>` become `t.Optional<…>` or are dropped in favour of `satisfies`.
 3. **v12 major.**
-   - Remove zod, standard-log, standard-log-color, type-plus, tersify, pad-right, wordwrap, tmp and tslib.
+   - Remove the zod path, and zod, standard-log, standard-log-color, type-plus, tersify, pad-right, wordwrap, tmp and tslib.
    - Make `js-yaml` an optional peer.
    - Remove plugin loading, `keywords` and the automatic `plugins` group from core (section 9).
    - Optionally drop CJS.
@@ -326,7 +402,7 @@ Common to all six:
 ## 8. Open questions
 
 1. ~~**Descriptor naming.** `t`, `arg`, or keep the name `z` as a compatible subset?~~ **Resolved:** `t`, plus the codemod (section 3.4).
-2. ~~**Bare Standard Schema as `type`.** Allowed, with shape from `~standard.jsonSchema`, or must shape always come from a descriptor?~~ **Resolved:** shape always comes from a descriptor; a foreign schema is only a `schema:` refinement or `config` (section 3.4).
+2. ~~**Bare Standard Schema as `type`.** Allowed, with shape from `~standard.jsonSchema`, or must shape always come from a descriptor?~~ **Resolved:** shape always comes from a descriptor; a foreign schema is accepted only in `.check()` and as `config` (section 3.4).
 3. ~~**Plugin loading.** Should it stay in core, keeping `import-meta-resolve`, or move entirely to `@clibuilder/plugins` for a zero-dependency core?~~ **Resolved by section 9:** it moves out.
 4. **JSONC.** Keep `jsonc-parser`, make it an optional peer, or use an internal stripper? YAML as an optional peer: acceptable friction for CLIs whose users write YAML config?
 5. ~~**`ui.info` routing under #639.** stdout or stderr, once a result channel owns stdout?~~ **Resolved:** stderr in `output: 'axi'` mode, stdout in `output: 'console'` mode (section 4). The same question as axi-native Q5.
@@ -463,11 +539,19 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 ## 10. Still open
 
-Items left open by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are also still open.
+Items raised by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 are also still open.
 
 1. ~~**Name of the `quiet()` opt-out.**~~ **Resolved:** there is no opt-out wrapper; `result(value, { render })` controls the printed form ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)).
-2. **Descriptor introspection field names.** The form is public and read-only (section 3.4); the exact `OptionInfo` field names are a proposal and need agreement before `t` ships.
-3. ~~**Untested `t` typing.** Foreign-refinement typing and TS 7 (tsgo).~~ **Resolved:** tested on TS 6.0.3 and 7.0.2; the bivariance claim was false, and the refinement uses an explicit input check (section 3.5).
+2. ~~**Descriptor introspection form.** What does help read instead of descriptor internals?~~ **Resolved:** a public, read-only `Data` union keyed on `kind`, with `isOptional` and `checks` (section 3.4). Its exact field names are item 7.
+3. ~~**Untested `t` typing.** Foreign-schema typing and TS 7 (tsgo).~~ **Resolved:** tested on TS 6.0.3 and 7.0.2 with identical results; bivariance does not admit a wider input, and `.check()` uses an explicit input comparison (section 3.5).
 4. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 4).
-5. **May a refinement change the type?** The typing in section 3.5 lets a refinement's output replace the descriptor's output, so a transform from `string` to `number` type-checks. Should that be allowed, or must a refinement only narrow?
-6. **Coercion belongs before the refinement.** The descriptor runs its own `typeof` check before the refinement, so a coercing schema such as `z.coerce.number()` receives a value that is already typed. CLI string coercion must therefore live in the descriptor or the parser, not in a refinement. This needs to be confirmed as the intended rule and documented for users.
+5. ~~**May a schema change the option's type?**~~ **Resolved:** no. `.check()` only validates; a schema's output is ignored, and conversion belongs to the descriptor or `t.custom` (section 3.4).
+6. ~~**Where does string coercion live?**~~ **Resolved:** in the descriptor. argv values are strings, so there is no coercion step, and `z.coerce` in `.check()` only sees a converted value (section 3.4).
+
+Still open:
+
+7. **Exact introspection field names.** The names in section 3.4 come from the prototype and are finalized in the implementation PR. That the form is public and read-only is decided.
+8. **A built-in `t.json(schema)`.** `t.custom(raw => schema.parse(JSON.parse(raw)))` covers it today. A helper would also need to decide how a schema's output type and issues map to `args` and `invalid-value`.
+9. **`t.custom` as an array element.** Rejected in v12. Allowing it later needs a rule for reporting which element's conversion threw.
+10. **Async Standard Schema in `.check()`.** A vendor's `validate` may return a promise. Whether `.check()` awaits it or rejects an async schema is not decided; `t.custom` is synchronous either way.
+11. **Type-check cost on a CLI with many commands.** The cost in section 3.5 was measured for one set of options. A CLI with many commands, each with its own options, has not been measured.
