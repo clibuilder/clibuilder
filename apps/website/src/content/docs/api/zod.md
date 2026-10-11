@@ -12,6 +12,11 @@ rather than adding zod as your own dependency — that guarantees the schemas yo
 of the same zod the library validates with, which is the usual cause of "this schema isn't being
 recognized" bugs.
 
+:::note[Planned for v12]
+`clibuilder` 12 is planned to replace zod with the [`t` option descriptors](/clibuilder/packages/args-minus/)
+and to remove the `z` re-export. See the [v12 roadmap](/clibuilder/roadmap/v12/#zod-is-replaced-by-t).
+:::
+
 ## Where schemas are used
 
 | Position | What the schema does |

@@ -64,6 +64,22 @@ export default defineConfig({
 					]
 				},
 				{
+					label: 'Packages',
+					items: [
+						{ label: '@clibuilder/axi', slug: 'packages/axi' },
+						{
+							label: '@clibuilder/plugins',
+							slug: 'packages/plugins',
+							badge: { text: 'unreleased', variant: 'caution' }
+						},
+						{ label: 'args-minus', slug: 'packages/args-minus', badge: { text: 'unreleased', variant: 'caution' } }
+					]
+				},
+				{
+					label: 'Roadmap',
+					items: [{ label: 'Roadmap to v12', slug: 'roadmap/v12' }]
+				},
+				{
 					label: 'Showcase',
 					slug: 'showcase'
 				}

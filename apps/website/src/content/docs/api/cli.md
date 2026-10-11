@@ -36,10 +36,11 @@ namespace cli {
 | `version` | `string` | **Required.** Printed by `--version`. Since v8 this is not read from `package.json` — see [Publishing](/clibuilder/guides/publishing/). |
 | `description` | `string` | A short summary shown at the top of the help message. |
 | `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
-| `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. |
+| `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. Planned for removal in v12, where it becomes an option of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 
-Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI.
+Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI, unless the CLI
+uses [`@clibuilder/plugins`](/clibuilder/packages/plugins/), which adds its own.
 
 ## `Builder`
 
@@ -84,9 +85,12 @@ See [`command()`](/clibuilder/api/command/) for the full shape.
 
 ### `.use(extension)`
 
+:::caution[Unreleased]
+`.use()` is on `main` for `clibuilder` 11.5.0, which is not published yet.
+:::
+
 Adds an extension: a function that adds commands and registry entries before `parse()` picks the
-command to run. [`@clibuilder/plugins`](/clibuilder/guides/plugins/#loading-plugins-with-clibuilderplugins)
-is one.
+command to run. [`@clibuilder/plugins`](/clibuilder/packages/plugins/) is one.
 
 ```ts
 import type { Extension } from 'clibuilder'
@@ -98,15 +102,39 @@ const hello: Extension = ({ addCommand }) => {
 cli({ name: 'app', version: '1.0.0' }).use(hello).parse(process.argv)
 ```
 
-The extension receives an `ExtensionContext`: `host` (the CLI's `name` and `version`), `cwd`, `ui`,
-`registry`, `addCommand(command)`, and `resolveConfig()`, which resolves to the CLI's config and
-where it came from (`source.type` is `'none'` when the CLI sets no `config`).
+```ts
+type Extension = (context: ExtensionContext) => void | Promise<void>
 
-- Extensions run in the order `.use()` was called, each awaited before the next.
+type ExtensionContext = {
+  readonly host: { readonly name: string; readonly version: string }
+  readonly cwd: string
+  readonly ui: UI
+  readonly registry: RegistryOwner
+  addCommand(command: cli.Command): void
+  resolveConfig(): Promise<ConfigLoadResult>
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `host` | The CLI's `name` and `version` |
+| `cwd` | The working directory the CLI runs in |
+| `ui` | The CLI's own [UI](/clibuilder/api/ui/), so messages follow `--silent`, `--verbose` and `--debug-cli` |
+| `registry` | The registry that commands read as `this.registry`. `register(source, key, value)` adds a value under a `defineKey()` or `defineCollectionKey()` key |
+| `addCommand(command)` | Adds a top-level command |
+| `resolveConfig()` | Resolves to the CLI's config and where it came from. `source.type` is `'none'` when the CLI sets no `config` |
+
+When extensions run:
+
+- They run once, on the first `parse()` that needs the command tree. Building the CLI does not run them.
+- They run in the order `.use()` was called. Each one is awaited before the next starts, so the
+  command order is the same on every run.
 - Their commands come after the CLI's own `.command()` and `.default()` commands.
-- They run once, on the first `parse()` that needs the command tree. A bare `--version` or `-v` is
-  answered before anything loads, so they do not run; `--help` waits for them, because it lists their commands.
-- `.use()` makes `parse()` available, because an extension may supply every command.
+- A bare `--version` or `-v` is answered before anything loads, so extensions do not run for it.
+  See [the version fast path](/clibuilder/guides/arguments-and-options/#built-in-options).
+- `--help` waits for them, because it lists their commands.
+
+`.use()` makes `parse()` available, because an extension may supply every command.
 
 ## `Executable`
 
