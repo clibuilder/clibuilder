@@ -44,6 +44,24 @@ test('--help answers the structured help in toon by default', () => {
 	assert.match(r.stdout, /^name: test-cli$/m)
 })
 
+test('--show-config answers the resolved config and its file on stdout, nothing on stderr', () => {
+	const r = run('--show-config', '--format', 'json')
+	assert.equal(r.code, 0)
+	assert.equal(r.stderr, '')
+	assert.deepEqual(JSON.parse(r.stdout), {
+		source: 'file',
+		path: fileURLToPath(new URL('./test-clirc.json', import.meta.url)),
+		config: { plugins: ['cjs-plugin'], greeting: 'hello' }
+	})
+})
+
+test('--show-config --format text answers the console rendering', () => {
+	const r = run('--show-config', '--format', 'text')
+	assert.equal(r.code, 0)
+	assert.equal(r.stderr, '')
+	assert.match(r.stdout, /^config: .*test-clirc\.json\n\{\n {2}"plugins"/)
+})
+
 test('config-value reads the config, which config: true loads for the commands', () => {
 	assert.deepEqual(run('config-value', 'greeting'), { code: 0, stdout: 'greeting: hello', stderr: '' })
 })

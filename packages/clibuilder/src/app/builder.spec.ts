@@ -4,6 +4,7 @@ import { testType } from 'type-plus/testing'
 import { z } from 'zod'
 import { mockContext } from '../drivers/context.mock.js'
 import { CliError, type cli, command, exitCodes, t } from '../index.js'
+import { encode } from '../render/encode.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
 import { builder } from './builder.js'
 
@@ -1171,6 +1172,71 @@ describe('--show-config (#317)', () => {
 		await builder.default({ run() {} }).parse(argv('test-cli --help'))
 
 		expect(ctx.messages).not.toContain('show-config')
+	})
+})
+
+describe('--show-config with output axi', () => {
+	function showConfig(fixtureDir: string, args = '') {
+		const ctx = mockContext({ fixtureDir })
+		return builder(ctx, { name: 'show-config', version: '1.0.0', config: true })
+			.parse(argv(`show-config --show-config ${args}`))
+			.then(() => ctx)
+	}
+
+	it('answers the source and the config in toon on stdout, with nothing logged', async () => {
+		const ctx = await showConfig('has-json-config')
+
+		// the path is encoded, so TOON quotes a Windows path with its backslashes escaped
+		const path = getFixturePath('has-json-config/show-config.json')
+		expect(ctx.stdout).toBe(`${encode({ source: 'file', path, config: { a: 1 } }, 'toon')}\n`)
+		expect(ctx.stdout).toMatch(/^source: file\npath: .+\nconfig:\n {2}a: 1\n$/)
+		expect(ctx.messages).toBe('')
+		expect(ctx.exitCode).toBeUndefined()
+	})
+
+	it('answers in json under --format json', async () => {
+		const ctx = await showConfig('has-json-config', '--format json')
+
+		expect(JSON.parse(ctx.stdout)).toEqual({
+			source: 'file',
+			path: getFixturePath('has-json-config/show-config.json'),
+			config: { a: 1 }
+		})
+		expect(ctx.messages).toBe('')
+	})
+
+	it('names the package.json property', async () => {
+		const ctx = await showConfig('has-pjson-config', '--format json')
+
+		expect(JSON.parse(ctx.stdout)).toEqual({
+			source: 'package.json',
+			path: getFixturePath('has-pjson-config/package.json'),
+			property: 'show-config',
+			config: { a: 1 }
+		})
+	})
+
+	it('answers the console rendering under --format text', async () => {
+		const ctx = await showConfig('has-json-config', '--format text')
+
+		expect(ctx.stdout).toBe(
+			`config: ${getFixturePath('has-json-config/show-config.json')}\n${JSON.stringify({ a: 1 }, undefined, 2)}\n`
+		)
+		expect(ctx.messages).toBe('')
+	})
+
+	it('answers that no config was found', async () => {
+		const [builder, ctx] = setupBuilderTest(undefined, { config: true, output: 'axi' })
+		await builder.default({ run() {} }).parse(argv('test-cli --show-config --format json'))
+
+		expect(JSON.parse(ctx.stdout)).toEqual({ source: 'none', config: null })
+		expect(ctx.exitCode).toBeUndefined()
+	})
+
+	it('is answered under --silent', async () => {
+		const ctx = await showConfig('has-json-config', '--silent --format json')
+
+		expect(JSON.parse(ctx.stdout).config).toEqual({ a: 1 })
 	})
 })
 

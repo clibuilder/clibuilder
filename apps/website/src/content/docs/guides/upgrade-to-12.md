@@ -298,6 +298,34 @@ command({ name: 'group', commands: [list, show] })
 Source: [axi-native section 3.7](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#37-help-is-not-agent-shaped-6397).
 See [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi).
 
+## `--show-config` answers on stdout
+
+**On `main`.**
+
+**What changed.** In `axi` mode, the default, `--show-config` is an answer on stdout, following
+`--format`, with nothing on stderr from it and exit code 0. `text` prints the lines 11 printed. `toon`
+and `json` encode the source and the config: `source` (`file`, `package.json` or `none`), `path`,
+`property` for a `package.json` source, and `config`. In `console` mode it writes the same lines
+through `ui.info`, as in 11.
+
+**Who is affected.** A script that reads `--show-config`. Its default format is now `toon`, not the
+lines 11 printed.
+
+**Fix.** Pass `--format text` to get the 11 lines, or `--format json` to read the fields.
+
+```sh
+# before
+my-cli --show-config
+
+# after: the same lines
+my-cli --show-config --format text
+
+# after: the fields
+my-cli --show-config --format json
+```
+
+See [Inspecting the resolved config](/clibuilder/guides/configuration/#inspecting-the-resolved-config).
+
 ## zod is replaced by `t`
 
 **On `main`.** `t` is re-exported from `clibuilder` since 11.5.0. In 12, `z`, zod and the

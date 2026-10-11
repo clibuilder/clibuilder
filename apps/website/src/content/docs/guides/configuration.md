@@ -190,32 +190,45 @@ export default {
 ## Inspecting the resolved config
 
 A CLI that accepts config gets a `--show-config` option, which prints the config it resolved and the
-file it came from:
+file it came from. It is an answer on stdout and follows `--format`, `toon` by default:
 
 ```sh
 $ app --show-config
+source: file
+path: /home/me/project/app.jsonc
+config:
+  presets: recommended
+```
+
+`--format json` gives the same fields as JSON, and `--format text` gives the lines as a person reads
+them:
+
+```sh
+$ app --show-config --format text
 config: /home/me/project/app.jsonc
 {
   "presets": "recommended"
 }
 ```
 
-When the config came from `package.json`, the property is named too:
+When the config came from `package.json`, `source` is `package.json` and `property` names the key
+that was read. Under `--format text` the property is named after the path:
 
 ```sh
 config: /home/me/project/package.json (property "app")
 ```
 
-And when nothing matched, `--show-config` says so, after the warning listing every filename that was
-searched for:
+And when nothing matched, `source` is `none` and `config` is `null`. Under `--format text`:
 
 ```sh
 config: not found
 ```
 
-**v12, unreleased:** `--show-config` writes these lines through the CLI's `ui`. With
-`output: 'axi'`, the default, every `ui` line is a diagnostic on stderr, so they land on stderr.
-With `output: 'console'`, and in 11.5.0, they are on stdout.
+The warning listing every filename that was searched for is a diagnostic on stderr, as on any
+invocation that finds no config.
+
+With `output: 'console'`, `--show-config` writes the `text` lines through the CLI's `ui`, on stdout,
+whatever the `--format`, as in 11.5.0.
 
 ## Reading the config yourself
 
