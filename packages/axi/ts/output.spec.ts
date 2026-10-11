@@ -1,4 +1,5 @@
-import { isCliError } from 'clibuilder'
+import { Writable } from 'node:stream'
+import { CliError, cli, isCliError } from 'clibuilder'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOutput, encodeError, encodeResult, writeDocument, writeError, writeResult } from './output.js'
 
@@ -188,5 +189,53 @@ describe('createOutput().error', () => {
 
 	it('carries a usage exit code', () => {
 		expect(createOutput('toon').error({ message: 'bad', code: 'usage', exitCode: 2 }).exitCode).toBe(2)
+	})
+
+	it('returns a plain CliError on a clibuilder without CliError.reported', () => {
+		const reported = CliError.reported
+		;(CliError as any).reported = undefined
+		try {
+			const error = createOutput('toon').error({ message: 'boom', code: 'failed', exitCode: 3 })
+			expect(isCliError(error)).toBe(true)
+			expect(error.message).toBe('boom')
+			expect(error.exitCode).toBe(3)
+		} finally {
+			CliError.reported = reported
+		}
+	})
+
+	describe('thrown from a clibuilder command', () => {
+		function memoryStream() {
+			const stream = new Writable({
+				decodeStrings: false,
+				write(chunk, _encoding, callback) {
+					stream.text += chunk
+					callback()
+				}
+			}) as Writable & { text: string }
+			stream.text = ''
+			return stream
+		}
+
+		for (const output of ['console', 'axi'] as const) {
+			it(`is reported once, on stdout only, in ${output} output`, async () => {
+				const stdout = memoryStream()
+				const stderr = memoryStream()
+				const app = cli({ name: 'app', version: '1.0.0', output, streams: { stdout, stderr } }).default({
+					run() {
+						throw createOutput('toon', { stdout }).error({
+							message: 'no plugin named foo',
+							code: 'not-found',
+							help: 'Run `app list`',
+							exitCode: 4
+						})
+					}
+				})
+				expect(await app.parse(['node', 'app'])).toBe(4)
+				expect(stdout.text).toBe('error: no plugin named foo\ncode: not-found\nhelp[1]: Run `app list`\n')
+				expect(stderr.text).toBe('')
+				process.exitCode = undefined
+			})
+		}
 	})
 })

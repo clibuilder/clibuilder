@@ -273,6 +273,74 @@ Feature: Execution
     When they are compared
     Then success, error, and usage are three distinct values a caller can tell apart
 
+  Scenario: a CliError accepts any exit code from 1 to 255
+    Given a CliError constructed with an exit code of 1 or of 255
+    When it is inspected
+    Then its exit code is the one given
+
+  Scenario: a CliError rejects an exit code outside 1 to 255
+    Given an exit code of 0, of 256, negative, or not an integer
+    When a CliError is constructed with it
+    Then the construction fails with a RangeError, because an error must not exit 0
+
+  Scenario: a CliError with no code or details uses the code error and no details
+    Given a CliError constructed with only a message
+    When it is inspected
+    Then its code is error and its details are an empty record
+
+  Scenario: a CliError rejects a code that is not kebab-case
+    Given a code such as NotFound or not_found
+    When a CliError is constructed with it
+    Then the construction fails with a RangeError
+
+  Scenario: a CliError rejects a details key it is rendered under
+    Given details with the key error, code or help
+    When a CliError is constructed with them
+    Then the construction fails with a RangeError
+
+  Scenario: a CliError can be constructed from one report object
+    Given a report with a message, a code, details, help, an exit code and a cause
+    When a CliError is constructed from it
+    Then the error carries each of them
+
+  Scenario: a subclass of CliError is a CliError
+    Given a class extending CliError that passes a code and details
+    When it is constructed and tested
+    Then it is recognized as a CliError and carries the code and details
+
+  Scenario: CliError.reported carries an exit code and is marked as reported
+    Given CliError.reported called with an exit code
+    When it is inspected
+    Then it is a CliError with that exit code, marked as already reported, and an exit code of 0 is rejected
+
+  Scenario: in axi output a CliError is rendered once on stdout in the cli's format
+    Given a cli with output axi and a format of toon, json or text, toon by default
+    When its command throws a CliError with a code, details and help
+    Then stdout holds error, code, the details fields and help, in that order, encoded in that format
+    And help is left out when it is empty
+    And nothing is written to stderr
+    And the cli exits with the error's exit code
+
+  Scenario: in axi output a debugging copy of a CliError is a debug line
+    Given a cli with output axi, invoked with --verbose
+    When its command throws a CliError
+    Then stdout holds the rendered report once, and stderr holds a debug line describing the error
+
+  Scenario: in console output a CliError is reported on stderr as before
+    Given a cli with output console, with or without a format
+    When its command throws a CliError with help
+    Then the message and help lines are written to stderr, nothing to stdout, and the exit code is the error's
+
+  Scenario: a CliError already reported renders nothing
+    Given a cli in either output
+    When its command throws CliError.reported with an exit code
+    Then nothing is written to stdout or stderr, even with --verbose, and the cli exits with that code
+
+  Scenario: a cli format other than toon, json or text is rejected
+    Given a cli built with a format that is not toon, json or text
+    When it is constructed
+    Then the construction fails with a TypeError naming the valid formats
+
   # ── UC5 — context ──
 
   Scenario: the first config resolution starts the walk and keeps its promise
@@ -393,6 +461,11 @@ Feature: Execution
     When an invocation with an unknown option reaches it
     Then the handler's context carries the format toon
     And it carries the usage exit code
+
+  Scenario: a handler receives the format the cli was built with
+    Given an application declaring a usage-error handler and a format of json
+    When an invocation with an unknown option reaches it
+    Then the handler's context carries the format json
 
   Scenario: each usage error a handler receives carries its stable code
     Given an application declaring a usage-error handler

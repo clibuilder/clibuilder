@@ -137,7 +137,8 @@ code: not-found
 help[1]: Run `my-cli list` to see the installed plugins
 ```
 
-`clibuilder` also logs the message on stderr, as a diagnostic.
+With `clibuilder` 11.6 or later, that is all the CLI prints for the error.
+An older `clibuilder` also logs the message on stderr.
 
 Usage errors — an unknown option, a missing argument — get the same shape and
 exit code 2 when the CLI uses `createUsageErrorHandler()`:

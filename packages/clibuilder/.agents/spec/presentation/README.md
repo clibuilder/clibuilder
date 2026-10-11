@@ -6,8 +6,8 @@ concept: [declaration-driven, error-reporting, agent-interface]
 # Presentation
 
 Governs `src/render/help.ts`, `src/render/format.ts`, `src/render/error.ts`,
-`src/drivers/logger.ts`, `src/drivers/stream_ui.ts`, `src/drivers/streams.ts`
-and `src/core/ports.ts` — rendering help and usage,
+`src/drivers/logger.ts`, `src/drivers/stream_ui.ts`, `src/drivers/streams.ts`,
+`src/render/encode.ts`, `src/render/text.ts` and `src/core/ports.ts` — rendering help and usage,
 describing a usage error in words, emitting messages at their log level, and
 serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.
@@ -192,6 +192,24 @@ every command that reports one, in whichever format the reader asked for.
 | `createStreamUI` and the internal `routing` table | UC8 | — |
 | `shouldColour` / `createSinks` | UC8 | — |
 | `handleEpipe` | UC9 | — |
+| `encode`, `Format`, `formats`, `errorOutput` in `render/encode.ts` | UC10 | — |
+| `renderText` in `render/text.ts` | UC10 | — |
+
+### UC10 — encode an answer in the cli's format
+
+**Actor / goal.** The framework wants one place that turns a plain object into
+text in `toon`, `json` or `text`, so a thrown `CliError` now, and `--format` and
+returned values later, read the same. Design: axi-native RFC sections 3.1 and
+3.4.
+
+| Cause | Outcome |
+| --- | --- |
+| `toon` | the official `@toon-format/toon` encoder, for every value, single objects and errors included |
+| `json` | `JSON.stringify` of the value, on one line |
+| `text` | `key: value` lines, the same rendering as `@clibuilder/axi`'s `renderText` |
+| an error report | flat: `error`, `code`, the `details` fields, then `help`, which is left out when empty |
+
+Both modules import nothing from the framework (RFC section 4.1).
 
 ### UC8 — the built-in ui: write to `cli({ streams })` by `cli({ output })`
 
@@ -548,6 +566,15 @@ graph TD
 | no colour | TTY with `NO_COLOR` | `NO_COLOR turns colour off on a TTY` |
 | colour unless 0 or false | TTY with `FORCE_COLOR` | `FORCE_COLOR decides colour on a TTY` |
 | standard-log, unchanged | neither `streams` nor `axi` | `without streams or axi output the v11 ui is used` |
+
+### UC10 — encode an answer
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| official encoder | `toon` | `an answer is encoded in toon by the official encoder` |
+| JSON.stringify | `json` | `an answer is encoded in json on one line` |
+| key: value lines | `text` | `an answer is encoded in text as key and value lines` |
+| flat, in order, empty help left out | an error report | `an error report is error, code, the details fields, then help` |
 
 ### UC9 — EPIPE
 

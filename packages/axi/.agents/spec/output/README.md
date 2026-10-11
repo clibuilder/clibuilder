@@ -68,7 +68,10 @@ the same invocation gives the same output wherever it runs.
   others, such as `not-found`.
 - `output.error(report)` writes the error on stdout and returns a `CliError`
   carrying its exit code — 1 unless the report says otherwise — for the command
-  to throw. clibuilder then logs the message on stderr as a diagnostic.
+  to throw. With clibuilder 11.6 or later the `CliError` is one from
+  `CliError.reported()`, so clibuilder prints nothing more for it and the error
+  is reported once. With an older clibuilder it is a plain `CliError`, whose
+  message clibuilder also logs on stderr.
 - `writeError` writes an error outside a command and returns its exit code.
 
 ### Usage errors

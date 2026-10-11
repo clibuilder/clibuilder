@@ -93,8 +93,14 @@ help[1]: Run `my-cli list` to see the open tasks
 ```
 
 `output.error()` writes the error on stdout and returns a `CliError` to throw. Its exit code is 1
-unless the report sets another. In `clibuilder` 11, the CLI also logs the error message on stderr as
-a diagnostic.
+unless the report sets another.
+
+:::note[Unreleased: the error is reported once]
+With the next `clibuilder` 11 minor and `@clibuilder/axi` patch, which are not published yet, the
+returned error is a [`CliError.reported()`](/clibuilder/guides/failing/#an-error-already-reported), so the
+CLI prints nothing more for it. Until then the CLI also logs the error message on stderr as a
+diagnostic.
+:::
 
 `args.format` is typed `'toon' | 'json' | 'text' | undefined`. `clibuilder` rejects any other value
 as a usage error before `run()` is called.

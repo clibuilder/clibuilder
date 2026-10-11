@@ -69,6 +69,7 @@
 		"w": "pnpm watch"
 	},
 	"dependencies": {
+		"@toon-format/toon": "^4.1.1",
 		"args-minus": "workspace:^",
 		"find-installed-packages": "^4.0.1",
 		"import-meta-resolve": "^4.2.0",

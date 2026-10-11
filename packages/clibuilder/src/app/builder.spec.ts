@@ -1048,6 +1048,12 @@ describe('global options are resolved before usage errors (axi-native 3.2)', () 
 		expect(onUsageError.mock.calls[0][1]).toMatchObject({ format: 'toon', exitCode: exitCodes.usage })
 		testType.equal<cli.Format, 'toon' | 'json' | 'text'>(true)
 	})
+	it('passes the cli({ format }) value to the handler', async () => {
+		const onUsageError = vi.fn()
+		const [builder] = setupBuilderTest(undefined, { onUsageError, format: 'json' })
+		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --bogus'))
+		expect(onUsageError.mock.calls[0][1]).toMatchObject({ format: 'json', exitCode: exitCodes.usage })
+	})
 	it('passes the same context to a command handler', async () => {
 		let context: cli.UsageErrorContext | undefined
 		const [builder] = setupBuilderTest()

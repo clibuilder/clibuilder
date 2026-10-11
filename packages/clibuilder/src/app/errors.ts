@@ -24,28 +24,82 @@ export const exitCodes = {
 } as const
 
 const cliErrorBrand: unique symbol = Symbol.for('clibuilder.CliError')
+const reportedBrand: unique symbol = Symbol.for('clibuilder.CliError.reported')
+
+/**
+ * The keys the report is rendered under. A `details` field may not reuse one.
+ */
+const reservedKeys = ['error', 'code', 'help']
 
 export namespace CliError {
+	/**
+	 * A value in `details`: a scalar, or a list of scalars.
+	 * The record stays flat so it reads the same in every format.
+	 */
+	export type DetailValue = string | number | boolean | null | ReadonlyArray<string | number | boolean | null>
+
+	/**
+	 * Extra fields an agent can act on, such as the path that was not found
+	 * or the names an ambiguous one matched.
+	 */
+	export type Details = Record<string, DetailValue>
+
 	export type Options = {
 		/**
-		 * The code the cli exits with. Defaults to `exitCodes.error` (1).
+		 * The code the cli exits with: any integer from 1 to 255.
+		 * Defaults to `exitCodes.error` (1).
 		 * Use `exitCodes.usage` (2) when the invocation itself was wrong.
+		 * `0` is rejected, since an error must not exit 0.
 		 */
-		exitCode?: number
+		exitCode?: number | undefined
 		/**
-		 * What the caller should do about it.
+		 * A stable, kebab-case string that says which failure this is, such as `not-found`.
+		 * The exit code says *that* it failed; the code says *which* failure.
+		 * Defaults to `error`.
+		 */
+		code?: string | undefined
+		/**
+		 * Extra fields an agent can act on, rendered between `code` and `help`.
+		 * Flat: each value is a scalar or a list of scalars.
+		 * A key may not be `error`, `code` or `help`.
+		 */
+		details?: Details | undefined
+		/**
+		 * What the caller should do about it, such as the command that fixes it.
 		 * Printed after the message, one line each.
 		 */
-		help?: string | string[]
+		help?: string | readonly string[] | undefined
 		cause?: unknown
+	}
+
+	/**
+	 * The whole report as one object: `new CliError(report)`.
+	 */
+	export type Report = Options & {
+		/**
+		 * What went wrong, in the cli's own terms.
+		 */
+		message: string
 	}
 }
 
 /**
  * Throw this from a command's `run()` to fail the cli.
  *
- * The message and the help lines are printed through the command's `ui`,
- * and the cli exits with `exitCode`. `parse()` resolves to that `exitCode`
+ * It is the structured report of the failure:
+ *
+ * - `message`: what went wrong.
+ * - `code`: a stable kebab-case string that says which failure it is (default `error`).
+ * - `details`: a flat record of extra fields an agent can act on (default `{}`).
+ * - `help`: what to do about it, as a list of lines (default `[]`).
+ * - `exitCode`: any integer from 1 to 255 (default `exitCodes.error`, 1).
+ *
+ * With `cli({ output: 'console' })`, the default, the message and the help lines are printed
+ * through the command's `ui`. With `cli({ output: 'axi' })` the report is rendered once on stdout,
+ * in the cli's format, as `error`, `code`, the `details` fields, then `help`, and nothing is
+ * written to stderr for it.
+ *
+ * Either way the cli exits with `exitCode`, and `parse()` resolves to that `exitCode`
  * instead of rejecting, so the failure is reported rather than surfacing
  * as an unhandled rejection with a stack trace.
  *
@@ -54,7 +108,9 @@ export namespace CliError {
  * run({ field }) {
  * 	if (!fields.includes(field)) {
  * 		throw new CliError(`unknown field "${field}"`, {
+ * 			code: 'unknown-field',
  * 			exitCode: exitCodes.usage,
+ * 			details: { field },
  * 			help: `valid fields: ${fields.join(', ')}`
  * 		})
  * 	}
@@ -62,8 +118,25 @@ export namespace CliError {
  * ```
  */
 export class CliError extends Error {
+	/**
+	 * A `CliError` for a failure that was already reported, such as by
+	 * `@clibuilder/axi`'s `output.error()`.
+	 *
+	 * The cli exits with `exitCode`, and nothing is printed for it,
+	 * neither on stdout nor on stderr, so the failure is not reported twice.
+	 *
+	 * @param message kept on the error for a caller that reads it, never printed.
+	 */
+	static reported(exitCode: number = exitCodes.error, message = 'the error was already reported'): CliError {
+		const err = new CliError(message, { exitCode })
+		;(err as any)[reportedBrand] = true
+		return err
+	}
+
 	override readonly name = 'CliError'
 	readonly exitCode: number
+	readonly code: string
+	readonly details: CliError.Details
 	readonly help: string[]
 	/**
 	 * The error this one wraps, if any.
@@ -75,14 +148,43 @@ export class CliError extends Error {
 	// dependency tree, where `instanceof` compares two different classes.
 	readonly [cliErrorBrand] = true
 
-	constructor(message: string, options?: CliError.Options) {
-		super(message)
-		this.exitCode = options?.exitCode ?? exitCodes.error
-		this.help = options?.help === undefined ? [] : Array.isArray(options.help) ? options.help : [options.help]
-		this.cause = options?.cause
+	constructor(report: CliError.Report)
+	constructor(message: string, options?: CliError.Options)
+	constructor(messageOrReport: string | CliError.Report, options?: CliError.Options) {
+		const report = typeof messageOrReport === 'string' ? { ...options, message: messageOrReport } : messageOrReport
+		super(report.message)
+		this.exitCode = validateExitCode(report.exitCode ?? exitCodes.error)
+		this.code = validateCode(report.code ?? 'error')
+		this.details = validateDetails(report.details ?? {})
+		this.help = report.help === undefined ? [] : typeof report.help === 'string' ? [report.help] : [...report.help]
+		this.cause = report.cause
 	}
 }
 
 export function isCliError(err: unknown): err is CliError {
 	return !!err && typeof err === 'object' && (err as any)[cliErrorBrand] === true
+}
+
+/**
+ * Whether `err` is a `CliError` from `CliError.reported()`, which renders nothing.
+ */
+export function isReportedCliError(err: CliError) {
+	return (err as any)[reportedBrand] === true
+}
+
+function validateExitCode(exitCode: number) {
+	if (Number.isInteger(exitCode) && exitCode >= 1 && exitCode <= 255) return exitCode
+	throw new RangeError(`CliError exitCode must be an integer from 1 to 255, received ${exitCode}`)
+}
+
+function validateCode(code: string) {
+	if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code)) return code
+	throw new RangeError(`CliError code must be a kebab-case string such as "not-found", received "${code}"`)
+}
+
+function validateDetails(details: CliError.Details) {
+	for (const key of reservedKeys) {
+		if (key in details) throw new RangeError(`CliError details may not have the key "${key}"`)
+	}
+	return { ...details }
 }

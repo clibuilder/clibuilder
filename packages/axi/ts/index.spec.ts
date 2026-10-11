@@ -52,8 +52,8 @@ describe('@clibuilder/axi', () => {
 		expect(write).toHaveBeenCalledWith(
 			'{"error":"no plugin named foo","code":"not-found","help":["Run `list` to see the installed plugins"]}\n'
 		)
-		// clibuilder also logs the message as a diagnostic; the help is on stdout only.
-		expect(messages).toContain('no plugin named foo')
+		// the error is reported once, on stdout: clibuilder logs nothing more for it.
+		expect(messages).not.toContain('no plugin named foo')
 		expect(messages).not.toContain('Run `list`')
 	})
 

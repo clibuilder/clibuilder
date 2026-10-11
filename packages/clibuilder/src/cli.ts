@@ -69,6 +69,12 @@ export namespace cli {
 		 * Both modes are permanent. The default becomes `'axi'` in v12.
 		 */
 		output?: Output
+		/**
+		 * The format answers are encoded in: `'toon'` (default), `'json'` or `'text'`.
+		 *
+		 * With `output: 'axi'`, a `CliError` thrown from `run()` is rendered in this format on stdout.
+		 */
+		format?: Format
 	}
 
 	/**
@@ -104,7 +110,7 @@ export namespace cli {
 	 * @param errors the structured errors found while parsing the arguments.
 	 * @param context.command the matched command, including its declared `arguments` and `options`.
 	 * @param context.ui the matched command's `ui`.
-	 * @param context.format the format the cli reports in: `toon` until `cli({ format })` and `--format` exist.
+	 * @param context.format the format the cli reports in: the `cli({ format })` value, `toon` by default.
 	 * @param context.exitCode the code the cli exits with when the handler returns none: `exitCodes.usage`.
 	 */
 	export type UsageErrorHandler = (
@@ -128,8 +134,8 @@ export namespace cli {
 		 */
 		ui: UI
 		/**
-		 * The format the cli reports in, resolved before the handler runs.
-		 * It is `toon` until `cli({ format })` and the global `--format` option exist.
+		 * The format the cli reports in, resolved before the handler runs:
+		 * the `cli({ format })` value, `toon` by default, until the global `--format` option exists.
 		 *
 		 * clibuilder always sets it. It is optional only so that code calling a handler itself keeps compiling.
 		 */
@@ -144,6 +150,8 @@ export namespace cli {
 
 	/**
 	 * The formats a cli reports in.
+	 *
+	 * @see Options.format
 	 */
 	export type Format = 'toon' | 'json' | 'text'
 
