@@ -11,34 +11,38 @@ Two mechanisms are involved, and it helps to keep them apart:
 
 - **Loading** — which plugins actually run. Driven by the `plugins` array in the CLI's config file.
 - **Discovery** — which plugins *exist*, on disk or on npm, so a user can decide what to load. Driven
-  by the CLI's `keywords`.
+  by the keywords passed to `plugins()`.
 
-## Loading plugins with `@clibuilder/plugins`
+Both come from [`@clibuilder/plugins`](/clibuilder/packages/plugins/). `clibuilder` itself has no
+plugin loading.
 
-[`@clibuilder/plugins`](/clibuilder/packages/plugins/) moves plugin support out of `clibuilder` into
-a package a CLI opts into with `.use(plugins())`. It is published to npm. In
-`clibuilder` 11 the built-in plugin support described on the rest of this page keeps working.
-`clibuilder` 12 is planned to remove it, which makes `@clibuilder/plugins` the only way to load
-plugins (see the [v12 roadmap](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins)).
+:::caution[Unreleased]
+This page describes `clibuilder` 12, which is not published yet. In `clibuilder` 11, setting
+`config` or `keywords` on `cli()` loads the plugins named in config and adds the `plugins` command
+without any `.use()` call. In 12 that is removed: `plugins()` is the only way to load plugins. See
+the [migration](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins). The `@clibuilder/plugins`
+0.1.0 on npm works with `clibuilder` 11 and, when `plugins()` is used, makes 11 skip its own loading.
+:::
 
 ## Enabling plugins in your CLI
 
-Plugins are loaded through the [config file](/clibuilder/guides/configuration/), so a plugin-capable
-CLI declares `config`. Declare `keywords` too — they are how `plugins search` and `plugins list`
-find candidate packages on npm and on disk.
+Install `@clibuilder/plugins` and call `.use(plugins())`. Plugins are listed in the
+[config file](/clibuilder/guides/configuration/), so a plugin-capable CLI declares `config` too.
+Pass `keywords` — they are how `plugins search` and `plugins list` find candidate packages on npm
+and on disk.
 
 ```ts
-cli({
-  name: 'my-cli',
-  version: '1.0.0',
-  config: true,
-  keywords: ['my-cli-plugin']
-})
+import { cli } from 'clibuilder'
+import { plugins } from '@clibuilder/plugins'
+
+cli({ name: 'my-cli', version: '1.0.0', config: true })
+  .use(plugins({ keywords: ['my-cli-plugin'] }))
   .parse(process.argv)
 ```
 
-A CLI "accepts plugins" if it sets `config` **or** a non-empty `keywords`. That single condition is
-what turns on config-driven plugin loading and adds the built-in `plugins` command.
+A CLI that does not call `plugins()` has no plugin system. `config` alone loads the config for the
+commands and nothing else. If the config lists plugins and no extension reads it, the CLI warns
+once and names `@clibuilder/plugins`.
 
 ### Choosing a keywords namespace
 
@@ -50,24 +54,25 @@ published against the old one.
 `<cli-name>-plugin` is the convention this library's own fixtures use, and it is a good default:
 
 ```ts
-cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })
+cli({ name: 'my-cli', version: '1.0.0', config: true })
+  .use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
 A few notes on the shape of the list:
 
-- **The CLI name alone is a weak keyword.** `keywords: ['my-cli']` matches anything on npm that
+- **The CLI name alone is a weak keyword.** `plugins({ keywords: ['my-cli'] })` matches anything on npm that
   happens to carry your CLI's name — including packages that have nothing to do with your plugin
   contract. The `-plugin` suffix narrows it to packages that opted in deliberately.
 - **`keywords` is an array**, and a package matches if it carries *any* of them. That is the escape
   hatch for renaming: publish under the new keyword and keep the old one listed until the ecosystem
   catches up.
-- **If you set `config` and omit `keywords`, the CLI `name` is used as the keyword.** This is a
-  convenience default, not a recommendation — a CLI that expects a real plugin ecosystem should
-  declare its namespace explicitly.
+- **If you omit `keywords`, the CLI `name` is used as the keyword.** This is a convenience default,
+  not a recommendation — a CLI that expects a real plugin ecosystem should declare its namespace
+  explicitly.
 
 ```ts
-// keywords is ['my-cli'] — same as writing keywords: ['my-cli']
-cli({ name: 'my-cli', version: '1.0.0', config: true })
+// keywords is ['my-cli'] — same as writing plugins({ keywords: ['my-cli'] })
+cli({ name: 'my-cli', version: '1.0.0', config: true }).use(plugins())
 ```
 
 The default also applies when `config` names a different file — the keyword still comes from `name`,
@@ -75,7 +80,7 @@ not from the config name:
 
 ```ts
 // config file is `my-tool.json`, but the plugin keyword is still 'my-cli'
-cli({ name: 'my-cli', version: '1.0.0', config: 'my-tool' })
+cli({ name: 'my-cli', version: '1.0.0', config: 'my-tool' }).use(plugins())
 ```
 
 ## Listing plugins in config
@@ -110,8 +115,7 @@ clibuilder not a valid plugin bad-plugin
 
 ## The built-in `plugins` command
 
-Any CLI that accepts plugins gets a `plugins` command added automatically. You do not register it,
-and it shows up in the help output alongside your own commands:
+`plugins()` adds a `plugins` command. You do not register it, and it shows up in the help output alongside your own commands. Pass `plugins({ command: false })` to leave it out:
 
 ```sh
 $ my-cli plugins -h
@@ -239,10 +243,14 @@ $ npm install my-cli-plugin    # install it
 
 ## Writing a plugin
 
-Export an `activate` function that takes a `PluginActivationContext` and calls `addCommand`:
+Export an `activate` function that takes a `PluginActivationContext` and calls `addCommand`. Import
+the type from `@clibuilder/plugins`, as a type-only dev dependency. `clibuilder` 12 still exports a
+deprecated copy, and 13 removes it. A plugin built for 11 loads unchanged.
+
 
 ```ts
-import { command, type PluginActivationContext } from 'clibuilder'
+import { command } from 'clibuilder'
+import type { PluginActivationContext } from '@clibuilder/plugins'
 
 const sing = command({
   name: 'sing',
@@ -316,8 +324,8 @@ to both `plugins list` and `plugins search`, no matter how correct the rest of t
 }
 ```
 
-Check the host CLI's docs for the exact keyword. If it is not documented, the CLI's own
-`keywords` — or, failing that, its `name` — is the value to use.
+Check the host CLI's docs for the exact keyword. If it is not documented, the CLI's name is the
+default keyword of `plugins()`.
 
 Extra keywords are free, and worth adding: they describe *what* the plugin does, while the host
 keyword describes *which CLI it plugs into*. Both matter to someone reading a `plugins search`

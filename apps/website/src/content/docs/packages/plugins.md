@@ -10,6 +10,12 @@ learn.
 
 `@clibuilder/plugins` 0.1.0 is published to npm. It needs `clibuilder` 11.5.0 or later.
 
+:::caution[Unreleased]
+In `clibuilder` 12, `plugins()` is the only way to load plugins. The next `@clibuilder/plugins`
+release (a 0.x minor) requires `clibuilder ^12` as a peer. With `clibuilder` 11, keep using
+`@clibuilder/plugins` 0.1.0.
+:::
+
 ## Install
 
 Install it with:
@@ -18,7 +24,8 @@ Install it with:
 npm install @clibuilder/plugins clibuilder
 ```
 
-`clibuilder` `^11.5.0 || ^12` is a peer dependency. Node.js 20.19 or newer is required.
+`clibuilder` `^11.5.0 || ^12` is the peer dependency of 0.1.0. The next release requires
+`clibuilder ^12`. Node.js 20.19 or newer is required.
 
 ## Usage
 
@@ -80,7 +87,7 @@ import, or exports no `activate`, is skipped with a warning.
 | `plugins(options?)` | The extension for `cli().use()` |
 | `pluginsCommand({ keywords })` | The `plugins` command group alone, for a CLI that loads plugins its own way |
 | `loadPlugins({ cwd, ui, registry, host }, names)` | Imports and activates the named plugins, and returns the commands they add |
-| `PluginActivationContext` | The type of the context a plugin's `activate` receives |
+| `PluginActivationContext` | The type of the context a plugin's `activate` receives. `clibuilder` 12 keeps a deprecated copy and 13 removes it |
 
 `pluginsCommand` adds the commands without loading anything:
 
@@ -115,8 +122,8 @@ In `clibuilder` 11, setting `config` or `keywords` loads the plugins named in co
 `plugins` group. That keeps working through every 11.x release.
 
 When a CLI calls `.use(plugins())`, `clibuilder` 11.5.0 and later skip their own config-driven
-plugin loading and their own `plugins` group, so nothing loads twice. You can switch a CLI before
-v12:
+plugin loading and their own `plugins` group, so nothing loads twice. That is `clibuilder` 11
+behavior, and it applies to `@clibuilder/plugins` 0.1.0. You can switch a CLI before v12:
 
 ```diff
 - cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })
@@ -124,12 +131,13 @@ v12:
 +   .use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
-**Planned for v12:** `clibuilder` 12 removes its own plugin loading, the `keywords` option,
-`this.keywords` and the automatic `plugins` group. After that, `@clibuilder/plugins` is the only way
-to load plugins. The plugin registry (`defineKey`, `defineCollectionKey` and `this.registry`) stays
-in core. See
-[section 9 of the slim-dependencies RFC](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#9-amendment-move-all-plugin-support-out-of-core)
-and the [v12 roadmap](/clibuilder/roadmap/v12/).
+**Unreleased:** `clibuilder` 12 removes its own plugin loading, the `keywords` option,
+`this.keywords` and the automatic `plugins` group, so there is nothing to skip. `plugins()` is the
+only way to load plugins, and it adds the `plugins` group unless you pass `command: false`. If the
+config lists plugins and the CLI loads none, `clibuilder` 12 warns once and names this package. The
+plugin registry (`defineKey`, `defineCollectionKey` and `this.registry`) stays in core. See the
+[v12 roadmap](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins) and
+[section 9 of the slim-dependencies RFC](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#9-amendment-move-all-plugin-support-out-of-core).
 
 ## Known gaps
 

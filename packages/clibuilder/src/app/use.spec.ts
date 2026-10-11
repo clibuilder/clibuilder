@@ -12,11 +12,6 @@ function contribute(name: string, value: string): Extension {
 	return ({ addCommand }) => addCommand({ name, run: () => value })
 }
 
-/** The extension `@clibuilder/plugins` returns carries this marker. */
-function asPluginsExtension(extension: Extension): Extension {
-	return Object.assign(extension, { [Symbol.for('clibuilder.plugins-extension')]: true })
-}
-
 describe('use()', () => {
 	it('makes parse() available, as an extension may supply every command', async () => {
 		const [app] = setup()
@@ -171,14 +166,12 @@ describe('use()', () => {
 	})
 
 	it("resolves the cli's config and where it came from", async () => {
-		const [app] = setup({ fixtureDir: 'one-plugin' }, { config: true })
+		const [app] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
 		let result: Awaited<ReturnType<ExtensionContext['resolveConfig']>> | undefined
 		await app
-			.use(
-				asPluginsExtension(async ({ resolveConfig }) => {
-					result = await resolveConfig()
-				})
-			)
+			.use(async ({ resolveConfig }) => {
+				result = await resolveConfig()
+			})
 			.default({ run() {} })
 			.parse(argv('test-cli'))
 		expect(result?.config).toEqual({ plugins: ['cjs-plugin'] })
@@ -186,25 +179,44 @@ describe('use()', () => {
 	})
 })
 
-describe('use() with the @clibuilder/plugins extension', () => {
-	it('keeps loading the config plugins and the plugins group without it', async () => {
-		const [app, ctx] = setup({ fixtureDir: 'one-plugin' }, { config: true })
-		await app.use(() => {}).parse(argv('test-cli --help'))
-		const msg = ctx.messages
-		expect(msg).toContain('plugins')
-		expect(msg).toContain('one')
-	})
-
-	it('skips the config-driven plugin loading, so nothing loads twice', async () => {
-		const [app, ctx] = setup({ fixtureDir: 'one-plugin' }, { config: true })
-		await app.use(asPluginsExtension(() => {})).parse(argv('test-cli one'))
+describe('a cli without plugins() from @clibuilder/plugins', () => {
+	it('loads no plugin the config names', async () => {
+		const [app, ctx] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
+		await app.default({ run() {} }).parse(argv('test-cli one'))
 		expect(ctx.exitCode).toBe(2)
 		expect(ctx.messages).toContain('unexpected argument: one')
 	})
 
-	it('skips the automatic plugins group', async () => {
-		const [app, ctx] = setup({ fixtureDir: 'one-plugin' }, { config: true })
-		await app.use(asPluginsExtension(() => {})).parse(argv('test-cli plugins list'))
+	it('adds no plugins group', async () => {
+		const [app, ctx] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
+		await app.default({ run() {} }).parse(argv('test-cli plugins list'))
 		expect(ctx.exitCode).toBe(2)
+	})
+
+	it('warns once, naming @clibuilder/plugins, when the config lists plugins', async () => {
+		const [app, ctx] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
+		const cli = app.default({ run() {} })
+		await cli.parse(argv('test-cli'))
+		await cli.parse(argv('test-cli'))
+		const msg = ctx.messages
+		expect(msg).toContain('add .use(plugins()) to the cli')
+		expect(msg.split('@clibuilder/plugins').length).toBe(2)
+	})
+
+	it('does not warn when an extension reads the config, as plugins() does', async () => {
+		const [app, ctx] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
+		await app
+			.use(async ({ resolveConfig }) => {
+				await resolveConfig()
+			})
+			.default({ run() {} })
+			.parse(argv('test-cli'))
+		expect(ctx.messages).not.toContain('@clibuilder/plugins')
+	})
+
+	it('does not warn when the config lists no plugins', async () => {
+		const [app, ctx] = setup({ fixtureDir: 'has-json-config' }, { config: 'show-config' })
+		await app.default({ run() {} }).parse(argv('test-cli'))
+		expect(ctx.messages).not.toContain('@clibuilder/plugins')
 	})
 })

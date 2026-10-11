@@ -1,0 +1,9 @@
+{
+	"name": "fixtures-bad-lugin-no-index",
+	"private": true,
+	"dependencies": {
+		"@clibuilder/plugins": "workspace:*",
+		"bad-plugin-no-index": "workspace:*",
+		"clibuilder": "workspace:*"
+	}
+}

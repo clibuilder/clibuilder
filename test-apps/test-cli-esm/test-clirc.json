@@ -1,0 +1,4 @@
+{
+	"plugins": ["esm-plugin"],
+	"greeting": "hello"
+}

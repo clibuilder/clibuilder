@@ -5,11 +5,11 @@ concept: [declaration-driven, error-reporting, agent-interface]
 
 # Presentation
 
-Governs `src/render/help.ts`, `src/render/format.ts`, `src/render/error.ts`,
+Governs `src/render/help.ts`, `src/render/error.ts`,
 `src/drivers/logger.ts`, `src/drivers/stream_ui.ts`, `src/drivers/streams.ts`,
 `src/render/encode.ts`, `src/render/text.ts` and `src/core/ports.ts` — rendering help and usage as text or as a value,
 describing a usage error in words, emitting messages at their log level, and
-serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
+encoding an answer in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.
 
 ## What
@@ -27,15 +27,17 @@ payoff for the framework reading declarations: a command that declares an
 argument gets it documented, aligned, and marked required or optional without
 its author writing a line of prose.
 
-**Reported collections** are rendered in the format the reader asked for. The
-default is TOON rather than prose, because a CLI's own metadata is read by an
-agent far more often than by a person, and TOON is the cheaper read for one. It
-is a default, not a replacement: `text` is the prose a human wants, and `json`
-is what survives a pipe into `jq`. Counts are part of the TOON syntax, so a
-reader never has to count entries or wonder whether a list was truncated.
+**Answers** are encoded in the format the reader asked for. The default is TOON
+rather than prose, because a CLI's own metadata is read by an agent far more
+often than by a person, and TOON is the cheaper read for one. It is a default,
+not a replacement: `text` is the prose a human wants, and `json` is what
+survives a pipe into `jq`. Counts are part of the TOON syntax, so a reader never
+has to count entries or wonder whether a list was truncated. The helpers a
+command used to call to render a collection (`toonArray`, `reportProse`) moved
+to `@clibuilder/plugins`, with the commands that used them.
 
 **Non-goals.** Deciding *when* to show help or what to report belongs to
-`execution/` and `builtin-commands/`. What may be declared belongs to
+`execution/`. What may be declared belongs to
 `command-definition/`.
 
 **Key terms.** The **display level** is how much the CLI says — none, info,
@@ -54,7 +56,6 @@ structured output shape; a **help line** is its trailing next-step suggestion.
 | Command author | calls `this.ui.info` / `warn` / `error` | say something to the user at the right level |
 | `execution` | calls `showHelp`, `showVersion`, `dump` | render at the moment it has decided to |
 | `input-parsing` | hands over the usage errors it produced | have each failure described in the user's terms |
-| `builtin-commands` | calls the TOON and prose helpers | report a collection in one house style across commands |
 
 The agent is why the structured formats exist at all and why they are the
 *default*; a capability serving only the terminal reader would have stopped at
@@ -151,25 +152,6 @@ still information rather than a failure.
 **Extensions.** An application built without a version says so rather than
 printing nothing, which would read as a failure.
 
-### UC6 — the output helpers: render a reported collection
-
-**Actor / goal.** A command reporting a collection wants one house style across
-every command that reports one, in whichever format the reader asked for.
-
-| | |
-| --- | --- |
-| Trigger | `toonArray` / `toonTable` / `toonHelp` / `reportProse`, and the shared `--format` option |
-| Inputs | the collection and the reader's format |
-| Outcome | the rendered lines |
-
-**Extensions.**
-
-| Cause | Outcome |
-| --- | --- |
-| a value contains a comma, quote, or backslash, or is surrounded by whitespace | it is quoted and escaped, so it cannot read as two entries |
-| prose is asked for | the wording differs across none, exactly one, and several |
-| a collection is rendered as TOON | the count is part of the syntax |
-
 **Surface trace.**
 
 | Element | Required by | May not combine with |
@@ -179,11 +161,7 @@ every command that reports one, in whichever format the reader asked for.
 | `debug` / `info` / `warn` / `error` | UC1, UC2 | — |
 | `showHelp` | UC3, UC4 | — |
 | `showVersion` | UC5 | — |
-| `toonValue` / `toonArray` / `toonTable` / `toonHelp` | UC6 | — (`toonTable` accepts a single column; preferring `toonArray` there is a token-cost choice, not a rule) |
-| `reportProse` | UC6 | — |
-| `formatOption` / `OutputFormat` | UC6 | — |
 | `formatLookupError` | UC7 | — |
-| `OutputUI` | UC6 | — |
 | `UI` and `DisplayLevel`, the ports in `core/ports.ts` | UC2, UC3, UC5 — what a command author programs against | — |
 | `BuilderUI` | UC1 — the buffered ui, `createUI.UI` plus `dump` | — |
 | `createUI.UI` | UC3, UC5 — what the adapter returns, which is not the port | — |
@@ -406,31 +384,6 @@ graph TD
   DQ -- no --> DP["the description, then the default as written"]
 ```
 
-### Sub-graph D — render a collection, entered by UC6
-
-```mermaid
-graph TD
-  V[a value] --> AMB{"contains a comma, quote, or backslash, or is surrounded by whitespace?"}
-  AMB -- yes --> Q[quote and escape it]
-  AMB -- no --> RAW[leave it as is]
-  C[a collection] --> FMT{which format?}
-  FMT -- toon --> SH{which helper?}
-  FMT -- text --> N
-  FMT -- json --> J["the payload as JSON, with no help line"]
-  SH -- array --> TA[one line, carrying the count]
-  SH -- table --> TT[a header naming the columns, then one indented row each, carrying the count]
-  SH -- help --> TH2[a counted one-entry line]
-  N{how many?}
-  N -- none --> P0[say none were found, naming the keywords]
-  N -- one --> P1[say one was found, and describe it]
-  N -- several --> P2[say several were found, then list them]
-  FO["the shared --format option"] --> WF{which format did the reader ask for?}
-  WF -- "nothing given" --> FDEF[toon, the default the option declares]
-  WF -- given --> FGIV["the format asked for; a value outside the three never reaches here, refused by the option's own schema"]
-  FDEF --> FMT
-  FGIV --> FMT
-```
-
 ### Sub-graph F — report a version (`showVersion`), entered by UC5
 
 ```mermaid
@@ -541,22 +494,6 @@ graph TD
 | --- | --- | --- |
 | print it | the application has one | `an application with a version prints it` |
 | say the application has no version | the application has none | `an application without a version says so rather than printing nothing` |
-
-### UC6 — the output helpers
-
-| Edge | Path (Given) | Scenario |
-| --- | --- | --- |
-| quote and escape it | a value containing a comma, quote, or backslash | `a value that could read as two entries is quoted and escaped` |
-| quote and escape it | a value surrounded by whitespace | `a value surrounded by whitespace is quoted` |
-| leave it as is | an ordinary value | `an ordinary value is left unquoted` |
-| one line, carrying the count | an array rendered | `a rendered array carries its count, so nothing looks truncated` |
-| a header naming the columns, then one indented row each | a table rendered | `a rendered table names its columns and indents one row per entry` |
-| a counted one-entry line | a help line rendered | `a help line is counted like any other rendered list` |
-| say none were found | prose, empty collection | `prose for an empty collection names the keywords searched` |
-| say one was found | prose, one item | `prose for one item describes it in the singular` |
-| say several were found | prose, several items | `prose for several items lists them under a plural heading` |
-| toon, the default the option declares | any command reporting a collection | `every command reporting a collection offers the same three formats and defaults to toon` |
-| the payload as JSON, with no help line | json asked for | `json output carries the payload alone` |
 
 ### UC7 — describing a usage error
 

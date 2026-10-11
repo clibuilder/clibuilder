@@ -2,7 +2,7 @@
 Feature: Execution
 
   Turn declarations into a running program. Assembly derives state from the
-  options and starts any config and plugin loading; invocation answers the
+  options and starts any config loading; invocation answers the
   global flags, matches a command, checks its inputs, and either runs it or
   refuses. Global flags are answered before usage errors, and failure is
   reported as an exit code rather than thrown, so a wrong invocation reaches
@@ -25,36 +25,33 @@ Feature: Execution
     When its state is derived
     Then it has no config name
 
-  Scenario: an application with config and no keywords searches under its own name
-    Given an application declaring config and no keywords
-    When its state is derived
-    Then its keywords are the application's own name
-
-  Scenario: declared keywords are kept as given
-    Given an application declaring keywords
-    When its state is derived
-    Then its keywords are the ones declared
-
-  Scenario: an application that can accept plugins gets the built-in plugins command
-    Given an application declaring config or keywords
+  Scenario: an application with config loads it for its commands and adds no plugins group
+    Given an application declaring config
     When it is assembled
-    Then the built-in plugins command is among its commands
+    Then its commands can read the loaded config
+    And no plugins command is among its commands
     And it can be given argv without registering a command first
 
-  Scenario: an application that cannot accept plugins gets no plugins command
-    Given an application declaring neither config nor keywords
-    When it is assembled
-    Then no plugins command is registered
+  Scenario: a config listing plugins warns once when the cli loads none
+    Given a loaded config that lists plugins, and an application with no extension reading the config
+    When the application is given argv, more than once
+    Then one warning says the config lists plugins but this cli loads none, and to add .use(plugins()) from @clibuilder/plugins
+    And no plugin is loaded and no plugin command is registered
+
+  Scenario: an extension that reads the config silences the plugins warning
+    Given a loaded config that lists plugins, and an extension that resolves the config
+    When the application is given argv
+    Then no warning about plugins is written
+
+  Scenario: a config that lists no plugins does not warn
+    Given a loaded config that lists no plugins
+    When the application is given argv
+    Then no warning about plugins is written
 
   Scenario: parse waits for the config started during assembly
     Given an application declaring a config name
     When it is given argv
     Then the config loading started during assembly has completed before a command is matched
-
-  Scenario: commands from configured plugins are registered before parse proceeds
-    Given a loaded config naming plugins
-    When the application is given argv
-    Then the commands those plugins contribute are registered before a command is matched
 
   # ── UC2 — register commands ──
 
@@ -79,7 +76,7 @@ Feature: Execution
     Then the builder returned no longer offers to register a default
 
   Scenario: registering a command makes the application executable
-    Given an application declaring neither config nor keywords
+    Given an application declaring no config
     When a command is registered
     Then the application can be given argv
 
@@ -120,16 +117,11 @@ Feature: Execution
     Then the application's version is shown
     And no command runs
 
-  Scenario: version asked for alone is answered before config and plugins load
+  Scenario: version asked for alone is answered before config and extensions load
     Given an application whose config loader rejects or never resolves
     When it is invoked with only the version flag
     Then the version is written to stdout as plain text
     And the cli exits with the success code
-
-  Scenario: version asked for alone does not wait for plugin activation
-    Given an application whose configured plugin never finishes activating
-    When it is invoked with only the version flag
-    Then the version is written to stdout without waiting for the plugin
 
   Scenario: the short version flag alone is the version even when a command declares it
     Given an application whose default command declares its own -v
@@ -143,7 +135,7 @@ Feature: Execution
     Then the application's version is shown
     And the command does not run
 
-  Scenario: version asked of a matched command waits for config and plugins
+  Scenario: version asked of a matched command waits for config and extensions
     Given an application declaring a config name and a command
     When that command is invoked asking for the version
     Then the config is loaded before the version is shown
@@ -516,16 +508,6 @@ Feature: Execution
     When a caller asks for the config
     Then the walk is started, and the same resolution answers the next caller
 
-  Scenario: the first plugin load starts the activation pass and keeps its promise
-    Given plugins not yet being loaded
-    When they are loaded
-    Then the activation pass is started and its promise is kept for later callers
-
-  Scenario: concurrent plugin loading shares one activation pass
-    Given a plugin load already in progress
-    When another caller asks for the plugin commands
-    Then it receives the same load rather than activating the plugins twice
-
   Scenario: concurrent config resolution shares one filesystem walk
     Given a config resolution already in progress
     When another caller asks for the config
@@ -560,16 +542,6 @@ Feature: Execution
 
   # ── arms whose twins were already covered ──
 
-  Scenario: an application with keywords and no config name loads no config
-    Given an application declaring keywords and no config name
-    When it is assembled
-    Then no config loading is awaited before a command is matched
-
-  Scenario: a config naming no plugins activates none
-    Given a loaded config that names no plugins
-    When the application is assembled
-    Then no plugin activation is attempted and no plugin commands are registered
-
   Scenario: registering an ordinary command leaves default still available
     Given a builder that has registered an ordinary command
     When the returned builder is inspected
@@ -602,12 +574,12 @@ Feature: Execution
     Then only the group's handler is called
     And it receives the sub-command as the matched command
 
-  Scenario: a handler on a plugin's group takes over its sub-command's usage errors
+  Scenario: a handler on an extension's group takes over its sub-command's usage errors
     Given an application declaring a usage-error handler
-    And a plugin adding a group command that declares a usage-error handler
+    And an extension adding a group command that declares a usage-error handler
     And a sub-command of that group declaring none
     When the sub-command is invoked with an unknown option
-    Then only the plugin group's handler is called
+    Then only the extension group's handler is called
 
   Scenario: the cli's handler takes over when no command in the chain declares one
     Given an application declaring a usage-error handler
@@ -735,21 +707,6 @@ Feature: Execution
     Given an application with config and a config file
     When an extension resolves the config
     Then it receives the file's content and that the source is a file
-
-  Scenario: the plugins extension replaces the config-driven plugin loading
-    Given an application with config naming a plugin, and the @clibuilder/plugins extension
-    When the plugin's command is invoked
-    Then it is an unknown command and the CLI exits with the usage code
-
-  Scenario: the plugins extension replaces the automatic plugins group
-    Given an application with config and the @clibuilder/plugins extension
-    When the built-in plugins group is invoked
-    Then the CLI exits with the usage code
-
-  Scenario: another extension leaves the config-driven plugin loading in place
-    Given an application with config naming a plugin, and some other extension
-    When help is asked for
-    Then the help lists the plugins group and the plugin's command
 
   # ── Config from any Standard Schema ──
 

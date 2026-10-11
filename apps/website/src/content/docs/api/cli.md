@@ -24,7 +24,6 @@ namespace cli {
     version: string
     description?: string
     config?: string | boolean
-    keywords?: string[]
     onUsageError?: UsageErrorHandler
     streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
     output?: 'console' | 'axi'
@@ -35,18 +34,25 @@ namespace cli {
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `name` | `string` | **Required.** The CLI's name — used in the help message, as the default config name, and as the default plugin keyword. |
+| `name` | `string` | **Required.** The CLI's name — used in the help message, as the default config name, and as the default keyword of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `version` | `string` | **Required.** Printed by `--version`. Since v8 this is not read from `package.json` — see [Publishing](/clibuilder/guides/publishing/). |
 | `description` | `string` | A short summary shown at the top of the help message. |
 | `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
-| `keywords` | `string[]` | Keywords used by the built-in `plugins list` / `plugins search` commands. Defaults to `[name]` when `config` is set. Planned for removal in v12, where it becomes an option of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
 | `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages and errors go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
 | `format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The CLI's default format. Defaults to `'toon'`. Setting it, or `output: 'axi'`, turns on the [global `--format` option](#the-global---format-option). With `output: 'axi'`, a thrown [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) is encoded in the resolved format. Any other value throws when `cli()` is called. |
 
-Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI, unless the CLI
-uses [`@clibuilder/plugins`](/clibuilder/packages/plugins/), which adds its own.
+`config` loads the config for the commands only. It does not load plugins.
+
+:::caution[Unreleased]
+In `clibuilder` 11, a `keywords` option exists, and declaring `config` or `keywords` loads the
+plugins that the config's `plugins` key names and adds the built-in `plugins` command. In
+`clibuilder` 12 (unreleased) all of that moved to
+[`@clibuilder/plugins`](/clibuilder/packages/plugins/): `keywords` is removed from `cli()` and
+becomes an option of `plugins()`, and `this.keywords` is removed. A CLI that wants plugins calls
+`.use(plugins())`. See [Roadmap to v12](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins).
+:::
 
 ## Streams and output
 
@@ -245,8 +251,8 @@ shadow each other. To migrate, delete the local declaration and read `this.forma
 ```
 
 This includes `formatOption` and `defineFormatOption()` from
-[`@clibuilder/axi`](/clibuilder/packages/axi/#the-global---format-option). The built-in
-`plugins list` and `plugins search` read `this.format` and do not conflict. Source:
+[`@clibuilder/axi`](/clibuilder/packages/axi/#the-global---format-option). The
+`plugins list` and `plugins search` commands of `@clibuilder/plugins` read `this.format` and do not conflict. Source:
 [axi-native section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#34---format-is-not-first-class-6394).
 
 ## The result channel
@@ -407,6 +413,10 @@ When extensions run:
 
 `.use()` makes `parse()` available, because an extension may supply every command.
 
+If the config lists plugins, no extension reads the config, and the CLI loads none, it warns once
+that plugin loading moved to `@clibuilder/plugins`. See
+[Roadmap to v12](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins).
+
 ## `Executable`
 
 ```ts
@@ -431,7 +441,8 @@ skipped.
 :::note[When `parse()` exists]
 `parse` appears on the type only after the builder has something to run: after `.default()`, after
 `.command()`, or immediately if the CLI was created with `config`. A config-driven CLI can get all
-of its commands from plugins, so it is executable from the start.
+of its commands from an extension such as [`plugins()`](/clibuilder/packages/plugins/), so it is
+executable from the start.
 :::
 
 `parse()` does **not** reject for usage problems. An unknown flag, a missing required argument, a
@@ -448,8 +459,7 @@ cli({
   name: 'app',
   version: '1.0.0',
   description: 'an example CLI',
-  config: true,
-  keywords: ['app-plugin']
+  config: true
 })
   .default({
     config: z.object({ presets: z.string() }),

@@ -1,18 +1,19 @@
 import { a } from 'assertron'
 import { globalFormatOf, state } from './state.js'
 
-it('gets name as the keywords', () => {
+it('reads the config by the cli name when config is true', () => {
 	const r = state({ name: 'foo', config: true, version: '1.0.0' })
-	a.satisfies(r, {
-		keywords: ['foo']
-	})
+	a.satisfies(r, { configName: 'foo' })
 })
 
-it('keeps keywords if defined', () => {
-	const r = state({ name: 'foo', config: true, version: '1.0.0', keywords: ['bar'] })
-	a.satisfies(r, {
-		keywords: ['bar']
-	})
+it('reads the config by the given name', () => {
+	const r = state({ name: 'foo', config: 'bar', version: '1.0.0' })
+	a.satisfies(r, { configName: 'bar' })
+})
+
+it('has no keywords: they are an option of plugins() from @clibuilder/plugins since v12', () => {
+	const r = state({ name: 'foo', config: true, version: '1.0.0' })
+	expect(r).not.toHaveProperty('keywords')
 })
 
 describe('globalFormatOf()', () => {

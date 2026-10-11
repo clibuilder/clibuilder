@@ -1,0 +1,9 @@
+{
+	"name": "fixtures-bad-plugin",
+	"private": true,
+	"dependencies": {
+		"@clibuilder/plugins": "workspace:*",
+		"bad-plugin": "workspace:*",
+		"clibuilder": "workspace:*"
+	}
+}

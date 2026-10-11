@@ -88,29 +88,3 @@ Feature: The plugins() extension
     Given a working directory with no package.json above it
     When dependency plugins are found
     Then nothing is found
-
-  # ── UC3 — coexisting with clibuilder 11 ──
-
-  Scenario: the extension carries the marker clibuilder 11 looks for
-    Given the extension plugins() returns
-    Then it carries the clibuilder.plugins-extension marker
-
-  Scenario: plugins list and search behave the same as the built-in group
-    Given a CLI with keywords, and the same CLI using plugins() with those keywords
-    When each runs plugins list or plugins search, in each format
-    Then both return the same value, write the same output and set the same exit code
-
-  Scenario: plugins list and search give way to the global format option of clibuilder
-    Given a cli whose global format option is active, under output axi or a cli format
-    When the extension adds plugins list and plugins search
-    Then their own format option is dropped instead of conflicting with the global one
-    And they report in this.format
-    And in the default console output with no cli format they keep their own format option
-
-  Scenario: under output axi of clibuilder plugins list and search return their report as the answer
-    Given a cli with output axi
-    When the extension's plugins list or plugins search runs, in each format
-    Then nothing is written through ui, and stdout holds the report once, printed by clibuilder from the returned answer
-    And nothing installed or found is an empty state naming the keywords, exit 0
-    And an unrecognized fields value is an invalid-value error on stdout, exit 2
-    And in the default console output the report and the return value are unchanged

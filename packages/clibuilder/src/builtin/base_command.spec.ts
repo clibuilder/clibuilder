@@ -1,6 +1,10 @@
 import { command } from '../command/define.js'
-import { formatOption } from '../render/format.js'
-import { getBaseCommand, isGlobalFormatEntry, yieldToGlobalFormat } from './base_command.js'
+import { defersToGlobalFormat, getBaseCommand, isGlobalFormatEntry, yieldToGlobalFormat } from './base_command.js'
+
+/** A `format` option that gives way to the global one, as the `plugins` commands of `@clibuilder/plugins` declare it. */
+const formatOption = Object.defineProperty({ description: 'format', default: 'toon' }, defersToGlobalFormat, {
+	value: true
+})
 
 describe('getBaseCommand', () => {
 	it('declares no run of its own, so a bare application is a group (#609)', () => {

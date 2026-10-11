@@ -115,7 +115,7 @@ export function proseLines<T>(
 
 /**
  * clibuilder's result-channel helpers, read from the namespace so that this package still loads
- * against a clibuilder from before them (the peer range starts at 11.5.0).
+ * against a clibuilder from before them (the peer range started at 11.5.0 before clibuilder 12).
  * They are only called under `output: 'axi'`, which `this.output` reports only on a clibuilder that has them.
  */
 export function answers(): Pick<typeof clibuilder, 'result' | 'empty'> {

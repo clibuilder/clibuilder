@@ -1,4 +1,0 @@
-{
-	"command": "pnpm",
-	"args": ["test-cli"]
-}

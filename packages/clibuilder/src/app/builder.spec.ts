@@ -136,14 +136,6 @@ describe('version', () => {
 		await cli.parse(argv('test-cli --version'))
 		expect(ctx.stdout).toEqual('1.0.0\n')
 	})
-	it('answers -v without waiting for a plugin whose activation hangs', async () => {
-		const ctx = mockContext()
-		ctx.loadConfig = async () => ({ plugins: ['hanging-plugin'] })
-		ctx.loadPlugins = () => new Promise(() => {})
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true })
-		await cli.parse(argv('test-cli -v'))
-		expect(ctx.stdout).toEqual('1.0.0\n')
-	})
 	it('answers -v alone even when a command declares its own -v', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({
@@ -359,30 +351,6 @@ describe('debug cli', () => {
 		await app.parse(argv('test-cli --debug-cli'))
 		expect(ctx.messages).toContain('argv: node test-cli --debug-cli')
 	})
-	it('logs when loading plugins', async () => {
-		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin' }, { config: true })
-		const app = builder.default({ run() {} })
-		await app.parse(argv('test-cli --debug-cli'))
-		const msg = ctx.messages
-		expect(msg).toContain('load config from:')
-		expect(msg).toContain('test-clirc.json')
-		expect(msg).toContain('activating plugin cjs-plugin')
-		expect(msg).toContain('adding command one')
-		expect(msg).toContain('activated plugin cjs-plugin')
-		expect(msg).toContain('argv: node test-cli --debug-cli')
-	})
-	it('logs when loading ESM plugin', async () => {
-		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'cli-with-one-esm-plugin' }, { config: true })
-		const app = builder.default({ run() {} })
-		await app.parse(argv('test-cli --debug-cli'))
-		const msg = ctx.messages
-		expect(msg).toContain('load config from:')
-		expect(msg).toContain('test-clirc.json')
-		expect(msg).toContain('activating plugin esm-plugin')
-		expect(msg).toContain('adding command one')
-		expect(msg).toContain('activated plugin esm-plugin')
-		expect(msg).toContain('argv: node test-cli --debug-cli')
-	})
 	it('will not pass this flag to the command', async () => {
 		const [builder] = setupBuilderTest()
 		const app = builder.default({
@@ -530,16 +498,22 @@ describe('fluent syntax', () => {
 
 describe('loadConfig()', () => {
 	it('loads `{config}` including file extension', async () => {
-		const ctx = mockContext({ fixtureDir: 'cli-with-extra-plugin' })
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt.json' })
-		const a = await cli.parse(argv('test-cli two echo hello2'))
-		expect(a).toEqual('hello2')
+		const ctx = mockContext({ fixtureDir: 'alt-config-name' })
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt.json' }).default({
+			run() {
+				return this.config
+			}
+		})
+		expect(await cli.parse(argv('test-cli'))).toEqual({ name: 'alt' })
 	})
 	it('loads `{config}.json`', async () => {
-		const ctx = mockContext({ fixtureDir: 'cli-with-extra-plugin' })
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt' })
-		const a = await cli.parse(argv('test-cli two echo hello2'))
-		expect(a).toEqual('hello2')
+		const ctx = mockContext({ fixtureDir: 'alt-config-name' })
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: 'alt' }).default({
+			run() {
+				return this.config
+			}
+		})
+		expect(await cli.parse(argv('test-cli'))).toEqual({ name: 'alt' })
 	})
 	it('emits warning and exit when config fails validation', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
@@ -798,20 +772,20 @@ describe('usage errors', () => {
 			expect(calls.map((c) => c.label)).toEqual(['group'])
 			expect(calls[0].command.name).toBe('ship')
 		})
-		it("uses the handler on a plugin's group for its sub-commands", async () => {
+		it("uses the handler on an extension's group for its sub-commands", async () => {
 			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
-			const ctx = mockContext({ fixtureDir: 'one-plugin' })
-			ctx.loadPlugins = async () => [
-				{
-					name: 'weather',
-					onUsageError: recorder('plugin', calls),
-					commands: [command({ name: 'forecast', run() {} })]
-				}
-			]
-			await builder(ctx, { name: 'test-cli', version: '1.0.0', config: true, onUsageError: recorder('cli', calls) })
+			const [builder] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.use(({ addCommand }) =>
+					addCommand({
+						name: 'weather',
+						onUsageError: recorder('extension', calls),
+						commands: [command({ name: 'forecast', run() {} })]
+					})
+				)
 				.default({ run() {} })
 				.parse(argv('test-cli weather forecast --bogus'))
-			expect(calls.map((c) => c.label)).toEqual(['plugin'])
+			expect(calls.map((c) => c.label)).toEqual(['extension'])
 			expect(calls[0].command.name).toBe('forecast')
 		})
 		it("uses the cli's handler when no command in the chain declares one", async () => {
@@ -823,13 +797,13 @@ describe('usage errors', () => {
 			expect(calls.map((c) => c.label)).toEqual(['cli'])
 			expect(calls[0].command.name).toBe('ship')
 		})
-		it("uses the cli's handler for a command a plugin adds", async () => {
+		it("uses the cli's handler for a command an extension adds", async () => {
 			const calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }> = []
-			const [builder, ctx] = setupBuilderTest(
-				{ fixtureDir: 'one-plugin' },
-				{ config: true, onUsageError: recorder('cli', calls) }
-			)
-			await builder.default({ run() {} }).parse(argv('test-cli one echo --bogus'))
+			const [builder, ctx] = setupBuilderTest(undefined, { onUsageError: recorder('cli', calls) })
+			await builder
+				.use(({ addCommand }) => addCommand({ name: 'one', commands: [command({ name: 'echo', run() {} })] }))
+				.default({ run() {} })
+				.parse(argv('test-cli one echo --bogus'))
 			expect(calls.map((c) => c.label)).toEqual(['cli'])
 			expect(calls[0].command.name).toBe('echo')
 			expect(ctx.exitCode).toBe(2)

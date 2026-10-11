@@ -18,10 +18,10 @@ Key highlights:
 
 - Support standalone CLI
   - `name` and `version` are now required and not read from `package.json`.
-- Plugins are loaded through config
+- Plugins are loaded through config (in v12, unreleased, by `@clibuilder/plugins`)
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
-- `keywords` are now used for plugin lookup.
+- `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
 - Distribute `ESM` along with `CJS`.
 
 ## Feature Highlights

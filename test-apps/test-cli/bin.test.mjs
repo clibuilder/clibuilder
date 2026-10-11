@@ -26,29 +26,35 @@ test('--version prints the version', () => {
 	assert.deepEqual(run('--version'), { code: 0, stdout: '1.0.0', stderr: '' })
 })
 
-test('--help lists the commands, including the keywords-enabled plugins group', () => {
+test('--help lists the commands, then the plugins group and the plugin command that plugins() adds', () => {
 	const r = run('--help')
 	assert.equal(r.code, 0)
 	assert.match(r.stdout, /Usage: test-cli <command>/)
-	assert.match(r.stdout, /plugins, echo, config-value/)
+	assert.match(r.stdout, /echo, config-value, plugins, one/)
 })
 
 test('echo echoes its argument', () => {
 	assert.deepEqual(run('echo', 'hi'), { code: 0, stdout: 'echoing: hi', stderr: '' })
 })
 
-test('config-value reports that the cli declares no config', () => {
-	assert.deepEqual(run('config-value', 'some-value'), {
-		code: 1,
-		stdout: '',
-		stderr: "cannot read 'some-value': test-cli declares no config"
-	})
+test('config-value reads the config, which config: true loads for the commands', () => {
+	assert.deepEqual(run('config-value', 'greeting'), { code: 0, stdout: 'greeting: hello', stderr: '' })
 })
 
-test('plugins list finds no plugin installed for the test-cli keyword', () => {
+test('runs the command of the plugin the config names', () => {
+	assert.deepEqual(run('one', 'echo', 'hello'), { code: 0, stdout: 'echo hello', stderr: '' })
+})
+
+test('plugins list finds the installed plugin carrying the test-cli keyword', () => {
 	const r = run('plugins', 'list', '--format', 'json')
 	assert.equal(r.code, 0)
-	assert.deepEqual(JSON.parse(r.stdout), { plugins: [] })
+	assert.deepEqual(JSON.parse(r.stdout), { plugins: ['cjs-plugin'] })
+})
+
+test('plugins search is reachable', () => {
+	const r = run('plugins', 'search', '--help')
+	assert.equal(r.code, 0)
+	assert.match(r.stdout, /Usage: test-cli plugins search/)
 })
 
 test('an unknown command is a usage error', () => {

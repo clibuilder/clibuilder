@@ -1,8 +1,0 @@
-{
-	"name": "fixtures-one-plugin",
-	"private": true,
-	"dependencies": {
-		"cjs-plugin": "workspace:*",
-		"clibuilder": "workspace:*"
-	}
-}

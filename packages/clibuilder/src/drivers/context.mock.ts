@@ -3,8 +3,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Streams } from '../core/ports.js'
-import { loadPlugins } from '../plugins/load.js'
-import type { RegistryOwner } from '../plugins/registry.js'
 import { getFixturePath } from '../test-utils/index.js'
 import type { Context } from './context.js'
 import { createBuilderUI } from './logger.js'
@@ -54,9 +52,6 @@ export function mockContext(params: mockContext.Params = {}): Context & {
 		},
 		async resolveConfig(configName: string): Promise<ConfigLoadResult> {
 			return resolveConfig({ cwd, ui: this.ui }, configName)
-		},
-		async loadPlugins(pluginNames: string[], registry: RegistryOwner, host: { name: string; version: string }) {
-			return loadPlugins({ cwd, ui: this.ui, registry, host }, pluginNames)
 		},
 		cwd,
 		/**

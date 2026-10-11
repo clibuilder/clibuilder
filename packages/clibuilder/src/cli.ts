@@ -34,13 +34,11 @@ export namespace cli {
 		 * Indicate the cli accepts configuration.
 		 * Set it to true to read config based on the cli name,
 		 * or specify a different config name.
+		 *
+		 * It loads the config for the commands only. Plugins load through `@clibuilder/plugins`:
+		 * `cli({ ... }).use(plugins())`.
 		 */
 		config?: string | boolean
-		/**
-		 * Keywords associated with this cli.
-		 * When specified, plugin commands will be available to search for available plugins.
-		 */
-		keywords?: string[]
 		/**
 		 * Takes over how usage errors are reported for every command
 		 * that does not declare its own `onUsageError`.
@@ -103,7 +101,7 @@ export namespace cli {
 	 * The handler used is the matched command's own,
 	 * else the nearest enclosing command's,
 	 * else the one on `cli()` options.
-	 * Commands added by plugins resolve the same way.
+	 * Commands added by extensions resolve the same way.
 	 *
 	 * The cli exits with `exitCodes.usage` (2),
 	 * unless the handler returns a different exit code.
@@ -265,7 +263,6 @@ export namespace cli {
 					this: {
 						ui: UI
 						config: ConfigOf<ConfigType>
-						keywords: string[]
 						cwd: string
 						context: Context
 						registry: Registry
@@ -315,7 +312,6 @@ export namespace cli {
 						this: {
 							ui: UI
 							config: ConfigOf<ConfigType>
-							keywords: string[]
 							cwd: string
 							registry: Registry
 							/**
@@ -422,6 +418,12 @@ export namespace cli {
 	}
 }
 
+/**
+ * What a plugin's `activate(context)` receives.
+ *
+ * @deprecated import `PluginActivationContext` from `@clibuilder/plugins`, which loads plugins since clibuilder 12.
+ * This structural copy keeps existing plugins compiling, and is removed in clibuilder 13.
+ */
 export type PluginActivationContext = {
 	addCommand<
 		Context extends Record<string, any>,

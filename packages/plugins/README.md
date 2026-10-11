@@ -12,7 +12,7 @@ A CLI opts in with one call. Without it, a `clibuilder` CLI has no plugin system
 npm install @clibuilder/plugins clibuilder
 ```
 
-`clibuilder` `^11.5.0 || ^12` is a peer dependency. Node.js `>= 20.19`.
+`clibuilder` `^12` is a peer dependency. With `clibuilder` 11, use `@clibuilder/plugins` 0.1. Node.js `>= 20.19`.
 
 ## Usage
 
@@ -50,8 +50,8 @@ A package named by more than one source loads once, at its first position.
 ### Moving from `clibuilder` 11
 
 In `clibuilder` 11, setting `config` or `keywords` loads the plugins named in config and adds the
-`plugins` group. Both keep working. Once a CLI uses `plugins()`, `clibuilder` skips its own loading
-and its own `plugins` group, so nothing loads twice. `clibuilder` 12 removes them.
+`plugins` group. `clibuilder` 12 removes both, and the `keywords` option with them: a CLI loads
+plugins only through `plugins()`. Add one call:
 
 ```diff
 - cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })

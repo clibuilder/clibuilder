@@ -33,7 +33,7 @@ assertions.
 reporting a validation failure belong to `input-parsing/`. Assembling an
 application from declarations and running the matched command belong to
 `execution/`. Rendering the declaration as help belongs to `presentation/`.
-Accepting a declaration contributed by a third party belongs to `plugins/`. This
+Accepting a declaration contributed by a third party belongs to `registry/` and `execution/` (`.use()`). This
 node stops at what may be declared and what that declaration types.
 
 **Key terms.** A **leaf** command declares `run` and does the work. A **group**
@@ -162,7 +162,7 @@ graph TD
   DFC --> DFCX[and its run's `this` carries no context, unlike an ordinary command's]
   DFC --> R
   R -- yes --> RN{also declares commands?}
-  RN -- no --> RC[leaf arm: run's `this` typed with ui, config, keywords, cwd, context, registry]
+  RN -- no --> RC[leaf arm: run's `this` typed with ui, config, cwd, context, registry]
   RN -- yes --> RB[leaf arm still: it runs and nests, and commands are accepted alongside run]
   R -- no --> C{declares commands?}
   C -- yes --> GC[group arm accepted; no run to type]

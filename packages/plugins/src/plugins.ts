@@ -49,7 +49,7 @@ export namespace plugins {
  */
 export function plugins(options: plugins.Options = {}): Extension {
 	const { include = [], dependencies = false, config = true, command = true } = options
-	const extension: Extension = async (context) => {
+	return async (context) => {
 		const keywords = options.keywords ?? [context.host.name]
 		if (command) context.addCommand(pluginsCommand({ keywords }))
 
@@ -64,9 +64,6 @@ export function plugins(options: plugins.Options = {}): Extension {
 		const commands = await loadPlugins(context, names)
 		for (const c of commands) context.addCommand(c)
 	}
-	// tells `clibuilder` 11 to skip its own config-driven plugin loading and its automatic
-	// `plugins` group, so nothing loads twice (slim-dependencies RFC section 9.8).
-	return Object.assign(extension, { [Symbol.for('clibuilder.plugins-extension')]: true })
 }
 
 function readConfigEntries(config: any): string[] {

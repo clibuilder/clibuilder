@@ -22,10 +22,10 @@ Key highlights:
 
 - Support standalone CLI
   - `name` and `version` are now required and not read from `package.json`.
-- Plugins are loaded through config
+- Plugins are loaded through config (in v12, unreleased, by `@clibuilder/plugins`)
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
-- `keywords` are now used for plugin lookup.
+- `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
 - Distribute `ESM` along with `CJS`.
 
 ## Feature Highlights
@@ -238,7 +238,8 @@ Plugins are defined inside the config:
 ```
 
 Plugin support is moving to [`@clibuilder/plugins`](https://github.com/clibuilder/clibuilder/tree/main/packages/plugins), which a CLI adds with
-`.use(plugins())`. Both ways work in v11; v12 keeps only `@clibuilder/plugins`.
+`.use(plugins())`. Both ways work in v11. In v12 (unreleased) core loads no plugins, and `cli({ keywords })` and `this.keywords` are removed: add
+`.use(plugins({ keywords: ['my-cli-plugin'] }))` to the cli. See the [v12 migration](https://clibuilder.github.io/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins).
 
 ## Defining Plugins
 
@@ -251,7 +252,8 @@ To create a plugin:
 - add the keywords in your `package.json` to make it searchable
 
 ```ts
-import { command, PluginActivationContext } from 'clibuilder'
+import { command } from 'clibuilder'
+import type { PluginActivationContext } from '@clibuilder/plugins'
 
 // in plugin package
 const sing = command({ ... })
@@ -270,7 +272,7 @@ export function activate({ addCommand }: PluginCli.ActivationContext) {
 }
 ```
 
-The CLI can search for plugins using the `keywords` values.
+The CLI can search for plugins using the keywords it passes to `plugins()`.
 
 ## Testing
 

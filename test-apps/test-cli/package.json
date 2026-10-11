@@ -6,6 +6,8 @@
 		"test": "node --test bin.test.mjs axi.test.mjs"
 	},
 	"dependencies": {
+		"@clibuilder/plugins": "workspace:*",
+		"cjs-plugin": "workspace:*",
 		"clibuilder": "workspace:*"
 	}
 }
