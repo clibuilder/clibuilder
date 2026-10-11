@@ -293,3 +293,65 @@ Feature: Input parsing
     Given a command declaring options, none named or aliased by the key
     When the key is looked up
     Then nothing is returned
+
+  # ── UC4 — declarations with t: converted and checked by args-minus ──
+
+  Scenario: each declaration is parsed by its own type
+    Given a command declaring some options and arguments with z and others with t
+    When it is invoked with values for all of them
+    Then the z declarations are filled exactly as before
+    And each t declaration holds the value its descriptor converted
+
+  Scenario: a t option is parsed by args-minus from its own argv tokens
+    Given a command declaring an option with t
+    When the invocation passes it, by name, by alias, inline, or in a cluster of short flags
+    Then args-minus tokenizes that option's tokens and converts its value
+
+  Scenario: a t flag takes no following value and a t array takes one per occurrence
+    Given a command declaring a t.boolean option and a t.array option
+    When the flag is followed by a positional and the array option is repeated
+    Then the positional stays a positional
+    And the array holds one value per occurrence
+
+  Scenario: a t option that is absent takes its default or is reported missing
+    Given a command declaring t options with a default, with optional(), and with neither
+    When the invocation passes none of them
+    Then the defaulted option holds its default, the optional one is undefined
+    And the one with neither is reported as a missing-argument error naming the option
+
+  Scenario: async converters and checks are awaited
+    Given a command declaring a t.custom option with an async converter and an async check
+    When it is invoked
+    Then the converted value reaches run, or the check's message is reported
+
+  Scenario: a value failing a t declaration is an invalid-value error
+    Given a command declaring t options and arguments
+    When a value fails conversion, a range, a pattern, an enum, a check, or is missing
+    Then an invalid-value error names the key as typed, the raw value, and the message
+    And it carries the descriptor's kind, its constraint, the allowed values of an enum, and the index of a failed array element
+
+  Scenario: a Standard Schema's text is never forwarded
+    Given a t option with a check from a Standard Schema
+    When the value fails the schema
+    Then the invalid-value message is clibuilder's own, without the schema's text
+
+  Scenario: a converter's plain Error is a usage error, anything else propagates
+    Given a t.custom converter
+    When it throws a plain Error, or throws any other value
+    Then the plain Error's message is an invalid-value error
+    And anything else rejects parse
+
+  Scenario: a repeated t scalar is an expect-single error with its kind
+    Given a command declaring a t option that is not an array
+    When the invocation passes it twice
+    Then an expect-single error carries the descriptor's kind as keyKind
+
+  Scenario: a repeated zod scalar keeps its zod type and gains its kind
+    Given a command declaring a zod option that is not an array
+    When the invocation passes it twice
+    Then the expect-single error carries the kind string as keyKind beside the deprecated zod keyType
+
+  Scenario: t declarations are not converted when help is asked for
+    Given a command declaring a t option with a converter
+    When the invocation asks for --help
+    Then the converter does not run

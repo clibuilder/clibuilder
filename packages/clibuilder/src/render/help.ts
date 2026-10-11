@@ -4,6 +4,8 @@ import { reduceByKey, someKey } from 'type-plus'
 import wordwrap from 'wordwrap'
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
+import { describeConstraint, takesValue } from '../descriptor.js'
+import { type AnyDescriptor, isDescriptor } from '../t.js'
 import { isZodArray, isZodBoolean, isZodNumber, isZodObject, isZodOptional, isZodString, type z } from '../zod.js'
 
 /**
@@ -47,8 +49,10 @@ function generateUsageSection(cliName: string, command: Command) {
 	return message
 }
 
-function isRequired({ type }: { type?: z.ZodType<any> }, defaultValue: boolean) {
+function isRequired({ type, default: d }: { type?: cli.Command.Type; default?: unknown }, defaultValue: boolean) {
 	if (!type) return defaultValue
+	// a `t` option with a default need not be passed
+	if (isDescriptor(type)) return !type.isOptional && d === undefined
 	return !type.isOptional()
 }
 
@@ -96,7 +100,9 @@ function generateArgumentsSection(command: Command) {
 	const entries: string[][] = []
 	let maxWidth = 0
 	command.arguments.forEach((a) => {
-		const argStr = formatSignature(a.name, a.type, { defaultRequired: true, booleanIsFlag: false })
+		const argStr = isDescriptor(a.type)
+			? formatArgumentDescriptor(a.name, a.type)
+			: formatSignature(a.name, a.type, { defaultRequired: true, booleanIsFlag: false })
 		maxWidth = Math.max(maxWidth, argStr.length)
 		entries.push([argStr, a.description || ''])
 	})
@@ -136,7 +142,28 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
 		.sort((a, b) => a.length - b.length)
 		.map((v) => (v.length === 1 ? `-${v}` : `--${v}`))
 		.join('|')
+	if (isDescriptor(value.type)) return formatOptionDescriptor(keyString, value.type, isRequired(value, false))
 	return formatSignature(keyString, value.type, { defaultRequired: false, booleanIsFlag: true })
+}
+
+/**
+ * Renders an option declared with `t` from its introspection data:
+ * `[--port <int 1..65535>]`, `[--tag <string>...]`, `[--dry]`,
+ * without the brackets when it must be passed.
+ */
+function formatOptionDescriptor(keys: string, descriptor: AnyDescriptor, required: boolean) {
+	const value = takesValue(descriptor) ? ` <${describeConstraint(descriptor)}>` : ''
+	const body = `${keys}${value}${descriptor.kind === 'array' ? '...' : ''}`
+	return required ? body : `[${body}]`
+}
+
+/**
+ * Renders an argument declared with `t` from its introspection data:
+ * `<port: int 1..65535>`, `[name: string]`, `<files: string...>`.
+ */
+function formatArgumentDescriptor(name: string, descriptor: AnyDescriptor) {
+	const body = `${name}: ${describeConstraint(descriptor)}${descriptor.kind === 'array' ? '...' : ''}`
+	return descriptor.isOptional ? `[${body}]` : `<${body}>`
 }
 
 /**
@@ -151,7 +178,7 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
  */
 function formatSignature(
 	name: string,
-	zodType: z.ZodTypeAny | undefined,
+	zodType: z.ZodType<any> | undefined,
 	{ defaultRequired, booleanIsFlag }: { defaultRequired: boolean; booleanIsFlag: boolean }
 ) {
 	const required = zodType ? !isZodOptional(zodType) : defaultRequired
@@ -159,7 +186,7 @@ function formatSignature(
 	return required ? `<${body}>` : `[${body}]`
 }
 
-function formatTypeHint(zodType: z.ZodTypeAny | undefined, booleanIsFlag: boolean) {
+function formatTypeHint(zodType: z.ZodType<any> | undefined, booleanIsFlag: boolean) {
 	if (!zodType) return ''
 	const t = isZodOptional(zodType) ? zodType._def.innerType : zodType
 	const isArray = isZodArray(t)
@@ -171,7 +198,8 @@ function formatTypeHint(zodType: z.ZodTypeAny | undefined, booleanIsFlag: boolea
 }
 
 function formatDescription(value: cli.Command.Options.Entry, conflicts: string[]) {
-	const d = value.type && isZodString(value.type) ? `'${value.default}'` : value.default
+	const quoted = isDescriptor(value.type) ? typeof value.default === 'string' : value.type && isZodString(value.type)
+	const d = quoted ? `'${value.default}'` : value.default
 	const description = value.default ? `${value.description} (default ${d})` : value.description
 	if (conflicts.length === 0) return description
 	return `${description} (conflicts with ${conflicts.map((c) => (c.length === 1 ? `-${c}` : `--${c}`)).join(', ')})`

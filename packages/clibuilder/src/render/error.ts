@@ -13,11 +13,16 @@ export function formatLookupError(error: lookupCommand.Error, command: cli.Comma
 		case 'invalid-key':
 			return `unknown option ${formatOption(error.key)}`
 		case 'missing-argument':
-			return `missing required argument <${error.name}>`
+			// an option declared with `t` that is neither optional nor defaulted must be passed
+			return `missing required ${formatKey(error.name, command, 'argument')}`
 		case 'extra-arguments':
 			return `unexpected argument${error.values.length > 1 ? 's' : ''}: ${error.values.join(', ')}`
-		case 'invalid-value':
-			return `invalid value for ${formatKey(error.key, command)}: ${error.message}, received "${error.value}"`
+		case 'invalid-value': {
+			const at = error.index === undefined ? '' : `[${error.index}]`
+			// an option declared with `t` can be given no value at all
+			const received = error.value === undefined ? '' : `, received "${error.value}"`
+			return `invalid value for ${formatKey(error.key, command)}${at}: ${error.message}${received}`
+		}
 		case 'conflicting-options':
 			return `option ${formatOption(error.key)} cannot be used with option ${formatOption(error.conflictsWith)}`
 		case 'expect-single':
@@ -25,8 +30,14 @@ export function formatLookupError(error: lookupCommand.Error, command: cli.Comma
 	}
 }
 
-function formatKey(key: string, command: cli.Command) {
-	return command.arguments?.some((a) => a.name === key) ? `argument <${key}>` : `option ${formatOption(key)}`
+/**
+ * Names a key as an argument or an option of `command`.
+ * A key that is neither is named as `fallback` says.
+ */
+function formatKey(key: string, command: cli.Command, fallback: 'argument' | 'option' = 'option') {
+	if (command.arguments?.some((a) => a.name === key)) return `argument <${key}>`
+	if (fallback === 'argument' && !command.options?.[key]) return `argument <${key}>`
+	return `option ${formatOption(key)}`
 }
 
 function formatOption(key: string) {

@@ -17,5 +17,6 @@ export {
 export type { DisplayLevel, UI } from './core/ports.js'
 export * from './invocation/argv.js'
 export * from './plugins/registry.js'
+export * from './t.js'
 export * from './testing/test_command.js'
 export * from './zod.js'

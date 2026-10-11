@@ -363,3 +363,19 @@ Feature: Presentation
     Given the ui createUI returns
     When its showHelp is inspected
     Then it takes the cli name and the command to render
+
+  # ── Help and errors for declarations with t ──
+
+  Scenario: help shows the constraint of a t option or argument
+    Given a command declaring options and arguments with t
+    When its help is rendered
+    Then each value-taking option shows its constraint, such as --port <int 1..65535> or --format <toon|text|json>
+    And a flag shows no value, an array is marked with ..., and an optional or defaulted one is bracketed
+    And each argument shows its name and constraint, such as <root: string>
+    And the declarations with z render exactly as before
+
+  Scenario: a usage error from a t declaration is printed in the caller's terms
+    Given a command declaring t options and arguments
+    When the invocation is missing a required option, gives one no value, or gives a value that fails
+    Then the message names the option or argument, the element index of an array, and what was expected
+    And it shows the received value only when one was given

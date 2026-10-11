@@ -1,8 +1,11 @@
 import { findKey, reduceByKey } from 'type-plus'
 import type { cli } from '../cli.js'
+import { takesValue } from '../descriptor.js'
+import { type DescriptorKind, isDescriptor } from '../t.js'
 import { isZodArray, isZodBoolean, isZodEnum, isZodNumber, isZodOptional, isZodString, z } from '../zod.js'
 import type { parseArgv } from './argv.js'
 import { type OptionOccurrence, optionOccurrences } from './argv_occurrences.js'
+import type { DescriptorInput, DescriptorOccurrence } from './descriptors.js'
 
 export namespace lookupCommand {
 	export type Result = {
@@ -11,6 +14,11 @@ export namespace lookupCommand {
 			__?: string[] | undefined
 		} & Record<string, string[]>
 		errors: Error[]
+		/**
+		 * The matched command's `t` declarations, with their raw input,
+		 * for `convertDescriptors()` to convert and check.
+		 */
+		descriptors: DescriptorInput[]
 	}
 	export type Error =
 		| InvalidKey
@@ -26,14 +34,51 @@ export namespace lookupCommand {
 	export type ExpectSingle = {
 		type: 'expect-single'
 		key: string
-		keyType: z.ZodType<any>
+		/**
+		 * What the option takes, as a kind string:
+		 * `boolean`, `number` or `string`, or the `kind` of a `t` descriptor.
+		 * A zod type with no such kind, such as `z.enum`, is `enum`, `literal`, `array` or `custom`.
+		 *
+		 * clibuilder always sets it. It is optional only so that code building an `ExpectSingle` keeps compiling.
+		 */
+		keyKind?: DescriptorKind
+		/**
+		 * The zod type of a zod-declared option. `undefined` for an option declared with `t`.
+		 *
+		 * @deprecated read `keyKind`. Removed with the zod path in v12.
+		 */
+		keyType?: z.ZodType<any>
 		value: any
 	}
 	export type InvalidValueType = {
 		type: 'invalid-value'
 		key: string
+		/**
+		 * What was wrong, in the caller's terms.
+		 */
 		message: string
+		/**
+		 * The value as the caller typed it.
+		 * `undefined` when an option declared with `t` was given no value.
+		 */
 		value: any
+		/**
+		 * The `kind` of the `t` descriptor. Only set for a declaration with `t`.
+		 */
+		keyKind?: DescriptorKind
+		/**
+		 * What the declaration accepts, as help shows it, e.g. `int 1..65535` or `toon|text|json`.
+		 * Only set for a declaration with `t`.
+		 */
+		constraint?: string
+		/**
+		 * The values a `t.enum` declaration accepts.
+		 */
+		allowed?: readonly string[]
+		/**
+		 * For a `t.array` declaration, the index of the element that failed.
+		 */
+		index?: number
 	}
 	export type ExtraArguments = {
 		type: 'extra-arguments'
@@ -65,7 +110,8 @@ export function lookupCommand(
 	fallback?: cli.Command
 ): lookupCommand.Result {
 	const m = matchCommand(command, args)!
-	return processCommand(m[0], assignOptionValues(m[1], m[0], fallback))
+	const [rawArgs, occurrences] = assignOptionValues(m[1], m[0], fallback)
+	return processCommand(m[0], rawArgs, occurrences)
 }
 
 function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Command, parseArgv.Result] | undefined {
@@ -98,15 +144,19 @@ function assignOptionValues(
 	rawArgs: parseArgv.Result,
 	command: cli.Command,
 	fallback: cli.Command | undefined
-): parseArgv.Result {
+): [parseArgv.Result, DescriptorOccurrence[] | undefined] {
 	const occurrences = optionOccurrences.get(rawArgs)
-	if (!occurrences) return rawArgs
+	if (!occurrences) return [rawArgs, undefined]
 	const values: Record<string, string[]> = {}
 	const positionals: string[] = []
+	// the argv tokens of each option the command declares with `t`, for `args-minus` to parse
+	const descriptorOccurrences: DescriptorOccurrence[] = []
 	for (const o of occurrences) {
-		const entry = lookupOptions(command, o.key)[1] ?? (fallback && lookupOptions(fallback, o.key)[1])
+		const declared = lookupOptions(command, o.key)[1]
+		const entry = declared ?? (fallback && lookupOptions(fallback, o.key)[1])
 		const count = countFollowing(entry, o)
 		const taken = o.following.slice(0, count)
+		if (isDescriptor(declared?.type)) descriptorOccurrences.push({ key: o.key, tokens: [o.raw, ...taken] })
 		positionals.push(...o.following.slice(count))
 		const own = o.inline.length + taken.length > 0 ? [...o.inline, ...taken] : ['true']
 		values[o.key] = [...(values[o.key] ?? []), ...own]
@@ -114,11 +164,14 @@ function assignOptionValues(
 	const result: parseArgv.Result = { ...rawArgs, _: [...rawArgs._, ...positionals] }
 	// a key missing from `rawArgs` was removed by the caller (`builder` consumes the global flags).
 	for (const key of Object.keys(values)) if (rawArgs[key]) result[key] = values[key]!
-	return result
+	return [result, descriptorOccurrences]
 }
 
 function countFollowing(entry: cli.Command.Options.Entry | undefined, o: OptionOccurrence) {
 	if (!entry) return o.following.length
+	// as `args-minus` reads it: a value-taking option takes the next token unless it has an inline value,
+	// a flag takes none, and an array takes one value per occurrence
+	if (isDescriptor(entry.type)) return o.inline.length === 0 && takesValue(entry.type) ? 1 : 0
 	// an option without a declared type is a boolean, matching `cli.Command.RunArgs`
 	const type = unwrapOptional(entry.type ?? z.boolean())
 	if (isZodArray(type)) return o.following.length
@@ -132,10 +185,18 @@ export type State = {
 	rawArgs: parseArgv.Result
 	errors: lookupCommand.Error[]
 	args: { _: string[] } & Record<string, any>
+	descriptors: DescriptorInput[]
 }
-function processCommand(command: cli.Command, rawArgs: parseArgv.Result) {
-	const state: State = { command, rawArgs, args: { _: [] }, errors: [] }
-	return fillDefaultOptions(checkConflicts(fillInputOptions(fillArguments(state))))
+function processCommand(
+	command: cli.Command,
+	rawArgs: parseArgv.Result,
+	occurrences: DescriptorOccurrence[] | undefined
+) {
+	const state: State = { command, rawArgs, args: { _: [] }, errors: [], descriptors: [] }
+	return collectDescriptorOptions(
+		fillDefaultOptions(checkConflicts(fillInputOptions(fillArguments(state)))),
+		occurrences
+	)
 }
 
 function fillArguments(state: State) {
@@ -146,6 +207,16 @@ function fillArguments(state: State) {
 		(p, s) => {
 			// an argument without a declared type is a string, matching `cli.Command.RunArgs`
 			const type = s.type ?? z.string()
+			if (isDescriptor(type)) {
+				if (args.length === 0) {
+					if (!type.isOptional) state.errors.push({ type: 'missing-argument', name: s.name })
+					return p
+				}
+				// an array argument is variadic: it consumes the remaining positionals
+				const values = type.kind === 'array' ? args.splice(0) : [args.shift()!]
+				state.descriptors.push({ type: 'argument', name: s.name, descriptor: type, values })
+				return p
+			}
 			if (args.length === 0) {
 				if (!isZodOptional(type)) state.errors.push({ type: 'missing-argument', name: s.name })
 				return p
@@ -179,8 +250,17 @@ function fillInputOptions(state: State) {
 				s.errors.push({ type: 'invalid-key', key })
 				return s
 			}
+			const type = optionEntry!.type
+			if (isDescriptor(type)) {
+				// converted by `convertDescriptors()`; a repeated scalar is reported here, as for a zod option
+				const values = state.rawArgs[key]
+				if (type.kind !== 'array' && values.length > 1) {
+					s.errors.push({ type: 'expect-single', key, keyKind: type.kind, value: values })
+				}
+				return s
+			}
 			// an option without a declared type is a boolean, matching `cli.Command.RunArgs`
-			const [value, errors] = convertValue(optionEntry!.type || z.optional(z.boolean()), key, state.rawArgs[key])
+			const [value, errors] = convertValue(type || z.optional(z.boolean()), key, state.rawArgs[key])
 			if (errors) s.errors.push(...errors)
 			s.args[name] = value
 
@@ -224,6 +304,8 @@ function fillDefaultOptions(state: State) {
 			if (p.args[key] !== undefined) return p
 
 			const options = optionsMap[key]
+			// `args-minus` applies the default of a `t` declaration, and runs its checks on it
+			if (isDescriptor(options.type)) return p
 			if (typeof options === 'string' || options.default === undefined) return p
 
 			p.args[key] = isZodArray(options.type) && !Array.isArray(options.default) ? [options.default] : options.default
@@ -231,6 +313,33 @@ function fillDefaultOptions(state: State) {
 		},
 		state
 	)
+}
+
+/**
+ * Hands every option declared with `t` to `convertDescriptors()` with its argv tokens,
+ * whether it was passed or not: `args-minus` applies its default or reports it missing.
+ * An option already reported as given more than once is left out.
+ */
+function collectDescriptorOptions(state: State, occurrences: DescriptorOccurrence[] | undefined) {
+	const options = state.command.options ?? {}
+	for (const name of Object.keys(options)) {
+		const entry = options[name]!
+		if (!isDescriptor(entry.type)) continue
+		const keys = Object.keys(state.rawArgs).filter(
+			(key) => key !== '_' && lookupOptions(state.command, key)[0] === name
+		)
+		if (state.errors.some((e) => e.type === 'expect-single' && keys.includes(e.key))) continue
+		state.descriptors.push({
+			type: 'option',
+			name,
+			entry: { ...entry, type: entry.type },
+			// without the argv occurrences, the values are given inline
+			occurrences: occurrences
+				? occurrences.filter((o) => keys.includes(o.key))
+				: keys.flatMap((key) => state.rawArgs[key]!.map((v) => ({ key, tokens: [`--${name}=${v}`] })))
+		})
+	}
+	return state
 }
 
 /**
@@ -295,15 +404,15 @@ function toParsable(
 		return toParsable(t._def.innerType, key, values, errors)
 	}
 	if (isZodBoolean(t)) {
-		if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
+		if (values.length > 1) errors.push({ type: 'expect-single', key, keyKind: 'boolean', keyType: t, value: values })
 		return toBoolean(key, values[values.length - 1], errors)
 	}
 	if (isZodNumber(t)) {
-		if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
+		if (values.length > 1) errors.push({ type: 'expect-single', key, keyKind: 'number', keyType: t, value: values })
 		return toNumber(key, values[values.length - 1], errors)
 	}
 	if (isZodString(t)) {
-		if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
+		if (values.length > 1) errors.push({ type: 'expect-single', key, keyKind: 'string', keyType: t, value: values })
 		return [values[values.length - 1], errors]
 	}
 	if (isZodArray(t)) {
@@ -334,7 +443,7 @@ function toParsable(
 	}
 	// zod type without a dedicated string conversion (e.g. `z.enum`).
 	// hand the raw value to `safeParse` and let the schema itself accept or reject it.
-	if (values.length > 1) errors.push({ type: 'expect-single', key, keyType: t, value: values })
+	if (values.length > 1) errors.push({ type: 'expect-single', key, keyKind: zodKind(t), keyType: t, value: values })
 	return [values[values.length - 1], errors]
 }
 
@@ -359,4 +468,14 @@ function toNumber(
 
 	errors.push({ type: 'invalid-value', key, value, message: 'expected to be number' })
 	return [undefined, errors]
+}
+
+/**
+ * The kind string of a zod type that has no dedicated conversion, for `ExpectSingle.keyKind`.
+ */
+function zodKind(t: z.ZodType<any>): DescriptorKind {
+	if (isZodEnum(t)) return 'enum'
+	if (t instanceof z.ZodLiteral) return 'literal'
+	if (isZodArray(t)) return 'array'
+	return 'custom'
 }
