@@ -124,3 +124,40 @@ test('write nothing to the process streams', async () => {
 		stderr.mockRestore()
 	}
 })
+
+describe('output', () => {
+	const cmd = command({
+		name: 'cmd',
+		run() {
+			this.ui.info('hello')
+			return { count: 1 }
+		}
+	})
+
+	test('is axi by default: the returned value is printed after what the command said', async () => {
+		const { result, messages } = await testCommand(cmd, 'cmd')
+		expect(result).toEqual({ count: 1 })
+		expect(messages).toBe('hello\ncount: 1')
+	})
+
+	test('is console when asked: the returned value is not printed', async () => {
+		const { result, messages } = await testCommand(cmd, 'cmd', undefined, { output: 'console' })
+		expect(result).toEqual({ count: 1 })
+		expect(messages).toBe('hello')
+	})
+
+	test('reports a CliError as an encoded report by default, and as its message in console', async () => {
+		const failing = command({
+			name: 'cmd',
+			run() {
+				throw new CliError('nope', { code: 'not-found', help: 'try again' })
+			}
+		})
+		expect((await testCommand(failing, 'cmd')).messages).toBe(
+			'error: nope\ncode: not-found\nhelp[1]: try again\nexit with 1'
+		)
+		expect((await testCommand(failing, 'cmd', undefined, { output: 'console' })).messages).toBe(
+			'nope\ntry again\nexit with 1'
+		)
+	})
+})

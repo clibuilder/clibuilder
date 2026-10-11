@@ -13,8 +13,10 @@ describe('getBaseCommand', () => {
 })
 
 describe('getBaseCommand() with a format', () => {
-	it('declares no format option without one, as in clibuilder 11.5', () => {
-		expect(getBaseCommand('').options).not.toHaveProperty('format')
+	it('declares the global format option without one, defaulting to toon', () => {
+		const entry = getBaseCommand('').options!.format!
+		expect(entry).toMatchObject({ default: 'toon' })
+		expect(isGlobalFormatEntry(entry)).toBe(true)
 	})
 	it('declares the global format option, defaulting to the given format, with no -f alias', () => {
 		const entry = getBaseCommand('', { format: 'json' }).options!.format!

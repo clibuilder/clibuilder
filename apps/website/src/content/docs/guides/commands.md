@@ -88,7 +88,8 @@ $ app repo rm my-project
 ### Command groups
 
 A command may declare `commands` **without** a `run`. That makes it a pure group: invoking it on its
-own prints the group's help message listing its sub-commands. This is enforced in the type — a
+own is a [usage error](/clibuilder/guides/failing/#usage-errors) that lists its sub-commands. With
+`output: 'console'`, and in 11.5.0, it prints the group's help message. This is enforced in the type — a
 command must have either a `run` or a `commands`.
 
 ## Aliases

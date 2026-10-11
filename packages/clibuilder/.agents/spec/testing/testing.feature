@@ -172,3 +172,15 @@ Feature: Testing support
     Given a command that says something
     When it is exercised through the test helper
     Then nothing is written to the process stdout or stderr
+
+  Scenario: the test helper runs in axi output by default, so the messages hold the printed answer
+    Given a command that says something and returns a value
+    When it is exercised through the test helper with no output mode
+    Then the messages hold what it said, then the returned value encoded in toon
+    And a CliError it throws is captured as its encoded report
+
+  Scenario: the test helper runs in console output when asked, as a cli that sets it
+    Given a command that says something and returns a value
+    When it is exercised through the test helper with output console
+    Then the messages hold only what it said, and the value is still returned
+    And a CliError it throws is captured as its message and help lines

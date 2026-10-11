@@ -331,6 +331,9 @@ importers:
       assertron:
         specifier: ^11.7.2
         version: 11.7.2(typescript@5.9.3)
+      clibuilder-11:
+        specifier: npm:clibuilder@11.5.0
+        version: clibuilder@11.5.0(typescript@5.9.3)
       depcheck:
         specifier: ^1.4.3
         version: 1.4.7(supports-color@8.1.1)
@@ -2745,6 +2748,10 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  args-minus@0.2.0:
+    resolution: {integrity: sha512-WnIUyzhO4me3xx841rxfCU2C/PMpD+M1MraKb8hF2aGY4xS67bSV2EhpmegLlFM0UV11+hV9uHPbNHnH7ypL0w==}
+    engines: {node: '>=20'}
+
   argue-cli@3.2.0:
     resolution: {integrity: sha512-VipTB0gXgGIFO2Rg9yEVN5wLt2AurJcZqDbgmYSwPwsykhLrQhs240/bfceev4w68lI8JshoOJIk9uW7tFzROw==}
     engines: {node: '>=22'}
@@ -2892,6 +2899,10 @@ packages:
 
   clibuilder@11.3.3:
     resolution: {integrity: sha512-7hgRZA89+5wVrK5A+Ltvj+A2eL8thwQ8c3IE5lZLCWbunkdsnlJQE557UXn2XyD+Zc84a0tlpgD8AzgVUO+eHg==}
+    engines: {node: '>= 20.19'}
+
+  clibuilder@11.5.0:
+    resolution: {integrity: sha512-ei6K214VVCVIQYvZo7QPHSg2/y539E9Cp6TKQYSWaNh/uy8uYQEqYZj5lwZalAHHdC7s2wLd3AqbNt939trPtg==}
     engines: {node: '>= 20.19'}
 
   cliui@7.0.4:
@@ -7174,6 +7185,8 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  args-minus@0.2.0: {}
+
   argue-cli@3.2.0: {}
 
   aria-query@5.3.2: {}
@@ -7392,6 +7405,26 @@ snapshots:
       tmp: 0.2.7
       tslib: 2.8.1
       type-plus: 8.0.0-beta.12(typescript@5.9.3)
+      wordwrap: 1.0.0
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - typescript
+
+  clibuilder@11.5.0(typescript@5.9.3):
+    dependencies:
+      args-minus: 0.2.0
+      find-installed-packages: 4.0.1
+      import-meta-resolve: 4.2.0
+      js-yaml: 4.1.1
+      jsonc-parser: 3.3.1
+      pad-right: 0.2.2
+      search-packages: 2.2.3
+      standard-log: 13.3.2
+      standard-log-color: 13.3.2(standard-log@13.3.2)
+      tersify: 4.0.8
+      tmp: 0.2.7
+      tslib: 2.8.1
+      type-plus: 8.0.0(typescript@5.9.3)
       wordwrap: 1.0.0
       zod: 3.25.76
     transitivePeerDependencies:

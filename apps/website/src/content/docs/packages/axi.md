@@ -103,19 +103,20 @@ help[1]: Run `my-cli list` to see the open tasks
 unless the report sets another.
 
 :::note[Unreleased: the error is reported once]
-With the next `clibuilder` 11 minor and `@clibuilder/axi` patch, which are not published yet, the
+With `clibuilder` 12 and the next `@clibuilder/axi` release, which are not published yet, the
 returned error is a [`CliError.reported()`](/clibuilder/guides/failing/#an-error-already-reported), so the
 CLI prints nothing more for it. Until then the CLI also logs the error message on stderr as a
 diagnostic.
 :::
 
-`args.format` is typed `'toon' | 'json' | 'text' | undefined`. `clibuilder` rejects any other value
-as a usage error before `run()` is called.
+`args.format` is typed `'toon' | 'json' | 'text' | undefined`. `clibuilder` 11 rejects any other
+value as a usage error before `run()` is called. In `clibuilder` 12 the option conflicts with the
+global `--format` (see [below](#the-global---format-option)).
 
 :::note[Unreleased: the result is printed once]
-With the next `clibuilder` 11 minor, which is not published yet, `cli({ output: 'axi' })` prints the
+In `clibuilder` 12, which is not published yet, the default `output: 'axi'` prints the
 value `run()` returns ([the result channel](/clibuilder/api/cli/#the-result-channel)). With the next
-`@clibuilder/axi` patch, `output.result()` returns the value marked as already written, so the CLI
+`@clibuilder/axi` release, `output.result()` returns the value marked as already written, so the CLI
 prints it once, and `parse()` still resolves to the value. Its return type becomes
 `OutputResult<T>`: return it from `run()` rather than reading fields from it. `output.result()` keeps
 writing the value itself, so `output: 'console'` and a custom writer are unchanged. A new CLI can
@@ -125,9 +126,9 @@ return `result(value, { help, render })` from `clibuilder` instead.
 ### The global `--format` option
 
 :::caution[Unreleased: `formatOption` conflicts with the global `--format`]
-With the next `clibuilder` 11 minor, which is not published yet, `cli({ output: 'axi' })` and
-`cli({ format })` turn on [`clibuilder`'s global `--format`](/clibuilder/api/cli/#the-global---format-option).
-A command that then declares `format: formatOption` or `format: defineFormatOption()` fails the CLI at
+In `clibuilder` 12, which is not published yet, every CLI has
+[`clibuilder`'s global `--format`](/clibuilder/api/cli/#the-global---format-option), in both output
+modes. A command that declares `format: formatOption` or `format: defineFormatOption()` fails the CLI at
 startup. Delete the option and pass `this.format` instead of `args.format`:
 
 ```ts
@@ -139,8 +140,8 @@ command({
 })
 ```
 
-Pick the default with `cli({ format })` instead of `defineFormatOption({ default })`. With the default
-`output: 'console'` and no `cli({ format })`, `formatOption` keeps working as before.
+Pick the default with `cli({ format })` instead of `defineFormatOption({ default })`. On
+`clibuilder` 11.5.0, `formatOption` keeps working as before.
 :::
 
 ## Exports
@@ -179,8 +180,8 @@ The handler runs before `--format` is parsed, so it writes `toon` unless you bui
 `format`.
 
 :::note[Unreleased: core reports usage errors itself]
-On `main`, not in a published release. With `cli({ output: 'axi' })`, `clibuilder` reports usage
-errors itself, in the caller's `--format`, so you do not need this handler. If you pass it, it still
+On `main`, not in a published release. In `clibuilder` 12, with `output: 'axi'`, the default,
+`clibuilder` reports usage errors itself, in the caller's `--format`, so you do not need this handler. If you pass it, it still
 takes over. Core reports only the top-ranked error, codes an extra argument `extra-arguments`, and
 adds the usage line, the offending `option` or `argument`, and for an invalid value the allowed values
 or the constraint. See

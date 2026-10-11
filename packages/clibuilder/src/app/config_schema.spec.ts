@@ -11,11 +11,16 @@ import { builder } from './builder.js'
 /**
  * Runs `cmd` as the default command with `config` as the loaded config,
  * and returns what `run()` returned, the log and the exit code.
+ *
+ * It runs in `output: 'console'`, whose prose report lists every key's messages;
+ * the coded report of the default `axi` output is specified in `usage_error_report.spec.ts`.
  */
 async function runWithConfig(cmd: cli.Command.DefaultCommand<any, any, any>, config: unknown) {
-	const ctx = mockContext()
+	const ctx = mockContext({ output: 'console' })
 	ctx.loadConfig = async () => config
-	const result = await builder(ctx, { name: 'app', version: '1.0.0' }).default(cmd).parse(argv('app'))
+	const result = await builder(ctx, { name: 'app', version: '1.0.0', output: 'console' })
+		.default(cmd)
+		.parse(argv('app'))
 	return { result, messages: ctx.messages, exitCode: ctx.exitCode }
 }
 

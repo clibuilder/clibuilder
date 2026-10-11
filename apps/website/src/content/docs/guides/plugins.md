@@ -118,7 +118,7 @@ clibuilder not a valid plugin bad-plugin
 `plugins()` adds a `plugins` command. You do not register it, and it shows up in the help output alongside your own commands. Pass `plugins({ command: false })` to leave it out:
 
 ```sh
-$ my-cli plugins -h
+$ my-cli plugins -h --format text
 
 Usage: my-cli plugins <command>
 
@@ -181,6 +181,9 @@ Both sub-commands take `--format <toon|text|json>`. The default is `toon`, follo
 [Agent eXperience Interface](https://toonformat.dev): a CLI's own plugin metadata is read by an
 agent far more often than by a person, and toon is the cheaper read for one.
 
+The `--format text` and `--format json` examples below are the `output: 'console'` rendering. With
+the default `output: 'axi'`, the report is an answer, as the end of this section shows.
+
 `--format text` is the human-readable prose, and it is the one form that varies with the count:
 
 ```sh
@@ -213,12 +216,14 @@ my-cli-plugin-git
 many results there turned out to be. A value outside the three is a usage error: the CLI reports it
 and exits with code `2` rather than quietly falling back to the default.
 
-**Unreleased:** with `cli({ output: 'axi' })` or `cli({ format })`, the CLI has a
-[global `--format`](/clibuilder/api/cli/#the-global---format-option). The sub-commands then drop
-their own `--format` and report in the global one, so its default is the CLI's `format`.
+**v12, unreleased:** every CLI has a
+[global `--format`](/clibuilder/api/cli/#the-global---format-option). The sub-commands drop their
+own `--format` and report in the global one, so its default is the CLI's `format`. On
+`clibuilder` 11.5.0 they declare their own.
 
-**Unreleased:** with `cli({ output: 'axi' })`, the sub-commands return their report as the
-[answer](/clibuilder/api/cli/#the-result-channel), and the CLI prints it once on stdout. `--format json`
+**v12, unreleased:** with `output: 'axi'`, the default, the sub-commands return their report as the
+[answer](/clibuilder/api/cli/#the-result-channel), and the CLI prints it once on stdout. With
+`output: 'console'` they write it through `ui` as above. `--format json`
 then carries the `help` list too, and nothing installed or found is an empty state:
 
 ```sh

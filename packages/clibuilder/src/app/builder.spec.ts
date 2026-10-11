@@ -7,9 +7,16 @@ import { CliError, type cli, command, exitCodes, t } from '../index.js'
 import { argv, getFixturePath } from '../test-utils/index.js'
 import { builder } from './builder.js'
 
+/**
+ * A builder in `output: 'console'`, the clibuilder 11 layout.
+ *
+ * This file specifies the console renderers: prose usage errors followed by the help,
+ * `CliError` on stderr, `--help` through the ui. The default `axi` output is specified in
+ * `help_answer.spec.ts`, `usage_error_report.spec.ts`, `cli_error_report.spec.ts` and `result_channel.spec.ts`.
+ */
 function setupBuilderTest(contextParams?: mockContext.Params, options?: Partial<cli.Options>) {
-	const opt = required({ name: 'test-cli', version: '1.0.0' }, options)
-	const context = mockContext(contextParams)
+	const opt = required({ name: 'test-cli', version: '1.0.0', output: 'console' as const }, options)
+	const context = mockContext({ output: opt.output, ...contextParams })
 	return [builder(context, opt), context] as const
 }
 
@@ -153,7 +160,7 @@ describe('version', () => {
 			loaded = true
 			return {}
 		}
-		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true }).command({
+		const cli = builder(ctx, { name: 'test-cli', version: '1.0.0', config: true, output: 'console' }).command({
 			name: 'cmd',
 			run: () => expect.fail('should not reach')
 		})
@@ -208,11 +215,12 @@ Arguments:
   <abc>                  arg abc
 
 Options:
-  [-h|--help]            Print help message
-  [-v|--version]         Print the CLI version
-  [-V|--verbose]         Turn on verbose logging
-  [--silent]             Turn off logging
-  [--debug-cli]          Display clibuilder debug messages
+  [-h|--help]                  Print help message
+  [-v|--version]               Print the CLI version
+  [-V|--verbose]               Turn on verbose logging
+  [--silent]                   Turn off logging
+  [--debug-cli]                Display clibuilder debug messages
+  [--format <toon|json|text>]  Output format: 'toon' for agents, 'json' to pipe, 'text' for humans (default 'toon')
 `)
 	})
 	it('shows help for command', async () => {
@@ -248,11 +256,12 @@ Commands:
   <command> -h           Get help for <command>
 
 Options:
-  [-h|--help]            Print help message
-  [-v|--version]         Print the CLI version
-  [-V|--verbose]         Turn on verbose logging
-  [--silent]             Turn off logging
-  [--debug-cli]          Display clibuilder debug messages
+  [-h|--help]                  Print help message
+  [-v|--version]               Print the CLI version
+  [-V|--verbose]               Turn on verbose logging
+  [--silent]                   Turn off logging
+  [--debug-cli]                Display clibuilder debug messages
+  [--format <toon|json|text>]  Output format: 'toon' for agents, 'json' to pipe, 'text' for humans (default 'toon')
 `)
 	})
 	it('shows help for command chain', async () => {
@@ -518,7 +527,7 @@ describe('loadConfig()', () => {
 	})
 	it('emits warning and exit when config fails validation', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
-		await builder(ctx, { name: 'show-config', version: '1.0.0' })
+		await builder(ctx, { name: 'show-config', version: '1.0.0', output: 'console' })
 			.default({
 				config: z.object({
 					a: z.object({ c: z.number() }),
@@ -632,11 +641,12 @@ function getHelpMessage(app: Pick<cli.Builder, 'name' | 'description'>) {
 Usage: ${app.name} [options]
 
 Options:
-  [-h|--help]            Print help message
-  [-v|--version]         Print the CLI version
-  [-V|--verbose]         Turn on verbose logging
-  [--silent]             Turn off logging
-  [--debug-cli]          Display clibuilder debug messages
+  [-h|--help]                  Print help message
+  [-v|--version]               Print the CLI version
+  [-V|--verbose]               Turn on verbose logging
+  [--silent]                   Turn off logging
+  [--debug-cli]                Display clibuilder debug messages
+  [--format <toon|json|text>]  Output format: 'toon' for agents, 'json' to pipe, 'text' for humans (default 'toon')
 `
 }
 
@@ -647,11 +657,12 @@ Usage: ${app.name} [options]
   ${app.description}
 
 Options:
-  [-h|--help]            Print help message
-  [-v|--version]         Print the CLI version
-  [-V|--verbose]         Turn on verbose logging
-  [--silent]             Turn off logging
-  [--debug-cli]          Display clibuilder debug messages
+  [-h|--help]                  Print help message
+  [-v|--version]               Print the CLI version
+  [-V|--verbose]               Turn on verbose logging
+  [--silent]                   Turn off logging
+  [--debug-cli]                Display clibuilder debug messages
+  [--format <toon|json|text>]  Output format: 'toon' for agents, 'json' to pipe, 'text' for humans (default 'toon')
 `
 }
 
@@ -1120,7 +1131,9 @@ describe('CliError', () => {
 describe('--show-config (#317)', () => {
 	it('prints the config and the file it was loaded from', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
-		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
+		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true, output: 'console' }).parse(
+			argv('show-config --show-config')
+		)
 
 		const msg = ctx.messages
 		expect(msg).toContain(`config: ${getFixturePath('has-json-config')}`)
@@ -1130,7 +1143,9 @@ describe('--show-config (#317)', () => {
 
 	it('reports the package.json fallback as the source', async () => {
 		const ctx = mockContext({ fixtureDir: 'has-pjson-config' })
-		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
+		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true, output: 'console' }).parse(
+			argv('show-config --show-config')
+		)
 
 		const msg = ctx.messages
 		expect(msg).toContain('package.json (property "show-config")')

@@ -44,21 +44,21 @@ describe('options declared with t', () => {
 			ratio: { description: 'd', type: t.number() },
 			port: { description: 'd', type: t.int({ min: 1, max: 65535 }) },
 			dry: { description: 'd', type: t.boolean() },
-			format: { description: 'd', type: t.enum(['toon', 'json']) },
+			mode: { description: 'd', type: t.enum(['toon', 'json']) },
 			tag: { description: 'd', type: t.array(t.string()) },
 			when: { description: 'd', type: t.custom((raw) => new Date(raw)) },
 			payload: { description: 'd', type: t.json<{ a: number }>() }
 		})
 		const { result } = await parse(
 			cmd,
-			'echo --name=a=b --ratio 0.5 --port=80 --dry --format json --tag x --tag y --when 2020-01-01 --payload {"a":1}'
+			'echo --name=a=b --ratio 0.5 --port=80 --dry --mode json --tag x --tag y --when 2020-01-01 --payload {"a":1}'
 		)
 		expect(result).toEqual({
 			name: 'a=b',
 			ratio: 0.5,
 			port: 80,
 			dry: true,
-			format: 'json',
+			mode: 'json',
 			tag: ['x', 'y'],
 			when: new Date('2020-01-01'),
 			payload: { a: 1 }
@@ -394,9 +394,12 @@ describe('usage errors from t', () => {
 			},
 			run() {}
 		})
-		const missing = await testCommand(cmd, 'echo')
+		// console output, which prints every error; the default axi output reports the top-ranked one
+		const missing = await testCommand(cmd, 'echo', undefined, { output: 'console' })
 		expect(missing.messages).toContain('missing required option --port')
-		const { messages, exitCode } = await testCommand(cmd, 'echo x --port --tag a --tag c')
+		const { messages, exitCode } = await testCommand(cmd, 'echo x --port --tag a --tag c', undefined, {
+			output: 'console'
+		})
 		expect(exitCode).toBe(exitCodes.usage)
 		expect(messages).toContain('invalid value for argument <id>: expected an integer, received "x"')
 		expect(messages).toContain('invalid value for option --port: a value is required\n')
@@ -415,7 +418,7 @@ describe('help for t declarations', () => {
 			],
 			options: {
 				port: { description: 'port', type: t.int({ min: 1, max: 65535 }), default: 8080, alias: ['p'] },
-				format: { description: 'format', type: t.enum(['toon', 'text', 'json']), default: 'toon' },
+				style: { description: 'style', type: t.enum(['toon', 'text', 'json']), default: 'toon' },
 				release: { description: 'release', type: t.string({ pattern: /^v\d+$/ }) },
 				ratio: { description: 'ratio', type: t.number({ max: 1 }).optional() },
 				tag: { description: 'tag', type: t.array(t.string()).optional() },
@@ -424,12 +427,12 @@ describe('help for t declarations', () => {
 			},
 			run() {}
 		})
-		const { messages } = await testCommand(cmd, 'serve --help')
+		const { messages } = await testCommand(cmd, 'serve --help --format text')
 		expect(messages).toContain('Usage: test-cli serve <arguments> <options>')
 		expect(messages).toContain('<root: string>')
 		expect(messages).toContain('[ids: int >=1...]')
 		expect(messages).toContain('[-p|--port <int 1..65535>]')
-		expect(messages).toContain("[--format <toon|text|json>]  format (default 'toon')")
+		expect(messages).toContain("[--style <toon|text|json>]   style (default 'toon')")
 		expect(messages).toContain('--release <string /^v\\d+$/>')
 		expect(messages).toContain('[--ratio <number <=1>]')
 		expect(messages).toContain('[--tag <string>...]')
@@ -448,7 +451,7 @@ describe('help for t declarations', () => {
 			},
 			run() {}
 		})
-		const { messages } = await testCommand(cmd, 'go --help')
+		const { messages } = await testCommand(cmd, 'go --help --format text')
 		expect(messages).toContain('--mode <fast>')
 		expect(messages).toContain('[--payload <json>]')
 		expect(messages).toContain('[--when <value>]')

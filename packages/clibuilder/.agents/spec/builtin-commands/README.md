@@ -18,8 +18,8 @@ user has to wonder whether this particular CLI supports it.
 
 The base command's option set is not fixed: `--show-config` appears only on an
 application that actually takes configuration, so a CLI never advertises an
-option that could not do anything. The global `--format` appears only when the
-format is active.
+option that could not do anything. The global `--format` appears on every
+application, in either output mode.
 
 **Non-goals.** How a command is matched and run belongs to `execution/`. The
 rendering primitives — the TOON encoders, the prose reporter, the `--format`
@@ -49,13 +49,13 @@ user expects of any CLI.
 | | |
 | --- | --- |
 | Trigger | `getBaseCommand(description, { config, format })` |
-| Inputs | the application's description, whether it takes configuration, and the CLI's format when the global `--format` is active |
+| Inputs | the application's description, whether it takes configuration, and the CLI's default format (`cli({ format })`, `toon` when unset) |
 | Outcome | a nameless command declaring the global options |
 
 **Extensions.** `--show-config` is declared only when the application takes
-configuration. `--format <toon|json|text>` is declared only when the global
-format is active (under `output: 'axi'` or `cli({ format })`), defaulting to the
-CLI's format, with no `-f` alias ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). The base command declares no `run`, so an application with no
+configuration. `--format <toon|json|text>` is always
+declared, in either output mode, defaulting to the CLI's format (`toon` when
+`cli({ format })` is unset), with no `-f` alias ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). The base command declares no `run`, so an application with no
 default command is a group like any other: invoked bare, it takes
 `execution/`'s no-`run` path, which shows help and exits with the usage code
 ([#609](https://github.com/clibuilder/clibuilder/issues/609)).
@@ -69,7 +69,7 @@ default command is a group like any other: invoked bare, it takes
 | the `h` / `v` / `V` aliases | UC1 | — (`--silent` and `--debug-cli` carry none) |
 | the base command's own empty `commands` list | UC1 — so extensions can add commands to it | — |
 | `--show-config` | UC1 | an application declaring no config — it is not declared there |
-| the global `--format` | UC1 | — (declared only under `output: 'axi'` or `cli({ format })`) |
+| the global `--format` | UC1 | a command's own `format` option that does not defer to it — a startup error (`execution/`) |
 
 ## Control Flow
 
@@ -104,4 +104,4 @@ the declaration.
 | also declare show-config | the application takes config | `an application taking config also declares show-config` |
 | do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
 | declare no run | any | `the base command declares no run of its own` |
-| the global format option | the format is active, and not | `the base command declares the global format option only when it is active` |
+| the global format option | any | `every application declares the global format option` |

@@ -40,7 +40,8 @@ describe('use()', () => {
 			.use(contribute('from-extension', ''))
 			.command({ name: 'from-host', run() {} })
 			.parse(argv('test-cli --help'))
-		const msg = ctx.messages
+		// `--help` is an answer on stdout
+		const msg = ctx.stdout
 		expect(msg).toContain('from-extension')
 		expect(msg.indexOf('from-host')).toBeLessThan(msg.indexOf('from-extension'))
 	})
@@ -69,7 +70,7 @@ describe('use()', () => {
 	it('runs the extensions before --help, which has to list their commands', async () => {
 		const [app, ctx] = setup()
 		await app.use(contribute('from-extension', '')).parse(argv('test-cli --help'))
-		expect(ctx.messages).toContain('from-extension')
+		expect(ctx.stdout).toContain('from-extension')
 	})
 
 	it('runs the extensions once however many times parse() is called', async () => {
@@ -184,7 +185,8 @@ describe('a cli without plugins() from @clibuilder/plugins', () => {
 		const [app, ctx] = setup({ fixtureDir: 'config-with-plugins' }, { config: true })
 		await app.default({ run() {} }).parse(argv('test-cli one'))
 		expect(ctx.exitCode).toBe(2)
-		expect(ctx.messages).toContain('unexpected argument: one')
+		// the usage error is an answer on stdout
+		expect(ctx.stdout).toContain('unexpected argument: one')
 	})
 
 	it('adds no plugins group', async () => {

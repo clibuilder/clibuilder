@@ -208,14 +208,14 @@ Feature: Execution
     And the cli exits with the usage code
 
   Scenario: a usage error is printed with help and exits with the usage code
-    Given an invocation carrying an unknown option that is not global
+    Given a cli with output console, and an invocation carrying an unknown option that is not global
     When it is run
     Then the error is printed
     And help is shown
     And the cli exits with the usage code
 
   Scenario: a config failing the command's schema is reported field by field
-    Given a matched command declaring a config schema
+    Given a cli with output console, and a matched command declaring a config schema
     When the loaded config does not satisfy it
     Then each failing field is printed
     And help is shown
@@ -227,7 +227,7 @@ Feature: Execution
     Then no config validation happens and the command runs
 
   Scenario: a group command invoked bare shows help and exits with the usage code
-    Given a matched command declaring sub-commands and no run
+    Given a cli with output console, and a matched command declaring sub-commands and no run
     When it is invoked without a sub-command
     Then help is shown
     And the cli exits with the usage code
@@ -238,7 +238,7 @@ Feature: Execution
     Then the command runs and its return value is the result
 
   Scenario: a command failing with CliError is reported and sets its exit code
-    Given a matched command whose run throws a CliError
+    Given a cli with output console, and a matched command whose run throws a CliError
     When it is invoked
     Then the error's message and help lines are printed
     And the cli exits with the code the error carries
@@ -358,27 +358,25 @@ Feature: Execution
     When it is constructed
     Then the construction fails with a TypeError naming the valid formats
 
-  Scenario: in the default console output the global format option is not declared
-    Given a cli in console output built with no format
-    When a sub-command is invoked with --format json
-    Then --format is reported as an unknown option, as before
-    And the help lists no --format
-    And a command may declare its own option named format
+  Scenario: in console output the global format option is declared too
+    Given a cli with output console, built with no format
+    When a sub-command declaring no options is invoked with --format json
+    Then no usage error is reported and the command reads json as this.format
+    And the help lists --format once, with the global options, defaulting to toon
 
-  Scenario: under output axi or cli format the global format option is accepted by every command
-    Given a cli with output axi, or one built with a format, or both
+  Scenario: every cli accepts the global format option on every command
+    Given a cli in the default output, with output axi or console, with or without a format
     When a sub-command declaring no options is invoked with --format toon, json or text
     Then no usage error is reported
     And the help lists --format once, with the global options, defaulting to the cli's format, with no -f alias
 
   Scenario: run reads the resolved format as this.format
-    Given a cli whose global format option is active
+    Given any cli, in either output
     When a command is invoked with or without --format
     Then this.format is the value passed, else the cli's format, toon by default
-    And with the global option not active this.format is the cli's format, toon
 
   Scenario: a bad format value is a usage error reported in the default format
-    Given a cli whose global format option is active and a usage-error handler
+    Given a cli with a usage-error handler
     When a command is invoked with --format yaml
     Then the handler receives one invalid-value error naming the format option, the value yaml and the allowed formats
     And the handler's context carries the cli's default format, not yaml
@@ -386,7 +384,7 @@ Feature: Execution
     And without a handler the error is printed once by the usual usage-error report
 
   Scenario: a command declaring its own format option fails the cli at startup
-    Given a cli whose global format option is active
+    Given any cli, in either output, with or without a format
     When a command, a sub-command, the default command or a command added by an extension declares its own option named format
     Then the cli fails with an error saying to delete the local declaration and read this.format
     And the error points at axi-native RFC section 3.4
@@ -437,7 +435,7 @@ Feature: Execution
     And no help is shown and the cli exits with the error code
 
   Scenario: in console output usage errors, a bare group and a failing config are reported as before
-    Given a cli in the default console output
+    Given a cli with output console
     When it meets a usage error, a bare group or a config failing the schema
     Then every error or failing field is printed and the full help is shown, as before
 
@@ -497,7 +495,7 @@ Feature: Execution
     Then parse resolves to the value, the content or the message
 
   Scenario: in console output a returned value is not printed
-    Given a cli in the default console output, with or without a cli format
+    Given a cli with output console, with or without a cli format
     When its command returns a value, or result(), document() or empty()
     Then nothing is written to stdout for it, as before
 

@@ -22,7 +22,7 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 8 | In `output: 'axi'` mode every `ui.*` call is a diagnostic on stderr. Answers go to stdout. | 3.10 |
 | 9 | `cli({ output: 'axi' \| 'console' })`, default `'axi'`. Both modes are permanent. The level-to-stream routing is internal in v12. | 3.10 |
 | 10 | standard-log is replaced by a built-in UI over `cli({ streams })`. | 3.10, [slim-dependencies section 4](slim-dependencies.md#4-logging-standard-log-and-standard-log-color) |
-| 11 | `showHelp` and `showVersion` leave `ui`. Core owns `--help` and `--version` as answers on stdout. Usage errors no longer print the full help. | 3.3, 3.7 |
+| 11 | Core owns `--help` and `--version` as answers on stdout. `showHelp` and `showVersion` are deprecated; they stay on `ui` in v12 and leave it in a later major. Usage errors no longer print the full help. | 3.3, 3.7 |
 | 12 | `@clibuilder/axi` is folded into core in v12. The output, error, usage and format parts are built into core. The value helpers move to a `clibuilder/axi` subpath whose modules import nothing from the framework. `@clibuilder/axi` is deprecated on npm only when v12 ships. | 4, 4.1 |
 | 13 | clibuilder does not wrap or depend on axi-sdk-js. It aligns the error keys and adds a conformance test. | 9 |
 | 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Both may be async. A conversion that reads files, resolves paths against `cwd`, calls the network or depends on other options belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
@@ -162,7 +162,7 @@ run() {
 - `Command.examples?: { command: string; description: string }[]`, rendered under the command's help. It is also what a usage error's `help[N]` can draw from.
 - Text help is unchanged except for the examples section.
 - A compact mode (`--help` on a group lists only names and one-line descriptions) is already how groups render; no flag is added.
-- `showHelp` and `showVersion` leave the `ui` object, which now carries only diagnostics. A command that shows its own help (cyber-sdd calls `ui.showHelp()` today) still gets it on stdout, following the format, like `--help`.
+- `showHelp` and `showVersion` are deprecated, and leave the `ui` object in a later major, after which it carries only diagnostics. In v12 they stay, so a command that shows its own help (cyber-sdd calls `ui.showHelp()` today) keeps working: called from `run()` in `axi` mode it gets the help on stdout, following the format, like `--help`, and `showVersion()` writes the version like `--version`. Anywhere else, and in `console` mode, they write the text help and the version on stdout as in v11. *(Decided in the v12 default-flip PR: removing them in the same major as the flip would break such commands with no answer-shaped replacement for a group's own help.)*
 - **In the `clibuilder/axi` subpath:** the home view (`bin:`, `description`, collapse), because it is a CLI's decision about what its bare invocation shows.
 
 ### 3.8 No version fast path (#639.8)
@@ -189,7 +189,7 @@ run() {
 
 This is the design that sections 3.1 to 3.7 route through. It replaces standard-log (slim-dependencies section 4).
 
-- **Streams.** `cli({ streams: { stdout, stderr } })` takes any two writables, `process.stdout` and `process.stderr` by default. `testCommand` passes in-memory streams and keeps returning `messages`.
+- **Streams.** `cli({ streams: { stdout, stderr } })` takes any two writables, `process.stdout` and `process.stderr` by default. `testCommand` passes in-memory streams and keeps returning `messages`. It runs in the default `axi` mode, so `messages` includes the printed answer, and takes `{ output: 'console' }` as a fourth argument to test a `console` CLI *(decided in the v12 default-flip PR)*.
 - **Answers and diagnostics.** An answer is something the caller asked for: the returned value (plain, `result`, `document` or `empty`), a thrown `CliError` rendered once, `help[N]` lines, `--help` and `--version`. A diagnostic is everything said along the way: every `ui.*` call (`info`, `warn`, `error`, `debug`). `trace` is a log level that `--debug-cli` raises, not a `ui` method.
 - **`cli({ output })`** picks one of two presets. Both are permanent and first-class.
 
@@ -270,7 +270,7 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 3. **A non-`undefined` return from `run()` is printed.** *Migrate:* return `undefined` when nothing should print, use `result(value, { render })` to control the printed form, or use `output: 'console'`. This is the most likely to surprise, so it ships with a codemod that flags every `return <expr>` in a `run()` for review.
 4. **`CliError` message and help no longer go to stderr.** They are rendered once as a report on stdout.
 5. **A global `--format` exists, default `toon`.** A command that declares its own `format` is a startup error. *Migrate:* delete the local declaration and read `this.format`.
-6. **`showHelp` and `showVersion` leave `ui`.** Usage errors, config-validation failures and a bare command group no longer print the full help.
+6. **`showHelp` and `showVersion` are deprecated** (they leave `ui` in a later major, section 3.7). Usage errors, config-validation failures and a bare command group no longer print the full help.
 7. **`UsageError` gains `code`;** `keyType` becomes the descriptor's `kind` string; `onUsageError` context gains `format`. Only the top-ranked usage error is reported, with a `help` list.
 8. **`@clibuilder/axi` is folded into core.** Import its output, error, format and usage exports from `clibuilder`, and the value helpers from `clibuilder/axi` (section 4.1).
 9. **zod is replaced by `t`** (slim-dependencies section 3). Conversion that reads files, resolves paths, calls the network or depends on other options moves into `run()` as a `CliError`.

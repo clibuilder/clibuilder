@@ -147,7 +147,8 @@ await app.parse(process.argv)
 	it.skipIf(process.platform === 'win32')(
 		'exits 0 quietly when the reader closes early, with the default ui',
 		() => {
-			const { code, stderr } = runPiped('')
+			// console output, so `ui.info` writes to the piped stdout
+			const { code, stderr } = runPiped(`output: 'console'`)
 			expect(stderr).toBe('')
 			expect(code).toBe(0)
 		},
@@ -157,7 +158,9 @@ await app.parse(process.argv)
 	it.skipIf(process.platform === 'win32')(
 		'exits 0 quietly when the reader closes early, with the built-in ui',
 		() => {
-			const { code, stderr } = runPiped('streams: { stdout: process.stdout, stderr: process.stderr }')
+			const { code, stderr } = runPiped(
+				`output: 'console', streams: { stdout: process.stdout, stderr: process.stderr }`
+			)
 			expect(stderr).toBe('')
 			expect(code).toBe(0)
 		},
@@ -192,17 +195,24 @@ await cli({ name: 'app', version: '1.0.0', ${cliOptions} })
 
 	// v11 wrote through standard-log here, prefixing the framework's own messages with `clibuilder`
 	it('is the built-in ui in every mode', () => {
-		expect(run('').stdout).toMatch(/^argv: .*\ninfo\n$/)
+		expect(run('').stderr).toMatch(/^argv: .*\ninfo\nwarn\nerror\n$/)
 		expect(run(`output: 'console'`).stdout).toMatch(/^argv: .*\ninfo\n$/)
-		expect(run('streams: { stdout: process.stdout, stderr: process.stderr }').stdout).toMatch(/^argv: .*\ninfo\n$/)
+		expect(run(`output: 'console', streams: { stdout: process.stdout, stderr: process.stderr }`).stdout).toMatch(
+			/^argv: .*\ninfo\n$/
+		)
+	})
+
+	it('routes every ui message to stderr in the default axi mode', () => {
+		expect(run('').stdout).toBe('')
 	})
 
 	it('routes warn and error to stderr in console mode', () => {
-		expect(run('').stderr).toBe('warn\nerror\n')
+		expect(run(`output: 'console'`).stderr).toBe('warn\nerror\n')
 	})
 
 	// v11's standard-log-color wrapped the framework's error and warn text in colour on any stream
 	it('does not colour a stream that is not a TTY, even with FORCE_COLOR', () => {
-		expect(run('', { FORCE_COLOR: '1' }).stderr).toBe('warn\nerror\n')
+		expect(run(`output: 'console'`, { FORCE_COLOR: '1' }).stderr).toBe('warn\nerror\n')
+		expect(run('', { FORCE_COLOR: '1' }).stderr).toMatch(/\nwarn\nerror\n$/)
 	})
 })

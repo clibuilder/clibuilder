@@ -26,16 +26,28 @@ test('cmd-a returns x and says miku', async () => {
   )
 
   expect(result).toBe('x')
-  expect(messages).toBe('miku')
+  // what the command said, then the answer the cli printed
+  expect(messages).toBe('miku\nx')
 })
 ```
 
-- **`result`** is whatever `run()` returned or resolved to.
+- **`result`** is whatever `run()` returned or resolved to. When the cli fails instead, it is the
+  exit code.
 - **`exitCode`** is the code the cli would have exited with, or `undefined` when the command did not
   fail — see [Failing](/clibuilder/guides/failing/).
-- **`messages`** is everything the command wrote through `this.ui`, joined with newlines — `info`,
-  `warn`, and `error` all land here, so a test can assert on user-facing output without capturing
-  stdout.
+- **`messages`** is everything the cli wrote, stdout and stderr together, joined with newlines, in
+  the order it was written. `info`, `warn` and `error` all land here, and so does the printed answer:
+  a returned value, a `CliError` report or a usage error. A test can assert on user-facing output
+  without capturing stdout.
+
+**v12, unreleased:** `testCommand()` runs the cli in the default `output: 'axi'`, so `messages`
+includes the printed answer. To test a cli that sets `output: 'console'`, pass the same mode as the
+fourth parameter. Then a returned value is not printed, as in 11.5.0:
+
+```ts
+const { messages } = await testCommand(cmd, 'cmd-a', undefined, { output: 'console' })
+expect(messages).toBe('miku')
+```
 
 The second parameter is the command line *after* the CLI name. Pass arguments and options the way a
 user would type them:

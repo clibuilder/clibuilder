@@ -18,8 +18,8 @@ function run(...args) {
 	return { code: r.status, stdout: r.stdout.trim(), stderr: r.stderr.trim() }
 }
 
-test('the default command writes error to stderr and info to stdout', () => {
-	assert.deepEqual(run(), { code: 0, stdout: 'some info message', stderr: 'some error message' })
+test('the default command writes every ui message to stderr', () => {
+	assert.deepEqual(run(), { code: 0, stdout: '', stderr: 'some error message\nsome info message' })
 })
 
 test('--version prints the version', () => {
@@ -27,7 +27,7 @@ test('--version prints the version', () => {
 })
 
 test('--help lists the commands, then the plugins group and the plugin command that plugins() adds', () => {
-	const r = run('--help')
+	const r = run('--help', '--format', 'text')
 	assert.equal(r.code, 0)
 	assert.match(r.stdout, /Usage: test-cli <command>/)
 	assert.match(r.stdout, /echo, config-value, plugins, one/)
@@ -37,23 +37,33 @@ test('echo echoes its argument', () => {
 	assert.deepEqual(run('echo', 'hi'), { code: 0, stdout: 'echoing: hi', stderr: '' })
 })
 
+test('--help answers the structured help in toon by default', () => {
+	const r = run('--help')
+	assert.equal(r.code, 0)
+	assert.equal(r.stderr, '')
+	assert.match(r.stdout, /^name: test-cli$/m)
+})
+
 test('config-value reads the config, which config: true loads for the commands', () => {
 	assert.deepEqual(run('config-value', 'greeting'), { code: 0, stdout: 'greeting: hello', stderr: '' })
 })
 
 test('runs the command of the plugin the config names', () => {
 	// esm-plugin logs `echo` alone
-	assert.deepEqual(run('one', 'echo', 'hello'), { code: 0, stdout: 'echo', stderr: '' })
+	assert.deepEqual(run('one', 'echo', 'hello'), { code: 0, stdout: 'hello', stderr: 'echo' })
 })
 
 test('plugins list finds the installed plugin carrying the test-cli keyword', () => {
 	const r = run('plugins', 'list', '--format', 'json')
 	assert.equal(r.code, 0)
-	assert.deepEqual(JSON.parse(r.stdout), { plugins: ['esm-plugin'] })
+	assert.deepEqual(JSON.parse(r.stdout), {
+		plugins: ['esm-plugin'],
+		help: ['Run `plugins search` to find more plugins on npm']
+	})
 })
 
 test('plugins search is reachable', () => {
-	const r = run('plugins', 'search', '--help')
+	const r = run('plugins', 'search', '--help', '--format', 'text')
 	assert.equal(r.code, 0)
 	assert.match(r.stdout, /Usage: test-cli plugins search/)
 })
@@ -61,5 +71,6 @@ test('plugins search is reachable', () => {
 test('an unknown command is a usage error', () => {
 	const r = run('no-such-command')
 	assert.equal(r.code, 2)
-	assert.match(r.stdout + r.stderr, /no-such-command/)
+	assert.equal(r.stderr, '')
+	assert.match(r.stdout, /no-such-command/)
 })

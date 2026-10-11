@@ -343,12 +343,12 @@ Feature: Presentation
     Then every message is written to those streams, one line each, and nothing to the process streams
 
   Scenario: console output writes info and debug to stdout and warn and error to stderr
-    Given a cli whose output is console, the default
+    Given a cli whose output is console
     When a command says something at each level
     Then info and debug are written to stdout, and warn and error to stderr
 
-  Scenario: axi output writes every ui message to stderr
-    Given a cli whose output is axi
+  Scenario: axi output, the default, writes every ui message to stderr
+    Given a cli whose output is axi, or that sets no output
     When a command says something at each level
     Then every message is written to stderr and nothing to stdout
 
@@ -387,10 +387,11 @@ Feature: Presentation
     When a message is said
     Then it is coloured, unless FORCE_COLOR is 0 or false
 
-  Scenario: without streams or axi output the built-in ui writes to the process streams
-    Given a cli built with neither streams nor output axi
+  Scenario: without streams the built-in ui writes to the process streams by the output mode
+    Given a cli built with no streams, in the default output or with output console
     When it says something at each level
-    Then info and debug are on the process stdout and warn and error on its stderr, with no clibuilder prefix
+    Then in the default output every message is on the process stderr, with no clibuilder prefix
+    And with output console info and debug are on the process stdout and warn and error on its stderr
     And a stream that is not a TTY carries no colour
 
   # ── UC9 — EPIPE on the process stdout ──

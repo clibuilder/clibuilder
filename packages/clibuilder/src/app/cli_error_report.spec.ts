@@ -38,6 +38,13 @@ afterEach(() => {
 })
 
 describe('axi output', () => {
+	it('is the default output', async () => {
+		const byDefault = await run(notFound)
+		const axi = await run(notFound, { output: 'axi' })
+		expect(byDefault).toEqual(axi)
+		expect(byDefault.stderr).toBe('')
+	})
+
 	it('renders the report once on stdout in toon by default, and nothing on stderr', async () => {
 		const r = await run(notFound, { output: 'axi' })
 		expect(r.code).toBe(4)
@@ -148,7 +155,7 @@ describe('axi output', () => {
 
 describe('console output', () => {
 	it('writes the message and help lines to stderr, as before', async () => {
-		const r = await run(notFound)
+		const r = await run(notFound, { output: 'console' })
 		expect(r.code).toBe(4)
 		expect(r.stdout).toBe('')
 		expect(r.stderr).toBe('no plugin named foo\nrun `app plugins list` to see them\nrun `app plugins add <name>`\n')
@@ -161,7 +168,7 @@ describe('console output', () => {
 	})
 
 	it('renders nothing for CliError.reported() and exits with its code', async () => {
-		const r = await run(() => CliError.reported(3))
+		const r = await run(() => CliError.reported(3), { output: 'console' })
 		expect(r.code).toBe(3)
 		expect(r.stdout + r.stderr).toBe('')
 	})

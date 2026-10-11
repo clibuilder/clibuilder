@@ -45,46 +45,15 @@ afterEach(() => {
 	process.exitCode = undefined
 })
 
-describe('the global --format in the default console output, with no cli({ format })', () => {
-	it('is not declared, so the help is unchanged', async () => {
-		const { app, stdout } = setup()
-		await app.command({ name: 'show', run() {} }).parse(['node', 'app', '--help'])
-		expect(stdout.text).not.toContain('--format')
-	})
-
-	it('is an unknown option, as before', async () => {
-		const r = await runShow('show --format json')
-		expect(r.code).toBe(exitCodes.usage)
-		expect(r.stderr).toContain('unknown option --format')
-		expect(r.format).toBeUndefined()
-	})
-
-	it('gives run() the default format as this.format', async () => {
-		const r = await runShow('show')
-		expect(r.format).toBe('toon')
-	})
-
-	it('lets a command declare its own format option', async () => {
-		const { app } = setup()
-		let value: string | undefined
-		await app
-			.command({
-				name: 'show',
-				options: { format: { type: t.string().optional(), description: 'local' } },
-				run(args) {
-					value = args.format
-				}
-			})
-			.parse(['node', 'app', 'show', '--format', 'yaml'])
-		expect(value).toBe('yaml')
-	})
-})
-
+// the global `--format` is declared in every cli, in either output, since clibuilder 12 (axi-native RFC section 3.4)
 describe.each([
+	['the default output', {}, 'toon'],
 	['output axi', { output: 'axi' }, 'toon'],
+	['output console', { output: 'console' }, 'toon'],
 	['cli({ format })', { format: 'json' }, 'json'],
-	['output axi and cli({ format })', { output: 'axi', format: 'text' }, 'text']
-] as const)('the global --format under %s', (_, options, defaultFormat) => {
+	['output axi and cli({ format })', { output: 'axi', format: 'text' }, 'text'],
+	['output console and cli({ format })', { output: 'console', format: 'json' }, 'json']
+] as const)('the global --format under %s', (_, options: Partial<cli.Options>, defaultFormat) => {
 	it('is shown once in the help, in the global options', async () => {
 		const { app, stdout, stderr } = setup(options)
 		// under output axi `--help` follows `--format`, and the text help is the one that shows `--format`
@@ -144,10 +113,10 @@ describe.each([
 	it('prints a bad value through the usual usage-error report when no handler is declared', async () => {
 		const r = await runShow('show --format yaml', options)
 		expect(r.code).toBe(exitCodes.usage)
-		if ('output' in options && options.output === 'axi') {
+		if (options.output !== 'console') {
 			// one coded error on stdout in the default format, nothing on stderr (axi-native RFC section 3.3)
 			expect(r.stderr).toBe('')
-			expect(countOf(r.stdout, 'code: invalid-value')).toBe(1)
+			expect(countOf(r.stdout, 'invalid-value')).toBe(1)
 			expect(countOf(r.stdout, 'allowed for --format: toon, json, text')).toBe(1)
 			return
 		}

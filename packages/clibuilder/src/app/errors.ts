@@ -94,10 +94,10 @@ export namespace CliError {
  * - `help`: what to do about it, as a list of lines (default `[]`).
  * - `exitCode`: any integer from 1 to 255 (default `exitCodes.error`, 1).
  *
- * With `cli({ output: 'console' })`, the default, the message and the help lines are printed
- * through the command's `ui`. With `cli({ output: 'axi' })` the report is rendered once on stdout,
+ * In the default `cli({ output: 'axi' })` the report is rendered once on stdout,
  * in the cli's format, as `error`, `code`, the `details` fields, then `help`, and nothing is
- * written to stderr for it.
+ * written to stderr for it. With `cli({ output: 'console' })` the message and the help lines
+ * are printed through the command's `ui`, on stderr.
  *
  * Either way the cli exits with `exitCode`, and `parse()` resolves to that `exitCode`
  * instead of rejecting, so the failure is reported rather than surfacing

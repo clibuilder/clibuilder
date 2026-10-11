@@ -55,39 +55,40 @@ describe('a global option before the command path', () => {
 	it('--verbose applies and the command runs', async () => {
 		const r = await run('--verbose show x')
 		expect(r.ran).toEqual({ name: 'show', args: { _: [], x: 'x' }, format: 'toon' })
-		expect(r.stdout).toContain('show debug')
+		expect(r.stderr).toContain('show debug')
 		expect(r.exitCode).toBeUndefined()
 	})
 
 	it('-V, the --verbose alias, applies and the command runs', async () => {
 		const r = await run('-V show')
 		expect(r.ran?.name).toBe('show')
-		expect(r.stdout).toContain('show debug')
+		expect(r.stderr).toContain('show debug')
 	})
 
 	it('--silent applies and the command runs', async () => {
 		const r = await run('--silent show')
 		expect(r.ran?.name).toBe('show')
 		expect(r.stdout).toBe('')
+		expect(r.stderr).toBe('')
 		expect(r.exitCode).toBeUndefined()
 	})
 
 	it('--debug-cli applies and the command runs', async () => {
 		const r = await run('--debug-cli show')
 		expect(r.ran?.name).toBe('show')
-		expect(r.stdout).toContain('show debug')
+		expect(r.stderr).toContain('show debug')
 	})
 
 	it("--help shows the command's help", async () => {
 		const r = await run('--help show')
 		expect(r.ran).toBeUndefined()
-		expect(r.stdout).toContain('Usage: app show')
+		expect(r.stdout).toContain('name: app show')
 		expect(r.exitCode).toBeUndefined()
 	})
 
 	it("--help before a group and its sub-command shows the sub-command's help", async () => {
 		const r = await run('--help group sub')
-		expect(r.stdout).toContain('Usage: app group sub')
+		expect(r.stdout).toContain('name: app group sub')
 	})
 
 	it('applies before a group and its sub-command', async () => {
@@ -127,7 +128,11 @@ describe('a default command with an argument, beside a named command', () => {
 	})
 
 	it('a token after a global flag that names no command is still the default command argument', async () => {
-		expect(await runDefault('--verbose other')).toEqual({ name: 'default', args: { _: [], file: 'other' } })
+		// the default command is the base command, so its args carry the global `format`
+		expect(await runDefault('--verbose other')).toEqual({
+			name: 'default',
+			args: { _: [], file: 'other', format: 'toon' }
+		})
 	})
 })
 
@@ -135,7 +140,7 @@ describe('a global option after the command path (control)', () => {
 	it('--verbose applies as before', async () => {
 		const r = await run('show --verbose x')
 		expect(r.ran).toEqual({ name: 'show', args: { _: [], x: 'x' }, format: 'toon' })
-		expect(r.stdout).toContain('show debug')
+		expect(r.stderr).toContain('show debug')
 	})
 })
 
@@ -163,7 +168,12 @@ describe('the global --format before the command path', () => {
 	})
 
 	it('applies with cli({ format }) in the console output', async () => {
-		const r = await run('--format json show', { format: 'text' })
+		const r = await run('--format json show', { output: 'console', format: 'text' })
+		expect(r.ran?.format).toBe('json')
+	})
+
+	it('applies in the console output without cli({ format })', async () => {
+		const r = await run('--format json show', { output: 'console' })
 		expect(r.ran?.format).toBe('json')
 	})
 
@@ -177,11 +187,10 @@ describe('the global --format before the command path', () => {
 		expect(r.exitCode).toBe(exitCodes.usage)
 	})
 
-	it('is not global in the console output without cli({ format }), so it does not route', async () => {
+	it('is global in the default output, with no cli({ format })', async () => {
 		const r = await run('--format json show')
-		expect(r.ran).toBeUndefined()
-		expect(r.stderr).toContain('unknown option --format')
-		expect(r.exitCode).toBe(exitCodes.usage)
+		expect(r.ran).toMatchObject({ name: 'show', format: 'json' })
+		expect(r.exitCode).toBeUndefined()
 	})
 })
 
@@ -189,8 +198,8 @@ describe('what stays a usage error', () => {
 	it("a command's own option before the command", async () => {
 		const r = await run('--all show')
 		expect(r.ran).toBeUndefined()
-		expect(r.stderr).toContain('unknown option --all')
-		expect(r.stdout).toContain('Usage: app <command>')
+		expect(r.stdout).toContain('code: unknown-option')
+		expect(r.stdout).toContain('option: "--all"')
 		expect(r.exitCode).toBe(exitCodes.usage)
 	})
 
@@ -203,7 +212,7 @@ describe('what stays a usage error', () => {
 	it('a command name after a global flag and the terminator', async () => {
 		const r = await run('--verbose -- show')
 		expect(r.ran).toBeUndefined()
-		expect(r.stderr).toContain('unexpected arguments: --, show')
+		expect(r.stdout).toContain('code: extra-arguments')
 		expect(r.exitCode).toBe(exitCodes.usage)
 	})
 })

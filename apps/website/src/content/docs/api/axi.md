@@ -12,8 +12,8 @@ release. With `clibuilder` 11.5.0, use the same helpers from [`@clibuilder/axi`]
 import { fullOption, homeHeader, orEmpty, result, truncateList } from 'clibuilder/axi'
 ```
 
-`clibuilder` already renders results, errors and usage errors the agent-facing way with
-`output: 'axi'`. The `clibuilder/axi` subpath adds helpers that shape *what* a command returns: cut a
+`clibuilder` 12 already renders results, errors and usage errors the agent-facing way with
+`output: 'axi'`, the default. The `clibuilder/axi` subpath adds helpers that shape *what* a command returns: cut a
 long answer, say how much was left out, state an empty result, and name the tool in its home view.
 A CLI that does not import the subpath does not load it.
 
@@ -38,7 +38,7 @@ const listCommand = command({
   }
 })
 
-cli({ name: 'my-cli', version: '1.0.0', output: 'axi' }).command(listCommand).parse(process.argv)
+cli({ name: 'my-cli', version: '1.0.0' }).command(listCommand).parse(process.argv)
 ```
 
 ```sh

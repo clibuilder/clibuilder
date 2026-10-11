@@ -72,7 +72,7 @@ Examples:
     app deploy prod
 ```
 
-A command without `examples` shows the same help as before. With `cli({ output: 'axi' })`, the
+A command without `examples` shows the same help as before. With `output: 'axi'`, the default, the
 structured help of `--help --format toon` and `json` carries them too (see
 [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi)).
 An [`onUsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) handler reads them
@@ -141,8 +141,8 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | `this.config` | the config schema's output type | The loaded, validated config. `undefined` when the command declared no `config`. |
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
-| `this.format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else the CLI's `format`, `'toon'` by default. |
-| `this.output` | `'console' \| 'axi'` | **Unreleased.** The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'console'` by default. |
+| `this.format` | `'toon' \| 'json' \| 'text'` | **v12, unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's `format`, `'toon'` by default. |
+| `this.output` | `'axi' \| 'console'` | **v12, unreleased.** The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'axi'` by default. |
 
 ### `args`
 
@@ -156,8 +156,8 @@ Whatever `run()` returns (or resolves to) becomes the resolved value of
 [`parse()`](/clibuilder/api/cli/#parseargv), and the `result` from
 [`testCommand()`](/clibuilder/api/test-command/).
 
-**Unreleased:** with `cli({ output: 'axi' })` the returned value is also printed once on stdout, in
-`this.format`. `result()`, `document()` and `empty()` control how; `parse()` resolves to the value
+**v12, unreleased:** with `output: 'axi'`, the default, the returned value is also printed once on
+stdout, in `this.format`. With `output: 'console'` it is not printed. `result()`, `document()` and `empty()` control how; `parse()` resolves to the value
 they wrap. See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
 ## `PluginActivationContext`

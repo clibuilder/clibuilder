@@ -219,7 +219,7 @@ describe('options basic', () => {
 describe('boolean options', () => {
 	test('accepts an inline true/false', () => {
 		const { args } = testLookupCommand(getBaseCommand(''), 'my-cli -h=false -v=true')!
-		expect(args).toEqual({ _: [], help: false, version: true })
+		expect(args).toEqual({ _: [], help: false, version: true, format: 'toon' })
 	})
 	test('other strings are invalid', () => {
 		const { errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h=x')!
@@ -227,7 +227,7 @@ describe('boolean options', () => {
 	})
 	test('does not take a following token that is not true/false', () => {
 		const { args, errors } = testLookupCommand(getBaseCommand(''), 'my-cli -h x')!
-		expect(args).toEqual({ _: [], help: true })
+		expect(args).toEqual({ _: [], help: true, format: 'toon' })
 		expect(errors).toEqual([{ type: 'extra-arguments', name: '', values: ['x'] }])
 	})
 	test('boolean options with space syntax', () => {

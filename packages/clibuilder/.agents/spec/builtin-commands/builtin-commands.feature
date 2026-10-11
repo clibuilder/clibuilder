@@ -27,11 +27,10 @@ Feature: Built-in commands
     When its base command is built
     Then help, version, and verbose each carry their conventional short alias
 
-  Scenario: the base command declares the global format option only when it is active
-    Given an application in console output with no format, and one with output axi or a format
+  Scenario: every application declares the global format option
+    Given any application, in axi or console output, with or without a cli format
     When its base command is built
-    Then the first declares no format option
-    And the second declares format, choices toon, json and text, defaulting to the cli's format, with no short alias
+    Then it declares format, choices toon, json and text, defaulting to the cli's format or toon, with no short alias
 
   Scenario: an application taking config also declares show-config
     Given an application that takes configuration

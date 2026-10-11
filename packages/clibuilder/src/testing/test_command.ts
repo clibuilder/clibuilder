@@ -4,7 +4,28 @@ import type { cli } from '../cli.js'
 import { mockContext } from '../drivers/context.mock.js'
 import * as tu from '../test-utils/index.js'
 
-export async function testCommand(command: cli.Command, argv: string, config?: Record<string, any>) {
+export namespace testCommand {
+	export type Options = {
+		/**
+		 * The cli's output mode, as `cli({ output })` takes it: `'axi'` (default) or `'console'`.
+		 */
+		output?: cli.Output | undefined
+	}
+}
+
+/**
+ * Runs `command` in a cli named `test-cli`, version `1.0.0`, with `argv` after the binary.
+ *
+ * `messages` holds everything the cli wrote, stdout and stderr together, in the order it was written:
+ * in the default `axi` output that includes the printed answer, such as a returned value or a `CliError` report.
+ * Pass `{ output: 'console' }` to test a cli that uses `cli({ output: 'console' })`.
+ */
+export async function testCommand(
+	command: cli.Command,
+	argv: string,
+	config?: Record<string, any>,
+	options: testCommand.Options = {}
+) {
 	// stdout and stderr share one buffer, so `messages` keeps the order things were said in
 	let output = ''
 	const stream = new Writable({
@@ -14,10 +35,10 @@ export async function testCommand(command: cli.Command, argv: string, config?: R
 			callback()
 		}
 	})
-	const ctx = mockContext({ streams: { stdout: stream, stderr: stream } })
+	const ctx = mockContext({ streams: { stdout: stream, stderr: stream }, output: options.output })
 
 	ctx.loadConfig = async () => config
-	const result = await builder(ctx, { name: 'test-cli', version: '1.0.0' })
+	const result = await builder(ctx, { name: 'test-cli', version: '1.0.0', output: options.output })
 		.command(command)
 		.parse(tu.argv(`test-cli ${argv}`))
 	// one entry per line, as `testCommand` has always returned them

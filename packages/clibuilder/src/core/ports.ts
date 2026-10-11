@@ -18,22 +18,24 @@ export type UI = {
 	/**
 	 * Shows the command's help.
 	 *
-	 * Under `cli({ output: 'axi' })`, called from `run()`, it writes the help on stdout in `this.format`,
+	 * Called from `run()` in the default `axi` output, it writes the help on stdout in `this.format`,
 	 * as `--help` does: the text help under `text`, the structured help under `toon` and `json`.
+	 * Anywhere else, and in `console` output, it writes the text help on stdout.
 	 *
 	 * @deprecated the framework owns `--help` and answers it on stdout in `this.format`.
 	 * To answer with help from `run()`, return it: `document(text)` writes text verbatim,
-	 * and `result(value)` encodes a value in `this.format`. Removed from `ui` in v12 (axi-native RFC section 3.7).
+	 * and `result(value)` encodes a value in `this.format`.
+	 * It stays on `ui` in clibuilder 12 so a command that shows its own help keeps working,
+	 * and is removed in a later major (axi-native RFC section 3.7).
 	 */
 	showHelp(): void
 	/**
-	 * Shows the cli version.
-	 *
-	 * Under `cli({ output: 'axi' })` it writes the version as plain text on stdout, as `--version` does.
+	 * Shows the cli version: plain text on stdout, as `--version` writes it.
 	 *
 	 * @deprecated the framework owns `--version` and answers it as plain text on stdout.
 	 * To answer with the version from `run()`, return it, for example `document(version)`.
-	 * Removed from `ui` in v12 (axi-native RFC section 3.7).
+	 * It stays on `ui` in clibuilder 12 so existing commands keep working,
+	 * and is removed in a later major (axi-native RFC section 3.7).
 	 */
 	showVersion(): void
 }
@@ -48,6 +50,6 @@ export type Streams = {
 }
 
 /**
- * Where `ui` messages go: `'axi'` keeps stdout for answers, `'console'` keeps the v11 layout.
+ * How a cli writes its output: `'axi'` (default) keeps stdout for answers, `'console'` keeps the clibuilder 11 layout.
  */
 export type Output = 'axi' | 'console'
