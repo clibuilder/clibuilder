@@ -7,7 +7,7 @@
  */
 import { t } from 'args-minus'
 
-export { exitCodes } from './app/errors.js'
+export { CliError, exitCodes, isCliError } from './app/errors.js'
 export * from './axi/index.js'
 export { type Answer, document, empty, type Renderer, result } from './render/answer.js'
 

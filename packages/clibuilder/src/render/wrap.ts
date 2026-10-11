@@ -1,9 +1,6 @@
 /**
- * Wraps `text` at `width` columns, breaking only between words.
- *
- * A word longer than `width` stays whole on its own line.
- * Spaces at the end of a broken line and at the start of the next one are dropped,
- * a tab counts as four spaces, and a newline in `text` starts a new line.
+ * Wraps `text` at `width` columns, breaking only between words; a longer word stays whole.
+ * A tab counts as four spaces.
  */
 export function wrap(text: string, width: number) {
 	const lines = ['']

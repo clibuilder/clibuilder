@@ -14,7 +14,7 @@ import { exitCodes as coreExitCodes } from 'clibuilder'
 /**
  * The exit codes a clibuilder cli uses.
  *
- * @deprecated import `exitCodes` from `clibuilder` or `clibuilder/axi` instead.
+ * @deprecated import `exitCodes` from `clibuilder` or `clibuilder/axi` instead. @clibuilder/axi is no longer developed.
  */
 export const exitCodes: typeof coreExitCodes = coreExitCodes
 export * from './error.js'

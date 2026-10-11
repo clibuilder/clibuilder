@@ -9,14 +9,14 @@ import { renderText } from './text.js'
 /**
  * Where a result is written; `process.stdout` unless a caller passes its own.
  *
- * @deprecated return a value, `result()`, `document()` or `empty()` from `run()`; clibuilder 12 writes it on stdout.
+ * @deprecated return a value, `result()`, `document()` or `empty()` from `run()`; clibuilder 12 writes it on stdout. @clibuilder/axi is no longer developed.
  */
 export type OutputWriter = { write(chunk: string): unknown }
 
 /**
  * Encodes a result in the given format, without writing it anywhere.
  *
- * @deprecated return a value or `result()` from `run()`; clibuilder 12 encodes it in the resolved `--format`.
+ * @deprecated return a value or `result()` from `run()`; clibuilder 12 encodes it in the resolved `--format`. @clibuilder/axi is no longer developed.
  */
 export function encodeResult(value: object, format: OutputFormat): string {
 	if (format === 'json') return JSON.stringify(value)
@@ -26,17 +26,16 @@ export function encodeResult(value: object, format: OutputFormat): string {
 /**
  * The single stdout boundary: internal logic stays on plain objects, encoding happens here.
  *
- * @deprecated return a value or `result()` from `run()`; clibuilder 12 writes it in the resolved `--format`.
+ * @deprecated return a value or `result()` from `run()`; clibuilder 12 writes it in the resolved `--format`. @clibuilder/axi is no longer developed.
  */
 export function writeResult(value: object, format: OutputFormat, stdout: OutputWriter = process.stdout): void {
 	stdout.write(`${encodeResult(value, format)}\n`)
 }
 
 /**
- * Writes a document exactly as read, bypassing the encoders — a Markdown body run through TOON or
- * the text renderer comes back as one escaped line. A command writes one or the other, never both.
+ * Writes a document exactly as read, bypassing the encoders.
  *
- * @deprecated return `document(content)` from `clibuilder` in `run()`.
+ * @deprecated return `document(content)` from `clibuilder` in `run()`. @clibuilder/axi is no longer developed.
  */
 export function writeDocument(content: string, stdout: OutputWriter = process.stdout): void {
 	stdout.write(content.endsWith('\n') ? content : `${content}\n`)
@@ -45,20 +44,16 @@ export function writeDocument(content: string, stdout: OutputWriter = process.st
 /**
  * Encodes an error in the given format, without writing it anywhere.
  *
- * @deprecated throw a `CliError` from `clibuilder`; core renders it in the resolved `--format`.
+ * @deprecated throw a `CliError` from `clibuilder`; core renders it in the resolved `--format`. @clibuilder/axi is no longer developed.
  */
 export function encodeError(report: ErrorReport, format: OutputFormat): string {
 	return encodeResult(errorOutput(report), format)
 }
 
 /**
- * Writes an error on stdout — the stream the agent reads its answers from — and returns the exit
- * code the CLI should end with.
+ * Writes an error on stdout and returns the exit code the CLI should end with.
  *
- * Inside a command, prefer `createOutput(args.format).error(report)`, which hands back a
- * `CliError` to throw.
- *
- * @deprecated throw a `CliError` from `clibuilder`; core renders it once on stdout.
+ * @deprecated throw a `CliError` from `clibuilder`; core renders it once on stdout. @clibuilder/axi is no longer developed.
  */
 export function writeError(report: ErrorReport, format: OutputFormat, stdout: OutputWriter = process.stdout): number {
 	stdout.write(`${encodeError(report, format)}\n`)
@@ -69,14 +64,14 @@ export function writeError(report: ErrorReport, format: OutputFormat, stdout: Ou
  * Replaces the default rendering of a result for one or more formats. The returned string is
  * written as is, like {@link writeDocument}.
  *
- * @deprecated use `result(value, { render })` from `clibuilder`.
+ * @deprecated use `result(value, { render })` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export type OutputRenderers<T> = Partial<Record<OutputFormat, (value: T) => string>>
 
 /**
  * How {@link Output.result} writes a value: per-format renderers, and the next steps to suggest.
  *
- * @deprecated use `result.Options` from `clibuilder`.
+ * @deprecated use `result.Options` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export type ResultOptions<T> = OutputRenderers<T> & {
 	/** Next-step suggestions, written after the result under `help`. */
@@ -89,39 +84,26 @@ export type ResultOptions<T> = OutputRenderers<T> & {
  * With clibuilder 11.6 or later it is an answer marked as already written, so clibuilder's result channel
  * (`cli({ output: 'axi' })`) does not print it a second time. With an older clibuilder it is the value itself.
  *
- * @deprecated use `Answer` from `clibuilder`.
+ * @deprecated use `Answer` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export type OutputResult<T> = T | { readonly value: T }
 
 /**
- * @deprecated return `result()`, `document()` or `empty()` from `clibuilder` in `run()`, and throw a `CliError` for a failure.
+ * @deprecated return `result()`, `document()` or `empty()` from `clibuilder` in `run()`, and throw a `CliError` for a failure. @clibuilder/axi is no longer developed.
  */
 export type Output = {
 	/** The format this output writes, with the default filled in. */
 	readonly format: OutputFormat
 	/**
-	 * Writes `value` in the output's format and returns it for `run()` to return, so a command can
-	 * `return output.result(report)` and stay testable through what `parse()` resolves to.
-	 *
-	 * `options.help` adds next-step suggestions after the result; `options.toon` / `json` / `text`
-	 * replace the rendering for that format. A renderer's output is followed by the suggestions,
-	 * encoded in the same format.
-	 *
-	 * With clibuilder 11.6 or later the value comes back marked as already written, so a cli with
-	 * `output: 'axi'`, which prints what `run()` returns, prints it once. `parse()` still resolves to the value.
+	 * Writes `value` in the output's format and returns it for `run()` to return.
+	 * `options.help` adds next-step suggestions; `options.toon` / `json` / `text` replace the rendering.
+	 * With clibuilder 11.6 or later the value is marked as already written, so it prints once.
 	 */
 	result<T extends object>(value: T, options?: ResultOptions<T>): OutputResult<T>
 	/** Writes a document verbatim, whatever the format. */
 	document(content: string): void
 	/**
-	 * Writes a structured error on stdout, where the agent reads its answers, and returns a
-	 * `CliError` carrying the exit code for the command to throw. clibuilder 11.6 and later
-	 * print nothing more for it, so the error is reported once:
-	 *
-	 * @example
-	 * ```ts
-	 * throw output.error({ code: 'not-found', message: `no plugin named ${name}`, help: 'Run `my-cli list`' })
-	 * ```
+	 * Writes a structured error on stdout and returns a `CliError` for the command to throw.
 	 */
 	error(report: ErrorReport): CliError
 }
@@ -139,7 +121,7 @@ export type Output = {
  * }
  * ```
  *
- * @deprecated return a value, `result()`, `document()` or `empty()` from `clibuilder` in `run()`, read the format from `this.format`, and throw a `CliError` instead of `output.error()`.
+ * @deprecated return a value, `result()`, `document()` or `empty()` from `clibuilder` in `run()`, read the format from `this.format`, and throw a `CliError` instead of `output.error()`. @clibuilder/axi is no longer developed.
  */
 export function createOutput(format: OutputFormat | undefined, options: { stdout?: OutputWriter } = {}): Output {
 	const resolved = format ?? 'toon'

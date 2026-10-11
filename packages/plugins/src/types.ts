@@ -4,7 +4,7 @@ import type { CollectionKey, cli, RegistryKey, ValueKey } from 'clibuilder'
  * What a plugin's `activate(context)` receives.
  *
  * The shape is the one `clibuilder` 11 hands a plugin, so a plugin built for it loads unchanged.
- * Import it from here: the copy in `clibuilder` is deprecated in v12 and removed in v13.
+ * Import it from here: the copy in `clibuilder` is deprecated in clibuilder 12 and removed in clibuilder 13.
  */
 export type PluginActivationContext = {
 	addCommand<

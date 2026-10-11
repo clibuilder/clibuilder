@@ -2,14 +2,14 @@
  * Next-step suggestions, written under the `help` key after the result: `help[1]: Run ...` in
  * TOON. One string or several; an empty list is the same as none, and the key is left out.
  *
- * @deprecated pass `help` to `result(value, { help })` from `clibuilder`.
+ * @deprecated pass `help` to `result(value, { help })` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export type Help = string | readonly string[]
 
 /**
  * Normalizes {@link Help} to a list, empty when there is nothing to suggest.
  *
- * @deprecated pass `help` to `result(value, { help })` from `clibuilder`.
+ * @deprecated pass `help` to `result(value, { help })` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export function helpLines(help: Help | undefined): string[] {
 	if (help === undefined) return []
@@ -21,7 +21,7 @@ export function helpLines(help: Help | undefined): string[] {
  * Returns the value unchanged when there is nothing to suggest — a self-contained answer carries no
  * hint.
  *
- * @deprecated return `result(value, { help })` from `clibuilder` in `run()`.
+ * @deprecated return `result(value, { help })` from `clibuilder` in `run()`. @clibuilder/axi is no longer developed.
  */
 export function withHelp<T extends object>(
 	value: T,

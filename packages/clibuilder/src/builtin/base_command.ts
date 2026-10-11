@@ -4,25 +4,17 @@ import { lookupOptions } from '../invocation/lookup.js'
 import { formats } from '../render/encode.js'
 import { t } from '../t.js'
 
-/**
- * Marks the global `--format` entry of the base command,
- * so it is told apart from a command's own option named `format`.
- */
+// tells the base command's global `--format` apart from a command's own `format` option
 const globalFormat = Symbol.for('clibuilder.global-format')
 
 /**
- * Marks a command's own `format` option that gives way to the global `--format` when it is active:
- * the option is dropped from the command and `run()` reads `this.format`.
- * The `plugins` commands of `@clibuilder/plugins` carry it.
- * It is a `Symbol.for` key so a copy of `@clibuilder/plugins` built against another copy of clibuilder still matches.
+ * Marks a command's own `format` option that gives way to the global `--format`:
+ * the option is dropped and `run()` reads `this.format`.
+ * A `Symbol.for` key, so a copy of `@clibuilder/plugins` built against another clibuilder still matches.
  */
 export const defersToGlobalFormat = Symbol.for('clibuilder.defers-to-global-format')
 
-/**
- * @param options.format the default of the global `--format`: the `cli({ format })` value, `toon` by default.
- * @param options.options the global options extensions added, such as `--show-config` from `clibuilder/config`.
- * They are listed before `--format`.
- */
+/** `options.options` are the global options extensions added; they are listed before `--format`. */
 export function getBaseCommand(
 	description: string,
 	options?: { format?: cli.Format | undefined; options?: cli.Command.Options | undefined }
@@ -61,10 +53,7 @@ export function getBaseCommand(
 	})
 }
 
-/**
- * The global `--format` entry. No `-f` alias: it is commonly a command's own `--force` or `--file`
- * (axi-native RFC section 3.4).
- */
+// no `-f` alias: it is commonly a command's own `--force` or `--file` (axi-native RFC section 3.4)
 function formatEntry(defaultFormat: cli.Format) {
 	return Object.defineProperty(
 		{
@@ -77,17 +66,12 @@ function formatEntry(defaultFormat: cli.Format) {
 	)
 }
 
-/**
- * Whether `entry` is the global `--format` declared by the base command.
- */
 export function isGlobalFormatEntry(entry: cli.Command.Options.Entry | undefined) {
 	return !!entry && (entry as any)[globalFormat] === true
 }
 
 /**
- * Checks a command's own `format` option against the global `--format`.
- *
- * An option that defers to the global one is dropped, on a copy, so `run()` reads `this.format`.
+ * Drops, on a copy, a command's own `format` option that defers to the global `--format`.
  * Any other is a startup error: two options named `format` would shadow each other
  * (axi-native RFC section 3.4).
  */

@@ -19,10 +19,6 @@ import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
 export function builder(context: Context, options: cli.Options): cli.Builder {
-	// set `clibuilder-debug` logs manually to logLevels.all,
-	// as user can run `config()` to set the log levels
-	// and override the log level for this logger.
-	// context.ui.displayLevel = 'trace'
 	const s = state(options)
 	const format = options.format ?? 'toon'
 	const output = options.output ?? 'axi'
@@ -61,11 +57,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		}
 	}
 
-	/**
-	 * Runs every `use()` extension in the order it was added, each awaited before the next.
-	 *
-	 * Runs once, on the first `parse()` that needs the command tree.
-	 */
+	// runs once, on the first `parse()` that needs the command tree
+
 	function extend() {
 		return (extending ??= (async () => {
 			const extensionContext: ExtensionContext = {
@@ -107,10 +100,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		})())
 	}
 
-	/**
-	 * Lists the extensions' global options among the base command's own, before `--format`,
-	 * so the root help shows them with the others.
-	 */
+	// lists the extensions' global options before `--format`, so the root help shows them
 	function listGlobalOptions() {
 		if (Object.keys(globalOptions).length === 0) return
 		const { format: formatOption, ...rest } = baseOptions
@@ -118,13 +108,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		Object.assign(baseOptions, rest, globalOptions, { format: formatOption })
 	}
 
-	/**
-	 * Warns once when the config names plugins that nothing loads.
-	 *
-	 * clibuilder 11 loaded them itself. In 12 that moved to `@clibuilder/plugins`,
-	 * and without this warning the plugins would silently stop loading (slim-dependencies RFC section 9.8).
-	 * An extension that read the config is taken to handle its `plugins` key.
-	 */
+	// plugin loading moved to `@clibuilder/plugins` in 12; without this warning plugins would silently stop
+	// loading (slim-dependencies RFC section 9.8). An extension that read the config is taken to handle `plugins`.
 	function warnUnloadedPlugins() {
 		const config: any = shared.get(configKey.id)
 		const plugins = config?.config?.plugins
@@ -137,17 +122,13 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 
 	async function parse(argv: string[]) {
 		if (isBareVersion(argv)) {
-			// answered before the `use()` extensions, the config among them,
-			// so a broken config or a hanging extension cannot fail or delay it.
-			// the exit code is left unset, so the process exits 0, and parse resolves to
-			// `undefined` as it does when the version is answered on the normal path.
+			// answered before the `use()` extensions, so a broken config or a hanging extension cannot fail or delay it
 			context.writeStdout(`${s.version || 'not versioned'}\n`)
 			return
 		}
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		// the extensions run first, as they may add global options.
-		// What they log is held until the logging flags below set the display level.
+		// extensions run first as they may add global options; what they log is held until the display level is set
 		await extend()
 		const baseCommand = getBaseCommand(s.description, { format, options: globalOptions })
 		// the global options are read from the base command alone, before the matched
@@ -261,11 +242,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		}
 	}
 
-	/**
-	 * Reports a `CliError` once: as an encoded answer on stdout in `axi` output, with a debugging copy
-	 * as a `debug` line, or as its message and help lines through `ui.error` in `console` output.
-	 * One from `CliError.reported()` was already reported, so nothing is written for it.
-	 */
+	// one from `CliError.reported()` was already reported, so nothing is written for it
 	function reportCliError(
 		e: CliError,
 		format: cli.Format,
@@ -283,18 +260,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		for (const h of e.help) ui.error(h)
 	}
 
-	/**
-	 * Writes a report as an encoded answer on stdout, in `axi` output.
-	 */
 	function writeReport(report: ErrorFields, format: cli.Format) {
 		context.writeStdout(`${encode(errorOutput(report), format)}\n`)
 	}
 
-	/**
-	 * Prints what `run()` returned, once, as the answer on stdout in `axi` output (axi-native RFC section 3.5).
-	 * In `console` output nothing is printed, as before.
-	 * Either way `parse()` resolves to the value: the one `result()`, `document()` or `empty()` wraps, else the returned value.
-	 */
+	// prints the answer only in `axi` output (axi-native RFC section 3.5); `parse()` resolves to the value either way
 	function answer(returned: unknown, format: cli.Format) {
 		if (output === 'axi') {
 			const text = printAnswer(returned, format)
@@ -303,10 +273,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		return answerValue(returned)
 	}
 
-	/**
-	 * Answers `--help` in `axi` output: on stdout, whatever the display level.
-	 * `text` is the text help, unchanged; `toon` and `json` encode the structured help it is rendered from.
-	 */
+	// `--help` in `axi` output goes to stdout whatever the display level
 	function writeHelp(command: Command, baseCommand: Command, format: cli.Format) {
 		context.writeStdout(
 			format === 'text'
@@ -315,9 +282,6 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		)
 	}
 
-	/**
-	 * Answers `--version` in `axi` output: plain text on stdout in every format, as the bare fast path does.
-	 */
 	function writeVersion() {
 		context.writeStdout(`${s.version || 'not versioned'}\n`)
 	}
@@ -332,23 +296,14 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	}
 }
 
-/**
- * Whether the only token after the binary is `--version` or `-v`.
- *
- * Anything else, `cli <cmd> --version` included, needs the command tree,
- * because a sub-command may declare `-v` or `--version` as its own option.
- * Nothing is loaded when the bare form is answered, so a bare `-v` is the version
- * even if an extension or the config declares `-v`.
- */
+// only the bare form is answered without the command tree: a sub-command may declare `-v` or `--version` itself
+
 function isBareVersion(argv: string[]) {
 	const tokens = argv.slice(2)
 	return tokens.length === 1 && (tokens[0] === '--version' || tokens[0] === '-v')
 }
 
-/**
- * The ui an extension logs through: the framework's own,
- * so its messages follow `--silent`, `--verbose` and `--debug-cli` like the framework's do.
- */
+// the framework's own ui, so extension messages follow `--silent`, `--verbose` and `--debug-cli`
 function createExtensionUI(ctx: Context, state: state.Result): UI {
 	const ui = ctx.ui
 	return {
@@ -367,9 +322,6 @@ function createExtensionUI(ctx: Context, state: state.Result): UI {
 	}
 }
 
-/**
- * The matched command's own usage-error handler, else the nearest enclosing command's.
- */
 function findUsageErrorHandler(command: Command | undefined): cli.UsageErrorHandler | undefined {
 	for (let c = command; c; c = c.parent) {
 		if (c.onUsageError) return c.onUsageError
@@ -407,12 +359,7 @@ function createCommandUI(ctx: Context, state: state.Result, command: cli.Command
 	}
 }
 
-/**
- * Links a command and its sub-commands to their parents.
- *
- * A command's own `format` option gives way to the global `--format`, on a copy of the command,
- * or fails the cli (see `yieldToGlobalFormat()`).
- */
+// links commands to their parents; a command's own `format` option yields to the global one (see `yieldToGlobalFormat()`)
 function adjustCommand<C extends Command>(base: Command, command: C): C {
 	command = yieldToGlobalFormat(command)
 	if (command.name) {

@@ -1,10 +1,7 @@
 import type { Command } from '../command/internal.js'
 import type { DisplayLevel } from '../core/ports.js'
 
-/**
- * The framework-facing ui: everything `createUI.UI` offers, plus the `dump` that
- * releases the messages buffered before the display level was known.
- */
+/** `createUI.UI` plus `dump`, which releases the messages buffered before the display level was known. */
 export type BuilderUI = createUI.UI & { dump(): void }
 
 export function createBuilderUI(ui: createUI.UI): BuilderUI {
@@ -31,17 +28,9 @@ export function createBuilderUI(ui: createUI.UI): BuilderUI {
 	}
 }
 
-/**
- * The ui the framework hands out, which `createStreamUI` implements.
- *
- * The namespace is what is left of v11's standard-log `createUI`,
- * kept so the type keeps its name where it is used.
- */
+// what is left of v11's standard-log `createUI`, kept so the type keeps its name
 export namespace createUI {
-	/**
-	 * The ui the framework hands out, told what to render:
-	 * `showHelp` and `showVersion` take what the command-facing `UI` port fills in.
-	 */
+	/** The ui the framework hands out, which `createStreamUI` implements. */
 	export type UI = {
 		displayLevel: DisplayLevel
 		debug(...args: any[]): void

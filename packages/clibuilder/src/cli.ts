@@ -14,18 +14,9 @@ export function cli(options: cli.Options): cli.Builder {
 
 export namespace cli {
 	export type Options = {
-		/**
-		 * Name of the cli
-		 */
 		name: string
-		/**
-		 * Version of the cli.
-		 * This is typically the same as your package version.
-		 */
+		/** Typically your package version. */
 		version: string
-		/**
-		 * A short description of the cli.
-		 */
 		description?: string
 		/**
 		 * Takes over how usage errors are reported for every command
@@ -71,9 +62,7 @@ export namespace cli {
 		format?: Format
 	}
 
-	/**
-	 * The two streams a cli writes to.
-	 */
+	/** The two streams a cli writes to. */
 	export type Streams = StreamsPort
 
 	/**
@@ -120,13 +109,9 @@ export namespace cli {
 	 * @see UsageErrorHandler
 	 */
 	export type UsageErrorContext = {
-		/**
-		 * The matched command, including its declared `arguments` and `options`.
-		 */
+		/** The matched command, including its declared `arguments` and `options`. */
 		command: Command
-		/**
-		 * The matched command's `ui`.
-		 */
+		/** The matched command's `ui`. */
 		ui: UI
 		/**
 		 * The format the cli reports in, resolved with the global options before the handler runs:
@@ -144,11 +129,7 @@ export namespace cli {
 		exitCode?: number
 	}
 
-	/**
-	 * The formats a cli reports in.
-	 *
-	 * @see Options.format
-	 */
+	/** The formats a cli reports in. */
 	export type Format = 'toon' | 'json' | 'text'
 
 	/**
@@ -348,22 +329,13 @@ export namespace cli {
 					commands: Command[]
 			  }
 
-		/**
-		 * What an argument or option can be declared with in `type`: a descriptor from `t`.
-		 */
+		/** A descriptor from `t`. */
 		export type Type = AnyDescriptor
 
-		/**
-		 * An example invocation of a command.
-		 */
+		/** An example invocation of a command. */
 		export type Example = {
-			/**
-			 * The full command line, such as `my-cli deploy --env prod`.
-			 */
+			/** The full command line, such as `my-cli deploy --env prod`. */
 			command: string
-			/**
-			 * What the example does.
-			 */
 			description: string
 		}
 
@@ -424,7 +396,7 @@ export namespace cli {
  * What a plugin's `activate(context)` receives.
  *
  * @deprecated import `PluginActivationContext` from `@clibuilder/plugins`, which loads plugins since clibuilder 12.
- * This structural copy keeps existing plugins compiling, and is removed in clibuilder 13.
+ * This structural copy keeps existing plugins compiling. Removed in clibuilder 13.
  */
 export type PluginActivationContext = {
 	addCommand<
@@ -459,11 +431,10 @@ declare const configEnabled: unique symbol
  */
 export type ConfigExtension = Extension & { readonly [configEnabled]: true }
 
-/**
- * A builder that has `.use(config())`, so its commands may declare `config`.
- */
+/** A builder that has `.use(config())`, so its commands may declare `config`. */
 export type ConfigEnabled = { readonly [configEnabled]: true }
 
+/** What an {@link Extension} receives: the host, the registry, and the hooks to extend the cli. */
 export type ExtensionContext = {
 	readonly host: { readonly name: string; readonly version: string }
 	readonly cwd: string
@@ -514,9 +485,7 @@ export type SharedState = {
  * @see ExtensionContext.addGlobalOption
  */
 export type GlobalOptionAnswer = (context: {
-	/**
-	 * The option's value, converted by its `type`.
-	 */
+	/** The option's value, converted by its `type`. */
 	value: unknown
 	/**
 	 * The format to answer in: the caller's `--format`, else the `cli({ format })` value.
@@ -532,9 +501,7 @@ export type GlobalOptionAnswer = (context: {
  * @see ExtensionContext.beforeRun
  */
 export type BeforeRunHook = (context: {
-	/**
-	 * The command about to run.
-	 */
+	/** The command about to run. */
 	readonly command: cli.Command
 	/**
 	 * What `run()` reads as `this.config`. A hook may set it.

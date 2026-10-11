@@ -3,29 +3,21 @@ import { t } from 'clibuilder'
 /**
  * How a command renders its result.
  *
- * `toon` is the default because an agent-facing command is read by an agent far more often
- * than by a person, and TOON is the cheaper read for one. `json` is what survives a pipe into
- * `jq`, and `text` is the report a person wants.
- *
- * @deprecated use `cli.Format` from `clibuilder`.
+ * @deprecated use `cli.Format` from `clibuilder`. @clibuilder/axi is no longer developed.
  */
 export type OutputFormat = 'toon' | 'json' | 'text'
 
 /**
  * Every supported format, the default first.
  *
- * @deprecated clibuilder 12 has a global `--format` option; read the resolved value from `this.format`.
+ * @deprecated clibuilder 12 has a global `--format` option; read the resolved value from `this.format`. @clibuilder/axi is no longer developed.
  */
 export const formats = ['toon', 'json', 'text'] as const satisfies readonly OutputFormat[]
 
 /**
  * Rejects anything but the supported formats, so an unknown value never falls back silently.
  *
- * A command that declares {@link formatOption} does not need it: clibuilder already rejects an
- * unknown value as a usage error. It is for a format read from somewhere else, such as an
- * environment variable or a config file.
- *
- * @deprecated clibuilder 12 has a global `--format` option and rejects a bad value as a usage error; read the resolved value from `this.format`.
+ * @deprecated clibuilder 12 has a global `--format` option and rejects a bad value as a usage error; read the resolved value from `this.format`. @clibuilder/axi is no longer developed.
  */
 export function parseFormat(value: string | undefined): OutputFormat {
 	if (!formats.includes(value as OutputFormat)) throw new Error('--format must be toon, json, or text.')
@@ -41,7 +33,7 @@ export function parseFormat(value: string | undefined): OutputFormat {
  * options: { format: defineFormatOption({ default: 'text' }) }
  * ```
  *
- * @deprecated clibuilder 12 has a global `--format` option; set the default with `cli({ format })` and read the resolved value from `this.format`. A command that declares its own `format` option fails at startup.
+ * @deprecated clibuilder 12 has a global `--format` option; set the default with `cli({ format })` and read the resolved value from `this.format`. A command that declares its own `format` option fails at startup. @clibuilder/axi is no longer developed.
  */
 export function defineFormatOption<D extends OutputFormat = 'toon'>(
 	options: { default?: D; description?: string } = {}
@@ -57,16 +49,8 @@ export function defineFormatOption<D extends OutputFormat = 'toon'>(
 }
 
 /**
- * The `--format` option, declared once so every agent-facing command offers the same three
- * values, the same wording, and the same default. Spread it into a command's `options`:
+ * The `--format` option, declared once so every command offers the same values and default.
  *
- * @example
- * ```ts
- * options: { format: formatOption }
- * ```
- *
- * An unknown value is a usage error (exit code 2), reported by clibuilder before `run` is called.
- *
- * @deprecated clibuilder 12 has a global `--format` option; delete the local declaration and read `this.format`. A command that declares its own `format` option fails at startup.
+ * @deprecated clibuilder 12 has a global `--format` option; delete the local declaration and read `this.format`. A command that declares its own `format` option fails at startup. @clibuilder/axi is no longer developed.
  */
 export const formatOption = defineFormatOption()

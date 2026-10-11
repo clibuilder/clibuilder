@@ -1,8 +1,6 @@
 /**
- * The `text` encoder: plain `key: value` lines for a person to read.
- *
- * The same rendering as `@clibuilder/axi`'s `renderText`, so a cli moving onto core's
- * encoders prints what it printed before. Imports nothing from the framework (axi-native RFC section 4.1).
+ * The `text` encoder, the same rendering as `@clibuilder/axi`'s `renderText`.
+ * Imports nothing from the framework (axi-native RFC section 4.1).
  */
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -22,9 +20,8 @@ function table(rows: Record<string, unknown>[]): string[] {
 }
 
 /**
- * Renders a value for a person, not an agent: each key on its own line, a list of records as an
- * aligned table under its key, a list of values as bullets, and an empty list as `(none)`.
- * A key whose value is `undefined` is skipped, as `toon` and `json` skip it.
+ * Renders a value for a person: a key per line, a list of records as an aligned table, a list of values as bullets,
+ * an empty list as `(none)`. A key whose value is `undefined` is skipped, as `toon` and `json` skip it.
  */
 export function renderText(value: object): string {
 	const entries = Object.entries(value).filter(([, item]) => item !== undefined)

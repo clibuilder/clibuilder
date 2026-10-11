@@ -1,19 +1,14 @@
 import type { DescriptorData } from './t.js'
 
-/**
- * Whether a descriptor option takes a value, as `args-minus` decides it:
- * a boolean, or a boolean literal, is a flag; an array asks its element.
- */
+/** Whether a descriptor option takes a value, as `args-minus` decides: a boolean or boolean literal is a flag. */
 export function takesValue(data: DescriptorData) {
 	const d = data.kind === 'array' ? data.element : data
 	return !(d.kind === 'boolean' || (d.kind === 'literal' && typeof d.value === 'boolean'))
 }
 
 /**
- * The short form of what a descriptor accepts, read from its introspection data:
- * `int 1..65535`, `string /^v\d+$/`, `toon|text|json`.
+ * The short form of what a descriptor accepts: `int 1..65535`, `string /^v\d+$/`, `toon|text|json`.
  * Help shows it as the value hint, and an `invalid-value` usage error carries it as `constraint`.
- * An array is described by its element.
  */
 export function describeConstraint(data: DescriptorData): string {
 	switch (data.kind) {

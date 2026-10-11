@@ -4,7 +4,7 @@ import { type Help, helpLines } from './help.js'
  * A failure as an agent reads it: what went wrong, a stable code to branch on, and what to run
  * instead.
  *
- * @deprecated throw a `CliError` from `clibuilder` with a `CliError.Report` (`message`, `code`, `help`, `details`, `exitCode`); core renders it once.
+ * @deprecated throw a `CliError` from `clibuilder` with a `CliError.Report` (`message`, `code`, `help`, `details`, `exitCode`); core renders it once. @clibuilder/axi is no longer developed.
  */
 export type ErrorReport = {
 	/** What went wrong, in the CLI's own terms — never a dependency's raw output. */
@@ -35,7 +35,7 @@ export type ErrorReport = {
  * The error as a value: `error`, `code`, any details, then `help`, flat so it reads the same in
  * every format — `error: ...` / `code: ...` / `help[1]: ...` in TOON.
  *
- * @deprecated throw a `CliError` from `clibuilder`; core renders the report in the resolved `--format`.
+ * @deprecated throw a `CliError` from `clibuilder`; core renders the report in the resolved `--format`. @clibuilder/axi is no longer developed.
  */
 export function errorOutput(report: ErrorReport): Record<string, unknown> {
 	const output: Record<string, unknown> = { error: report.message, code: report.code, ...report.details }

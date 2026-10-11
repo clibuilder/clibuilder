@@ -6,39 +6,24 @@ import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { formats } from '../render/encode.js'
 import { usageErrorCode } from '../render/usage_error.js'
 
-/**
- * The global options, resolved from the base command's lookup alone.
- *
- * They are read before the matched command's usage errors are looked at,
- * so the logging flags apply and `onUsageError` knows the format it reports in.
- */
+/** The global options, resolved from the base command's lookup alone, before the matched command's usage errors are looked at. */
 export type GlobalOptions = {
 	help?: boolean | undefined
 	version?: boolean | undefined
 	verbose?: boolean | undefined
 	silent?: boolean | undefined
 	'debug-cli'?: boolean | undefined
-	/**
-	 * Every value the base lookup read, the global options extensions added among them.
-	 */
+	/** Every value the base lookup read, extensions' global options included. */
 	values: Record<string, unknown>
-	/**
-	 * The `--format` value, when the global `--format` is active and the value is valid,
-	 * else the cli's default format.
-	 */
+	/** The valid `--format` value, else the cli's default format. */
 	format: cli.Format
-	/**
-	 * The base lookup's errors on its own options: a malformed or repeated global flag.
-	 * They are the only errors reported for a global key (see `resolveUsageErrors()`).
-	 */
+	/** The base lookup's errors on its own options. They are the only errors reported for a global key. */
 	errors: lookupCommand.Error[]
 }
 
 /**
  * Looks the invocation up on the base command, the single source of truth for the global options.
- *
- * @param format the cli's resolved default format: the `cli({ format })` value, `toon` by default.
- * A bad `--format` value falls back to it, so the usage error for it is reported in a valid format and cannot loop.
+ * A bad `--format` value falls back to `format`, so its usage error is reported in a valid format and cannot loop.
  */
 export function resolveGlobalOptions(
 	baseCommand: cli.Command,
@@ -68,13 +53,9 @@ export function resolveGlobalOptions(
 /**
  * The usage errors to report for the matched command, each with its `code`.
  *
- * Base errors win for global keys: an error the matched command reports on a key that only
- * the base command declares is replaced by the base lookup's errors for that key.
- * A well-formed global flag has none, so it is not reported as unknown under a sub-command,
- * and a malformed one is reported as the invalid value it is, as on the root (#614).
- * A key the matched command declares itself is its own option, not the global one,
- * except the global `--format` entry the root command carries.
- * The order of the matched command's errors is kept.
+ * Base errors win for a key only the base command declares (#614): a well-formed global flag
+ * is not unknown under a sub-command, and a malformed one is reported as on the root.
+ * A key the matched command declares itself is its own option, except the root's global `--format`.
  */
 export function resolveUsageErrors(
 	errors: lookupCommand.Error[],
@@ -92,11 +73,7 @@ export function resolveUsageErrors(
 
 export { usageErrorCode }
 
-/**
- * Sets `code` on the error, not enumerable, so equality checks and
- * `JSON.stringify` of an error see the same object as before `code` was added.
- * It becomes a plain property in v12.
- */
+// not enumerable, so equality checks and `JSON.stringify` see the same object as before `code` existed
 function withCode(error: lookupCommand.Error): cli.UsageError {
 	return Object.defineProperty(error, 'code', { value: usageErrorCode(error), enumerable: false, configurable: true })
 }
@@ -105,9 +82,6 @@ function isDeclared(command: cli.Command, key: string) {
 	return lookupOptions(command, key).length > 0
 }
 
-/**
- * Whether `command` declares `key` as its own option, not as the global `--format` the root command carries.
- */
 function isOwn(command: cli.Command, key: string) {
 	const [name, entry] = lookupOptions(command, key)
 	return !!name && !isGlobalFormatEntry(entry)
@@ -117,9 +91,7 @@ function isGlobalFormatKey(baseCommand: cli.Command, key: string) {
 	return isGlobalFormatEntry(lookupOptions(baseCommand, key)[1])
 }
 
-/**
- * Adds the allowed formats to an invalid `--format` value, so a handler can list them (axi-native RFC section 3.2).
- */
+// lets a handler list the allowed formats (axi-native RFC section 3.2)
 function withAllowedFormats(baseCommand: cli.Command) {
 	return (e: lookupCommand.Error): lookupCommand.Error =>
 		e.type === 'invalid-value' && isGlobalFormatKey(baseCommand, e.key) ? { ...e, allowed: formats } : e

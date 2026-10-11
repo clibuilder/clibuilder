@@ -8,13 +8,20 @@ export const defaultTextLimit = 500
  *
  * `truncated` tells the command to suggest the way back, such as ``Run `my-cli show 42 --full` ``.
  */
-export function truncateText(
-	text: string,
-	options: { limit?: number | undefined; full?: boolean | undefined } = {}
-): { text: string; truncated: boolean } {
+export function truncateText(text: string, options: truncateText.Options = {}): truncateText.Result {
 	const limit = options.limit ?? defaultTextLimit
 	if (options.full || text.length <= limit) return { text, truncated: false }
 	return { text: `${text.slice(0, limit)}\n... (truncated, ${text.length} chars total)`, truncated: true }
+}
+
+export namespace truncateText {
+	export type Options = {
+		/** Characters to keep. Defaults to {@link defaultTextLimit}. */
+		limit?: number | undefined
+		/** Skips truncation, such as from the parsed `--full`. */
+		full?: boolean | undefined
+	}
+	export type Result = { text: string; truncated: boolean }
 }
 
 /**
@@ -24,13 +31,26 @@ export function truncateText(
  * `count` reads `30 of 847 total`. The kept list's own length (`items[30]` in TOON) stays the
  * number of rows shown, so a header never claims rows that are not there.
  */
-export function truncateList<T>(
-	items: readonly T[],
-	options: { limit: number; full?: boolean | undefined }
-): { items: T[]; count: string; total: number; truncated: boolean } {
+export function truncateList<T>(items: readonly T[], options: truncateList.Options): truncateList.Result<T> {
 	const total = items.length
 	const kept = options.full ? [...items] : items.slice(0, options.limit)
 	return { items: kept, count: `${kept.length} of ${total} total`, total, truncated: kept.length < total }
+}
+
+export namespace truncateList {
+	export type Options = {
+		/** Items to keep. */
+		limit: number
+		/** Skips truncation, such as from the parsed `--full`. */
+		full?: boolean | undefined
+	}
+	export type Result<T> = {
+		items: T[]
+		/** `30 of 847 total`. */
+		count: string
+		total: number
+		truncated: boolean
+	}
 }
 
 /**

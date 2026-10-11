@@ -1,34 +1,20 @@
 /**
- * The exit codes a clibuilder cli uses.
- *
- * They follow the AXI (Agent eXperience Interface) convention so an agent
- * driving the cli through a shell can tell the three cases apart:
- * the command did what was asked, the command failed, or the command was
- * called wrong and should be called again differently.
+ * The exit codes a clibuilder cli uses, following the AXI convention so an agent
+ * can tell success, failure, and a wrongly called command apart.
  */
 export const exitCodes = {
-	/**
-	 * The command did what was asked, including no-ops.
-	 */
+	/** The command did what was asked, including no-ops. */
 	success: 0,
-	/**
-	 * The command was called correctly but could not complete.
-	 */
+	/** The command was called correctly but could not complete. */
 	error: 1,
-	/**
-	 * The command was called incorrectly: an unknown option, a missing
-	 * argument, a value of the wrong type. Retrying the same invocation
-	 * cannot help.
-	 */
+	/** The command was called incorrectly (unknown option, missing argument, wrong type). Retrying cannot help. */
 	usage: 2
 } as const
 
 const cliErrorBrand: unique symbol = Symbol.for('clibuilder.CliError')
 const reportedBrand: unique symbol = Symbol.for('clibuilder.CliError.reported')
 
-/**
- * The keys the report is rendered under. A `details` field may not reuse one.
- */
+// rendered report keys; a `details` field may not reuse one
 const reservedKeys = ['error', 'code', 'help']
 
 export namespace CliError {
@@ -72,27 +58,16 @@ export namespace CliError {
 		cause?: unknown
 	}
 
-	/**
-	 * The whole report as one object: `new CliError(report)`.
-	 */
+	/** The whole report as one object: `new CliError(report)`. */
 	export type Report = Options & {
-		/**
-		 * What went wrong, in the cli's own terms.
-		 */
+		/** What went wrong, in the cli's own terms. */
 		message: string
 	}
 }
 
 /**
- * Throw this from a command's `run()` to fail the cli.
- *
- * It is the structured report of the failure:
- *
- * - `message`: what went wrong.
- * - `code`: a stable kebab-case string that says which failure it is (default `error`).
- * - `details`: a flat record of extra fields an agent can act on (default `{}`).
- * - `help`: what to do about it, as a list of lines (default `[]`).
- * - `exitCode`: any integer from 1 to 255 (default `exitCodes.error`, 1).
+ * Throw this from a command's `run()` to fail the cli with a structured report:
+ * `message`, `code`, `details`, `help` and `exitCode` (see `CliError.Options`).
  *
  * In the default `cli({ output: 'axi' })` the report is rendered once on stdout,
  * in the cli's format, as `error`, `code`, the `details` fields, then `help`, and nothing is
@@ -138,11 +113,8 @@ export class CliError extends Error {
 	readonly code: string
 	readonly details: CliError.Details
 	readonly help: string[]
-	/**
-	 * The error this one wraps, if any.
-	 * Declared here rather than taken from `ErrorOptions` to keep the
-	 * package compiling against its `ES2020` target.
-	 */
+	// declared here, not from `ErrorOptions`, to compile against the `ES2020` target
+
 	readonly cause?: unknown
 	// branded so the check survives a duplicated `clibuilder` in the
 	// dependency tree, where `instanceof` compares two different classes.
@@ -165,9 +137,7 @@ export function isCliError(err: unknown): err is CliError {
 	return !!err && typeof err === 'object' && (err as any)[cliErrorBrand] === true
 }
 
-/**
- * Whether `err` is a `CliError` from `CliError.reported()`, which renders nothing.
- */
+/** Whether `err` is a `CliError` from `CliError.reported()`, which renders nothing. */
 export function isReportedCliError(err: CliError) {
 	return (err as any)[reportedBrand] === true
 }

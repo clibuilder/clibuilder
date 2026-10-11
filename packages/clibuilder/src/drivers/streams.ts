@@ -7,14 +7,9 @@
 
 import type { Streams, WritableStream } from '../core/ports.js'
 
-/**
- * One stream as the cli writes to it.
- */
 export type Sink = {
 	write(text: string): void
-	/**
-	 * Whether text written here may carry colour.
-	 */
+	/** Whether text written here may carry colour. */
 	readonly colour: boolean
 }
 
@@ -24,13 +19,8 @@ type Env = Record<string, string | undefined>
 
 /**
  * Whether text written to `stream` may carry colour.
- *
- * A stream that is not a TTY is never coloured, whatever the environment says,
- * so piped or redirected output stays plain text.
- * On a TTY, `FORCE_COLOR` decides when it is set (`0` or `false` turns colour off),
- * then a non-empty `NO_COLOR` turns it off,
- * then the terminal's own `hasColors()` decides.
- * This is the order Node applies for its own colour detection.
+ * A non-TTY is never coloured, so piped output stays plain. On a TTY: `FORCE_COLOR` (`0`/`false` is off),
+ * then a non-empty `NO_COLOR`, then `hasColors()`, the order Node applies.
  */
 export function shouldColour(stream: WritableStream, env: Env = process.env) {
 	if (!stream.isTTY) return false
@@ -60,14 +50,11 @@ const watched = new WeakSet<object>()
 const closed = new WeakSet<object>()
 
 /**
- * Ends output quietly when the reader of `stream` goes away, such as `cli | head -1`.
+ * Ends output quietly when the reader of `stream` goes away, such as `cli | head -1`:
+ * on `EPIPE` later writes are dropped and the exit code is 0. Any other stream error is rethrown.
  *
- * On `EPIPE` the stream is marked closed, every later write to it is dropped,
- * and the exit code is set to 0: a reader that stopped early is not a failure.
- * Any other stream error is rethrown.
- *
- * Installed once per stream however many clis are built, and only on the
- * process's own stdout. A stream passed through `cli({ streams })` is the embedder's to handle.
+ * Installed once per stream, and only on the process's own stdout.
+ * A stream passed through `cli({ streams })` is the embedder's to handle.
  */
 export function handleEpipe(stream: { on(event: 'error', listener: (err: { code?: string }) => void): unknown }) {
 	if (watched.has(stream)) return

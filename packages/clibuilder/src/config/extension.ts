@@ -8,9 +8,7 @@ import { configKey } from './key.js'
 
 export namespace configExtension {
 	export type Options = {
-		/**
-		 * Add the global `--show-config` option.
-		 */
+		/** Add the global `--show-config` option. */
 		showConfig: boolean
 	}
 }
@@ -40,7 +38,6 @@ export function configExtension(
 			)
 		}
 		context.beforeRun(async (run) => {
-			// a command without a schema reads the config as loaded
 			if (!run.command.config) {
 				run.config = loaded.config
 				return
@@ -62,13 +59,7 @@ export function configExtension(
 	}) as ConfigExtension
 }
 
-/**
- * Reports the resolved config and its provenance.
- *
- * In `axi` output it is the answer: `text` is the `console` rendering,
- * and `toon` and `json` encode the source and the config.
- * In `console` output it is written through `ui.info`.
- */
+// in `axi` output it is the answer (`text` is the `console` rendering); in `console` output it goes through `ui.info`
 function showConfig({ config, source }: ConfigLoadResult, output: cli.Output, ui: { info(...args: any[]): void }) {
 	const lines = [`config: ${describeConfigSource(source)}`]
 	if (source.type !== 'none') lines.push(JSON.stringify(config, undefined, 2))
@@ -77,15 +68,8 @@ function showConfig({ config, source }: ConfigLoadResult, output: cli.Output, ui
 	return undefined
 }
 
-/**
- * Validates the loaded config against the command's `config` schema.
- *
- * The schema's output is what the command gets, so its defaults and transforms apply.
- * A failure is reported as the messages for each config key.
- *
- * With no config, a schema that rejects `undefined` validates `{}` instead,
- * so a schema whose keys all have defaults passes, and one with a required key names that key.
- */
+// with no config, a schema that rejects `undefined` validates `{}` instead,
+// so a schema whose keys all have defaults passes, and one with a required key names that key
 async function parseConfig(
 	schema: cli.ConfigSchema,
 	config: unknown
@@ -96,15 +80,10 @@ async function parseConfig(
 	return { errors: toConfigErrors(r.issues) }
 }
 
-/**
- * The messages for each config key, keyed by the dotted path of the value that failed.
- */
+// messages keyed by the dotted path of the value that failed
 type ConfigErrors = Record<string, string[] | undefined>
 
-/**
- * Maps a Standard Schema's issues to the messages for each key, with the key read from each issue's path.
- * An issue without a path is about the config as a whole and is keyed `(config)`.
- */
+// an issue without a path is about the config as a whole and is keyed `(config)`
 function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors {
 	const errors: ConfigErrors = {}
 	for (const issue of issues) {
@@ -116,11 +95,6 @@ function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors
 	return errors
 }
 
-/**
- * The resolved config as a value: where it came from, then the config itself.
- * `path` and `property` are present only for the sources that have them,
- * and `config` is `null` when nothing matched.
- */
 function configReport(source: ConfigSource, config: unknown) {
 	switch (source.type) {
 		case 'file':

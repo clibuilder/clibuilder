@@ -5,17 +5,11 @@ import type { ErrorFields } from './encode.js'
 import { formatLookupError } from './error.js'
 import { generateUsageSection } from './help.js'
 
-/**
- * How core reports a usage error under `cli({ output: 'axi' })`: one coded error, built from
- * the top-ranked usage error, for `errorOutput()` to encode (axi-native RFC section 3.3).
- *
- * The ranking and the per-error help come from `@clibuilder/axi`'s `usage.ts`.
- */
+// How core reports a usage error under `cli({ output: 'axi' })` (axi-native RFC section 3.3).
+// The ranking and the per-error help come from `@clibuilder/axi`'s `usage.ts`.
 
-/**
- * The error an agent should fix first leads: a mistyped option usually explains the rest,
- * such as a value it swallowed being reported as a missing argument.
- */
+// the error to fix first leads: a mistyped option usually explains the rest,
+// such as a value it swallowed being reported as a missing argument
 const rank: Record<lookupCommand.Error['type'], number> = {
 	'invalid-key': 0,
 	'conflicting-options': 1,
@@ -25,9 +19,7 @@ const rank: Record<lookupCommand.Error['type'], number> = {
 	'extra-arguments': 5
 }
 
-/**
- * The usage error to report: the first of the highest rank, in the order they were found.
- */
+/** The usage error to report: the first of the highest rank, in the order they were found. */
 export function topUsageError<E extends lookupCommand.Error>(errors: readonly E[]): E | undefined {
 	return errors.reduce<E | undefined>((top, e) => (!top || rank[e.type] < rank[top.type] ? e : top), undefined)
 }
@@ -41,19 +33,14 @@ const codes = {
 	'extra-arguments': 'extra-arguments'
 } as const satisfies Record<lookupCommand.Error['type'], string>
 
-/**
- * The stable kebab-case code of a usage error.
- */
+/** The stable kebab-case code of a usage error. */
 export function usageErrorCode<E extends lookupCommand.Error>(error: E): NonNullable<E['code']> {
 	return codes[error.type] as any
 }
 
 /**
- * One usage error as an agent reads it: the message in the caller's terms, its `code`,
- * the offending option or argument in `details`, and a `help` list holding the command's usage line
- * and, where it fixes the mistake, what is valid.
- *
- * @param cliName the cli's name, which the usage line starts with.
+ * One usage error as an agent reads it: message, `code`, the offending option or argument in `details`,
+ * and `help` with the usage line and, where it fixes the mistake, what is valid.
  */
 export function describeUsageError(
 	error: lookupCommand.Error,
@@ -101,10 +88,7 @@ export function describeUsageError(
 	}
 }
 
-/**
- * A command group invoked without its sub-command (#609), as a coded error:
- * `missing-command`, with the valid sub-commands in `help`.
- */
+/** A command group invoked without its sub-command (#609): `missing-command`, with the valid sub-commands in `help`. */
 export function describeMissingCommand(command: cli.Command, cliName: string): Required<ErrorFields> {
 	const name = commandName(command, cliName)
 	const commands = (command.commands ?? []).map((c) => c.name)
@@ -121,14 +105,11 @@ export function describeMissingCommand(command: cli.Command, cliName: string): R
 	}
 }
 
-/**
- * The reserved keys of an error report, which a config key is never written over.
- */
+// the reserved keys of an error report, which a config key is never written over
 const reservedKeys = ['error', 'code', 'help']
 
 /**
- * A config that fails the command's schema, as a coded error: `invalid-config`,
- * with the messages for each failing key in `details`, keyed by the key's dotted path.
+ * A config that fails the command's schema: `invalid-config`, with the messages per failing key (dotted path) in `details`.
  * A key named like a reserved one (`error`, `code`, `help`) is written as `config.<key>`.
  */
 export function describeInvalidConfig(errors: Record<string, string[] | undefined>): Required<ErrorFields> {
@@ -149,9 +130,6 @@ function keyName(key: string, command: cli.Command) {
 		: { label: optionName(key), details: { option: optionName(key) } }
 }
 
-/**
- * The command as the caller typed it: its name, or the cli's name for the root command.
- */
 function commandName(command: cli.Command, cliName: string) {
 	const names: string[] = []
 	for (let c: Command | undefined = command; c; c = c.parent) if (c.name) names.unshift(c.name)
@@ -178,10 +156,6 @@ function optionsHelp(command: cli.Command, cliName: string) {
 		: `\`${name}\` takes no options (--help always allowed)`
 }
 
-/**
- * What an `invalid-value` error's key accepts: the allowed values of an enum, else the constraint
- * the declaration states, such as `int 1..65535`, with the value as the caller typed it.
- */
 function valueHelp(error: lookupCommand.InvalidValueType, label: string) {
 	const at = error.index === undefined ? '' : `[${error.index}]`
 	const received = error.value === undefined ? '' : ` (received ${toArray(error.value).map(quote).join(', ')})`

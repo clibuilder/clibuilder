@@ -42,7 +42,7 @@ const rank: Record<cli.UsageError['type'], number> = {
  * One usage error as an agent reads it: a kebab-case `code`, the message in the caller's terms, and,
  * where a list of what is valid fixes it, that list as `help`.
  *
- * @deprecated clibuilder 12 ranks and codes usage errors itself under `output: 'axi'`.
+ * @deprecated clibuilder 12 ranks and codes usage errors itself under `output: 'axi'`. @clibuilder/axi is no longer developed.
  */
 export function describeUsageError(
 	error: cli.UsageError,
@@ -89,29 +89,10 @@ export function describeUsageError(
 }
 
 /**
- * Reports usage errors the AXI way: one structured error on stdout, where the agent reads its
- * answers, naming what was wrong and listing what is valid, with exit code 2 — instead of
- * clibuilder's default of messages and the full help on stderr. When there are several, they are
- * reported as one, and an unknown option leads and codes it.
+ * Reports usage errors as one structured error on stdout with exit code 2, the unknown option first.
+ * Pass it as `onUsageError`. It cannot read `--format`, so it writes in `format`, `toon` by default.
  *
- * Pass it as `onUsageError`, to `cli()` for every command or to one command for its own:
- *
- * @example
- * ```ts
- * cli({ name: 'my-cli', version, onUsageError: createUsageErrorHandler() })
- * ```
- *
- * ```sh
- * $ my-cli list --stat open
- * error: unknown option --stat
- * code: unknown-option
- * help[1]: "valid options for `list`: --format, --state (--help always allowed)"
- * ```
- *
- * Usage errors are found before the command's options are parsed, so the handler cannot read
- * `--format`; it writes in `format`, `toon` unless told otherwise.
- *
- * @deprecated clibuilder 12 reports the top-ranked usage error with a `code` and `help` on stdout under `output: 'axi'`, the default; remove the `onUsageError` handler.
+ * @deprecated clibuilder 12 reports the top-ranked usage error with a `code` and `help` on stdout under `output: 'axi'`, the default; remove the `onUsageError` handler. @clibuilder/axi is no longer developed.
  */
 export function createUsageErrorHandler(
 	options: { format?: OutputFormat | undefined; stdout?: OutputWriter | undefined } = {}

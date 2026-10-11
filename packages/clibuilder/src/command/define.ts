@@ -1,7 +1,7 @@
 import type { cli } from '../cli.js'
 
 /**
- * Helper function to define a command.
+ * Defines a command with its argument and option types inferred.
  *
  * @example
  * ```ts

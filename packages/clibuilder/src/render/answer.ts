@@ -1,23 +1,14 @@
 /**
  * The result channel: what `run()` returns, and how it is printed under `output: 'axi'`.
- *
- * `result()`, `document()` and `empty()` wrap a value in a tagged answer that the framework
- * recognizes; `printAnswer()` turns a returned value into the text written on stdout, and
- * `answerValue()` into the value `parse()` resolves to.
  * Imports nothing from the framework (axi-native RFC section 4.1).
  */
 
 import { encode, type Format } from './encode.js'
 
-/**
- * Tags an answer. A `Symbol.for` key, so an answer from one copy of clibuilder
- * is recognized by another copy in the same process.
- */
+// a `Symbol.for` key, so an answer from one copy of clibuilder is recognized by another in the same process
 const answerKey: unique symbol = Symbol.for('clibuilder.answer') as any
 
-/**
- * Renders a result for one format. The string it returns is written as is, like a document.
- */
+/** Renders a result for one format. The string it returns is written as is, like a document. */
 export type Renderer<T> = (value: T) => string
 
 export namespace result {
@@ -37,18 +28,14 @@ export namespace result {
 
 export namespace empty {
 	export type Options = {
-		/**
-		 * Next-step suggestions, encoded after the empty state as `help[N]`.
-		 */
+		/** Next-step suggestions, encoded after the empty state as `help[N]`. */
 		help?: string | readonly string[] | undefined
 	}
 }
 
 type Tagged<Kind extends string, Fields> = { readonly [answerKey]: Kind } & Fields
 
-/**
- * An answer returned from `run()`: `parse()` resolves to its `value`.
- */
+/** An answer returned from `run()`: `parse()` resolves to its `value`. */
 export type Answer<T = unknown> =
 	| Tagged<
 			'result',
@@ -111,31 +98,18 @@ export function written<T>(value: T): Answer<T> {
 	return { [answerKey]: 'written', value }
 }
 
-/**
- * Whether `value` is an answer from `result()`, `document()`, `empty()`, from any copy of clibuilder.
- */
 export function isAnswer(value: unknown): value is Answer {
 	return typeof value === 'object' && value !== null && typeof (value as any)[answerKey] === 'string'
 }
 
-/**
- * The value `parse()` resolves to for what `run()` returned: the wrapped value of an answer,
- * else the returned value itself.
- */
 export function answerValue(returned: unknown): any {
 	return isAnswer(returned) ? returned.value : returned
 }
 
 /**
- * The text written on stdout for what `run()` returned, ending on one newline,
- * or `undefined` when nothing is printed.
- *
- * - `undefined`, and an answer already written, print nothing.
- * - A string, returned bare or as a document, is written verbatim.
- * - An object is encoded in `format`.
- * - An array or a scalar is encoded under the `result` key, so every format reads one object
- *   and `help` has a place beside it.
- * - An empty state is encoded as `empty: <message>`.
+ * The text written on stdout for what `run()` returned, ending on one newline, or `undefined` when nothing is printed.
+ * A string is written verbatim, an object is encoded, and an array or scalar is encoded under the `result` key
+ * so `help` has a place beside it.
  */
 export function printAnswer(returned: unknown, format: Format): string | undefined {
 	if (returned === undefined) return undefined
@@ -160,9 +134,6 @@ function print(value: unknown, help: readonly string[], format: Format) {
 	return line(encode(withHelp(toRecord(value), help), format))
 }
 
-/**
- * A rendered body, verbatim, then the help encoded in the same format after a blank line.
- */
 function withRenderedHelp(body: string, help: readonly string[], format: Format) {
 	if (help.length === 0) return line(body)
 	const separator = body.endsWith('\n') ? '\n' : '\n\n'
@@ -174,10 +145,7 @@ function toRecord(value: unknown): Record<string, unknown> {
 	return { result: value }
 }
 
-/**
- * Appends `help` last, so it reads after the answer. A `help` key on the value gives way to it.
- * No suggestions, no key.
- */
+// `help` goes last, and a `help` key on the value gives way to it
 function withHelp(value: Record<string, unknown>, help: readonly string[]) {
 	if (help.length === 0) return value
 	const { help: _, ...rest } = value
