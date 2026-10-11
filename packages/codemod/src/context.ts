@@ -19,6 +19,7 @@ export type RuleId =
 	| 'plugins'
 	| 'config'
 	| 'testing-import'
+	| 'test-command'
 	| 'printed-return'
 
 export type Finding = {

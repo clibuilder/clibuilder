@@ -5,10 +5,9 @@ description: Run a command in-process and capture its result and its UI messages
 
 ```ts
 function testCommand(
-  command: cli.Command,
+  command: cli.Command | cli.Command.DefaultCommand,
   argv: string,
-  config?: Record<string, any>,
-  options?: { output?: 'axi' | 'console' }
+  options?: { config?: Record<string, any>; output?: 'axi' | 'console'; format?: 'toon' | 'json' | 'text' }
 ): Promise<{ result: any; messages: string; exitCode: number | undefined }>
 ```
 
@@ -43,10 +42,11 @@ expect(messages).toBe('miku\nx')
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `command` | `cli.Command` | The command to run. Sub-commands come along with it. |
+| `command` | `cli.Command \| cli.Command.DefaultCommand` | The command to run. Sub-commands come along with it. A `.default()` command runs the same way, with `argv` holding only its arguments. |
 | `argv` | `string` | The command line *after* the CLI name — `'cmd-a --flag value'`. |
-| `config` | `Record<string, any>` | Optional. Stands in for the config file the command would have loaded. Still validated against the command's `config` schema. |
+| `options.config` | `Record<string, any>` | Stands in for the config file the command would have loaded. Still validated against the command's `config` schema. |
 | `options.output` | `'axi' \| 'console'` | **v12, unreleased.** The [output mode](/clibuilder/api/cli/#streams-and-output) of the CLI under test, as `cli({ output })` takes it. Defaults to `'axi'`. Pass `'console'` to test a CLI that sets `output: 'console'`. |
+| `options.format` | `'toon' \| 'json' \| 'text'` | The CLI's default [format](/clibuilder/api/cli/), as `cli({ format })` takes it. Defaults to `'toon'`. |
 
 ## Returns
 
@@ -86,7 +86,7 @@ const { result } = await testCommand(
     }
   }),
   'cfg',
-  { a: 'hi' }
+  { config: { a: 'hi' } }
 )
 
 expect(result).toEqual({ a: 'hi' })
@@ -110,6 +110,58 @@ expect(messages).toContain('code: unknown-option')
 
 A command that throws [`CliError`](/clibuilder/guides/failing/) is recorded the same way, with the
 code it chose.
+
+## mockPluginContext()
+
+```ts
+function mockPluginContext(options?: {
+  source?: string
+  host?: { name: string; version: string }
+  registry?: RegistryOwner
+}): { context: PluginActivationContext; commands: cli.Command[]; registry: RegistryOwner }
+```
+
+Builds the deprecated `PluginActivationContext` that an older plugin's `activate()` takes.
+The host defaults to `{ name: 'test-cli', version: '1.0.0' }`, and `source` to `'test-plugin'`.
+Removed in clibuilder 13 with the context; use `mockExtensionContext()` for new code.
+
+## mockExtensionContext()
+
+```ts
+function mockExtensionContext(options?: {
+  cwd?: string
+  host?: { name: string; version: string }
+  registry?: RegistryOwner
+  config?: unknown
+}): {
+  context: ExtensionContext
+  commands: cli.Command[]
+  globalOptions: { name: string; entry: cli.Command.Options.Entry; answer: GlobalOptionAnswer }[]
+  beforeRunHooks: BeforeRunHook[]
+  shared: SharedState
+  registry: RegistryOwner
+  readonly messages: string
+}
+```
+
+Builds the `ExtensionContext` that an extension, the function you pass to `.use()`, takes, and
+captures what the extension adds: its commands, global options and `beforeRun` hooks, and the values it
+puts in `shared` or the registry. Pass the same `registry` to two mocks to test extensions that depend
+on each other.
+
+`cwd` defaults to a fresh temporary directory, and the host to `{ name: 'test-cli', version: '1.0.0' }`.
+`resolveConfig()` returns `config` as the cli's config, or no config when you pass none.
+`messages` holds what the extension wrote through `context.ui`, one line per message.
+
+```ts
+import { mockExtensionContext } from 'clibuilder/testing'
+
+const { context, commands, beforeRunHooks } = mockExtensionContext({ config: { greeting: 'hi' } })
+await myExtension(context)
+
+expect(commands.map((c) => c.name)).toEqual(['greet'])
+expect(beforeRunHooks).toHaveLength(1)
+```
 
 See [Testing](/clibuilder/guides/testing/) for the wider picture, including injecting fakes through a
 command's `context`.

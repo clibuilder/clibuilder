@@ -381,13 +381,21 @@ test('miku sings', async () => {
 Calling `activate` yourself with a stub `addCommand` also checks the half of the contract that only
 the host normally exercises — that `activate` is exported, and that it registers what you expect.
 
-For registry-aware plugins, `mockPluginContext()` is available from `clibuilder/testing`:
+To test an extension, the function you pass to `.use()`, `mockExtensionContext()` from
+`clibuilder/testing` builds its context and captures what it adds:
 
 ```ts
-import { mockPluginContext } from 'clibuilder/testing'
+import { mockExtensionContext } from 'clibuilder/testing'
 
-const { context, commands } = mockPluginContext({ source: 'my-plugin' })
-activate(context)
+const { context, commands, beforeRunHooks } = mockExtensionContext()
+await myExtension(context)
 
 expect(commands).toHaveLength(1)
+expect(beforeRunHooks).toHaveLength(0)
 ```
+
+It also captures global options, the values put in `shared` and the registry, and the messages written
+through `ui`. See [`mockExtensionContext()`](/clibuilder/api/test-command/#mockextensioncontext).
+
+A plugin written for the deprecated `activate(context)` contract uses `mockPluginContext({ source })`
+the same way, until clibuilder 13 removes it.

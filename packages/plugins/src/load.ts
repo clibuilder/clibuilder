@@ -3,12 +3,15 @@ import { resolvePlugin } from './resolve_plugin.js'
 import type { PluginActivationContext } from './types.js'
 
 export namespace loadPlugins {
-	export type Context = {
+	export type Options = {
 		cwd: string
 		ui: Pick<UI, 'debug' | 'warn'>
 		registry: RegistryOwner
 		host: PluginActivationContext['host']
 	}
+
+	/** @deprecated Use `loadPlugins.Options`. Removed in clibuilder 13. */
+	export type Context = Options
 }
 
 /**
@@ -20,7 +23,7 @@ export namespace loadPlugins {
  * A package that fails to import, or exports no `activate`, is reported and skipped.
  */
 export async function loadPlugins(
-	{ cwd, ui, registry, host }: loadPlugins.Context,
+	{ cwd, ui, registry, host }: loadPlugins.Options,
 	pluginNames: string[]
 ): Promise<cli.Command[]> {
 	const entries = await Promise.all(
@@ -48,7 +51,7 @@ export async function loadPlugins(
 	return commands
 }
 
-async function loadModule(cwd: string, ui: loadPlugins.Context['ui'], name: string) {
+async function loadModule(cwd: string, ui: loadPlugins.Options['ui'], name: string) {
 	try {
 		return await import(resolvePlugin(cwd, name))
 	} catch (e: any) {
@@ -68,7 +71,7 @@ async function activatePlugin(
 	registry: RegistryOwner,
 	host: PluginActivationContext['host'],
 	source: string,
-	ui: loadPlugins.Context['ui']
+	ui: loadPlugins.Options['ui']
 ) {
 	const commands: cli.Command[] = []
 	await m.activate({

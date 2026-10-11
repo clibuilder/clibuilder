@@ -23,7 +23,6 @@ describe('pluginsCommand', () => {
 		const { messages } = await testCommand(
 			pluginsCommand({ keywords: ['plugin-cli-plugin'] }),
 			'plugins list',
-			undefined,
 			consoleOutput
 		)
 		expect(messages).toContain('plugins: 0 installed plugins found with keywords: plugin-cli-plugin')
@@ -37,7 +36,6 @@ describe('listPluginsCommand', () => {
 		return testCommand(
 			{ ...listPluginsCommand(keywords), context: { findByKeywords: () => Promise.resolve(installed) } },
 			line,
-			undefined,
 			consoleOutput
 		)
 	}
@@ -131,7 +129,6 @@ describe('searchPluginsCommand', () => {
 		const ctx = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -145,7 +142,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -159,7 +155,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -173,7 +168,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -187,7 +181,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['@scope/pkg-x', 'odd,name']) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -201,7 +194,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['odd"name', 'trailing\\']) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -226,7 +218,6 @@ describe('searchPluginsCommand', () => {
 				}
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 
@@ -241,7 +232,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
 			'search --format text',
-			undefined,
 			consoleOutput
 		)
 
@@ -258,7 +248,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x']) }
 			},
 			'search --format text',
-			undefined,
 			consoleOutput
 		)
 		expect(one.messages).toContain('found one package: pkg-x')
@@ -266,7 +255,6 @@ describe('searchPluginsCommand', () => {
 		const none = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
 			'search --format text',
-			undefined,
 			consoleOutput
 		)
 		expect(none.messages).toContain('no package with keywords: plugin-cli-plugin')
@@ -279,7 +267,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve(['pkg-x', 'pkg-y']) }
 			},
 			'search --format json',
-			undefined,
 			consoleOutput
 		)
 
@@ -297,7 +284,6 @@ describe('searchPluginsCommand', () => {
 		const ctx = await testCommand(
 			{ ...searchPluginsCommand(['plugin-cli-plugin']), context: { searchByKeywords: () => Promise.resolve([]) } },
 			'search --format json',
-			undefined,
 			consoleOutput
 		)
 
@@ -316,7 +302,6 @@ describe('searchPluginsCommand', () => {
 			const { messages } = await testCommand(
 				{ ...searchPluginsCommand(['keyword-a', 'keyword-b']), context: { searchByKeywords: searchMixed } },
 				line,
-				undefined,
 				consoleOutput
 			)
 			return messages
@@ -368,7 +353,6 @@ describe('searchPluginsCommand', () => {
 				context: { searchByKeywords: (_: string[]) => Promise.resolve([]) }
 			},
 			'search',
-			undefined,
 			consoleOutput
 		)
 

@@ -41,11 +41,11 @@ test('cmd-a returns x and says miku', async () => {
   without capturing stdout.
 
 **v12, unreleased:** `testCommand()` runs the cli in the default `output: 'axi'`, so `messages`
-includes the printed answer. To test a cli that sets `output: 'console'`, pass the same mode as the
-fourth parameter. Then a returned value is not printed, as in 11.5.0:
+includes the printed answer. To test a cli that sets `output: 'console'`, pass the same mode as
+`options.output`. Then a returned value is not printed, as in 11.5.0:
 
 ```ts
-const { messages } = await testCommand(cmd, 'cmd-a', undefined, { output: 'console' })
+const { messages } = await testCommand(cmd, 'cmd-a', { output: 'console' })
 expect(messages).toBe('miku')
 ```
 
@@ -58,7 +58,7 @@ await testCommand(sumCommand, 'sum --verbose 1 2 3')
 
 ## Testing with config
 
-The third parameter supplies the config the command would have loaded from disk, so no fixture file
+`options.config` supplies the config the command would have loaded from disk, so no fixture file
 is needed:
 
 ```ts
@@ -72,7 +72,7 @@ const { result } = await testCommand(
     }
   }),
   'cfg',
-  { a: 'hi' }
+  { config: { a: 'hi' } }
 )
 
 expect(result).toEqual({ a: 'hi' })

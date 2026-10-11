@@ -2,7 +2,7 @@
 'clibuilder': major
 ---
 
-`testCommand()` is no longer exported from the root entry. Import it from `clibuilder/testing`, which 11.5.0 already exports with the same signature.
+`testCommand()` is no longer exported from the root entry. Import it from `clibuilder/testing`, which 11.5.0 already exports.
 
 Upgrading from 11.5.0:
 

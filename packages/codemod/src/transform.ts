@@ -10,7 +10,8 @@ import {
 	reportSubpathImports,
 	transformAxiImports,
 	transformConfig,
-	transformPlugins
+	transformPlugins,
+	transformTestCommand
 } from './rules.js'
 import { transformZod } from './zod.js'
 
@@ -49,6 +50,7 @@ export function transform(source: string, fileName: string, options: transform.O
 	flagKeywords(context)
 	flagFormatOption(context)
 	flagShowHelp(context)
+	transformTestCommand(context)
 	auditReturns(context)
 	reportSubpathImports(context)
 

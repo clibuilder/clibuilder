@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { cli } from '../cli.js'
 import { CliError, command, exitCodes } from '../index.js'
 import { testCommand } from './index.js'
 
@@ -142,7 +143,7 @@ describe('output', () => {
 	})
 
 	test('is console when asked: the returned value is not printed', async () => {
-		const { result, messages } = await testCommand(cmd, 'cmd', undefined, { output: 'console' })
+		const { result, messages } = await testCommand(cmd, 'cmd', { output: 'console' })
 		expect(result).toEqual({ count: 1 })
 		expect(messages).toBe('hello')
 	})
@@ -157,9 +158,7 @@ describe('output', () => {
 		expect((await testCommand(failing, 'cmd')).messages).toBe(
 			'error: nope\ncode: not-found\nhelp[1]: try again\nexit with 1'
 		)
-		expect((await testCommand(failing, 'cmd', undefined, { output: 'console' })).messages).toBe(
-			'nope\ntry again\nexit with 1'
-		)
+		expect((await testCommand(failing, 'cmd', { output: 'console' })).messages).toBe('nope\ntry again\nexit with 1')
 	})
 })
 
@@ -176,4 +175,32 @@ test('without a config, a command whose config schema is all defaults gets the d
 	)
 	expect(exitCode).toBeUndefined()
 	expect(result).toEqual({ port: 8080 })
+})
+
+test('runs a default command, with argv holding only its arguments', async () => {
+	const { result } = await testCommand(
+		{
+			arguments: [{ name: 'name', description: 'who' }],
+			run(args) {
+				return `hi ${args.name}`
+			}
+		} as cli.Command.DefaultCommand,
+		'miku',
+		{ output: 'console' }
+	)
+	expect(result).toBe('hi miku')
+})
+
+test('answers in the given format', async () => {
+	const { messages } = await testCommand(
+		command({
+			name: 'cmd',
+			run() {
+				return { a: 1 }
+			}
+		}),
+		'cmd',
+		{ format: 'json' }
+	)
+	expect(messages).toBe('{"a":1}')
 })

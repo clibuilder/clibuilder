@@ -1,36 +1,14 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { type cli, createRegistry, type ExtensionContext } from 'clibuilder'
+import type { cli } from 'clibuilder'
+import { mockExtensionContext } from 'clibuilder/testing'
 import { plugins } from './plugins.js'
 
 function setup({ config, pjson }: { config?: unknown; pjson?: Record<string, unknown> } = {}) {
 	const cwd = mkdtempSync(join(tmpdir(), 'clibuilder-plugins-ext-'))
 	if (pjson) writeFileSync(join(cwd, 'package.json'), JSON.stringify(pjson))
-	const commands: cli.Command[] = []
-	const ui = {
-		displayLevel: 'info' as const,
-		info() {},
-		warn() {},
-		error() {},
-		debug() {},
-		showHelp() {},
-		showVersion() {}
-	}
-	const context: ExtensionContext = {
-		host: { name: 'test-cli', version: '1.0.0' },
-		cwd,
-		ui,
-		registry: createRegistry(),
-		shared: { get: () => undefined, set() {}, has: () => false },
-		addCommand: (c) => commands.push(c),
-		addGlobalOption() {},
-		beforeRun() {},
-		resolveConfig: async () =>
-			config === undefined
-				? { config: undefined, source: { type: 'none' }, candidates: [] }
-				: { config, source: { type: 'file', path: join(cwd, '.test-clirc.json'), format: 'jsonc' }, candidates: [] }
-	}
+	const { context, commands } = mockExtensionContext({ cwd, config })
 	return { context, cwd, commands, names: () => commands.map((c) => c.name) }
 }
 
