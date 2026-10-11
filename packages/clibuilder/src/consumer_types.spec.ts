@@ -2,9 +2,11 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import { expect, it } from 'vitest'
 
+const toPosix = (path: string) => path.replace(/\\/g, '/')
+
 it('type-checks the public stream types without @types/node', () => {
-	const ports = fileURLToPath(new URL('./core/ports.ts', import.meta.url))
-	const consumer = fileURLToPath(new URL('./consumer.fixture.ts', import.meta.url))
+	const ports = toPosix(fileURLToPath(new URL('./core/ports.ts', import.meta.url)))
+	const consumer = toPosix(fileURLToPath(new URL('./consumer.fixture.ts', import.meta.url)))
 	const source = [
 		`import type { Streams } from ${JSON.stringify(ports.replace(/\.ts$/, '.js'))}`,
 		'export const streams: Streams = {',
