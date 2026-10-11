@@ -1,5 +1,7 @@
 import { cli, command, exitCodes as coreExitCodes, testCommand } from 'clibuilder'
+import * as core from 'clibuilder/axi'
 import { describe, expect, it, vi } from 'vitest'
+import * as axi from './index.js'
 import { createOutput, exitCodes, formatOption } from './index.js'
 
 // The option and the helper are meant to be used together inside a real command, so this suite runs
@@ -18,6 +20,16 @@ function listCommand(write: (chunk: string) => void) {
 describe('@clibuilder/axi', () => {
 	it('re-exports the exit codes from clibuilder', () => {
 		expect(exitCodes).toBe(coreExitCodes)
+	})
+
+	it('re-exports the value helpers from clibuilder/axi', () => {
+		expect(axi.collapseHome).toBe(core.collapseHome)
+		expect(axi.defaultTextLimit).toBe(core.defaultTextLimit)
+		expect(axi.fullOption).toBe(core.fullOption)
+		expect(axi.homeHeader).toBe(core.homeHeader)
+		expect(axi.orEmpty).toBe(core.orEmpty)
+		expect(axi.truncateList).toBe(core.truncateList)
+		expect(axi.truncateText).toBe(core.truncateText)
 	})
 
 	it('writes toon when the caller passes no --format', async () => {

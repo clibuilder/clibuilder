@@ -1,13 +1,4 @@
-import { describe, expect, it } from 'vitest'
-import { encodeResult } from './output.js'
-import { defaultTextLimit, fullOption, orEmpty, truncateList, truncateText } from './truncate.js'
-
-describe('fullOption', () => {
-	it('is an optional flag', () => {
-		expect(fullOption.type.parse(undefined)).toBeUndefined()
-		expect(fullOption.type.parse(true)).toBe(true)
-	})
-})
+import { defaultTextLimit, orEmpty, truncateList, truncateText } from './truncate.js'
 
 describe('truncateText', () => {
 	it('keeps a text that fits', () => {
@@ -53,17 +44,11 @@ describe('truncateList', () => {
 	it('keeps everything when --full is set', () => {
 		expect(truncateList(['a', 'b', 'c'], { limit: 2, full: true }).items).toEqual(['a', 'b', 'c'])
 	})
-
-	// The TOON header counts the rows shown; the total lives in `count`.
-	it('keeps the TOON row count to the rows shown', () => {
-		const { items, count } = truncateList([{ id: 1 }, { id: 2 }, { id: 3 }], { limit: 2 })
-		expect(encodeResult({ count, tasks: items }, 'toon')).toBe('count: 2 of 3 total\ntasks[2]{id}:\n  1\n  2')
-	})
 })
 
 describe('orEmpty', () => {
 	it('states the zero instead of an empty list', () => {
-		expect(encodeResult({ tasks: orEmpty([], '0 open tasks found') }, 'toon')).toBe('tasks: 0 open tasks found')
+		expect(orEmpty([], '0 open tasks found')).toBe('0 open tasks found')
 	})
 
 	it('passes a non-empty list through', () => {

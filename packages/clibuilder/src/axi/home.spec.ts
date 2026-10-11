@@ -1,5 +1,4 @@
 import { homedir } from 'node:os'
-import { describe, expect, it } from 'vitest'
 import { collapseHome, homeHeader } from './home.js'
 
 describe('collapseHome', () => {

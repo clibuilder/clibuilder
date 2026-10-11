@@ -17,6 +17,8 @@ function table(rows: Record<string, unknown>[]): string[] {
 /**
  * Renders a result for a person, not an agent: each key on its own line, a list of records as an
  * aligned table under its key, a list of values as bullets, and an empty list as `(none)`.
+ *
+ * @deprecated return the value from `run()`; clibuilder 12 renders it for `--format text`. Use `result(value, { render: { text } })` to replace the rendering.
  */
 export function renderText(value: object): string {
 	const blocks = Object.entries(value).map(([key, item]) => {

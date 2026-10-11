@@ -16,11 +16,17 @@ There are three formats. `toon` is the default: [TOON](https://github.com/toon-f
 compact encoding that costs an agent fewer tokens to read. `json` is compact JSON, for a pipe into
 `jq`. `text` is an aligned report for a person.
 
-`@clibuilder/axi` 0.2.1 is published and available. It is planned to be folded into `clibuilder` core
-in v12: the output, error, usage-error and format parts become built-in, and the value helpers
-(truncation, counts, `orEmpty` and the home helpers) are available from a `clibuilder/axi` subpath.
-The package is not deprecated on npm yet, so keep using it until v12 ships. Source:
+`@clibuilder/axi` 0.2.1 is published and available, for `clibuilder` 11.
+
+:::caution[v12, unreleased: folded into `clibuilder`]
+In `clibuilder` 12 the output, error, usage-error and format parts are built into core, and the value
+helpers (truncation, counts, `orEmpty` and the home helpers) move to the
+[`clibuilder/axi`](/clibuilder/api/axi/) subpath. The next major of `@clibuilder/axi` needs
+`clibuilder` 12, re-exports those helpers from `clibuilder/axi`, and marks every export
+`@deprecated`. See [Moving to `clibuilder` 12](#moving-to-clibuilder-12). The package is not deprecated
+on npm until v12 ships, so keep using it with `clibuilder` 11. Source:
 [axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#41-decision-where-clibuilderaxis-contents-belong).
+:::
 
 ## Install
 
@@ -28,7 +34,8 @@ The package is not deprecated on npm yet, so keep using it until v12 ships. Sour
 npm install @clibuilder/axi clibuilder
 ```
 
-`clibuilder` `^11.5.0` is a peer dependency. Node.js 20.19 or newer is required.
+`clibuilder` `^11.5.0` is a peer dependency of 0.2.1. The next major, unreleased, needs `clibuilder`
+`^12`. Node.js 20.19 or newer is required.
 
 ## Example
 
@@ -215,13 +222,17 @@ The package also re-exports `exitCodes` from `clibuilder`. The
 examples, and [`docs/findings`](https://github.com/clibuilder/clibuilder/tree/main/packages/axi/docs/findings)
 records where each convention came from.
 
-## Status and v12
+## Moving to `clibuilder` 12
 
-**Planned for v12:** `@clibuilder/axi` is planned to be folded into `clibuilder` core. The output,
-error, usage-error and format parts are expected to be built into core, so `clibuilder` 12 prints
-results and errors in these formats itself. The truncation and home helpers are the part whose home
-is still undecided: they may stay in this package or move. See
-[section 4 of the axi-native RFC](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#4-what-moves-in-one-table)
-and the [v12 roadmap](/clibuilder/roadmap/v12/).
+Unreleased. Each export maps to a `clibuilder` 12 feature:
 
-`@clibuilder/axi` is not deprecated on npm. If you use it today, keep using it until v12.
+| `@clibuilder/axi` | `clibuilder` 12 |
+| --- | --- |
+| `truncateText`, `truncateList`, `defaultTextLimit`, `fullOption`, `orEmpty`, `homeHeader`, `collapseHome` | The same names from [`clibuilder/axi`](/clibuilder/api/axi/). `fullOption` is declared with `t.boolean().optional()` |
+| `createOutput(format).result(value, { help })`, `writeResult`, `encodeResult`, `withHelp`, `helpLines` | Return the value, or [`result(value, { help, render })`](/clibuilder/api/cli/#the-result-channel), from `run()` |
+| `output.document(content)`, `writeDocument` | Return `document(content)` from `run()` |
+| `output.error(report)`, `writeError`, `encodeError`, `errorOutput`, `ErrorReport` | Throw a [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) with `code`, `help` and `details` |
+| `formatOption`, `defineFormatOption`, `parseFormat`, `formats`, `OutputFormat` | The [global `--format`](/clibuilder/api/cli/#the-global---format-option): delete the option, read `this.format`, set the default with `cli({ format })`; the type is `cli.Format` |
+| `renderText` | `--format text`, or `result(value, { render: { text } })` |
+| `createUsageErrorHandler`, `describeUsageError` | Built in: [ranked, coded usage errors](/clibuilder/guides/failing/#usage-errors-with-output-axi). Remove the `onUsageError` handler |
+| `exitCodes` | `exitCodes` from `clibuilder` or `clibuilder/axi` |

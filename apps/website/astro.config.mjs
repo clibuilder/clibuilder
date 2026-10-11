@@ -60,6 +60,7 @@ export default defineConfig({
 						{ label: 'testCommand()', slug: 'api/test-command' },
 						{ label: 'parseArgv()', slug: 'api/parse-argv' },
 						{ label: 'enableCompileCache()', slug: 'api/compile-cache' },
+						{ label: 'clibuilder/axi', slug: 'api/axi' },
 						{ label: 'z', slug: 'api/zod' }
 					]
 				},

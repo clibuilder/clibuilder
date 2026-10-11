@@ -19,6 +19,7 @@ import { cli, command, testCommand, parseArgv, z } from 'clibuilder'
 | `defineKey()` / `defineCollectionKey()` | Create typed plugin registry keys |
 | [`parseArgv()`](/clibuilder/api/parse-argv/) | The raw argv tokenizer, exported for reuse |
 | [`enableCompileCache()`](/clibuilder/api/compile-cache/) | Opt into Node's V8 compile cache, from `clibuilder/compile-cache` |
+| [`clibuilder/axi`](/clibuilder/api/axi/) | Truncation, counts, the empty state and the home header, from the `clibuilder/axi` subpath (v12, unreleased) |
 | `isCliError()` | Whether a caught value is a [`CliError`](/clibuilder/guides/failing/) |
 
 ## Values

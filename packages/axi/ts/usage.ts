@@ -42,6 +42,8 @@ const rank: Record<cli.UsageError['type'], number> = {
 /**
  * One usage error as an agent reads it: a kebab-case `code`, the message in the caller's terms, and,
  * where a list of what is valid fixes it, that list as `help`.
+ *
+ * @deprecated clibuilder 12 ranks and codes usage errors itself under `output: 'axi'`.
  */
 export function describeUsageError(
 	error: cli.UsageError,
@@ -109,6 +111,8 @@ export function describeUsageError(
  *
  * Usage errors are found before the command's options are parsed, so the handler cannot read
  * `--format`; it writes in `format`, `toon` unless told otherwise.
+ *
+ * @deprecated clibuilder 12 reports the top-ranked usage error with a `code` and `help` on stdout under `output: 'axi'`, the default; remove the `onUsageError` handler.
  */
 export function createUsageErrorHandler(
 	options: { format?: OutputFormat | undefined; stdout?: OutputWriter | undefined } = {}
