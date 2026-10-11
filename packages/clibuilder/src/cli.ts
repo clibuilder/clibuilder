@@ -424,7 +424,7 @@ export namespace cli {
  * What a plugin's `activate(context)` receives.
  *
  * @deprecated import `PluginActivationContext` from `@clibuilder/plugins`, which loads plugins since clibuilder 12.
- * This structural copy keeps existing plugins compiling, and is removed in clibuilder 13.
+ * This structural copy keeps existing plugins compiling. Removed in clibuilder 13.
  */
 export type PluginActivationContext = {
 	addCommand<
@@ -464,6 +464,7 @@ export type ConfigExtension = Extension & { readonly [configEnabled]: true }
  */
 export type ConfigEnabled = { readonly [configEnabled]: true }
 
+/** What an {@link Extension} receives: the host, the registry, and the hooks to extend the cli. */
 export type ExtensionContext = {
 	readonly host: { readonly name: string; readonly version: string }
 	readonly cwd: string

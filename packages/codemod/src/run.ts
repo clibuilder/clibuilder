@@ -6,30 +6,32 @@ import { expandPatterns } from './files.js'
 import { addDependencies, findPackageJson } from './package_json.js'
 import { transform } from './transform.js'
 
-export type RunOptions = {
-	readonly patterns: readonly string[]
-	readonly cwd: string
-	/** Print a unified diff instead of writing the files. */
-	readonly dryRun?: boolean | undefined
-	readonly addPlugins?: boolean | undefined
-	readonly stdout: { write(chunk: string): unknown }
-	readonly stderr: { write(chunk: string): unknown }
-}
+export namespace runCodemod {
+	export type Options = {
+		readonly patterns: readonly string[]
+		readonly cwd: string
+		/** Print a unified diff instead of writing the files. */
+		readonly dryRun?: boolean | undefined
+		readonly addPlugins?: boolean | undefined
+		readonly stdout: { write(chunk: string): unknown }
+		readonly stderr: { write(chunk: string): unknown }
+	}
 
-export type RunSummary = {
-	readonly scanned: number
-	readonly changed: number
-	readonly rewritten: number
-	readonly flagged: number
-	readonly review: number
-	readonly failed: number
+	export type Summary = {
+		readonly scanned: number
+		readonly changed: number
+		readonly rewritten: number
+		readonly flagged: number
+		readonly review: number
+		readonly failed: number
+	}
 }
 
 /**
  * Runs the codemod over the files `patterns` name, and prints what it did and what is left to do.
  * With `dryRun`, the changes are printed as a unified diff on stdout and the report goes to stderr.
  */
-export function runCodemod(options: RunOptions): RunSummary {
+export function runCodemod(options: runCodemod.Options): runCodemod.Summary {
 	const { cwd, dryRun = false } = options
 	const report = dryRun ? options.stderr : options.stdout
 	const files = expandPatterns(options.patterns, cwd)
@@ -39,7 +41,7 @@ export function runCodemod(options: RunOptions): RunSummary {
 	for (const file of files) {
 		const relative = path.relative(cwd, file).split(path.sep).join('/')
 		let source: string
-		let result: ReturnType<typeof transform>
+		let result: transform.Result
 		try {
 			source = fs.readFileSync(file, 'utf8')
 			result = transform(source, file, { addPlugins: options.addPlugins })
@@ -94,7 +96,7 @@ function formatFindings(file: string, findings: readonly Finding[]) {
 	return `${file}\n${lines.join('\n')}\n`
 }
 
-function formatSummary(summary: RunSummary, dryRun: boolean) {
+function formatSummary(summary: runCodemod.Summary, dryRun: boolean) {
 	const verb = dryRun ? 'would change' : 'changed'
 	const lines = [
 		'',

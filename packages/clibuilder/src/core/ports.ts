@@ -7,8 +7,10 @@
  * safe for any layer to depend on.
  */
 
+/** How much the cli's `ui` shows; each level includes the ones before it. */
 export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
 
+/** What a cli and its commands write messages through. */
 export type UI = {
 	displayLevel: DisplayLevel
 	info(...args: any[]): void
@@ -16,26 +18,18 @@ export type UI = {
 	error(...args: any[]): void
 	debug(...args: any[]): void
 	/**
-	 * Shows the command's help.
+	 * Shows the command's help on stdout: in `this.format` from `run()` under the default `axi` output,
+	 * as `--help` does, and as text anywhere else.
 	 *
-	 * Called from `run()` in the default `axi` output, it writes the help on stdout in `this.format`,
-	 * as `--help` does: the text help under `text`, the structured help under `toon` and `json`.
-	 * Anywhere else, and in `console` output, it writes the text help on stdout.
-	 *
-	 * @deprecated the framework owns `--help` and answers it on stdout in `this.format`.
-	 * To answer with help from `run()`, return it: `document(text)` writes text verbatim,
-	 * and `result(value)` encodes a value in `this.format`.
-	 * It stays on `ui` in clibuilder 12 so a command that shows its own help keeps working,
-	 * and is removed in a later major (axi-native RFC section 3.7).
+	 * @deprecated return the help from `run()`: `document(text)` writes text verbatim, and `result(value)`
+	 * encodes a value in `this.format`. Removed in a later major (axi-native RFC section 3.7).
 	 */
 	showHelp(): void
 	/**
-	 * Shows the cli version: plain text on stdout, as `--version` writes it.
+	 * Shows the cli version as plain text on stdout, as `--version` writes it.
 	 *
-	 * @deprecated the framework owns `--version` and answers it as plain text on stdout.
-	 * To answer with the version from `run()`, return it, for example `document(version)`.
-	 * It stays on `ui` in clibuilder 12 so existing commands keep working,
-	 * and is removed in a later major (axi-native RFC section 3.7).
+	 * @deprecated return the version from `run()`, for example `document(version)`.
+	 * Removed in a later major (axi-native RFC section 3.7).
 	 */
 	showVersion(): void
 }

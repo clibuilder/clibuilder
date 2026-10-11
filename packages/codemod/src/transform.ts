@@ -14,19 +14,21 @@ import {
 } from './rules.js'
 import { transformZod } from './zod.js'
 
-export type TransformOptions = {
-	/**
-	 * Add `.use(plugins())` to a `cli()` that sets `config`, instead of flagging it.
-	 * Use it when the CLI loads plugins from its config.
-	 */
-	readonly addPlugins?: boolean | undefined
-}
+export namespace transform {
+	export type Options = {
+		/**
+		 * Add `.use(plugins())` to a `cli()` that sets `config`, instead of flagging it.
+		 * Use it when the CLI loads plugins from its config.
+		 */
+		readonly addPlugins?: boolean | undefined
+	}
 
-export type TransformResult = {
-	readonly output: string
-	readonly findings: readonly Finding[]
-	/** Packages the output imports that the file's `package.json` must list. */
-	readonly dependencies: readonly string[]
+	export type Result = {
+		readonly output: string
+		readonly findings: readonly Finding[]
+		/** Packages the output imports that the file's `package.json` must list. */
+		readonly dependencies: readonly string[]
+	}
 }
 
 /**
@@ -34,7 +36,7 @@ export type TransformResult = {
  *
  * A file that imports nothing from `clibuilder` or `@clibuilder/*` is returned unchanged.
  */
-export function transform(source: string, fileName: string, options: TransformOptions = {}): TransformResult {
+export function transform(source: string, fileName: string, options: transform.Options = {}): transform.Result {
 	if (!source.includes('clibuilder')) return { output: source, findings: [], dependencies: [] }
 	const sourceFile = parse(source, fileName)
 	if (!importsClibuilder(sourceFile)) return { output: source, findings: [], dependencies: [] }

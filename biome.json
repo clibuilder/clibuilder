@@ -96,7 +96,7 @@
 				"packages/clibuilder/src/**",
 				"!packages/clibuilder/src/drivers/**",
 				"!packages/clibuilder/src/axi/**",
-				"!packages/clibuilder/src/compile_cache.ts",
+				"!packages/clibuilder/src/compile_cache_impl.ts",
 				"!packages/clibuilder/src/testing/**",
 				"!packages/clibuilder/src/**/*.spec.ts",
 				"!packages/clibuilder/src/state.unit.ts"

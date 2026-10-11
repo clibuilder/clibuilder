@@ -1,7 +1,7 @@
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { ctx, enableCompileCache } from './compile_cache.js'
+import { ctx, enableCompileCache } from './compile_cache_impl.js'
 
 const original = { ...ctx }
 

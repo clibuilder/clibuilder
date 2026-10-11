@@ -9,6 +9,7 @@ import { testCommand } from './testing/index.js'
 describe('clibuilder/axi', () => {
 	it('exports the value helpers, the result channel and the exit codes', () => {
 		expect(Object.keys(axi).sort()).toEqual([
+			'CliError',
 			'collapseHome',
 			'defaultTextLimit',
 			'document',
@@ -16,6 +17,7 @@ describe('clibuilder/axi', () => {
 			'exitCodes',
 			'fullOption',
 			'homeHeader',
+			'isCliError',
 			'orEmpty',
 			'result',
 			'truncateList',

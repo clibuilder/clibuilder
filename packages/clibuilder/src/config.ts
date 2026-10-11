@@ -101,6 +101,10 @@ export async function resolveConfig(
 	return { config: undefined, source, candidates }
 }
 
+/**
+ * Loads the config for `configName`: its value, or `undefined` when none is found.
+ * Use {@link resolveConfig} to also get where it came from.
+ */
 export async function loadConfig(
 	{
 		cwd,
@@ -128,6 +132,10 @@ export function describeConfigSource(source: ConfigSource) {
 	}
 }
 
+/**
+ * The file names searched for `configFileName`, in priority order.
+ * Each also has a dot-prefixed form unless the name already starts with a dot.
+ */
 export function getConfigFilenames(configFileName: string) {
 	const names = [
 		configFileName,
@@ -150,6 +158,9 @@ export function getConfigFilenames(configFileName: string) {
 	return configFileName.startsWith('.') ? names : names.flatMap((n) => [n, `.${n}`])
 }
 
+/**
+ * The {@link ConfigFormat} for a config file path, from its extension.
+ */
 export function getConfigFormat(configFilePath: string): ConfigFormat {
 	switch (extname(configFilePath).toLowerCase()) {
 		case '.json':

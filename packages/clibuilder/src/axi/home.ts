@@ -21,12 +21,20 @@ export function collapseHome(path: string, home: string = homedir()): string {
  * return result({ ...homeHeader({ description: 'Manage plugins' }), plugins })
  * ```
  */
-export function homeHeader(options: { description: string; bin?: string | undefined; home?: string | undefined }): {
-	bin: string
-	description: string
-} {
+export function homeHeader(options: homeHeader.Options): homeHeader.Result {
 	return {
 		bin: collapseHome(options.bin ?? process.argv[1] ?? '', options.home ?? homedir()),
 		description: options.description
 	}
+}
+
+export namespace homeHeader {
+	export type Options = {
+		description: string
+		/** Defaults to the running script, `process.argv[1]`. */
+		bin?: string | undefined
+		/** The home directory to collapse. Defaults to the user's. */
+		home?: string | undefined
+	}
+	export type Result = { bin: string; description: string }
 }
