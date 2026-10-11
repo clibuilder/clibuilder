@@ -5,17 +5,12 @@ export const ctx = {
 	platform: process.platform as string
 }
 
-/**
- * `darwin` and `win32` default to case-insensitive filesystems,
- * so a lookup for `foo.json` there should also match `FOO.JSON`.
- */
+// `darwin` and `win32` default to case-insensitive filesystems
 function isCaseInsensitiveFs() {
 	return ctx.platform === 'darwin' || ctx.platform === 'win32'
 }
 
-/**
- * Walks up from `cwd` and returns the path of the first ancestor directory containing `filename`.
- */
+/** Walks up from `cwd` and returns the path of the first ancestor directory containing `filename`. */
 export function findFileUp(cwd: string, filename: string) {
 	for (const dir of ancestors(cwd)) {
 		const filePath = join(dir, filename)
@@ -25,9 +20,6 @@ export function findFileUp(cwd: string, filename: string) {
 
 /**
  * Walks up from `cwd` and returns the path of the first file matching any of `filenames`.
- *
- * Each ancestor directory is read once and matched against every candidate,
- * so the cost is one `readdir` per directory instead of one walk per candidate.
  * The nearest directory wins; `filenames` order only breaks ties within a directory.
  */
 export function findAnyFileUp(cwd: string, filenames: string[]) {
@@ -52,10 +44,7 @@ function* ancestors(cwd: string) {
 	}
 }
 
-/**
- * Indexes the directory by entry name, adding a lower-cased key on case-insensitive
- * filesystems. An exact name always wins over a case-insensitive one.
- */
+// an exact name always wins over a lower-cased key on case-insensitive filesystems
 function readEntries(dir: string, caseInsensitive: boolean) {
 	let dirents: Dirent[]
 	try {

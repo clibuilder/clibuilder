@@ -397,9 +397,6 @@ function checkDeclarations(declarations: OptionDeclarations | undefined) {
 	}
 }
 
-/**
- * Throws if positionals are not allowed.
- */
 function checkPositional(config: { allowPositionals?: boolean | undefined }, value: string) {
 	if (config.allowPositionals === false) {
 		throw new ParseArgsError(`Unexpected positional argument '${value}'`, undefined, value, {
@@ -513,10 +510,6 @@ function convertBoolean(name: string, value: string | undefined, token: OptionTo
 	throw invalid(name, value, token, 'invalid-value', value)
 }
 
-// ---------------------------------------------------------------------------
-// Descriptors
-// ---------------------------------------------------------------------------
-
 /**
  * Where a descriptor value came from.
  * `label` names an array element as `name[index]`.
@@ -560,9 +553,6 @@ function quote(raw: string) {
 	return `'${raw}'`
 }
 
-/**
- * Describes what a descriptor expects, for error messages.
- */
 function describeExpected(data: Exclude<Data, { kind: 'array' | 'custom' | 'json' }>): string {
 	switch (data.kind) {
 		case 'string':

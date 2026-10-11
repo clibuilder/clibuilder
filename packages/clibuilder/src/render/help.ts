@@ -5,13 +5,7 @@ import { describeConstraint, takesValue } from '../descriptor.js'
 import type { AnyDescriptor, DescriptorData, StandardSchemaV1 } from '../t.js'
 import { wrap } from './wrap.js'
 
-/**
- * Renders a command's help text from its declaration.
- *
- * Pure: it takes a declaration and returns a string. Nothing here reaches a
- * logger, a filesystem or a process — deciding *when* to show help belongs to
- * `execution`, and writing it belongs to the ui.
- */
+// pure: a declaration in, a string out. Deciding when to show help and writing it belong elsewhere.
 
 const INDENT = 2
 const RIGHT_PADDING = 2
@@ -143,21 +137,14 @@ function formatKeyValue(key: string, value: cli.Command.Options.Entry) {
 	return formatOptionDescriptor(keyString, value.type, isRequired(value, false))
 }
 
-/**
- * Renders an option from its descriptor's introspection data:
- * `[--port <int 1..65535>]`, `[--tag <string>...]`, `[--dry]`,
- * without the brackets when it must be passed.
- */
+// `[--port <int 1..65535>]`, `[--tag <string>...]`, `[--dry]`; no brackets when it must be passed
 function formatOptionDescriptor(keys: string, descriptor: AnyDescriptor, required: boolean) {
 	const value = takesValue(descriptor) ? ` <${describeConstraint(descriptor)}>` : ''
 	const body = `${keys}${value}${descriptor.kind === 'array' ? '...' : ''}`
 	return required ? body : `[${body}]`
 }
 
-/**
- * Renders an argument from its descriptor's introspection data:
- * `<port: int 1..65535>`, `[name: string]`, `<files: string...>`.
- */
+// `<port: int 1..65535>`, `[name: string]`, `<files: string...>`
 function formatArgumentDescriptor(name: string, descriptor: AnyDescriptor) {
 	const body = `${name}: ${describeConstraint(descriptor)}${descriptor.kind === 'array' ? '...' : ''}`
 	return descriptor.isOptional ? `[${body}]` : `<${body}>`
@@ -170,10 +157,7 @@ function formatDescription(value: cli.Command.Options.Entry, conflicts: string[]
 	return `${description} (conflicts with ${conflicts.map((c) => (c.length === 1 ? `-${c}` : `--${c}`)).join(', ')})`
 }
 
-/**
- * The options `key` cannot be used with.
- * A conflict is enforced both ways, so it is listed on both sides even when only one declares it.
- */
+// a conflict is enforced both ways, so it is listed on both sides even when only one declares it
 function conflictsOf(key: string, options: cli.Command.Options) {
 	return Object.keys(options).filter(
 		(k) => k !== key && (options[key].conflicts?.includes(k) || options[k].conflicts?.includes(key))
@@ -197,20 +181,13 @@ function describeConfig(command: Command) {
 	return describeStandardConfig(command.config)
 }
 
-/**
- * Each example as its description, then the command line indented under it, verbatim.
- */
 function generateExamplesSection(command: Command) {
 	if (!command.examples || command.examples.length === 0) return ''
 	return `Examples:
 ${command.examples.map((e) => `  ${e.description}\n    ${e.command}`).join('\n')}`
 }
 
-/**
- * Describes a Standard Schema config from the JSON Schema of its input, the shape a config file is written in.
- * It is `undefined`, and the section omitted, when the vendor does not implement `~standard.jsonSchema`
- * or cannot convert this schema.
- */
+// undefined, and the section omitted, when the vendor does not implement `~standard.jsonSchema` or cannot convert the schema
 function describeStandardConfig(schema: StandardSchemaV1 | StandardJSONSchemaV1): string | undefined {
 	const jsonSchema = (schema as Partial<StandardJSONSchemaV1>)['~standard']?.jsonSchema
 	if (!jsonSchema) return undefined
@@ -221,10 +198,7 @@ function describeStandardConfig(schema: StandardSchemaV1 | StandardJSONSchemaV1)
 	}
 }
 
-/**
- * Renders a JSON Schema as a type literal, such as `{ a: string, b?: Array<{ d: string }> }`.
- * What it does not recognize is `unknown`.
- */
+// renders a type literal such as `{ a: string, b?: Array<{ d: string }> }`; what it does not recognize is `unknown`
 function describeJsonSchema(schema: Record<string, any>): string {
 	if (Array.isArray(schema.enum)) return schema.enum.map((v: unknown) => JSON.stringify(v)).join(' | ')
 	if ('const' in schema) return JSON.stringify(schema.const)
@@ -257,33 +231,23 @@ function describeJsonSchema(schema: Record<string, any>): string {
 }
 
 /**
- * A command's help as a value: what the text help is rendered from, for `--help` under `toon` and `json`
- * (axi-native RFC section 3.7).
- *
- * It carries no data the text help does not show. A key with nothing to say is left out.
+ * A command's help as a value, for `--help` under `toon` and `json` (axi-native RFC section 3.7).
+ * It carries no data the text help does not show; a key with nothing to say is left out.
  */
 export type HelpModel = {
-	/**
-	 * The command as it is invoked: the cli name, then each command name, such as `my-cli deploy`.
-	 */
+	/** The command as it is invoked, such as `my-cli deploy`. */
 	name: string
 	usage: string
 	description?: string
 	aliases?: string[]
-	/**
-	 * The sub-commands, each with its name and the first line of its description.
-	 */
+	/** The sub-commands, each with the first line of its description. */
 	commands?: HelpModel.CommandSummary[]
 	arguments?: HelpModel.Argument[]
 	options?: HelpModel.Option[]
-	/**
-	 * The type of the config, as the text help's `Config:` section shows it.
-	 */
+	/** The type of the config, as the text help's `Config:` section shows it. */
 	config?: string
 	examples?: { command: string; description: string }[]
-	/**
-	 * The options every command accepts, listed once.
-	 */
+	/** The options every command accepts, listed once. */
 	globalOptions?: HelpModel.Option[]
 }
 
@@ -291,8 +255,7 @@ export namespace HelpModel {
 	export type CommandSummary = { name: string; aliases?: string[]; description?: string }
 
 	/**
-	 * What an argument or option accepts.
-	 * `type` is the descriptor's kind; it is left out for a declaration without a type.
+	 * What an argument or option accepts. `type` is the descriptor's kind, left out for a declaration without one.
 	 * An array is described by its element, with `array: true`.
 	 */
 	export type Type = {
@@ -318,9 +281,7 @@ export namespace HelpModel {
 
 /**
  * Builds the structured help of `command`.
- *
- * @param globalOptions the base command's options, listed once under `globalOptions`.
- * The root command declares them as its own, so they are left out of its `options`.
+ * `globalOptions` are the base command's options, listed once under `globalOptions` and left out of the root's `options`.
  */
 export function generateHelpModel(cliName: string, command: Command, globalOptions: cli.Command.Options): HelpModel {
 	const model: HelpModel = {
@@ -378,9 +339,6 @@ function optionModels(options: cli.Command.Options | undefined, exclude: string[
 		})
 }
 
-/**
- * What a declaration accepts, from the same data the text help reads: its descriptor's introspection form.
- */
 function describeType(type: cli.Command.Type | undefined): HelpModel.Type {
 	return type ? describeData(type) : {}
 }

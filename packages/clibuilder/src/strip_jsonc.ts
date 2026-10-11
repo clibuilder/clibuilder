@@ -1,10 +1,7 @@
 /**
  * Turns JSONC into JSON that `JSON.parse` accepts.
- *
- * Comments, a leading BOM and trailing commas become spaces, so every other
- * character keeps its offset and `JSON.parse` error positions still point
- * into the original text. Newlines inside block comments are kept.
- * Throws on an unterminated string or block comment.
+ * Comments, a leading BOM and trailing commas become spaces, so `JSON.parse` error positions
+ * still point into the original text. Throws on an unterminated string or block comment.
  */
 export function stripJsonc(text: string): string {
 	const out = text.split('')

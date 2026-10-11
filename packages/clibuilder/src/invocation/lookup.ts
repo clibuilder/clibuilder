@@ -12,10 +12,7 @@ export namespace lookupCommand {
 			__?: string[] | undefined
 		} & Record<string, string[]>
 		errors: Error[]
-		/**
-		 * The matched command's declarations, with their raw input,
-		 * for `convertDescriptors()` to convert and check.
-		 */
+		/** The matched command's declarations with their raw input, for `convertDescriptors()`. */
 		descriptors: DescriptorInput[]
 	}
 	/**
@@ -58,14 +55,9 @@ export namespace lookupCommand {
 		/** @see Error.code */
 		code?: 'invalid-value'
 		key: string
-		/**
-		 * What was wrong, in the caller's terms.
-		 */
+		/** What was wrong, in the caller's terms. */
 		message: string
-		/**
-		 * The value as the caller typed it.
-		 * `undefined` when the option was given no value.
-		 */
+		/** The value as the caller typed it; `undefined` when the option was given no value. */
 		value: any
 		/**
 		 * The `kind` of the declaration's `t` descriptor.
@@ -77,13 +69,9 @@ export namespace lookupCommand {
 		 * Not set for the global `--format`.
 		 */
 		constraint?: string
-		/**
-		 * The values a `t.enum` declaration, or the global `--format`, accepts.
-		 */
+		/** The values a `t.enum` declaration, or the global `--format`, accepts. */
 		allowed?: readonly string[]
-		/**
-		 * For a `t.array` declaration, the index of the element that failed.
-		 */
+		/** For a `t.array` declaration, the index of the element that failed. */
 		index?: number
 	}
 	export type ExtraArguments = {
@@ -93,10 +81,7 @@ export namespace lookupCommand {
 		name: string
 		values: string[]
 	}
-	/**
-	 * Two options that declare a conflict were both passed.
-	 * `key` and `conflictsWith` are the keys as the caller typed them.
-	 */
+	/** Two options that declare a conflict were both passed; the keys are as the caller typed them. */
 	export type ConflictingOptions = {
 		type: 'conflicting-options'
 		/** @see Error.code */
@@ -143,23 +128,17 @@ function matchCommand(command: cli.Command, path: PathCursor): cli.Command {
 }
 
 type PathCursor = {
-	/**
-	 * The next token that may name a sub-command of `command`, or `undefined` when there is none.
-	 */
+	/** The next token that may name a sub-command of `command`, or `undefined` when there is none. */
 	peek(command: cli.Command): string | undefined
-	/**
-	 * Removes the token `peek()` returned: it names the matched command, so it is no positional.
-	 */
+	/** Removes the token `peek()` returned: it names the matched command, so it is no positional. */
 	consume(): void
 }
 
 /**
- * Walks the tokens that may name the command path, in command line order.
- *
- * They are the positionals before the first option, then the tokens after each global option
- * that the option does not take as its value (the base lookup knows its arity, #672).
- * The walk stops at the first option that is not global: a command's own option is only valid after the command.
- * A token after the terminator `--` is not walked, as it is not today.
+ * Walks the tokens that may name the command path: the positionals before the first option, then the tokens
+ * after each global option that the option does not take as its value (#672).
+ * It stops at the first non-global option, since a command's own option is only valid after the command.
+ * Tokens after `--` are not walked.
  */
 function createPathCursor(rawArgs: parseArgv.Result, fallback: cli.Command | undefined): PathCursor {
 	const occurrences = optionOccurrences.get(rawArgs) ?? []
@@ -195,12 +174,8 @@ function createPathCursor(rawArgs: parseArgv.Result, fallback: cli.Command | und
 
 /**
  * Gives each option the following tokens its declared type takes, and the rest back to the positionals.
- *
- * The parser attaches every token after an option to it, because it does not know the
- * option's type. As `args-minus` reads it, a flag takes none of them, and any other option
- * takes one unless it has an inline value; an array takes one per occurrence.
- * An option the command does not declare keeps them all, so the invalid key is reported
- * with what the caller passed.
+ * The parser attaches every token after an option to it, as it does not know the type.
+ * An option the command does not declare keeps them all, so the invalid key is reported with what the caller passed.
  */
 function assignOptionValues(
 	rawArgs: parseArgv.Result,
@@ -284,7 +259,7 @@ function fillInputOptions(state: State) {
 	for (const key of Object.keys(state.rawArgs)) {
 		if (key === '_') continue
 		if (/^-/.test(key)) {
-			// This is the case when user pass in with more then 3 dashes (`---abc`).
+			// three or more dashes (`---abc`)
 			state.errors.push({ type: 'invalid-key', key })
 			continue
 		}
@@ -303,10 +278,7 @@ function fillInputOptions(state: State) {
 	return state
 }
 
-/**
- * Reports each pair of passed options where either side declares the other in `conflicts`.
- * Runs before the defaults are filled, so a default never counts as passed.
- */
+// runs before the defaults are filled, so a default never counts as passed
 function checkConflicts(state: State) {
 	const options = state.command.options
 	if (!options) return state
@@ -329,11 +301,8 @@ function checkConflicts(state: State) {
 	return state
 }
 
-/**
- * Hands every option to `convertDescriptors()` with its argv tokens,
- * whether it was passed or not: `args-minus` applies its default or reports it missing.
- * An option already reported as given more than once is left out.
- */
+// every option goes to `convertDescriptors()`, passed or not: `args-minus` applies its default or reports it missing.
+// An option already reported as given more than once is left out.
 function collectDescriptorOptions(state: State, occurrences: DescriptorOccurrence[] | undefined) {
 	const options = state.command.options ?? {}
 	for (const name of Object.keys(options)) {
@@ -355,10 +324,7 @@ function collectDescriptorOptions(state: State, occurrences: DescriptorOccurrenc
 	return state
 }
 
-/**
- * Finds the option a key refers to, by name or by alias.
- * Returns an empty tuple when the command declares no such option.
- */
+/** Finds the option a key refers to, by name or alias; an empty tuple when the command declares none. */
 export function lookupOptions(command: cli.Command, key: string): [string, cli.Command.Options.Entry] | [] {
 	const opts = command.options
 	if (!opts) return []

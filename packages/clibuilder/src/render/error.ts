@@ -1,13 +1,7 @@
 import type { cli } from '../cli.js'
 import type { lookupCommand } from '../invocation/lookup.js'
 
-/**
- * Describes one `lookupCommand` error in the terms the caller used:
- * which option or argument was wrong, and what was expected.
- *
- * @param command the command the error was found on, used to tell an
- * argument name apart from an option name.
- */
+/** Describes one `lookupCommand` error in the terms the caller used. `command` tells an argument name from an option name. */
 export function formatLookupError(error: lookupCommand.Error, command: cli.Command): string {
 	switch (error.type) {
 		case 'invalid-key':
@@ -30,10 +24,6 @@ export function formatLookupError(error: lookupCommand.Error, command: cli.Comma
 	}
 }
 
-/**
- * Names a key as an argument or an option of `command`.
- * A key that is neither is named as `fallback` says.
- */
 function formatKey(key: string, command: cli.Command, fallback: 'argument' | 'option' = 'option') {
 	if (command.arguments?.some((a) => a.name === key)) return `argument <${key}>`
 	if (fallback === 'argument' && !command.options?.[key]) return `argument <${key}>`

@@ -10,9 +10,7 @@ import type { lookupCommand } from './lookup.js'
  */
 export type DescriptorOccurrence = { key: string; tokens: string[] }
 
-/**
- * A declaration of the matched command, with its raw input.
- */
+/** A declaration of the matched command, with its raw input. */
 export type DescriptorInput =
 	| {
 			type: 'option'
@@ -27,11 +25,7 @@ const declarations = new WeakMap<object, OptionDeclaration>()
 
 /**
  * Converts and checks every declaration of the matched command through `args-minus`,
- * filling `result.args` and adding a usage error to `result.errors` for each declaration that fails.
- *
- * An option is parsed by `parseArgsAsync` from its own argv tokens, so `args-minus` tokenizes it and
- * decides its value, its default, whether it is required, and its checks.
- * An argument has no option token, so each of its values is given to `parseArgsAsync` inline.
+ * filling `result.args` and adding a usage error to `result.errors` for each one that fails.
  * Declarations run one at a time, in order, because a converter or check may be async.
  *
  * A converter that throws anything but a plain `Error`, a check that throws,
@@ -48,10 +42,8 @@ export async function convertDescriptors(result: lookupCommand.Result) {
 }
 
 /**
- * Converts and checks the declarations as `convertDescriptors()` does, synchronously.
- *
- * It is for declarations known to take no async converter or check, such as the global options of the base command.
- * A converter or check that returns a promise throws.
+ * `convertDescriptors()`, synchronously: for declarations known to take no async converter or check,
+ * such as the base command's global options. A converter or check that returns a promise throws.
  */
 export function convertDescriptorsSync(result: lookupCommand.Result) {
 	for (const input of result.descriptors) {
@@ -64,9 +56,8 @@ export function convertDescriptorsSync(result: lookupCommand.Result) {
 }
 
 /**
- * The values of the matched command's own flags named `names`, such as `help` and `version`,
- * converted ahead of the other declarations so they are answered before any async converter or check runs.
- * A flag with a check is left for `convertDescriptors()`.
+ * The values of the matched command's own flags named `names` (`help`, `version`), converted ahead of the others
+ * so they are answered before any async converter or check runs. A flag with a check is left for `convertDescriptors()`.
  */
 export function peekFlags(result: lookupCommand.Result, names: string[]): Record<string, unknown> {
 	const peek: lookupCommand.Result = {
@@ -131,9 +122,7 @@ function toUsageError(e: ParseArgsError, input: DescriptorInput): lookupCommand.
 	}
 }
 
-/**
- * The option key as the caller typed it (an alias, say), for the occurrence that failed.
- */
+// the key as the caller typed it (an alias, say), for the occurrence that failed
 function keyOf(e: ParseArgsError, input: DescriptorInput) {
 	if (input.type === 'argument') return input.name
 	const o = input.occurrences

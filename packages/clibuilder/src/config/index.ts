@@ -19,8 +19,7 @@ export {
 export namespace config {
 	export type Options = {
 		/**
-		 * The name the config files are looked up by, such as `<name>.json` or `.<name>rc`,
-		 * and the `package.json` property.
+		 * The name the config files (`<name>.json`, `.<name>rc`) and the `package.json` property are looked up by.
 		 * Defaults to the cli's name.
 		 */
 		name?: string | undefined

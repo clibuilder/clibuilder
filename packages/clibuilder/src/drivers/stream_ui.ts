@@ -7,13 +7,10 @@ import type { Sinks } from './streams.js'
 type Method = 'debug' | 'info' | 'warn' | 'error' | 'answer'
 
 /**
- * Which stream each `ui` method writes to, per output mode.
- *
- * Internal: a cli picks a preset with `cli({ output })`, never a table (axi-native RFC section 3.10).
- * `console` follows standard-log's console reporter: `info` and `debug` on stdout
- * (`console.debug` is `console.log` in Node), `warn` and `error` on stderr.
- * `axi` treats every `ui` call as a diagnostic, so all of them go to stderr.
- * `answer` is `showHelp` and `showVersion`: `--help` and `--version` are answers, on stdout in both.
+ * Which stream each `ui` method writes to, per output mode. Internal: a cli picks a preset
+ * with `cli({ output })`, never a table (axi-native RFC section 3.10).
+ * `console` follows standard-log's console reporter; `axi` treats every `ui` call as a diagnostic.
+ * `answer` is `showHelp` and `showVersion`, which are answers on stdout in both.
  */
 export const routing: Record<Output, Record<Method, keyof Sinks>> = {
 	console: { debug: 'stdout', info: 'stdout', warn: 'stderr', error: 'stderr', answer: 'stdout' },
@@ -25,11 +22,8 @@ const levels: Record<Method, number> = { error: 1, warn: 1, info: 1, answer: 1, 
 const styles: Partial<Record<Method, 'red' | 'yellow'>> = { error: 'red', warn: 'yellow' }
 
 /**
- * The built-in ui: writes each message as one line to the stream its method routes to.
- *
- * A line is the arguments joined by spaces, objects through `util.inspect`,
- * with no printf-style placeholders. This is the line `testCommand`'s `messages` has always held.
- * `error` is red and `warn` is yellow when the stream allows colour (see `shouldColour`).
+ * The built-in ui: one line per message, the arguments joined by spaces and objects through `util.inspect`,
+ * with no printf-style placeholders. `error` is red and `warn` yellow when the stream allows colour.
  */
 export function createStreamUI(sinks: Sinks, output: Output): createUI.UI {
 	let displayLevel: DisplayLevel = 'info'

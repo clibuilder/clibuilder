@@ -12,22 +12,12 @@ export const ctx = {
 }
 
 /**
- * How a config file's content is parsed.
- *
- * - `jsonc`: JSON with comments and trailing commas (`.json`, `.jsonc`).
- * - `yaml`: `.yml` / `.yaml`.
- * - `module`: `.js` / `.cjs` / `.mjs`, loaded through `import()`.
- * - `unknown`: an extension-less candidate such as `.<name>rc`,
- *   whose content decides the format.
+ * How a config file's content is parsed: `jsonc` (`.json`, `.jsonc`), `yaml`, `module` (loaded through `import()`),
+ * or `unknown` for an extension-less candidate such as `.<name>rc`, whose content decides.
  */
 export type ConfigFormat = 'jsonc' | 'yaml' | 'module' | 'unknown'
 
-/**
- * Where a config value came from.
- *
- * `type: 'none'` means nothing matched, which is distinct from a config file
- * that exists and holds `undefined`.
- */
+/** Where a config value came from. `none` means nothing matched, not a file that holds `undefined`. */
 export type ConfigSource =
 	| { type: 'file'; path: string; format: ConfigFormat }
 	| { type: 'package.json'; path: string; property: string }
@@ -35,21 +25,15 @@ export type ConfigSource =
 
 export type ConfigLookupResult = {
 	source: ConfigSource
-	/**
-	 * The file names searched for, in priority order, at every directory
-	 * from `cwd` up to the filesystem root.
-	 */
+	/** The file names searched for, in priority order, at every directory from `cwd` up to the root. */
 	candidates: string[]
 }
 
 export type ConfigLoadResult = ConfigLookupResult & { config: any }
 
 /**
- * Finds where the config for `configName` would be read from, without reading it.
- *
- * Prefers a config file in the nearest ancestor directory. Falls back to the
- * `configName` property of the nearest `package.json`, and reports
- * `{ type: 'none' }` when neither exists.
+ * Finds where the config for `configName` would be read from, without reading it:
+ * a config file in the nearest ancestor directory, else the `configName` property of the nearest `package.json`.
  */
 export function lookupConfig({ cwd }: { cwd: string }, configName: string): ConfigLookupResult {
 	const candidates = getConfigFilenames(configName)
@@ -66,12 +50,7 @@ export function lookupConfig({ cwd }: { cwd: string }, configName: string): Conf
 	return { source: { type: 'none' }, candidates }
 }
 
-/**
- * Loads the config for `configName` along with where it came from.
- *
- * This is the provenance-carrying form of {@link loadConfig}; use it when the
- * caller needs to report or act on the origin of the config, not just its value.
- */
+/** Loads the config for `configName` along with where it came from. */
 export async function resolveConfig(
 	{
 		cwd,
@@ -118,9 +97,7 @@ export async function loadConfig(
 	return (await resolveConfig({ cwd, ui }, configName)).config
 }
 
-/**
- * Renders a {@link ConfigSource} as a single human-readable line.
- */
+/** Renders a {@link ConfigSource} as a single human-readable line. */
 export function describeConfigSource(source: ConfigSource) {
 	switch (source.type) {
 		case 'file':
@@ -158,9 +135,7 @@ export function getConfigFilenames(configFileName: string) {
 	return configFileName.startsWith('.') ? names : names.flatMap((n) => [n, `.${n}`])
 }
 
-/**
- * The {@link ConfigFormat} for a config file path, from its extension.
- */
+/** The {@link ConfigFormat} for a config file path, from its extension. */
 export function getConfigFormat(configFilePath: string): ConfigFormat {
 	switch (extname(configFilePath).toLowerCase()) {
 		case '.json':
@@ -180,10 +155,8 @@ export function getConfigFormat(configFilePath: string): ConfigFormat {
 }
 
 /**
- * Reads and parses a single config file, dispatching on its extension.
- *
- * An extension-less file has its format inferred from its content, trying the
- * same order the candidate list implies: JSON(C), then YAML, then module.
+ * Reads and parses a config file by its extension.
+ * An extension-less file is tried as JSON(C), then YAML, then module.
  */
 export async function readConfigFile(configFilePath: string) {
 	const format = getConfigFormat(configFilePath)
@@ -216,10 +189,7 @@ async function readModuleConfig(configFilePath: string) {
 	return m.default
 }
 
-/**
- * `JSON.parse` throws on a JS module or a YAML list, which the format-inference
- * fallback above relies on.
- */
+// throws on a JS module or a YAML list, which the format-inference fallback relies on
 function parseJsoncOrThrow(content: string, configFilePath: string) {
 	try {
 		return JSON.parse(stripJsonc(content))

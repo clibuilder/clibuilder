@@ -1,9 +1,6 @@
 import { homedir } from 'node:os'
 
-/**
- * Shortens a path under the home directory to `~/...`: the same file for fewer tokens, and no user
- * name in the output.
- */
+/** Shortens a path under the home directory to `~/...`: fewer tokens, and no user name in the output. */
 export function collapseHome(path: string, home: string = homedir()): string {
 	const rest = path.slice(home.length)
 	if (!home || !path.startsWith(home) || (rest !== '' && rest[0] !== '/' && rest[0] !== '\\')) return path

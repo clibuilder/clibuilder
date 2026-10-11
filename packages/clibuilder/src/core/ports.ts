@@ -1,10 +1,6 @@
 /**
  * Interfaces the framework declares and its outer layers implement.
- *
- * They live here, apart from `../cli.ts`, so a module that only needs to *say
- * something* does not depend on the entry point that builds an application.
- * Nothing in this file imports anything — that is the property that makes it
- * safe for any layer to depend on.
+ * This file imports nothing, so any layer may depend on it without depending on `../cli.ts`.
  */
 
 /** How much the cli's `ui` shows; each level includes the ones before it. */
@@ -34,29 +30,19 @@ export type UI = {
 	showVersion(): void
 }
 
-/**
- * The two streams a cli writes to.
- * `process.stdout` and `process.stderr` by default.
- */
+/** The two streams a cli writes to: `process.stdout` and `process.stderr` by default. */
 export type Streams = {
 	stdout: WritableStream
 	stderr: WritableStream
 }
 
-/**
- * The part of a Node.js writable stream a cli uses.
- * It is declared here so the published types do not need `@types/node`.
- */
+/** The part of a Node.js writable stream a cli uses, declared so the published types do not need `@types/node`. */
 export type WritableStream = {
 	write(chunk: string): unknown
-	/**
-	 * Colour is off unless this is `true`.
-	 */
+	/** Colour is off unless this is `true`. */
 	isTTY?: boolean
 	hasColors?(env?: Record<string, string | undefined>): boolean
 }
 
-/**
- * How a cli writes its output: `'axi'` (default) keeps stdout for answers, `'console'` keeps the clibuilder 11 layout.
- */
+/** How a cli writes its output: `'axi'` (default) keeps stdout for answers, `'console'` the clibuilder 11 layout. */
 export type Output = 'axi' | 'console'
