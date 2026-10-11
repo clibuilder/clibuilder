@@ -1,4 +1,4 @@
-import type { CollectionKey, cli, RegistryKey, ValueKey, z } from 'clibuilder'
+import type { CollectionKey, cli, RegistryKey, ValueKey } from 'clibuilder'
 
 /**
  * What a plugin's `activate(context)` receives.
@@ -9,7 +9,7 @@ import type { CollectionKey, cli, RegistryKey, ValueKey, z } from 'clibuilder'
 export type PluginActivationContext = {
 	addCommand<
 		Context extends Record<string, any>,
-		ConfigType extends z.ZodTypeAny,
+		ConfigType extends ConfigSchema,
 		AName extends string,
 		A extends cli.Command.Argument<AName>[],
 		OName extends string,
@@ -21,3 +21,9 @@ export type PluginActivationContext = {
 	has(key: RegistryKey<unknown>): boolean
 	readonly host: { readonly name: string; readonly version: string }
 }
+
+/**
+ * A command's config schema, as `clibuilder` declares it.
+ * Read from `cli.Command` so the published declarations depend on `clibuilder` alone.
+ */
+type ConfigSchema = NonNullable<cli.Command['config']>

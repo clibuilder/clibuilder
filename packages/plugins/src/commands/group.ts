@@ -1,4 +1,4 @@
-import { command } from 'clibuilder'
+import { type cli, command } from 'clibuilder'
 import { listPluginsCommand } from './list.js'
 import { searchPluginsCommand } from './search.js'
 
@@ -16,7 +16,7 @@ export namespace pluginsCommand {
  *
  * For a host that wants the commands without the plugin loading `plugins()` does.
  */
-export function pluginsCommand({ keywords }: pluginsCommand.Options) {
+export function pluginsCommand({ keywords }: pluginsCommand.Options): cli.Command {
 	return command({
 		name: 'plugins',
 		description: 'Commands related to the plugins of the cli',

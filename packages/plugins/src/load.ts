@@ -19,7 +19,10 @@ export namespace loadPlugins {
  * so the command order is the same on every run.
  * A package that fails to import, or exports no `activate`, is reported and skipped.
  */
-export async function loadPlugins({ cwd, ui, registry, host }: loadPlugins.Context, pluginNames: string[]) {
+export async function loadPlugins(
+	{ cwd, ui, registry, host }: loadPlugins.Context,
+	pluginNames: string[]
+): Promise<cli.Command[]> {
 	const entries = await Promise.all(
 		pluginNames.map(async (name) => {
 			ui.debug('loading plugin', name)
@@ -28,7 +31,7 @@ export async function loadPlugins({ cwd, ui, registry, host }: loadPlugins.Conte
 		})
 	)
 
-	const commands: cli.Command<any, any>[] = []
+	const commands: cli.Command[] = []
 	for (const { name, pluginModule } of entries) {
 		if (!isValidPlugin(pluginModule)) {
 			ui.warn('not a valid plugin', name)

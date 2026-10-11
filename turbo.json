@@ -3,7 +3,7 @@
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
-			"inputs": ["package.json", "tsconfig.*", "vitest.config.ts", "ts/**/*.tsx?", "src/**/*.tsx?"],
+			"inputs": ["package.json", "tsconfig.*", "tsdown.config.ts", "vitest.config.ts", "ts/**/*.tsx?", "src/**/*.tsx?"],
 			"outputs": ["cjs/**", "esm/**"]
 		},
 		"clean": {
