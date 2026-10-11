@@ -18,3 +18,15 @@ describe('exit()', () => {
 		expect(true).toBe(true)
 	})
 })
+
+describe('writeStdout()', () => {
+	it('writes the text to stdout as given', () => {
+		const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+		try {
+			context().writeStdout('1.0.0\n')
+			expect(write).toHaveBeenCalledWith('1.0.0\n')
+		} finally {
+			write.mockRestore()
+		}
+	})
+})
