@@ -195,6 +195,9 @@ Plugins are defined inside the config:
 }
 ```
 
+Plugin support is moving to [`@clibuilder/plugins`](https://github.com/clibuilder/clibuilder/tree/main/packages/plugins), which a CLI adds with
+`.use(plugins())`. Both ways work in v11; v12 keeps only `@clibuilder/plugins`.
+
 ## Defining Plugins
 
 `clibuilder` allows you to build plugins to add commands to your application.

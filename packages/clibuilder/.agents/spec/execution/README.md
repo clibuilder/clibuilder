@@ -40,7 +40,7 @@ to `presentation/`. What the built-in commands *do* belongs to
 
 **Key terms.** The **base command** is the invisible root carrying the global
 options; every application has one. **Assembly** is everything before `parse`;
-**pending work** is the config and plugin loading started during assembly that
+**pending work** is the config loading started during assembly that
 `parse` must await. A **command instance** is a matched declaration bound to its
 `ui`, `config`, `keywords`, `cwd`, and `registry`.
 
@@ -223,6 +223,49 @@ wanting one format everywhere declares it on `cli()` and leaves commands bare.
 | the handler throws | the failure propagates to the caller — nothing is printed and no exit code is recorded |
 | the handler calls its `ui`'s `showHelp` | the matched command's help is shown; help is the handler's choice, not the framework's |
 
+### UC7 — `.use()`: extend the application
+
+**Actor / goal.** An extension author — `@clibuilder/plugins` is the first —
+wants to add commands and registry entries to an application they did not
+write, before `parse` picks the command to run, without core knowing what the
+extension is for.
+
+| | |
+| --- | --- |
+| Trigger | `.use(extension)`, then `parse(argv)` |
+| Inputs | an extension: a function of an `ExtensionContext` — `host`, `cwd`, `ui`, `registry`, `addCommand`, `resolveConfig` |
+| Outcome | the extension's commands are registered after the host's own, and its registry entries are visible to every command |
+
+The extensions run **on the first `parse` that needs the command tree**, not at
+`.use()`: the host's own commands are registered by then, so an extension's
+commands come after them, and constructing the application does no work on the
+extension's behalf. They run **in the order `.use()` was called, each awaited
+before the next**, so the command order is the same on every run — the rule
+`loadPlugins` follows for plugins.
+
+**v11 coexistence.** The extension `@clibuilder/plugins` returns carries a
+marker. When one is used, assembly's config-driven plugin loading and its
+automatic `plugins` group (UC1) are skipped, so nothing loads twice. Both, and
+the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
+
+**Extensions.**
+
+| Cause | Outcome |
+| --- | --- |
+| `.use()` is called | `parse` is available, because an extension may supply every command |
+| several extensions are used | they run in the order `.use()` was called, each awaited before the next |
+| an extension adds a command | it comes after the host's own `.command()` and `.default()` commands |
+| the invocation is a bare `--version` | it is answered without running the extensions |
+| the invocation is `--help`, or names a command | the extensions run first, because the answer needs the command tree |
+| `parse` is called again | the extensions do not run again |
+| an extension throws | `parse` rejects with that error |
+| an extension registers a value | a command reads it through `this.registry` |
+| an extension logs through its `ui` | the message follows `--silent`, `--verbose`, and `--debug-cli` like the framework's own |
+| the application sets no `config` | `resolveConfig` reports no source and no config |
+| the application sets `config` | `resolveConfig` resolves it with where it came from |
+| the `@clibuilder/plugins` extension is used | the config-driven plugin loading and the automatic `plugins` group are skipped |
+| another extension is used | the config-driven plugin loading and the automatic `plugins` group stay |
+
 **Surface trace.**
 
 | Element | Required by | May not combine with |
@@ -235,6 +278,7 @@ wanting one format everywhere declares it on `cli()` and leaves commands bare.
 | a command's `onUsageError` | UC6 — the per-command handler; its declaration is `command-definition/`'s | — (the nearest one in the chain is the only one called) |
 | `cli.UsageError`, `cli.UsageErrorHandler` | UC6 — the handler's error entries and its signature, shared by both places it is declared | — |
 | `.command` / `.default` | UC2 | `.default` with itself — offered once |
+| `.use`, `Extension`, `ExtensionContext` | UC7 | — |
 | `parse` | UC3 | — |
 | `exitCodes` | UC4 | — |
 | `CliError` and its options | UC4 | — |
@@ -270,7 +314,7 @@ graph TD
   UIL --> UIW[showHelp and showVersion are bound to this command, so it calls them with no arguments]
   LC -- no --> NOLOAD[nothing to load; plugins come from keywords alone]
   LC -- yes --> LOAD[start loading config as pending work] --> HASP{config names plugins?}
-  HASP -- yes --> LP[load them and register their commands]
+  HASP -- yes --> LP[load them and register their commands, on the first parse — sub-graph G]
   HASP -- no --> NOP2[no plugins to load]
   REG[".command / .default"] --> ADJ{command is named?}
   ADJ -- yes --> PAR[set its parent]
@@ -385,6 +429,24 @@ The cache holds the **promise**, not the resolved value, which is what makes it
 correct for a config that is legitimately falsy as well as for concurrent
 callers.
 
+### Sub-graph G — extensions (`.use()`), entered by UC7
+
+```mermaid
+graph TD
+  GP[parse argv] --> GGF[global flags answered: silent, verbose, debug-cli, show-config]
+  GGF --> GV1{"v11: is a @clibuilder/plugins extension used?"}
+  GV1 -- yes --> GSKIP[drop the automatic plugins group; load no config plugins]
+  GV1 -- no --> GCFG[load the plugins the config names]
+  GSKIP --> GBV
+  GCFG --> GBV{is the invocation a bare --version?}
+  GBV -- yes --> GVER[answer the version — sub-graph B]
+  GBV -- no --> GRAN{have the extensions run?}
+  GRAN -- yes --> GLOOK
+  GRAN -- no --> GEACH[run each extension in use order, awaiting each]
+  GEACH --> GADD[its commands join after the host's own] --> GLOOK[match a command — sub-graph B]
+  GEACH -- throws --> GREJ[parse rejects]
+```
+
 ## Scenario map
 
 ### UC1 — `cli`: assemble an application
@@ -485,3 +547,24 @@ callers.
 | propagate to the caller | the handler throws | `a handler that throws propagates to the caller` |
 | the matched command's help is shown | the handler calls showHelp | `a handler that asks for help gets the matched command's help` |
 | no help is shown | the handler reports and returns | `a handler that does not ask for help shows none` |
+
+### UC7 — `.use()`
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| `parse` is available | an application with only an extension | `an application with an extension can parse` |
+| run each extension in use order, awaiting each | two extensions, the first asynchronous | `extensions run in use order, each awaited before the next` |
+| its commands join after the host's own | a host command and an extension command | `an extension's commands come after the host's own` |
+| answer the version | a bare `--version` | `a bare version is answered without running the extensions` |
+| is the invocation a bare --version? no | a command followed by `--version` | `version after a command runs the extensions` |
+| run each extension | `--help` | `help lists the commands extensions add` |
+| have the extensions run? yes | `parse` called twice | `extensions run once however often parse is called` |
+| parse rejects | an extension that throws | `an error thrown by an extension rejects parse` |
+| the context | any extension | `an extension is told its host and working directory` |
+| the context | an extension registering a value | `an extension shares the registry with the commands` |
+| the context | an extension logging at debug | `an extension logs through the framework ui` |
+| the context | no `config` | `resolveConfig reports no source when the application sets no config` |
+| the context | `config` set | `resolveConfig resolves the application config and its source` |
+| drop the automatic plugins group; load no config plugins | the `@clibuilder/plugins` extension | `the plugins extension replaces the config-driven plugin loading` |
+| drop the automatic plugins group | the `@clibuilder/plugins` extension | `the plugins extension replaces the automatic plugins group` |
+| load the plugins the config names | another extension | `another extension leaves the config-driven plugin loading in place` |

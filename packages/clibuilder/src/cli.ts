@@ -1,9 +1,10 @@
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
+import type { ConfigLoadResult } from './config.js'
 import type { UI } from './core/ports.js'
 import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
-import type { CollectionKey, Registry, RegistryKey, ValueKey } from './plugins/registry.js'
+import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
@@ -100,6 +101,17 @@ export namespace cli {
 			OName extends string,
 			O extends Command.Options<OName>
 		>(this: T, command: Command<Context, ConfigType, A, O>): T & Executable
+		/**
+		 * Adds an extension that contributes commands and registry entries
+		 * before `parse()` picks the command to run.
+		 *
+		 * Extensions run in the order `use()` was called, each awaited before the next,
+		 * on the first `parse()` that needs the command tree.
+		 * A bare `--version` is answered without running them.
+		 *
+		 * @see Extension
+		 */
+		use<T>(this: T, extension: Extension): T & Executable
 	}
 
 	export type Executable = {
@@ -250,4 +262,28 @@ export type PluginActivationContext = {
 	get<T>(key: CollectionKey<T>): readonly { readonly source: string; readonly value: T }[]
 	has(key: RegistryKey<unknown>): boolean
 	readonly host: { readonly name: string; readonly version: string }
+}
+
+/**
+ * Extends a cli before `parse()` picks the command to run.
+ *
+ * It is how `@clibuilder/plugins` loads plugins, and how any other package
+ * can add commands or share values through the registry.
+ */
+export type Extension = (context: ExtensionContext) => void | Promise<void>
+
+export type ExtensionContext = {
+	readonly host: { readonly name: string; readonly version: string }
+	readonly cwd: string
+	readonly ui: UI
+	readonly registry: RegistryOwner
+	/**
+	 * Adds a command after the host's own `.command()` and `.default()` commands.
+	 */
+	addCommand(command: cli.Command<any, any, any, any>): void
+	/**
+	 * The cli's config and where it came from.
+	 * `source.type` is `'none'` when the cli sets no `config`.
+	 */
+	resolveConfig(): Promise<ConfigLoadResult>
 }

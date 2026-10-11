@@ -373,3 +373,85 @@ Feature: Execution
     When an invocation with an unknown option reaches it
     Then the output is that one line and carries no usage line
 
+  # ── UC7 — .use(): extend the application ──
+
+  Scenario: an application with an extension can parse
+    Given an application with no command of its own and an extension that adds one
+    When the extension's command is invoked
+    Then it runs and its value is returned
+
+  Scenario: extensions run in use order, each awaited before the next
+    Given two extensions, the first finishing asynchronously
+    When the application is invoked
+    Then the first finishes before the second starts
+
+  Scenario: an extension's commands come after the host's own
+    Given a host command and an extension that adds a command
+    When help is asked for
+    Then the host's command is listed before the extension's
+
+  Scenario: a bare version is answered without running the extensions
+    Given an application with an extension
+    When it is invoked with only --version
+    Then the version is shown
+    And the extension did not run
+
+  Scenario: version after a command runs the extensions
+    Given an application with an extension that adds a command
+    When that command is invoked with --version
+    Then the extension ran
+
+  Scenario: help lists the commands extensions add
+    Given an extension that adds a command
+    When help is asked for
+    Then the help lists that command
+
+  Scenario: extensions run once however often parse is called
+    Given an application with an extension
+    When parse is called twice
+    Then the extension ran once
+
+  Scenario: an error thrown by an extension rejects parse
+    Given an extension that throws
+    When the application is invoked
+    Then parse rejects with that error
+
+  Scenario: an extension is told its host and working directory
+    Given an extension that records its context
+    When the application is invoked
+    Then the context names the application and its version, and the working directory
+
+  Scenario: an extension shares the registry with the commands
+    Given an extension that registers a value
+    When a command reads it through this.registry
+    Then the command sees the value
+
+  Scenario: an extension logs through the framework ui
+    Given an extension that logs a debug message
+    When the application is invoked with --debug-cli
+    Then the message is shown
+
+  Scenario: resolveConfig reports no source when the application sets no config
+    Given an application without config
+    When an extension resolves the config
+    Then there is no config and the source is none
+
+  Scenario: resolveConfig resolves the application config and its source
+    Given an application with config and a config file
+    When an extension resolves the config
+    Then it receives the file's content and that the source is a file
+
+  Scenario: the plugins extension replaces the config-driven plugin loading
+    Given an application with config naming a plugin, and the @clibuilder/plugins extension
+    When the plugin's command is invoked
+    Then it is an unknown command and the CLI exits with the usage code
+
+  Scenario: the plugins extension replaces the automatic plugins group
+    Given an application with config and the @clibuilder/plugins extension
+    When the built-in plugins group is invoked
+    Then the CLI exits with the usage code
+
+  Scenario: another extension leaves the config-driven plugin loading in place
+    Given an application with config naming a plugin, and some other extension
+    When help is asked for
+    Then the help lists the plugins group and the plugin's command
