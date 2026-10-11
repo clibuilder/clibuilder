@@ -1,5 +1,15 @@
 # @clibuilder/axi
 
+## 0.2.1
+
+### Patch Changes
+
+- 8cf4fc8: `describeUsageError` reads whether an argument declared with clibuilder's `t` is optional, as it does for a zod argument.
+- Updated dependencies [8cf4fc8]
+- Updated dependencies [16562e2]
+- Updated dependencies [791e8ca]
+  - clibuilder@11.5.0
+
 ## 0.2.0
 
 ### Minor Changes

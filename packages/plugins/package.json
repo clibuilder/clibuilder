@@ -1,6 +1,6 @@
 {
 	"name": "@clibuilder/plugins",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Plugin loading and the plugins command group for clibuilder CLIs",
 	"keywords": [
 		"cli",
@@ -73,7 +73,7 @@
 		"vitest": "^4.1.11"
 	},
 	"peerDependencies": {
-		"clibuilder": "^11.5.0 || ^12.0.0"
+		"clibuilder": "^11.5.0"
 	},
 	"publishConfig": {
 		"access": "public"

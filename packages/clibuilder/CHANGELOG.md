@@ -1,5 +1,33 @@
 # Change Log
 
+## 11.5.0
+
+### Minor Changes
+
+- 8cf4fc8: Re-export the `t` option type descriptors from `args-minus`, with the descriptor types (`Descriptor`, `AnyDescriptor`, `OutputOf`, `DescriptorData`, `DescriptorKind` and more).
+  An argument or option can declare its `type` with `t` instead of `z`, and `run()` gets the descriptor's exact output type.
+  Each declaration is parsed by its own type, so a command can mix `z` and `t`; `z` declarations behave as before.
+  
+  Declarations with `t` are converted and checked by `args-minus` (`parseArgsAsync`), so converters and checks may be async.
+  A failure is an `invalid-value` usage error carrying the new `keyKind`, `constraint`, `allowed` (for `t.enum`) and `index` (for `t.array`) fields;
+  a required `t` option that is missing is a `missing-argument` error naming the option.
+  
+  Help shows a `t` declaration's constraint, e.g. `[--port <int 1..65535>]`.
+  
+  `UsageError` `expect-single` gains `keyKind`, the kind string of the option. Its `keyType` zod object is deprecated and is `undefined` for a `t` option.
+- 16562e2: Add `cli().use(extension)`: a general hook that adds commands and registry entries before `parse()` picks the command to run. The extension receives an `ExtensionContext` with `host`, `cwd`, `ui`, `registry`, `addCommand` and `resolveConfig()`.
+  
+  Extensions run in the order `use()` was called, each awaited before the next, on the first `parse()` that needs the command tree; their commands come after the CLI's own. A bare `--version` is answered without running them. `use()` makes `parse()` available.
+  
+  This is the hook `@clibuilder/plugins` plugs into. When its `plugins()` extension is used, `clibuilder` skips its own config-driven plugin loading and its automatic `plugins` group, so nothing loads twice. Without it, plugin loading, `keywords` and the automatic `plugins` group work as before; they move out of core in v12.
+
+### Patch Changes
+
+- 791e8ca: Answer `--version` or `-v` given alone before the config loads and plugins activate, so a broken config or a hanging plugin no longer fails or delays it. The version is written to stdout as plain text. Any other invocation, such as `cli cmd --version`, is unchanged.
+- Updated dependencies [8cf4fc8]
+- Updated dependencies [bcc756d]
+  - args-minus@0.2.0
+
 ## 11.4.0
 
 ### Minor Changes
