@@ -134,6 +134,8 @@ inputs they gave, or to be told precisely what was wrong.
 | --- | --- |
 | a display-level flag is given | the level is set and the flag is removed before the command is matched, so it is never reported as unknown |
 | `--show-config` on an application that takes config | the resolved config and its source are reported, and no command runs |
+| `--show-config` on an application that takes config, in `axi` output | it is an answer: written to stdout whatever the display level, in the resolved format, with nothing on stderr from it, exit 0. `text` is the `console` rendering (`config: <source>` then the config as indented JSON); `toon` and `json` encode `{ source, path, property, config }`, where `source` is `file`, `package.json` or `none`, `path` and `property` are present only for the sources that have them, and `config` is `null` when nothing matched |
+| `--show-config` on an application that takes config, in `console` output | the same lines as the `axi` `text` answer, written through `ui.info`, as in v11 |
 | `--show-config` on an application that takes no config | the option was never declared, so it is a usage error like any other unknown option |
 | `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the `use()` extensions run, so a broken config or a hanging extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
@@ -503,6 +505,8 @@ graph TD
 | level debug, flag removed | `--verbose` | `verbose raises the log level and is not reported as unknown` |
 | level trace, flag removed | `--debug-cli` | `debug-cli turns on framework logging and is not reported as unknown` |
 | report the config and its source | `--show-config`, config enabled | `show-config reports the resolved config and where it came from` |
+| report the config and its source | `--show-config`, config enabled, output axi | `in axi output show-config is an answer on stdout in the resolved format` |
+| report the config and its source | `--show-config`, config enabled, output console | `in console output show-config is written through ui.info` |
 | show-config given and config enabled? — no | `--show-config`, config not enabled | `show-config on an application without config is an unknown option` |
 | write the version to stdout; stop without awaiting pending work | `--version` alone, config loader rejects or never resolves | `version asked for alone is answered before config and extensions load` |
 | write the version to stdout; stop without awaiting pending work | `-v` alone, the default command declares `-v` | `the short version flag alone is the version even when a command declares it` |

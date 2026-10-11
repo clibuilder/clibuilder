@@ -106,6 +106,17 @@ Feature: Execution
     Then the resolved config and its source are reported
     And no command runs
 
+  Scenario: in axi output show-config is an answer on stdout in the resolved format
+    Given an application that takes configuration, with output axi
+    When it is invoked asking to show the config, with a format of toon, json or text, toon by default
+    Then stdout holds the source, the path and the config, encoded in that format, and text holds the console lines
+    And nothing from it is written to stderr, even with --silent the answer is written, and the cli exits with the success code
+
+  Scenario: in console output show-config is written through ui.info
+    Given an application that takes configuration, with output console
+    When it is invoked asking to show the config
+    Then the source line and the config are written through ui.info, as in v11
+
   Scenario: show-config on an application without config is an unknown option
     Given an application that takes no configuration
     When it is invoked asking to show the config

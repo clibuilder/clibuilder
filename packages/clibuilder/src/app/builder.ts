@@ -1,7 +1,7 @@
 import { getBaseCommand, yieldToGlobalFormat } from '../builtin/base_command.js'
 import type { cli, Extension, ExtensionContext } from '../cli.js'
 import type { Command } from '../command/internal.js'
-import { describeConfigSource } from '../config.js'
+import { type ConfigSource, describeConfigSource } from '../config.js'
 import type { UI } from '../core/ports.js'
 import type { Context } from '../drivers/context.js'
 import { parseArgv } from '../invocation/argv.js'
@@ -150,7 +150,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.ui.displayLevel = s.displayLevel
 		context.ui.dump()
 
-		if (s.configName && globals['show-config']) return showConfig(s.configName)
+		if (s.configName && globals['show-config']) return showConfig(s.configName, globals.format)
 
 		await extend()
 
@@ -242,12 +242,23 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	 * The resolution itself is `context.resolveConfig`, the same call the cli
 	 * already makes to load its config, so this reports what the cli actually
 	 * uses rather than re-deriving it.
+	 *
+	 * In `axi` output it is an answer on stdout, whatever the display level: `text` is the
+	 * `console` rendering, and `toon` and `json` encode the source and the config.
+	 * In `console` output it is written through `ui.info`, as before.
 	 */
-	async function showConfig(configName: string) {
+	async function showConfig(configName: string, format: cli.Format) {
 		const { config, source } = await context.resolveConfig(configName)
+		const lines = [`config: ${describeConfigSource(source)}`]
+		if (source.type !== 'none') lines.push(JSON.stringify(config, undefined, 2))
+		if (output === 'axi') {
+			context.writeStdout(
+				format === 'text' ? `${lines.join('\n')}\n` : `${encode(configReport(source, config), format)}\n`
+			)
+			return
+		}
 		const ui = createCommandUI(context, s, s.command)
-		ui.info(`config: ${describeConfigSource(source)}`)
-		if (source.type !== 'none') ui.info(JSON.stringify(config, undefined, 2))
+		for (const line of lines) ui.info(line)
 	}
 
 	/**
@@ -354,6 +365,22 @@ function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors
 		;(errors[key] ??= []).push(String(issue.message))
 	}
 	return errors
+}
+
+/**
+ * The resolved config as a value: where it came from, then the config itself.
+ * `path` and `property` are present only for the sources that have them,
+ * and `config` is `null` when nothing matched.
+ */
+function configReport(source: ConfigSource, config: unknown) {
+	switch (source.type) {
+		case 'file':
+			return { source: source.type, path: source.path, config: config ?? null }
+		case 'package.json':
+			return { source: source.type, path: source.path, property: source.property, config: config ?? null }
+		default:
+			return { source: source.type, config: null }
+	}
 }
 
 /**
