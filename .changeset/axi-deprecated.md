@@ -1,5 +1,5 @@
 ---
-'@clibuilder/axi': major
+'@clibuilder/axi': minor
 ---
 
 `@clibuilder/axi` is folded into `clibuilder` 12, and every export is now `@deprecated` with its replacement.

@@ -21,7 +21,7 @@ compact encoding that costs an agent fewer tokens to read. `json` is compact JSO
 :::caution[v12, unreleased: folded into `clibuilder`]
 In `clibuilder` 12 the output, error, usage-error and format parts are built into core, and the value
 helpers (truncation, counts, `orEmpty` and the home helpers) move to the
-[`clibuilder/axi`](/clibuilder/api/axi/) subpath. The next major of `@clibuilder/axi` needs
+[`clibuilder/axi`](/clibuilder/api/axi/) subpath. `@clibuilder/axi` 0.3.0 needs
 `clibuilder` 12, re-exports those helpers from `clibuilder/axi`, and marks every export
 `@deprecated`. See [Moving to `clibuilder` 12](#moving-to-clibuilder-12). The package is not deprecated
 on npm until v12 ships, so keep using it with `clibuilder` 11. Source:
@@ -34,7 +34,7 @@ on npm until v12 ships, so keep using it with `clibuilder` 11. Source:
 npm install @clibuilder/axi clibuilder
 ```
 
-`clibuilder` `^11.5.0` is a peer dependency of 0.2.1. The next major, unreleased, needs `clibuilder`
+`clibuilder` `^11.5.0` is a peer dependency of 0.2.1. Version 0.3.0, unreleased, needs `clibuilder`
 `^12`. Node.js 20.19 or newer is required.
 
 ## Example
