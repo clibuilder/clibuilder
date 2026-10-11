@@ -1,6 +1,6 @@
-import { execFileSync, spawn } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import { EventEmitter } from 'node:events'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -113,7 +113,7 @@ describe('EPIPE on the process stdout', () => {
 	const esm = pathToFileURL(resolve(import.meta.dirname, '../../esm/index.js')).href
 
 	/**
-	 * Runs a cli that writes many lines to stdout, reads its first chunk, then closes the reader.
+	 * Runs a cli that writes many lines to stdout piped into `head -c 1`, which exits after one byte.
 	 */
 	function runPiped(cliOptions: string) {
 		const dir = mkdtempSync(join(tmpdir(), 'clibuilder-epipe-'))
@@ -132,29 +132,37 @@ const app = cli({ name: 'app', version: '1.0.0', ${cliOptions} }).default({
 await app.parse(process.argv)
 `
 		)
-		return new Promise<{ code: number | null; stderr: string }>((done, fail) => {
-			const child = spawn(process.execPath, [script], { stdio: ['ignore', 'pipe', 'pipe'] })
-			let stderr = ''
-			child.stderr.on('data', (d) => {
-				stderr += d
-			})
-			child.stdout.once('data', () => child.stdout.destroy())
-			child.on('error', fail)
-			child.on('close', (code) => done({ code, stderr }))
-		})
+		// a shell pipe into `head`, the case the handler is for: a real OS pipe whose reader exits early.
+		// A pipe from `spawn` is a socket pair on macOS, where the closed reader reports ENOTCONN instead.
+		const q = (path: string) => `'${path.replace(/'/g, `'\\''`)}'`
+		const errFile = join(dir, 'stderr.txt')
+		const codeFile = join(dir, 'code.txt')
+		execFileSync('sh', [
+			'-c',
+			`(${q(process.execPath)} ${q(script)} 2>${q(errFile)}; echo $? >${q(codeFile)}) | head -c 1 >/dev/null`
+		])
+		return { code: Number(readFileSync(codeFile, 'utf8').trim()), stderr: readFileSync(errFile, 'utf8') }
 	}
 
-	it('exits 0 quietly when the reader closes early, with the default ui', async () => {
-		const { code, stderr } = await runPiped('')
-		expect(stderr).toBe('')
-		expect(code).toBe(0)
-	}, 30_000)
+	it.skipIf(process.platform === 'win32')(
+		'exits 0 quietly when the reader closes early, with the default ui',
+		() => {
+			const { code, stderr } = runPiped('')
+			expect(stderr).toBe('')
+			expect(code).toBe(0)
+		},
+		30_000
+	)
 
-	it('exits 0 quietly when the reader closes early, with the built-in ui', async () => {
-		const { code, stderr } = await runPiped('streams: { stdout: process.stdout, stderr: process.stderr }')
-		expect(stderr).toBe('')
-		expect(code).toBe(0)
-	}, 30_000)
+	it.skipIf(process.platform === 'win32')(
+		'exits 0 quietly when the reader closes early, with the built-in ui',
+		() => {
+			const { code, stderr } = runPiped('streams: { stdout: process.stdout, stderr: process.stderr }')
+			expect(stderr).toBe('')
+			expect(code).toBe(0)
+		},
+		30_000
+	)
 })
 
 describe('the ui engine a real process gets', () => {

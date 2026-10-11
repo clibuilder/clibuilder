@@ -156,6 +156,8 @@ Feature: Testing support
     Then it is marked deprecated, pointing at clibuilder/testing
     And it is the same function clibuilder/testing exports
 
+  # ── testCommand over in-memory streams ──
+
   Scenario: messages written to stdout and stderr are captured in the order they were said
     Given a command that says things at levels routed to stdout and to stderr
     When it is exercised through the test helper
