@@ -188,7 +188,8 @@ describe.each([
 			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(['pkg-x']) } })
 			.parse(['node', 'app', 'list', '--format', 'json'])
 		expect(process.exitCode).toBeUndefined()
-		expect(stdout.text + stderr.text).toContain('"plugins": [\n    "pkg-x"\n  ]')
+		// logged as indented json in console output, printed as the compact answer under output axi
+		expect(stdout.text + stderr.text).toMatch(/"plugins": ?\[\s*"pkg-x"\s*\]/)
 	})
 
 	it('reports the builtin plugins list in the default format when --format is not passed', async () => {
@@ -197,7 +198,7 @@ describe.each([
 			.command({ ...listPluginsCommand, context: { findByKeywords: () => Promise.resolve(['pkg-x']) } })
 			.parse(['node', 'app', 'list'])
 		const out = stdout.text + stderr.text
-		if (defaultFormat === 'json') expect(out).toContain('"plugins": [')
+		if (defaultFormat === 'json') expect(out).toMatch(/"plugins": ?\[/)
 		if (defaultFormat === 'toon') expect(out).toContain('plugins[1]: pkg-x')
 		if (defaultFormat === 'text') expect(out).toContain('found one plugin: pkg-x')
 	})

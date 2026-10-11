@@ -366,9 +366,10 @@ describe('the plugins commands and the global --format of clibuilder', () => {
 	] as const)('give way to the global --format under %s, without a conflict', async (_, options) => {
 		const help = await run(options, ['plugins', 'list', '--help'])
 		expect(help).not.toContain('--format')
-		const out = await run(options, ['plugins', 'search', '--format', 'json', '--fields', 'bogus'])
+		const out = await run(options, ['plugins', 'list', '--format', 'json'])
 		expect(process.exitCode).toBeUndefined()
-		expect(out).toContain('error: unknown value for --fields: bogus')
+		// the installed plugins, or the empty state naming them, reported in json
+		expect(out).toMatch(/^\{\s*"(plugins|empty)"/)
 	})
 
 	test('keep their own --format in the default console output', async () => {
@@ -391,6 +392,90 @@ describe('the plugins commands and the global --format of clibuilder', () => {
 			})
 			.parse(['node', 'app', 'list', '--format', 'json'])
 		expect(reported).toEqual([undefined])
-		expect(stdout.text).toContain('"plugins": [\n    "pkg-x"\n  ]')
+		expect(stdout.text).toContain('{"plugins":["pkg-x"]')
+	})
+})
+
+describe('plugins list and search under output axi', () => {
+	function memoryStream() {
+		const stream = new Writable({
+			decodeStrings: false,
+			write(chunk, _encoding, callback) {
+				stream.text += chunk
+				callback()
+			}
+		}) as Writable & { text: string }
+		stream.text = ''
+		return stream
+	}
+
+	async function run(command: any, args: string, options: Partial<cli.Options> = { output: 'axi' }) {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		const value = await cli({ name: 'app', version: '1.0.0', streams: { stdout, stderr }, ...options })
+			.command(command)
+			.parse(['node', 'app', ...args.split(' ')])
+		return { value, stdout: stdout.text, stderr: stderr.text, exitCode: process.exitCode }
+	}
+	const list = (installed: string[]) => ({
+		...listPluginsCommand(['kw-a']),
+		context: { findByKeywords: () => Promise.resolve(installed) }
+	})
+	const search = (found: string[]) => ({
+		...searchPluginsCommand(['kw-a']),
+		context: { searchByKeywords: () => Promise.resolve(found) }
+	})
+
+	afterEach(() => {
+		process.exitCode = undefined
+	})
+
+	test.each([
+		['toon', 'plugins[2]: pkg-x,pkg-y\nhelp[1]: Run `plugins search` to find more plugins on npm\n'],
+		['json', '{"plugins":["pkg-x","pkg-y"],"help":["Run `plugins search` to find more plugins on npm"]}\n'],
+		[
+			'text',
+			'found the following plugins:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `plugins search` to find more plugins on npm\n'
+		]
+	] as const)('plugins list prints the installed plugins once on stdout in %s', async (format, expected) => {
+		const r = await run(list(['pkg-x', 'pkg-y']), `list --format ${format}`)
+		expect(r.stdout).toBe(expected)
+		expect(r.stderr).toBe('')
+		expect(r.value).toEqual({ plugins: ['pkg-x', 'pkg-y'] })
+	})
+
+	test('plugins list states nothing installed as an empty state', async () => {
+		const r = await run(list([]), 'list --format json')
+		expect(r.stdout).toBe(
+			'{"empty":"0 installed plugins found with keywords: kw-a","help":["Run `plugins search` to find plugins to install"]}\n'
+		)
+		expect(r.exitCode).toBeUndefined()
+	})
+
+	test('plugins search prints the found packages once on stdout', async () => {
+		const r = await run(search(['pkg-x']), 'search')
+		expect(r.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `plugins list` to see which of them are installed\n')
+		expect(r.stderr).toBe('')
+	})
+
+	test('plugins search states nothing found as an empty state', async () => {
+		const r = await run(search([]), 'search')
+		expect(r.stdout).toBe('empty: "0 packages found with keywords: kw-a"\n')
+	})
+
+	test('plugins search reports an unknown --fields value as a usage error on stdout', async () => {
+		const r = await run(search([]), 'search --fields bogus --format json')
+		expect(JSON.parse(r.stdout)).toMatchObject({ error: 'unknown value for --fields: bogus', code: 'invalid-value' })
+		expect(r.stderr).toBe('')
+		expect(r.exitCode).toBe(2)
+	})
+
+	test('keep the console output and return values unchanged', async () => {
+		const listed = await run(list(['pkg-x']), 'list', {})
+		expect(listed.stdout).toBe('plugins[1]: pkg-x\nhelp[1]: Run `plugins search` to find more plugins on npm\n')
+		expect(listed.value).toEqual(['pkg-x'])
+		const searched = await run(search(['pkg-x']), 'search', {})
+		expect(searched.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `plugins list` to see which of them are installed\n')
+		expect(searched.value).toBeUndefined()
 	})
 })

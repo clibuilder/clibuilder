@@ -1,8 +1,10 @@
 import { command } from '../../command/define.js'
+import { empty, result } from '../../render/answer.js'
 import {
 	formatOption,
 	type OutputFormat,
 	type OutputUI,
+	proseLines,
 	reportProse,
 	toonArray,
 	toonHelp
@@ -17,6 +19,8 @@ export const listPluginsCommand = command({
 	context: { findByKeywords },
 	async run(args) {
 		const plugins = await this.context.findByKeywords(this.keywords, this)
+		// under `output: 'axi'` the report is the answer: returned, and printed once on stdout by the framework
+		if (this.output === 'axi') return answerPlugins(plugins, this.keywords)
 		// `args.format` is unset when the global `--format` is active: the local option gives way to it
 		reportPlugins(this.ui, args.format ?? this.format, plugins, this.keywords)
 		// the found names are the command's return value as well as its output: a cli
@@ -24,6 +28,27 @@ export const listPluginsCommand = command({
 		return plugins
 	}
 })
+
+/**
+ * The installed plugins as the answer under `output: 'axi'`, in the shape {@link reportPlugins} logs:
+ * `plugins` with a next step, prose under `--format text`, and an explicit empty state.
+ */
+function answerPlugins(plugins: string[], keywords: string[]) {
+	if (plugins.length === 0) {
+		return empty(`0 installed plugins found with keywords: ${keywords.join(', ')}`, {
+			help: 'Run `plugins search` to find plugins to install'
+		})
+	}
+	return result(
+		{ plugins },
+		{
+			help: 'Run `plugins search` to find more plugins on npm',
+			render: {
+				text: (v) => proseLines({ noun: 'plugin', plural: 'plugins' }, v.plugins, (p) => p, keywords).join('\n')
+			}
+		}
+	)
+}
 
 /**
  * Renders the installed plugins in the caller's chosen format.

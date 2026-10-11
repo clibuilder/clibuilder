@@ -10,6 +10,7 @@ import { parseArgv } from '../invocation/argv.js'
 import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
+import { answerValue, printAnswer } from '../render/answer.js'
 import { encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
 import type { StandardSchemaV1 } from '../t.js'
@@ -39,6 +40,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	// context.ui.displayLevel = 'trace'
 	const s = state(options)
 	const format = options.format ?? 'toon'
+	const output = options.output ?? 'console'
 	if (!formats.includes(format)) {
 		throw new TypeError(`cli({ format }) must be one of ${formats.join(', ')}, received ${String(format)}`)
 	}
@@ -207,7 +209,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			}
 			s.config = config
 		}
-		const commandInstance = createCommandInstance(context, s, command, registry, globals.format)
+		const commandInstance = createCommandInstance(context, s, command, registry, globals.format, output)
 		if (!commandInstance.run) {
 			// a command without `run` is a group: invoked bare, it is missing its
 			// sub command, so it is a usage error (#609). `--help` is handled above.
@@ -215,7 +217,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			return exit(exitCodes.usage)
 		}
 		try {
-			return await commandInstance.run(args as any)
+			return answer(await commandInstance.run(args as any), globals.format)
 		} catch (e) {
 			// a command signals failure by throwing `CliError`. Anything else is a
 			// defect in the command and keeps propagating to the caller.
@@ -250,7 +252,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		ui: { error(...args: any[]): void; debug(...args: any[]): void }
 	) {
 		if (isReportedCliError(e)) return
-		if (options.output === 'axi') {
+		if (output === 'axi') {
 			// read field by field: a `CliError` from an older copy of clibuilder has no `code` or `details`
 			const report = errorOutput({ message: e.message, code: e.code ?? 'error', details: e.details, help: e.help })
 			context.writeStdout(`${encode(report, format)}\n`)
@@ -259,6 +261,19 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		}
 		ui.error(e.message)
 		for (const h of e.help) ui.error(h)
+	}
+
+	/**
+	 * Prints what `run()` returned, once, as the answer on stdout in `axi` output (axi-native RFC section 3.5).
+	 * In `console` output nothing is printed, as before.
+	 * Either way `parse()` resolves to the value: the one `result()`, `document()` or `empty()` wraps, else the returned value.
+	 */
+	function answer(returned: unknown, format: cli.Format) {
+		if (output === 'axi') {
+			const text = printAnswer(returned, format)
+			if (text !== undefined) context.writeStdout(text)
+		}
+		return answerValue(returned)
 	}
 
 	function exit(code: number) {
@@ -362,13 +377,15 @@ function createCommandInstance(
 	state: state.Result,
 	command: cli.Command,
 	registry: ReturnType<typeof createRegistry>,
-	format: cli.Format = 'toon'
+	format: cli.Format = 'toon',
+	output: cli.Output = 'console'
 ) {
 	return {
 		...command,
 		run: (command as any).run,
 		ui: createCommandUI(ctx, state, command),
 		format,
+		output,
 		config: state.config,
 		keywords: state.keywords,
 		cwd: ctx.cwd,

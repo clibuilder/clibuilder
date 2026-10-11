@@ -213,6 +213,21 @@ and exits with code `2` rather than quietly falling back to the default.
 [global `--format`](/clibuilder/api/cli/#the-global---format-option). The sub-commands then drop
 their own `--format` and report in the global one, so its default is the CLI's `format`.
 
+**Unreleased:** with `cli({ output: 'axi' })`, the sub-commands return their report as the
+[answer](/clibuilder/api/cli/#the-result-channel), and the CLI prints it once on stdout. `--format json`
+then carries the `help` list too, and nothing installed or found is an empty state:
+
+```sh
+$ my-cli plugins list --format json
+{"plugins":["my-cli-plugin"],"help":["Run `plugins search` to find more plugins on npm"]}
+
+$ my-cli plugins list
+empty: "0 installed plugins found with keywords: my-cli-plugin"
+help[1]: Run `plugins search` to find plugins to install
+```
+
+An unknown `--fields` value is then an error with code `invalid-value` and exit code `2`.
+
 Neither sub-command installs anything or edits your config. Adopting a plugin stays a deliberate,
 two-step act:
 

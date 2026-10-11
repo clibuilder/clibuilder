@@ -108,6 +108,7 @@ what to do if there are none.
 | the reader asked for JSON | the payload alone, with no trailing help line, so a `jq` consumer gets only what it asked for |
 | the reader asked for text | count-dependent prose, which is what makes it read as English |
 | the caller embeds the command | the found names are its return value as well as its output |
+| the application runs with `output: 'axi'` | nothing goes through `ui`: the command returns the report as its answer, which the framework prints once on stdout — `result({ plugins }, { help })` with prose rendered under `text`, or `empty(...)` naming the keywords when nothing is installed ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.5). `parse` resolves to `{ plugins }`, or to the empty message |
 
 ### UC3 — `plugins search`: find plugins on npm
 
@@ -129,6 +130,7 @@ not installed.
 | `--fields` names something unrecognized | it is reported with guidance and nothing is searched — silently narrowing the result is worse than an error |
 | `--fields name` | accepted as a no-op, since the name is the row's identity and is always present |
 | nothing is found | the keywords are named rather than an empty array printed |
+| the application runs with `output: 'axi'` | nothing goes through `ui`: the command returns the report as its answer, printed once on stdout — `result({ packages }, { help })` with prose rendered under `text`, or `empty(...)` naming the keywords. An unrecognized `--fields` is a `CliError`, code `invalid-value`, exit 2 |
 
 ### UC4 — `plugins`: group the plugin commands
 
@@ -260,6 +262,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | the names are also the command's return value | any | `the found names are the command's return value as well as its output` |
 | name list, alias ls | any | `plugins list can be invoked as ls` |
 | no fields option | any | `plugins list declares no fields option` |
+| return the report as the answer, printed once on stdout | `output: 'axi'`, each format, nothing installed | `under output axi the plugins commands return their report as the answer` |
 | findByKeywords declared as its context | `plugins list` | `the discovery call is declared as context so a test can substitute it` |
 
 ### UC3 — `plugins search`
@@ -277,6 +280,7 @@ Declaring no `run` is what makes the bare group show help — but the showing is
 | name the keywords searched; no help line | nothing found, default format | `no packages found names the keywords searched rather than printing an empty list` |
 | the names alone | JSON requested, no extra fields | `JSON output without extra fields carries the names alone` |
 | the names alone | JSON requested, nothing found | `JSON output from search reports nothing found in the same shape as a full result` |
+| return the report as the answer; an unknown `--fields` is a usage error on stdout | `output: 'axi'` | `under output axi the plugins commands return their report as the answer` |
 | the full records | JSON requested, keywords requested | `JSON output with keywords carries the full records` |
 | count-dependent prose | text requested, reporting search results | `text output describes the packages found in prose` |
 

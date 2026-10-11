@@ -51,6 +51,14 @@ Feature: Built-in commands
     Then their own format option is dropped instead of conflicting, and their help does not list it
     And they report in this.format
 
+  Scenario: under output axi the plugins commands return their report as the answer
+    Given an application with output axi
+    When plugins list or plugins search is run, in each format
+    Then nothing is written through ui, and stdout holds the report once: the names with a help line, prose under text
+    And nothing installed or found is an empty state naming the keywords, exit 0
+    And an unrecognized fields value is an invalid-value error on stdout, exit 2
+    And in the default console output the report and the return value are unchanged
+
   Scenario: the plugins commands keep their own format option otherwise
     Given an application in console output with no format
     When plugins list or plugins search is run with --format

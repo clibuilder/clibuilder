@@ -62,8 +62,10 @@ $ my-cli list --format yaml   # a usage error, exit code 2
 `args.format` is typed `'toon' | 'json' | 'text' | undefined`, and an unknown
 value is rejected by `clibuilder` before `run` is called.
 
-`result()` returns the value it wrote, so a test can assert on the command's
-return value. Pass a writer to capture the output instead of writing to stdout:
+`result()` returns the value it wrote for `run()` to return, so a test can
+assert on what `parse()` resolves to. With clibuilder 11.6 or later the value
+comes back marked as already written, so a CLI with `cli({ output: 'axi' })`,
+which prints what `run()` returns, prints it once. Pass a writer to capture the output instead of writing to stdout:
 
 ```ts
 const output = createOutput(args.format, { stdout: { write: (chunk) => chunks.push(chunk) } })

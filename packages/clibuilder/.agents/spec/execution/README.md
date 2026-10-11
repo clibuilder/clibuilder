@@ -149,7 +149,8 @@ inputs they gave, or to be told precisely what was wrong.
 | any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
 | the matched command declares a config schema and the config fails it | each failing field is printed, help is shown, and the CLI exits with the error code |
 | the matched command declares no config schema | no validation runs and the command is reached directly |
-| the matched command's `run` returns | its value is returned from `parse` |
+| the matched command's `run` returns | its value is returned from `parse`: the value `result()`, `document()` or `empty()` wraps, else the returned value itself. In `console` output (the default) nothing is printed for it, as before |
+| the matched command's `run` returns, in `axi` output | the returned value is the answer, printed once on stdout in the resolved format, nothing on stderr ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.5). `undefined` prints nothing. A string, bare or from `document()`, is written verbatim, ending on one newline. An object is encoded; an array or a scalar is encoded under the `result` key, so every format reads one object and `help` has a place beside it. `result(value, { help, render })` adds `help` as the last key (omitted when empty) and a renderer for the format replaces the encoder, written verbatim and followed by the encoded `help` after a blank line. `empty(message, { help })` is encoded as `empty: <message>`, exit 0. An answer marked as already written (by `@clibuilder/axi`'s `output.result()`) prints nothing more |
 | the matched command has no `run` | help is shown and the CLI exits with the usage code — a group command is not a runnable command, so invoking it bare is missing its sub-command ([#609](https://github.com/clibuilder/clibuilder/issues/609)). This includes an application with no default command. `--help` on a group is answered earlier and exits with success |
 | `run` throws a `CliError`, in `console` output (the default) | its message and help lines are printed through `ui.error` and the CLI exits with the error's own code |
 | `run` throws a `CliError`, in `axi` output | the report is encoded once on stdout in the resolved format (the caller's `--format`, else the CLI's), nothing is written to stderr for it, a debugging copy is a `debug` line, and the CLI exits with the error's own code |
@@ -316,6 +317,8 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `cli.Options.format`, `cli.Format` | UC3 — the CLI's default format; setting it turns on the global `--format` | — |
 | the global `--format`, `this.format` | UC3 — under `output: 'axi'` or `cli({ format })` | a command's own `format` option — a startup error |
 | `isCliError` | UC4 | — |
+| `result`, `document`, `empty`, `Answer`, `Renderer` | UC3 — the result channel, printed under `output: 'axi'`; the tagged answers are recognized by a `Symbol.for` key, so across copies of clibuilder | — |
+| `this.output` | UC3 — the cli's output mode, `'console'` by default | — |
 | `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
 | `context().createCommandUI` | UC2 — each command gets its own ui before it runs | — |
 
@@ -556,6 +559,16 @@ graph TD
 | a bad `--format` value | `--format yaml` | `a bad format value is a usage error reported in the default format` |
 | a command's own `format` option | the global `--format` active | `a command declaring its own format option fails the cli at startup` |
 | encode in the resolved format | `run` throws `CliError`, `axi` output, `--format json` | `in axi output a CliError is rendered in the format of the invocation` |
+| print the returned value once on stdout | `run` returns a value, `axi` output, each format | `in axi output a value returned from run is printed once in the resolved format` |
+| print nothing | `run` returns `undefined`, `axi` output | `in axi output undefined prints nothing` |
+| write verbatim | `run` returns a string, `axi` output | `in axi output a returned string is written verbatim` |
+| wrap under `result` | `run` returns an array or a scalar, `axi` output | `in axi output an array or a scalar is encoded under the result key` |
+| `help[N]` inside the result, renderer verbatim | `run` returns `result(value, { help, render })` | `result adds next steps and per-format renderers` |
+| write verbatim | `run` returns `document(content)` | `document writes its content verbatim` |
+| `empty: <message>`, exit 0 | `run` returns `empty(message)` | `empty is a success with an explicit empty state` |
+| print nothing more | `run` returns an answer already written | `an answer already written is not printed again` |
+| resolve to the value | any of the above | `parse resolves to the returned value` |
+| unchanged: nothing printed | `run` returns a value, `console` output | `in console output a returned value is not printed` |
 | propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |
 
 ### UC4 — `CliError` and the exit codes

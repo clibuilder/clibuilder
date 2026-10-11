@@ -156,7 +156,8 @@ describe('streams and output', () => {
 		const stdout = memoryStream()
 		const stderr = memoryStream()
 		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app'])
-		expect(stdout.text).toBe('')
+		// only the answer, the returned value, is on stdout
+		expect(stdout.text).toBe('result\n')
 		expect(stderr.text).toBe('info\nwarn\nerror\n')
 	})
 

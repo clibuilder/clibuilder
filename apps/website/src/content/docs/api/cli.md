@@ -85,8 +85,9 @@ await cli({ name: 'app', version: '1.0.0', streams: { stdout: capture, stderr: p
 With `'axi'`, stdout is left for answers, so an agent or a script reading it never gets diagnostics
 mixed in. With `'axi'`, a `CliError` thrown from `run()` is also an answer: it is rendered once on
 stdout in the CLI's `format`, and nothing is written to stderr for it (see
-[Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)). Returned values
-and usage errors move to stdout in later releases, and `'axi'` becomes the default in v12. Both modes
+[Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output-axi)). So is a value
+returned from `run()`: it is printed once on stdout (see [The result channel](#the-result-channel)).
+Usage errors move to stdout in a later release, and `'axi'` becomes the default in v12. Both modes
 are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
 
 When you pass `streams` or set `output: 'axi'`, the CLI uses its built-in UI:
@@ -176,6 +177,72 @@ This includes `formatOption` and `defineFormatOption()` from
 [`@clibuilder/axi`](/clibuilder/packages/axi/#the-global---format-option). The built-in
 `plugins list` and `plugins search` read `this.format` and do not conflict. Source:
 [axi-native section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#34---format-is-not-first-class-6394).
+
+## The result channel
+
+:::caution[Unreleased]
+The result channel, `result()`, `document()`, `empty()` and `this.output` are on `main` for the next
+`clibuilder` 11 minor, which is not published yet.
+:::
+
+With `output: 'axi'`, `run()` returns the answer and the CLI prints it: once, on stdout, in
+[`this.format`](#the-global---format-option), with nothing on stderr. `parse()` still resolves to the
+value, so tests and programmatic callers see no change. With the default `output: 'console'`, nothing
+is printed for a returned value, as before.
+
+```ts
+import { cli, document, empty, result } from 'clibuilder'
+
+cli({ name: 'app', version: '1.0.0', output: 'axi' })
+  .command({
+    name: 'list',
+    run() {
+      if (items.length === 0) return empty('0 open tasks found', { help: 'Run `app add` to add one' })
+      return result({ items }, { help: 'Run `app show <id>` for one' })
+    }
+  })
+  .parse(process.argv)
+```
+
+```sh
+$ app list
+items[2]: a,b
+help[1]: Run `app show <id>` for one
+
+$ app list --format json
+{"items":["a","b"],"help":["Run `app show <id>` for one"]}
+```
+
+How each return is printed:
+
+| `run()` returns | Printed |
+| --- | --- |
+| `undefined`, or nothing | nothing |
+| an object | encoded in the format: `toon`, one line of `json`, or `text` |
+| an array or a scalar | encoded under the `result` key, such as `result[2]: a,b` or `{"result":3}` |
+| a string | the string, verbatim |
+| `result(value, { help, render })` | the value, with `help` as the last key |
+| `document(content)` | the content, verbatim, whatever the format |
+| `empty(message, { help })` | `empty: <message>`, then `help`. Exit code 0 |
+
+Every answer ends on one newline.
+
+- **`result(value, { help, render })`** adds next steps and controls the printed form. `help` is a
+  string or a list, encoded as a `help[N]` list inside the output, and left out when empty. `render`
+  maps a format to a function that returns a string: for that format the string is written verbatim,
+  then the `help`, encoded in the same format, after a blank line. A format without a renderer uses
+  the encoder. For example, `{ render: { text: (v) => table(v.items) } }`.
+- **`document(content)`** is for output that is already the answer, such as Markdown, a diff or a
+  file. Run through an encoder, it would come back as one escaped line.
+- **`empty(message, { help })`** says that there is nothing to report, so an agent does not retry to
+  make sure. It is a success.
+
+`parse()` resolves to the value `result()` wraps, the content of `document()` and the message of
+`empty()`, in either output. A warning the reader must see belongs in the returned data:
+`ui.warn` is a diagnostic on stderr.
+
+`run()` reads the output mode as `this.output`, `'console'` by default. Source:
+[axi-native section 3.5](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#35-no-result-channel-6395).
 
 ## `Builder`
 

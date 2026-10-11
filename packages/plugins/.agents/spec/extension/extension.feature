@@ -106,3 +106,11 @@ Feature: The plugins() extension
     Then their own format option is dropped instead of conflicting with the global one
     And they report in this.format
     And in the default console output with no cli format they keep their own format option
+
+  Scenario: under output axi of clibuilder plugins list and search return their report as the answer
+    Given a cli with output axi
+    When the extension's plugins list or plugins search runs, in each format
+    Then nothing is written through ui, and stdout holds the report once, printed by clibuilder from the returned answer
+    And nothing installed or found is an empty state naming the keywords, exit 0
+    And an unrecognized fields value is an invalid-value error on stdout, exit 2
+    And in the default console output the report and the return value are unchanged

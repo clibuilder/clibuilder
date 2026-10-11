@@ -1,8 +1,11 @@
+import { CliError, exitCodes } from '../../app/errors.js'
 import { command } from '../../command/define.js'
+import { empty, result } from '../../render/answer.js'
 import {
 	formatOption,
 	type OutputFormat,
 	type OutputUI,
+	proseLines,
 	reportProse,
 	toonArray,
 	toonHelp,
@@ -25,6 +28,8 @@ export const searchPluginsCommand = command({
 	async run(args) {
 		const fields = parseFields(args.fields)
 		if (!fields) {
+			// under `output: 'axi'` a failure is a `CliError`, reported once on stdout by the framework
+			if (this.output === 'axi') throw unknownFields(args.fields)
 			this.ui.info(`error: unknown value for --fields: ${args.fields}`)
 			this.ui.info(toonHelp('The only extra field is `keywords`. Run `plugins search --fields keywords`'))
 			return
@@ -43,6 +48,8 @@ export const searchPluginsCommand = command({
 				else packages.set(name, [this.keywords[i]!])
 			})
 		})
+		// under `output: 'axi'` the report is the answer: returned, and printed once on stdout by the framework
+		if (this.output === 'axi') return answerPackages(fields, [...packages].map(toPackage), this.keywords)
 		// `args.format` is unset when the global `--format` is active: the local option gives way to it
 		reportPackages(this.ui, args.format ?? this.format, fields, [...packages].map(toPackage), this.keywords)
 	}
@@ -67,6 +74,37 @@ function parseFields(fields: string | undefined) {
 	const requested = fields.split(',').map((f) => f.trim())
 	if (requested.some((f) => f !== 'keywords' && f !== 'name')) return undefined
 	return { keywords: requested.includes('keywords') }
+}
+
+/**
+ * The unknown `--fields` value as a usage error under `output: 'axi'`.
+ */
+function unknownFields(value: string | undefined) {
+	return new CliError(`unknown value for --fields: ${value}`, {
+		code: 'invalid-value',
+		exitCode: exitCodes.usage,
+		details: { option: 'fields', value: value ?? null },
+		help: 'The only extra field is `keywords`. Run `plugins search --fields keywords`'
+	})
+}
+
+/**
+ * The search result as the answer under `output: 'axi'`, in the shape {@link reportPackages} logs:
+ * `packages` (with their keywords under `--fields keywords`) with a next step, prose under `--format text`,
+ * and an explicit empty state.
+ */
+function answerPackages(fields: { keywords: boolean }, packages: FoundPackage[], keywords: string[]) {
+	if (packages.length === 0) return empty(`0 packages found with keywords: ${keywords.join(', ')}`)
+	const describe = (p: FoundPackage) => (fields.keywords ? `${p.name} (${p.keywords.join(', ')})` : p.name)
+	return result(
+		{ packages: fields.keywords ? packages : packages.map((p) => p.name) },
+		{
+			help: 'Run `plugins list` to see which of them are installed',
+			render: {
+				text: () => proseLines({ noun: 'package', plural: 'packages' }, packages, describe, keywords).join('\n')
+			}
+		}
+	)
 }
 
 /**

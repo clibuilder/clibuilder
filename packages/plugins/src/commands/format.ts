@@ -1,3 +1,4 @@
+import * as clibuilder from 'clibuilder'
 import { z } from 'clibuilder'
 
 /**
@@ -88,22 +89,35 @@ export function toonHelp(suggestion: string) {
  */
 export function reportProse<T>(
 	ui: OutputUI,
+	nouns: { noun: string; plural: string },
+	items: T[],
+	describe: (item: T) => string,
+	keywords: string[]
+) {
+	proseLines(nouns, items, describe, keywords).forEach((line) => {
+		ui.info(line)
+	})
+}
+
+/**
+ * The lines of {@link reportProse}, for a command that returns its report instead of logging it.
+ */
+export function proseLines<T>(
 	{ noun, plural }: { noun: string; plural: string },
 	items: T[],
 	describe: (item: T) => string,
 	keywords: string[]
 ) {
-	if (items.length === 0) {
-		ui.info(`no ${noun} with keywords: ${keywords.join(', ')}`)
-		return
-	}
-	if (items.length === 1) {
-		ui.info(`found one ${noun}: ${describe(items[0]!)}`)
-		return
-	}
-	ui.info(`found the following ${plural}:`)
-	ui.info('')
-	items.forEach((item) => {
-		ui.info(`  ${describe(item)}`)
-	})
+	if (items.length === 0) return [`no ${noun} with keywords: ${keywords.join(', ')}`]
+	if (items.length === 1) return [`found one ${noun}: ${describe(items[0]!)}`]
+	return [`found the following ${plural}:`, '', ...items.map((item) => `  ${describe(item)}`)]
+}
+
+/**
+ * clibuilder's result-channel helpers, read from the namespace so that this package still loads
+ * against a clibuilder from before them (the peer range starts at 11.5.0).
+ * They are only called under `output: 'axi'`, which `this.output` reports only on a clibuilder that has them.
+ */
+export function answers(): Pick<typeof clibuilder, 'result' | 'empty'> {
+	return { result: clibuilder.result, empty: clibuilder.empty }
 }

@@ -19,6 +19,7 @@ export {
 export type { DisplayLevel, UI } from './core/ports.js'
 export * from './invocation/argv.js'
 export * from './plugins/registry.js'
+export { type Answer, document, empty, type Renderer, result } from './render/answer.js'
 export * from './t.js'
 export {
 	isZodArray,
