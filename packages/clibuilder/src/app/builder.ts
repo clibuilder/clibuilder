@@ -11,7 +11,8 @@ import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
 import { formatLookupError } from '../render/error.js'
-import type { z } from '../zod.js'
+import type { StandardSchemaV1 } from '../t.js'
+import { isZod3Type } from '../zod.js'
 import { exitCodes, isCliError } from './errors.js'
 import { state } from './state.js'
 
@@ -189,7 +190,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 
 		if (command.config) {
 			const configName = typeof s.configName === 'string' ? s.configName : s.name
-			const { config, errors } = parseConfig(command.config, await context.loadConfig(configName))
+			const { config, errors } = await parseConfig(command.config, await context.loadConfig(configName))
 			s.config = config
 
 			if (errors) {
@@ -237,15 +238,48 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		context.exit(code)
 		return code
 	}
+}
 
-	function parseConfig(configType: z.ZodTypeAny, config: any) {
-		const r = configType.safeParse(config)
-		if (r.success) {
-			return { config }
-		}
-		const errors = r.error.flatten().fieldErrors
-		return { errors }
+/**
+ * Validates the loaded config against the command's `config` schema.
+ *
+ * The schema's output is what the command gets, so its defaults and transforms apply.
+ * A failure is reported as the messages for each config key.
+ */
+async function parseConfig(
+	schema: cli.ConfigSchema,
+	config: unknown
+): Promise<{ config: unknown; errors?: undefined } | { config?: undefined; errors: ConfigErrors }> {
+	// the zod 3 path is removed in v12 (slim-dependencies RFC section 7)
+	if (isZod3Type(schema)) {
+		const r = schema.safeParse(config)
+		if (r.success) return { config: r.data }
+		return { errors: r.error.flatten().fieldErrors }
 	}
+	const r = await schema['~standard'].validate(config)
+	if (!r.issues) return { config: r.value }
+	return { errors: toConfigErrors(r.issues) }
+}
+
+/**
+ * The messages for each config key, keyed by the dotted path of the value that failed.
+ */
+type ConfigErrors = Record<string, string[] | undefined>
+
+/**
+ * Maps a Standard Schema's issues into the same shape as the zod path:
+ * the messages for each key, with the key read from each issue's path.
+ * An issue without a path is about the config as a whole and is keyed `(config)`.
+ */
+function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors {
+	const errors: ConfigErrors = {}
+	for (const issue of issues) {
+		const key = issue.path?.length
+			? issue.path.map((p) => String(typeof p === 'object' ? p.key : p)).join('.')
+			: '(config)'
+		;(errors[key] ??= []).push(String(issue.message))
+	}
+	return errors
 }
 
 /**

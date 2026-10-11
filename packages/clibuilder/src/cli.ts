@@ -6,7 +6,7 @@ import type { UI } from './core/ports.js'
 import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
-import type { AnyDescriptor, OutputOf } from './t.js'
+import type { AnyDescriptor, OutputOf, StandardSchemaV1 } from './t.js'
 import type { z } from './zod.js'
 
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
@@ -88,7 +88,7 @@ export namespace cli {
 		readonly description: string
 		default<
 			T,
-			ConfigType extends z.ZodTypeAny,
+			ConfigType extends ConfigSchema,
 			AName extends string,
 			A extends Command.Argument<AName>[],
 			OName extends string,
@@ -97,7 +97,7 @@ export namespace cli {
 		command<
 			T,
 			Context extends Record<string, any>,
-			ConfigType extends z.ZodTypeAny,
+			ConfigType extends ConfigSchema,
 			AName extends string,
 			A extends Command.Argument<AName>[],
 			OName extends string,
@@ -116,6 +116,23 @@ export namespace cli {
 		use<T>(this: T, extension: Extension): T & Executable
 	}
 
+	/**
+	 * What a command's `config` can be declared with:
+	 * any Standard Schema, such as zod 4 or valibot, or a zod 3 type from `z`.
+	 * The zod 3 form is removed in v12.
+	 */
+	export type ConfigSchema = z.ZodTypeAny | StandardSchemaV1
+
+	/**
+	 * The config `run()` gets for a `config` schema: the schema's output,
+	 * so its defaults and transforms are applied.
+	 */
+	export type ConfigOf<C extends ConfigSchema> = C extends z.ZodTypeAny
+		? z.infer<C>
+		: C extends StandardSchemaV1
+			? StandardSchemaV1.InferOutput<C>
+			: never
+
 	export type Executable = {
 		/**
 		 * Runs the command matched by `argv`.
@@ -130,7 +147,7 @@ export namespace cli {
 
 	export type Command<
 		Context extends Record<string, any> = Record<string, any>,
-		ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
+		ConfigType extends ConfigSchema = ConfigSchema,
 		A extends Command.Argument[] = Command.Argument[],
 		O extends Command.Options = Command.Options
 	> = {
@@ -153,7 +170,7 @@ export namespace cli {
 				run(
 					this: {
 						ui: UI
-						config: z.infer<ConfigType>
+						config: ConfigOf<ConfigType>
 						keywords: string[]
 						cwd: string
 						context: Context
@@ -177,7 +194,7 @@ export namespace cli {
 			0 extends 1 & OutputOf<D> ? any : Present extends true ? OutputOf<D> : OutputOf<D> | undefined
 
 		export type DefaultCommand<
-			ConfigType extends z.ZodTypeAny = z.ZodTypeAny,
+			ConfigType extends ConfigSchema = ConfigSchema,
 			A extends Argument[] = Argument[],
 			O extends Options = Options
 		> =
@@ -192,7 +209,7 @@ export namespace cli {
 					run(
 						this: {
 							ui: UI
-							config: z.infer<ConfigType>
+							config: ConfigOf<ConfigType>
 							keywords: string[]
 							cwd: string
 							registry: Registry
@@ -278,7 +295,7 @@ export namespace cli {
 export type PluginActivationContext = {
 	addCommand<
 		Context extends Record<string, any>,
-		ConfigType extends z.ZodTypeAny,
+		ConfigType extends cli.ConfigSchema,
 		AName extends string,
 		A extends cli.Command.Argument<AName>[],
 		OName extends string,

@@ -478,3 +478,23 @@ Feature: Execution
     Given an application with config naming a plugin, and some other extension
     When help is asked for
     Then the help lists the plugins group and the plugin's command
+
+  # ── Config from any Standard Schema ──
+
+  Scenario: a command gets its config schema's output, not the loaded input
+    Given a matched command declaring a config schema with defaults and transforms, from zod 3, zod 4, valibot or any Standard Schema
+    When the loaded config satisfies it
+    Then the command's this.config is the schema's output, with the defaults filled in and the transforms applied
+
+  Scenario: a Standard Schema config whose validate is async is awaited
+    Given a matched command whose config schema's validate returns a promise
+    When it is invoked
+    Then the command runs with the resolved output, or the resolved issues are reported
+
+  Scenario: a Standard Schema config's issues are reported like a zod config's
+    Given a matched command declaring a config schema that is not zod 3
+    When the loaded config does not satisfy it
+    Then each issue's message is printed under its dotted path, one line per key, as the zod path prints a field
+    And an issue without a path is printed under (config)
+    And help is shown
+    And the cli exits with the error code

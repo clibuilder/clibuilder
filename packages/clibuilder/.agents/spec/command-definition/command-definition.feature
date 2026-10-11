@@ -167,3 +167,17 @@ Feature: Command definition
     Given a command declaring options with t
     When it is placed among a group's sub-commands
     Then it type-checks as a cli.Command
+
+  # ── UC4 — config from any Standard Schema ──
+
+  Scenario: a command's config may be any Standard Schema
+    Given a command declaring its config with a zod 3 type, a zod 4 schema, a valibot schema or another Standard Schema
+    When its run reads this.config
+    Then it types as the schema's output
+    And the command fits where a cli.Command is expected
+
+  Scenario: the z re-export is deprecated in favour of t
+    Given z is imported from clibuilder
+    When an editor reads its declaration
+    Then it is marked deprecated, pointing at t
+    And it is still the zod instance clibuilder validates zod declarations with
