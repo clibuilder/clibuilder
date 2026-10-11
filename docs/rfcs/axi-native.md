@@ -298,5 +298,6 @@ Still open:
 
 12. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value without printing it. It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
 13. **Descriptor introspection field names.** The introspection form is public and read-only ([slim-dependencies section 3.4](slim-dependencies.md#34-design-c)); its exact field names are still a proposal.
-14. **Untested `t` typing.** The foreign-schema refinement typing is being tested separately, and TS 7 (tsgo) was not tested in the prototype ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
+14. ~~**Untested `t` typing.**~~ **Resolved:** the refinement typing was tested on TS 6.0.3 and 7.0.2 and uses an explicit input check ([slim-dependencies section 3.5](slim-dependencies.md#35-implementation-rules-for-t)).
 15. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 3.10).
+16. **Refinement semantics.** Whether a refinement may change the type or only narrow it, and whether CLI string coercion must live in the descriptor or parser rather than in a refinement ([slim-dependencies section 10](slim-dependencies.md#10-still-open), items 5 and 6).

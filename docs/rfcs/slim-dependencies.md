@@ -130,7 +130,7 @@ options: {
 - **Refinement:** an entry may carry `schema?: StandardSchemaV1`. It runs after argv conversion, on the converted value. When present, its output type becomes the `args` type, so `schema: z.string().email()` or a valibot pipe works with any vendor and any zod major. Async `validate` is awaited.
 - **`config`:** takes a `StandardSchemaV1` only; there is no `t.object`. Validation uses `~standard.validate`, and the validator's **output** is stored, which fixes the dropped-defaults bug (section 2). The help `Config:` section is generated from `~standard.jsonSchema` when the vendor implements it, and omitted otherwise. That removes `tersify`.
 - **Errors:** issues from a refinement or a config schema are mapped into clibuilder's own `invalid-value` usage error code. Following axi's rule, a dependency's text is never forwarded raw. `UsageError.keyType` becomes a kind string (`'string' | 'number' | 'boolean' | 'array' | 'enum'`) instead of a zod object.
-- **Types:** the Standard Schema v1 interfaces are vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency at all.
+- **Types:** the Standard Schema v1 interfaces are vendored into `args-minus` (the spec explicitly allows copying), so there is no dependency at all. The copy is **verbatim** from `@standard-schema/spec` 1.1.0, including `PathSegment` in `Issue.path` (`PropertyKey | PathSegment`) and the `options` parameter of `validate`. The prototype's hand-trimmed copy rejected every real library.
 
 **Introspection form.** Help, structured help and usage errors need one stable read of an option, so they do not reach into descriptor internals. The form is **public and read-only**, so other tools can build on `args-minus`. The exact field names below are a proposal; the shape is built from the descriptor and its option entry:
 
@@ -153,15 +153,26 @@ The field names are not agreed yet (section 10).
 
 ### 3.5 Implementation rules for `t`
 
-A prototype of `t` settled these rules:
+A prototype of `t`, and a follow-up check of the refinement typing on TypeScript 6.0.3 and 7.0.2 (tsgo) with identical results, settled these rules:
 
 - **Optionality is a type-level flag,** separate from the output type. `.optional()` sets the flag; it does not widen the output to `T | undefined` inside the descriptor.
 - **`t.enum` requires a non-empty const tuple.** A pre-widened `string[]` degrades to `string`. The implementation either rejects it at the type level or documents the degradation.
 - **`t.array` takes only non-optional scalar or enum elements.** `t.array(t.string().optional())` and nested arrays are rejected.
 - **Array validation errors report the element path,** for example `tag[2]`.
 - **Inference cost is trivial.** About 1.7k type instantiations and 0.10 s for 7 options, and the same for 60.
-- **Being tested: refinement typing.** The typing of a foreign `schema:` refinement, and the claim that a schema with a wider input type passes through bivariance, were not tested in the prototype and are being tested separately. Comparing `StandardSchemaV1.InferInput` against the descriptor's output explicitly is the suggested check.
-- **Untested: TS 7 (tsgo).** The prototype ran on the current TypeScript only.
+- **Refinement typing compares input and output explicitly.** Bivariance does not let a schema with a wider input through: `S extends StandardSchemaV1<Out, any>` rejects zod 4's `z.coerce.number()`, whose input is `unknown`. The refinement is typed with an explicit check instead:
+
+  ```ts
+  type RefineCompatible<Out, S extends StandardSchemaV1> =
+    [Out] extends [StandardSchemaV1.InferInput<S>] ? unknown
+    : [StandardSchemaV1.InferInput<S>] extends [Out] ? unknown
+    : { readonly '~refine': ['refinement input', StandardSchemaV1.InferInput<S>, 'is incompatible with descriptor output', Out] }
+
+  refine<S extends StandardSchemaV1>(schema: S & RefineCompatible<Out, S>): Descriptor<K, StandardSchemaV1.InferOutput<S>, Opt>
+  ```
+
+  The refinement's input may be wider than the descriptor's output (`unknown`) or narrower (a literal union on `string`). A disjoint input is rejected with a readable message. Verified against zod 3.25, zod 4.6, valibot 1.5 and arktype 2.2, including brands, transforms and optional chaining.
+- **TS 7 (tsgo)** gives the same results as TS 6 for the refinement typing.
 
 ## 4. Logging: standard-log and standard-log-color
 
@@ -456,5 +467,7 @@ Items left open by the 2026-10-11 decisions. Q4, Q6 (section 8) and section 9.9 
 
 1. **Name of the `quiet()` opt-out.** `quiet` is a working name for the wrapper that returns a value from `run()` without printing it ([axi-native section 3.5](axi-native.md#35-no-result-channel-6395)). It may be dropped instead, because `result(value, { render })` already lets the printed form differ from the returned value.
 2. **Descriptor introspection field names.** The form is public and read-only (section 3.4); the exact `OptionInfo` field names are a proposal and need agreement before `t` ships.
-3. **Untested `t` typing.** Foreign-refinement typing (including the bivariance claim) is being tested separately; TS 7 (tsgo) was not tested in the prototype (section 3.5).
+3. ~~**Untested `t` typing.** Foreign-refinement typing and TS 7 (tsgo).~~ **Resolved:** tested on TS 6.0.3 and 7.0.2; the bivariance claim was false, and the refinement uses an explicit input check (section 3.5).
 4. ~~**Is `cli({ routing })` public in v12?**~~ **Resolved:** no, routing is internal in v12 (section 4).
+5. **May a refinement change the type?** The typing in section 3.5 lets a refinement's output replace the descriptor's output, so a transform from `string` to `number` type-checks. Should that be allowed, or must a refinement only narrow?
+6. **Coercion belongs before the refinement.** The descriptor runs its own `typeof` check before the refinement, so a coercing schema such as `z.coerce.number()` receives a value that is already typed. CLI string coercion must therefore live in the descriptor or the parser, not in a refinement. This needs to be confirmed as the intended rule and documented for users.
