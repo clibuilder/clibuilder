@@ -26,7 +26,9 @@ rush add -p clibuilder
 
 ## Module formats
 
-`clibuilder` publishes both ESM and CJS, so either of these works:
+`clibuilder` 11 publishes both ESM and CJS. `clibuilder` 12 (unreleased) publishes ESM only, and
+`require('clibuilder')` still works through Node's `require(esm)`, which Node.js 20.19 and newer have
+unflagged. Either of these works:
 
 ```ts
 // ESM

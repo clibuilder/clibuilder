@@ -1,13 +1,18 @@
 {
 	"name": "test-cli",
 	"private": true,
+	"description": "The CommonJS consumer fixture: a CommonJS bin and tests that load the ESM-only clibuilder packages through require(esm).",
 	"bin": "./bin.js",
 	"scripts": {
-		"test": "node --test bin.test.mjs axi.test.mjs entries.test.js"
+		"test": "node --test bin.test.mjs axi.test.mjs entries.test.js no-top-level-await.test.js"
 	},
 	"dependencies": {
+		"@clibuilder/axi": "workspace:*",
 		"@clibuilder/plugins": "workspace:*",
 		"cjs-plugin": "workspace:*",
 		"clibuilder": "workspace:*"
+	},
+	"devDependencies": {
+		"esbuild": "^0.20.0"
 	}
 }

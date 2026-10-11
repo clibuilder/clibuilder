@@ -27,6 +27,9 @@ npm install @clibuilder/plugins clibuilder
 `clibuilder` `^11.5.0 || ^12` is the peer dependency of 0.1.0. The next release requires
 `clibuilder ^12`. Node.js 20.19 or newer is required.
 
+0.1.0 publishes ESM and CJS. The next release is ESM-only; `require('@clibuilder/plugins')` still
+works through Node's `require(esm)`.
+
 ## Usage
 
 ```ts

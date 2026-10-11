@@ -32,7 +32,7 @@ cli({ name: 'app', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-In CJS:
+In CommonJS:
 
 ```js
 #!/usr/bin/env node
@@ -52,12 +52,14 @@ runs, so a statically imported `cli` is already compiled by the time `enableComp
 
 ## What it buys you
 
-Measured on the repository's `test-apps` fixtures — node 24, median of 25 warm runs:
+Measured on the repository's `test-apps` fixtures with `--version`: node 24.21, median of 25 warm
+runs, with and without `NODE_DISABLE_COMPILE_CACHE=1`. Both bins load the same ESM build; the
+CommonJS one loads it through `require(esm)`.
 
-| Build | Without | With |
+| Bin | Without | With |
 | --- | --- | --- |
-| ESM | 86ms | 81ms |
-| CJS | 43ms | 37ms |
+| ESM | 55ms | 51ms |
+| CommonJS | 54ms | 50ms |
 
 ## Result
 

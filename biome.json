@@ -5,7 +5,6 @@
 		"includes": [
 			"!**/.astro",
 			"!**/.pnpm-store",
-			"!**/cjs",
 			"!**/coverage",
 			"!**/dist",
 			"!**/esm",

@@ -1,3 +1,5 @@
+// The CommonJS consumer fixture: a CommonJS bin that loads the ESM-only clibuilder packages through require(esm).
+// test-apps/test-cli-esm is the ESM fixture.
 require('clibuilder/compile-cache').enableCompileCache()
 
 const { CliError, cli, document } = require('clibuilder')

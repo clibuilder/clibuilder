@@ -28,16 +28,12 @@
 	"exports": {
 		".": {
 			"types": "./esm/index.d.ts",
-			"import": "./esm/index.js",
-			"require": "./cjs/index.js",
-			"default": "./cjs/index.js"
+			"default": "./esm/index.js"
 		},
 		"./package.json": "./package.json"
 	},
-	"main": "./cjs/index.js",
 	"types": "./esm/index.d.ts",
 	"files": [
-		"cjs",
 		"esm",
 		"src",
 		"!**/*.internal.*",
@@ -47,7 +43,7 @@
 		"build": "run-p build:tsdown typecheck",
 		"build:tsdown": "tsdown",
 		"build:watch": "tsdown --watch",
-		"clean": "rimraf .turbo coverage cjs esm",
+		"clean": "rimraf .turbo coverage esm",
 		"coverage": "vitest run --coverage",
 		"depcheck": "depcheck",
 		"nuke": "run-s clean && rimraf node_modules",

@@ -10,8 +10,9 @@ The package manifest, entry points, runtime compatibility contract, and
 published files that make `@clibuilder/plugins` consumable.
 
 - Built by `tsdown` (`tsdown.config.ts`): ESM in `esm/`, one module per source
-  file, with declarations beside it; and a CJS bundle in `cjs/`, with
-  `cjs/package.json` marking it CommonJS. Every dependency stays external.
+  file, with declarations beside it. Every dependency stays external. There is
+  no CJS build: the entry in `exports` is `{ types, default }`, and a CommonJS
+  consumer loads it with `require()` through `require(esm)`.
   `tsdown` does not typecheck, so `build` runs `tsc --noEmit` alongside it.
 - The published declarations import only `clibuilder`; they never reach into
   `zod`, which is `clibuilder`'s dependency, not this package's.

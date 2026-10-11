@@ -36,7 +36,7 @@ Key highlights:
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
 - `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
-- Distribute `ESM` along with `CJS`.
+- Distribute `ESM` along with `CJS` (in v12, unreleased, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
 
 ## Feature Highlights
 
@@ -334,7 +334,7 @@ cli({ name: 'app', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-or in `CJS`:
+or in CommonJS:
 
 ```js
 #!/usr/bin/env node
@@ -343,12 +343,14 @@ require('clibuilder/compile-cache').enableCompileCache()
 const { cli } = require('clibuilder')
 ```
 
-Measured on the `test-apps` fixtures (node 24, median of 25 warm runs):
+Measured on the `test-apps` fixtures with `--version`
+(node 24.21, median of 25 warm runs, with and without `NODE_DISABLE_COMPILE_CACHE=1`;
+both bins load the same `ESM` build, the CommonJS one through `require(esm)`):
 
-| build | without | with |
-| ----- | ------- | ---- |
-| `ESM` | 86ms    | 81ms |
-| `CJS` | 43ms    | 37ms |
+| bin        | without | with |
+| ---------- | ------- | ---- |
+| `ESM`      | 55ms    | 51ms |
+| CommonJS   | 54ms    | 50ms |
 
 Two rules make it work, and both are easy to get wrong:
 
