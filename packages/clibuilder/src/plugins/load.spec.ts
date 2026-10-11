@@ -67,8 +67,8 @@ it('lets a command consume capabilities and content contributed by a later plugi
 		capability: 'provided',
 		sources: [provider]
 	})
-	expect(context.sl.reporter.getLogMessage()).toContain('could not register clibuilder:test-capability')
-	expect(context.sl.reporter.getLogMessage()).toContain('already registered by')
+	expect(context.messages).toContain('could not register clibuilder:test-capability')
+	expect(context.messages).toContain('already registered by')
 })
 
 // A plugin is a dependency of the project the cli runs in, not of the cli itself.

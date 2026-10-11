@@ -1,58 +1,53 @@
-import { type LogLevel, logLevels } from 'standard-log'
-import { createStandardLogForTest, type StandardLogForTest } from 'standard-log/testing'
-import tmp from 'tmp'
-import { required } from 'type-plus'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Streams } from '../core/ports.js'
 import { loadPlugins } from '../plugins/load.js'
 import type { RegistryOwner } from '../plugins/registry.js'
 import { getFixturePath } from '../test-utils/index.js'
 import type { Context } from './context.js'
-import { createBuilderUI, createUI } from './logger.js'
+import { createBuilderUI } from './logger.js'
 import { createStreamUI } from './stream_ui.js'
-import { createSinks } from './streams.js'
+import { createSinks, type Sinks } from './streams.js'
 
 export namespace mockContext {
 	export type Params = {
 		fixtureDir?: string
-		logLevel?: LogLevel
 		/**
-		 * Writes through the built-in ui to these streams, in `console` mode,
-		 * instead of recording into `sl`. `logLevel` is then not used, and `stdout` stays empty.
+		 * Writes through the built-in ui to these streams instead of recording into `messages`.
+		 * `messages` and `stdout` then stay empty.
 		 */
 		streams?: Streams
 	}
 }
 
-export function mockContext(
-	params?: mockContext.Params
-): Context & { sl: StandardLogForTest; readonly exitCode: number | undefined; readonly stdout: string } {
-	const { fixtureDir, logLevel, streams } = required({ logLevel: logLevels.info }, params)
-	const sinks = streams && createSinks(streams)
-	const cwd = fixtureDir ? getFixturePath(fixtureDir) : tmp.dirSync().name
-	const sl = createStandardLogForTest({ logLevel })
+export function mockContext(params: mockContext.Params = {}): Context & {
+	readonly exitCode: number | undefined
+	readonly stdout: string
+	readonly messages: string
+} {
+	const { fixtureDir, streams } = params
+	let messages = ''
+	const sinks: Sinks = streams
+		? createSinks(streams)
+		: {
+				stdout: { colour: false, write: (text) => void (messages += text) },
+				stderr: { colour: false, write: (text) => void (messages += text) }
+			}
+	const cwd = fixtureDir ? getFixturePath(fixtureDir) : mkdtempSync(join(tmpdir(), 'clibuilder-'))
 	let exitCode: number | undefined
 	let stdout = ''
 
 	/**
-	 * A ui on a test logger, kept at the level the caller asked for.
-	 *
-	 * `createUI` sets every logger it wraps to `info` — that is the *production*
-	 * display default, which `--verbose` and `--debug-cli` then raise. It also
-	 * overrides the level the test store was built with, because standard-log
-	 * prefers a logger's own level over the store's. So the level is re-applied
-	 * here, after `createUI`, or `mockContext`'s `logLevel` would reach the store
-	 * and never the loggers a test can actually see.
+	 * The built-in ui in `console` mode, at the production display default `info`,
+	 * which `--verbose` and `--debug-cli` then raise.
 	 */
-	function testUI(id: string) {
-		if (sinks) return createStreamUI(sinks, 'console')
-		const logger = sl.getLogger(id)
-		const ui = createUI(logger)
-		logger.level = logLevel
-		return ui
+	function testUI() {
+		return createStreamUI(sinks, 'console')
 	}
 
-	const ui = createBuilderUI(testUI('clibuilder'))
+	const ui = createBuilderUI(testUI())
 	return {
 		async loadConfig(configName: string) {
 			return (await this.resolveConfig(configName)).config
@@ -77,7 +72,7 @@ export function mockContext(
 			return exitCode
 		},
 		writeStdout(text: string) {
-			if (sinks) sinks.stdout.write(text)
+			if (streams) sinks.stdout.write(text)
 			else stdout += text
 		},
 		/**
@@ -86,10 +81,16 @@ export function mockContext(
 		get stdout() {
 			return stdout
 		},
-		createCommandUI(id: string) {
-			return testUI(id)
+		/**
+		 * Every line the ui wrote, from the framework and from commands, in the order it was said.
+		 * One line per message, with no trailing newline.
+		 */
+		get messages() {
+			return messages.replace(/\n$/, '')
 		},
-		ui,
-		sl
+		createCommandUI() {
+			return testUI()
+		},
+		ui
 	}
 }

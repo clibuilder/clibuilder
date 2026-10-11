@@ -1,11 +1,9 @@
-import { createConsoleLogReporter, createStandardLog, logLevels } from 'standard-log'
-import { createColorLogReporter } from 'standard-log-color'
 import type { Command } from '../command/internal.js'
 import { type ConfigLoadResult, resolveConfig } from '../config.js'
 import type { Output, Streams } from '../core/ports.js'
 import { loadPlugins } from '../plugins/load.js'
 import type { RegistryOwner } from '../plugins/registry.js'
-import { type BuilderUI, createBuilderUI, createUI } from './logger.js'
+import { type BuilderUI, createBuilderUI, type createUI } from './logger.js'
 import { createStreamUI } from './stream_ui.js'
 import { createSinks } from './streams.js'
 
@@ -19,17 +17,13 @@ export namespace context {
 /**
  * Creates an app context that provides interactions to external system
  *
- * The built-in ui writes to `streams` when they are given or when `output` is `axi`.
- * Otherwise the ui is the v11 standard-log one, whose output is unchanged.
+ * The ui is the built-in one, writing to `streams` (`process.stdout` and `process.stderr` by default)
+ * as `output` routes it.
  */
 export function context(options: context.Options = {}): Context {
 	const cwd = process.cwd()
 	const sinks = createSinks(options.streams ?? { stdout: process.stdout, stderr: process.stderr })
 	const output = options.output ?? 'console'
-	const engine =
-		options.streams || output === 'axi'
-			? { ui: createStreamUI(sinks, output), createCommandUI: () => createStreamUI(sinks, output) }
-			: createStandardLogUI()
 	// the resolution is cached as a promise so concurrent callers share one filesystem walk,
 	// and so a config that is legitimately falsy is not re-resolved on every call.
 	let resolvingConfig: Promise<ConfigLoadResult>
@@ -65,30 +59,10 @@ export function context(options: context.Options = {}): Context {
 		writeStdout(text: string) {
 			sinks.stdout.write(text)
 		},
-		createCommandUI(id: string) {
-			return engine.createCommandUI(id)
+		createCommandUI() {
+			return createStreamUI(sinks, output)
 		},
-		ui: createBuilderUI(engine.ui)
-	}
-}
-
-/**
- * The v11 ui engine: the framework's own messages through standard-log-color,
- * each command's through standard-log's console reporter.
- *
- * Removed in v12 with standard-log (slim-dependencies RFC section 4):
- * delete this function and its call, and `createStreamUI` is the only engine.
- */
-function createStandardLogUI() {
-	// default log level to debug to capture debug cli logs.
-	// When `--debug-cli` is supplied, the logs will be made to UI.
-	const sl = createStandardLog({
-		logLevel: logLevels.all,
-		reporters: [createConsoleLogReporter()]
-	})
-	return {
-		ui: createUI(sl.getLogger('clibuilder', { writeTo: createColorLogReporter() })),
-		createCommandUI: (id: string) => createUI(sl.getLogger(id))
+		ui: createBuilderUI(createStreamUI(sinks, output))
 	}
 }
 

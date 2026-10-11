@@ -292,6 +292,7 @@ type Streams = { stdout: Writable; stderr: Writable }   // injectable; process.s
 
 - **Levels:** a ~20-line threshold over `DisplayLevel` (`none` / `info` / `debug` / `trace`). The pre-level buffer stays as is.
 - **Colour:** `util.styleText` (Node ≥ 20.12; `engines` is already ≥ 20.19), gated on `stream.isTTY` and `NO_COLOR` / `FORCE_COLOR`.
+- **No logger name:** a line is what was said. standard-log-color's `clibuilder` prefix on the framework's own messages is not kept, nor is its colouring of `error` and `warn` text on a stream that is not a TTY.
 - **`cli({ streams })`:** lets embedders and tests capture output. This is the stricli/clipanion model. EPIPE is handled in the same stdout driver ([axi-native section 3.9](axi-native.md#39-epipe-6399)).
 - **`testCommand`:** passes in-memory streams and keeps returning `messages` (one entry per line, as today), so the one asserting spec keeps working.
 - **`showHelp` and `showVersion` leave `ui`.** Core owns `--help` and `--version` as answers on stdout.

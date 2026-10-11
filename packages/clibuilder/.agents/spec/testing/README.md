@@ -96,7 +96,7 @@ directory, a log, and an exit it controls.
 | | |
 | --- | --- |
 | Trigger | `mockContext(params)` |
-| Inputs | optionally a fixture directory and a log level |
+| Inputs | optionally a fixture directory and streams |
 | Outcome | a context whose exit is recorded rather than taken |
 
 **Extensions.**
@@ -105,9 +105,9 @@ directory, a log, and an exit it controls.
 | --- | --- |
 | a fixture directory is named | the working directory is that fixture |
 | none is named | the working directory is a fresh temporary directory, so a test cannot see another's files |
-| streams are given | the ui is the built-in one, in `console` mode, writing to those streams; the log level and `sl` are not used |
-| a log level is given | the mock log keeps to that level |
-| none is given | it defaults to info, matching what a CLI shows its user before `--verbose` raises it |
+| streams are given | the ui writes to those streams; `messages` and `stdout` stay empty |
+| none are given | the ui's lines are captured in `messages`, in the order they were said, and what is written to stdout in `stdout` |
+| any case | the ui is the built-in one in `console` mode, at info, matching what a CLI shows its user before `--verbose` raises it |
 | the CLI exits | the code is recorded **and** reported through the UI, so the exit is visible in the captured messages as well as assertable on its own |
 | config is resolved more than once | **it is re-resolved each time** — see the fidelity gaps below |
 
@@ -155,9 +155,9 @@ filed in this spec's ledger; the suite fixes current behavior.
 | `mockPluginContext` and its params | UC2 | — |
 | `mockContext` and its params | UC3 | — |
 | `mockContext.exitCode` | UC3 | — |
-| `mockContext.sl` | UC3 — the test log a caller reads the messages from | `streams` |
-| `mockContext` `streams` param | UC1 — the in-memory streams `testCommand` captures through | `logLevel` |
-| `mockContext.createCommandUI` | UC3 — a per-command UI on its own named logger | — |
+| `mockContext.messages` | UC3 — the lines the ui wrote, which a caller reads the messages from | `streams` |
+| `mockContext` `streams` param | UC1 — the in-memory streams `testCommand` captures through | — |
+| `mockContext.createCommandUI` | UC3 — a per-command UI writing to the same capture | — |
 | `argv` | UC4 | — (an argument containing a space is split, not refused) |
 | `getFixturePath` | UC4 | — |
 
@@ -210,11 +210,11 @@ graph TD
   M[params] --> FD{fixture directory named?}
   FD -- yes --> FX[cwd is that fixture directory]
   FD -- no --> TMP[cwd is a fresh temporary directory]
-  M --> LL{log level given?}
-  LL -- yes --> LLU[the level passed]
-  LL -- no --> LLD[info, the level a CLI shows its user before a flag raises it]
+  M --> LL{streams given?}
+  LL -- yes --> LLU[the ui writes to those streams]
+  LL -- no --> LLD[the ui's lines are captured in messages, at info, the level a CLI shows its user before a flag raises it]
   M --> X[exit] --> REC[record the code] --> RPTC[report it through the ui, naming the code]
-  M --> CUI[a ui for a command id] --> CUIN[its messages are captured under that id]
+  M --> CUI[a ui for a command id] --> CUIN[its messages are captured with the framework's, in order]
   M --> RC[resolve config] --> FRESH["resolve afresh every time (gap 2)"]
 ```
 
@@ -264,9 +264,9 @@ graph TD
 | --- | --- | --- |
 | cwd is that fixture directory | a fixture directory named | `a named fixture directory becomes the working directory` |
 | cwd is a fresh temporary directory | no fixture directory named | `a context without a fixture gets a temporary directory of its own` |
-| the level passed | a log level given | `a given log level is the one the mock log keeps to` |
-| info, the level a CLI shows its user | no log level given | `a mock context without a log level defaults to info` |
-| its messages are captured under that id | any command id | `each command gets a ui on its own named logger` |
+| the ui writes to those streams | streams given | `a mock context with streams writes the ui to them` |
+| captured in messages, at info | no streams given | `a mock context captures the ui at info` |
+| captured with the framework's, in order | any command id | `a command ui is captured with the framework's messages, in order` |
 | record the code | the cli exits | `an exit is recorded rather than taken` |
 | report it through the ui, naming the code | the cli exits | `an exit with a code names the code among the captured messages` |
 | resolve afresh every time | config resolved more than once | `the mock resolves the config afresh on every call` |

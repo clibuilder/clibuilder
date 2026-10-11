@@ -80,7 +80,9 @@ describe('default()', () => {
 		expect(a).toBe(true)
 	})
 
-	it('uses the app name in the ui', async () => {
+	// v11 named each logger (the app, then the command) through standard-log.
+	// The built-in ui of v12 has no logger name: the line is what the command said.
+	it('writes what the command said, with no logger name', async () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { name: 'some-cli' })
 		const cli = builder.default({
 			run() {
@@ -88,7 +90,7 @@ describe('default()', () => {
 			}
 		})
 		await cli.parse(argv('single-bin'))
-		a.satisfies(ctx.sl.reporter.logs[0], { id: 'some-cli' })
+		expect(ctx.messages).toEqual('hello')
 	})
 })
 
@@ -110,7 +112,7 @@ describe('version', () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.default({ run() {} }).parse(argv('test-cli --version'))
 		expect(ctx.stdout).toEqual('1.0.0\n')
-		expect(ctx.sl.reporter.logs).toEqual([])
+		expect(ctx.messages).toEqual('')
 	})
 	it('says the cli is not versioned when it has no version', async () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { version: '' })
@@ -165,7 +167,7 @@ describe('version', () => {
 		await cli.parse(argv('test-cli cmd --version'))
 		expect(loaded).toBe(true)
 		expect(ctx.stdout).toEqual('')
-		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+		expect(ctx.messages).toEqual('1.0.0')
 	})
 	it('takes the normal path when --version comes with other arguments', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -179,25 +181,25 @@ describe('help', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+		expect(ctx.messages).toEqual(getHelpMessage(cli))
 	})
 	it('accepts --help to show help', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli --help'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessage(cli))
+		expect(ctx.messages).toEqual(getHelpMessage(cli))
 	})
 	it('shows help with description', async () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { description: 'some description' })
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(getHelpMessageWithDescription(cli))
+		expect(ctx.messages).toEqual(getHelpMessageWithDescription(cli))
 	})
 	it('shows help if no command matches', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli not-exist'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain(getHelpMessage(cli))
+		expect(ctx.messages).toContain(getHelpMessage(cli))
 	})
 	it('shows help if missing argument', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -206,7 +208,7 @@ describe('help', () => {
 			run() {}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`
+		expect(ctx.messages).toContain(`
 Usage: test-cli <arguments> [options]
 
 Arguments:
@@ -228,7 +230,7 @@ Options:
 			run() {}
 		})
 		await cli.parse(argv('test-cli cmd -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+		expect(ctx.messages).toEqual(`
 Usage: test-cli cmd <arguments>
 
 Arguments:
@@ -244,7 +246,7 @@ Arguments:
 		})
 		await cli.parse(argv('test-cli'))
 		expect(ctx.exitCode).toBe(2)
-		expect(ctx.sl.reporter.getLogMessage()).toContain(`
+		expect(ctx.messages).toContain(`
 Usage: test-cli <command> [options]
 
 Commands:
@@ -272,7 +274,7 @@ Options:
 			]
 		})
 		await cli.parse(argv('test-cli sub sub2 -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual(`
+		expect(ctx.messages).toEqual(`
 Usage: test-cli sub sub2
 `)
 	})
@@ -289,7 +291,7 @@ describe('--silent', () => {
 			}
 		})
 		await cli.parse(argv('test-cli --silent'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual('')
+		expect(ctx.messages).toEqual('')
 	})
 
 	it('will not be passed down to command args', async () => {
@@ -314,7 +316,7 @@ describe('verbose', () => {
 			}
 		})
 		await cli.parse(argv('test-cli --verbose'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
+		expect(ctx.messages).toContain('should print')
 	})
 	it('can be enabled with -V', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -324,7 +326,7 @@ describe('verbose', () => {
 			}
 		})
 		await cli.parse(argv('test-cli -V'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('should print')
+		expect(ctx.messages).toContain('should print')
 	})
 	it('will not be passed down to command args', async () => {
 		const [builder] = setupBuilderTest()
@@ -355,13 +357,13 @@ describe('debug cli', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const app = builder.default({ run() {} })
 		await app.parse(argv('test-cli --debug-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('argv: node test-cli --debug-cli')
+		expect(ctx.messages).toContain('argv: node test-cli --debug-cli')
 	})
 	it('logs when loading plugins', async () => {
 		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'one-plugin' }, { config: true })
 		const app = builder.default({ run() {} })
 		await app.parse(argv('test-cli --debug-cli'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('load config from:')
 		expect(msg).toContain('test-clirc.json')
 		expect(msg).toContain('activating plugin cjs-plugin')
@@ -373,7 +375,7 @@ describe('debug cli', () => {
 		const [builder, ctx] = setupBuilderTest({ fixtureDir: 'cli-with-one-esm-plugin' }, { config: true })
 		const app = builder.default({ run() {} })
 		await app.parse(argv('test-cli --debug-cli'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('load config from:')
 		expect(msg).toContain('test-clirc.json')
 		expect(msg).toContain('activating plugin esm-plugin')
@@ -468,7 +470,7 @@ describe('command()', () => {
 			]
 		})
 		await cli.parse(argv('single-bin cmd1 not-exist'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd1 <command>')
+		expect(ctx.messages).toContain('Usage: test-cli cmd1 <command>')
 	})
 	test('parent command without run shows help', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -484,10 +486,10 @@ describe('command()', () => {
 			]
 		})
 		await cli.parse(argv('single-bin cmd1'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd1 <command>')
+		expect(ctx.messages).toContain('Usage: test-cli cmd1 <command>')
 	})
 
-	test('ui uses command name', async () => {
+	test('ui of a command writes what it said, with no logger name', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.command({
 			name: 'cmd1',
@@ -496,8 +498,7 @@ describe('command()', () => {
 			}
 		})
 		await cli.parse(argv('single-bin cmd1'))
-		const log = ctx.sl.reporter.logs.find((l) => l.args.indexOf('hello') >= 0)
-		a.satisfies(log, { id: 'cmd1' })
+		expect(ctx.messages).toEqual('hello')
 	})
 })
 
@@ -556,7 +557,7 @@ describe('loadConfig()', () => {
 
 		// TODO: error message is weak in `zod`.
 		// improve this when switching back to type-plus
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain(`config fails validation:
   a: Expected object, received number
   b: Required`)
@@ -645,7 +646,7 @@ describe('loadConfig()', () => {
 				}
 			})
 			.parse(argv('single-bin'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('no config found')
 		expect(actual).toBe(exitCodes.error)
 	})
@@ -692,14 +693,14 @@ describe('usage errors', () => {
 			}
 		})
 		await cli.parse(argv('test-cli --full --lines=3'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('option --full cannot be used with option --lines')
+		expect(ctx.messages).toContain('option --full cannot be used with option --lines')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names an unknown option and exits with the usage code', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli --bogus'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('unknown option --bogus')
+		expect(ctx.messages).toContain('unknown option --bogus')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names a missing argument and exits with the usage code', async () => {
@@ -711,14 +712,14 @@ describe('usage errors', () => {
 			}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('missing required argument <abc>')
+		expect(ctx.messages).toContain('missing required argument <abc>')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names extra arguments and exits with the usage code', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli not-exist'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('unexpected argument: not-exist')
+		expect(ctx.messages).toContain('unexpected argument: not-exist')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names an invalid option value and exits with the usage code', async () => {
@@ -730,9 +731,7 @@ describe('usage errors', () => {
 			}
 		})
 		await cli.parse(argv('test-cli --abc=xyz'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain(
-			'invalid value for option --abc: expected to be number, received "xyz"'
-		)
+		expect(ctx.messages).toContain('invalid value for option --abc: expected to be number, received "xyz"')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('names every error it found', async () => {
@@ -744,7 +743,7 @@ describe('usage errors', () => {
 			}
 		})
 		await cli.parse(argv('test-cli --bogus'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('unknown option --bogus')
 		expect(msg).toContain('missing required argument <abc>')
 	})
@@ -752,7 +751,7 @@ describe('usage errors', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.default({ run() {} })
 		await cli.parse(argv('test-cli --bogus'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg.indexOf('unknown option --bogus')).toBeLessThan(msg.indexOf('Usage: test-cli'))
 	})
 	it('does not run the command', async () => {
@@ -766,8 +765,8 @@ describe('usage errors', () => {
 	})
 	describe('onUsageError', () => {
 		// the mock context reports the exit it records; that line is not the cli's output
-		function output(ctx: { sl: { reporter: { getLogMessage(): string } } }) {
-			return ctx.sl.reporter.getLogMessage().replace(/\n?exit with \d+$/, '')
+		function output(ctx: { messages: string }) {
+			return ctx.messages.replace(/\n?exit with \d+$/, '')
 		}
 		function recorder(label: string, calls: Array<{ label: string; errors: cli.UsageError[]; command: cli.Command }>) {
 			return (errors: cli.UsageError[], { command }: { command: cli.Command }) => {
@@ -895,7 +894,7 @@ describe('usage errors', () => {
 					run() {}
 				})
 				.parse(argv('test-cli ship --bogus'))
-			expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli ship')
+			expect(ctx.messages).toContain('Usage: test-cli ship')
 		})
 		it('shows no help when the handler does not ask for it', async () => {
 			const [builder, ctx] = setupBuilderTest(undefined, {
@@ -934,25 +933,25 @@ describe('command group invoked without a sub command (#609)', () => {
 	it('shows the group help and exits with the usage code', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.command(group).parse(argv('test-cli send'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli send <command>')
+		expect(ctx.messages).toContain('Usage: test-cli send <command>')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('exits with success when help is asked for explicitly', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.command(group).parse(argv('test-cli send --help'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli send <command>')
+		expect(ctx.messages).toContain('Usage: test-cli send <command>')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('treats a cli with only sub commands as a group', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.command(group).parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli <command>')
+		expect(ctx.messages).toContain('Usage: test-cli <command>')
 		expect(ctx.exitCode).toBe(2)
 	})
 	it('exits with success when help is asked for the cli explicitly', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.command(group).parse(argv('test-cli -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli <command>')
+		expect(ctx.messages).toContain('Usage: test-cli <command>')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 })
@@ -962,15 +961,15 @@ describe('global options are accepted by every command', () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.command({ name: 'cmd', run: () => expect.fail('should not reach') })
 		await cli.parse(argv('test-cli cmd -h'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli cmd')
-		expect(ctx.sl.reporter.getLogMessage()).not.toContain('unknown option')
+		expect(ctx.messages).toContain('Usage: test-cli cmd')
+		expect(ctx.messages).not.toContain('unknown option')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('shows the version for a sub command that declares no options', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		const cli = builder.command({ name: 'cmd', run: () => expect.fail('should not reach') })
 		await cli.parse(argv('test-cli cmd --version'))
-		expect(ctx.sl.reporter.getLogMessage()).toEqual('1.0.0')
+		expect(ctx.messages).toEqual('1.0.0')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('shows help even when the invocation is otherwise invalid', async () => {
@@ -980,7 +979,7 @@ describe('global options are accepted by every command', () => {
 			run: () => expect.fail('should not reach')
 		})
 		await cli.parse(argv('test-cli --help'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('Usage: test-cli')
+		expect(ctx.messages).toContain('Usage: test-cli')
 		expect(ctx.exitCode).toBeUndefined()
 	})
 	it('runs a sub command given a well-formed global flag', async () => {
@@ -1002,7 +1001,7 @@ describe('a malformed global option value under a sub command (#614)', () => {
 			commands: [command({ name: 'sub', run: () => expect.fail('should not reach') })]
 		})
 		expect(await cli.parse(argv(`test-cli sub ${flag}`))).toBe(exitCodes.usage)
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain(message)
 		expect(msg).not.toContain('unknown option')
 		expect(msg).toContain('Usage: test-cli sub')
@@ -1011,7 +1010,7 @@ describe('a malformed global option value under a sub command (#614)', () => {
 	it('matches the root command error for the same input', async () => {
 		const [rootBuilder, rootCtx] = setupBuilderTest()
 		await rootBuilder.default({ run: () => expect.fail('should not reach') }).parse(argv('test-cli --verbose=notabool'))
-		expect(rootCtx.sl.reporter.getLogMessage()).toContain(
+		expect(rootCtx.messages).toContain(
 			'invalid value for option --verbose: expected to be boolean, received "notabool"'
 		)
 		expect(rootCtx.exitCode).toBe(exitCodes.usage)
@@ -1081,7 +1080,7 @@ describe('global options are resolved before usage errors (axi-native 3.2)', () 
 	it('prints a malformed global flag under a sub command once, as today', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --verbose=nope'))
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg.split('invalid value for option --verbose').length).toBe(2)
 		expect(ctx.exitCode).toBe(exitCodes.usage)
 	})
@@ -1096,7 +1095,7 @@ describe('CliError', () => {
 			}
 		})
 		expect(await cli.parse(argv('test-cli'))).toBe(exitCodes.error)
-		expect(ctx.sl.reporter.getLogMessage()).toContain('cannot reach the registry')
+		expect(ctx.messages).toContain('cannot reach the registry')
 		expect(ctx.exitCode).toBe(1)
 	})
 	it('exits with the code the command chose', async () => {
@@ -1117,7 +1116,7 @@ describe('CliError', () => {
 			}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('valid fields: name, version')
+		expect(ctx.messages).toContain('valid fields: name, version')
 	})
 	it('is caught when thrown asynchronously', async () => {
 		const [builder, ctx] = setupBuilderTest()
@@ -1128,7 +1127,7 @@ describe('CliError', () => {
 			}
 		})
 		await cli.parse(argv('test-cli'))
-		expect(ctx.sl.reporter.getLogMessage()).toContain('async boom')
+		expect(ctx.messages).toContain('async boom')
 		expect(ctx.exitCode).toBe(1)
 	})
 	it('does not swallow other errors', async () => {
@@ -1148,7 +1147,7 @@ describe('--show-config (#317)', () => {
 		const ctx = mockContext({ fixtureDir: 'has-json-config' })
 		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain(`config: ${getFixturePath('has-json-config')}`)
 		expect(msg).toContain('show-config.json')
 		expect(msg).toContain('"a": 1')
@@ -1158,7 +1157,7 @@ describe('--show-config (#317)', () => {
 		const ctx = mockContext({ fixtureDir: 'has-pjson-config' })
 		await builder(ctx, { name: 'show-config', version: '1.0.0', config: true }).parse(argv('show-config --show-config'))
 
-		const msg = ctx.sl.reporter.getLogMessage()
+		const msg = ctx.messages
 		expect(msg).toContain('package.json (property "show-config")')
 		expect(msg).toContain('"a": 1')
 	})
@@ -1167,21 +1166,21 @@ describe('--show-config (#317)', () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
 		await builder.default({ run() {} }).parse(argv('test-cli --show-config'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('config: not found')
+		expect(ctx.messages).toContain('config: not found')
 	})
 
 	it('is offered by a cli that accepts config', async () => {
 		const [builder, ctx] = setupBuilderTest(undefined, { config: true })
 		await builder.default({ run() {} }).parse(argv('test-cli --help'))
 
-		expect(ctx.sl.reporter.getLogMessage()).toContain('[--show-config]')
+		expect(ctx.messages).toContain('[--show-config]')
 	})
 
 	it('is not offered by a cli that does not accept config', async () => {
 		const [builder, ctx] = setupBuilderTest()
 		await builder.default({ run() {} }).parse(argv('test-cli --help'))
 
-		expect(ctx.sl.reporter.getLogMessage()).not.toContain('show-config')
+		expect(ctx.messages).not.toContain('show-config')
 	})
 })
 

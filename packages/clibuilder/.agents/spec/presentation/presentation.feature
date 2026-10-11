@@ -445,10 +445,11 @@ Feature: Presentation
     When a message is said
     Then it is coloured, unless FORCE_COLOR is 0 or false
 
-  Scenario: without streams or axi output the v11 ui is used
+  Scenario: without streams or axi output the built-in ui writes to the process streams
     Given a cli built with neither streams nor output axi
-    When it says something
-    Then its output is the standard-log output it was before, byte for byte
+    When it says something at each level
+    Then info and debug are on the process stdout and warn and error on its stderr, with no clibuilder prefix
+    And a stream that is not a TTY carries no colour
 
   # ── UC9 — EPIPE on the process stdout ──
 

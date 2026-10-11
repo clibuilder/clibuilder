@@ -309,7 +309,7 @@ describe('a config failing the command schema', () => {
 				}
 			})
 			.parse(argv('app'))
-		return { result, stdout: ctx.stdout, messages: ctx.sl.reporter.getLogMessage(), exitCode: ctx.exitCode }
+		return { result, stdout: ctx.stdout, messages: ctx.messages, exitCode: ctx.exitCode }
 	}
 
 	it('is reported as invalid-config on stdout under output axi, without the help, exit 1', async () => {

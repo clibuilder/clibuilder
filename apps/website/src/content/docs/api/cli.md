@@ -92,16 +92,20 @@ So is a usage error: the top-ranked one is one coded error on stdout, with no he
 `'axi'` becomes the default in v12. Both modes
 are permanent. See the [v12 roadmap](/clibuilder/roadmap/v12/#output-modes-axi-and-console).
 
-When you pass `streams` or set `output: 'axi'`, the CLI uses its built-in UI:
+In both modes the CLI writes through its built-in UI:
 
 - Each message is one line: the arguments joined by spaces, with objects shown through
   `util.inspect`.
 - `error` is red and `warn` is yellow, but only on a terminal. A stream that is not a TTY never gets
   colour. On a terminal, `FORCE_COLOR` decides when it is set (`0` or `false` turns colour off),
   otherwise a non-empty `NO_COLOR` turns colour off.
-- It does not add the `clibuilder` prefix that the default UI puts on the framework's own messages.
+- It does not add a `clibuilder` prefix to the framework's own messages.
 
-Without either option, the CLI writes exactly what it wrote before.
+**v12, unreleased:** the built-in UI is the only one, and `clibuilder` no longer depends on
+standard-log. A CLI on `clibuilder` 11.5.0 writes through standard-log instead, which prefixes the
+framework's own messages with `clibuilder` and colours their `error` and `warn` text even when
+stderr is not a terminal. See
+[standard-log is removed](/clibuilder/roadmap/v12/#standard-log-is-removed).
 
 If the reader of `process.stdout` closes early, as in `app | head -1`, the CLI drops the rest of its
 output and exits with code 0 instead of crashing on `EPIPE`. This applies whenever stdout is

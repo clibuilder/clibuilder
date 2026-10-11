@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -168,7 +168,7 @@ await app.parse(process.argv)
 describe('the ui engine a real process gets', () => {
 	const esm = pathToFileURL(resolve(import.meta.dirname, '../../esm/index.js')).href
 
-	function run(cliOptions: string) {
+	function run(cliOptions: string, extraEnv: Record<string, string> = {}) {
 		const dir = mkdtempSync(join(tmpdir(), 'clibuilder-engine-'))
 		const script = join(dir, 'bin.mjs')
 		writeFileSync(
@@ -182,16 +182,27 @@ await cli({ name: 'app', version: '1.0.0', ${cliOptions} })
 		const env = { ...process.env }
 		delete env.FORCE_COLOR
 		delete env.NO_COLOR
-		return execFileSync(process.execPath, [script], { env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+		const { stdout, stderr } = spawnSync(process.execPath, [script], {
+			env: { ...env, ...extraEnv },
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe']
+		})
+		return { stdout, stderr }
 	}
 
-	it('is standard-log without streams or axi output, so the output is unchanged', () => {
-		// standard-log-color prefixes the framework's own messages with its logger id
-		expect(run('')).toMatch(/^clibuilder argv: /)
-		expect(run(`output: 'console'`)).toMatch(/^clibuilder argv: /)
+	// v11 wrote through standard-log here, prefixing the framework's own messages with `clibuilder`
+	it('is the built-in ui in every mode', () => {
+		expect(run('').stdout).toMatch(/^argv: .*\ninfo\n$/)
+		expect(run(`output: 'console'`).stdout).toMatch(/^argv: .*\ninfo\n$/)
+		expect(run('streams: { stdout: process.stdout, stderr: process.stderr }').stdout).toMatch(/^argv: .*\ninfo\n$/)
 	})
 
-	it('is the built-in ui when streams are given', () => {
-		expect(run('streams: { stdout: process.stdout, stderr: process.stderr }')).toMatch(/^argv: .*\ninfo\n$/)
+	it('routes warn and error to stderr in console mode', () => {
+		expect(run('').stderr).toBe('warn\nerror\n')
+	})
+
+	// v11's standard-log-color wrapped the framework's error and warn text in colour on any stream
+	it('does not colour a stream that is not a TTY, even with FORCE_COLOR', () => {
+		expect(run('', { FORCE_COLOR: '1' }).stderr).toBe('warn\nerror\n')
 	})
 })

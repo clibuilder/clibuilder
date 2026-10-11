@@ -321,33 +321,15 @@ importers:
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
-      pad-right:
-        specifier: ^0.2.2
-        version: 0.2.2
       search-packages:
         specifier: ^2.2.3
         version: 2.2.3
-      standard-log:
-        specifier: ^13.3.2
-        version: 13.3.2
-      standard-log-color:
-        specifier: ^13.3.2
-        version: 13.3.2(standard-log@13.3.2)
       tersify:
         specifier: ^4.0.8
         version: 4.0.8
-      tmp:
-        specifier: ^0.2.7
-        version: 0.2.7
-      tslib:
-        specifier: ^2.5.0
-        version: 2.8.1
       type-plus:
         specifier: 8.0.0
         version: 8.0.0(typescript@5.9.3)
-      wordwrap:
-        specifier: ^1.0.0
-        version: 1.0.0
       zod:
         specifier: ^3.22.3
         version: 3.25.76
@@ -361,12 +343,6 @@ importers:
       '@types/node':
         specifier: ^24.12.2
         version: 24.12.2
-      '@types/tmp':
-        specifier: ^0.2.3
-        version: 0.2.6
-      '@types/wordwrap':
-        specifier: github:types/wordwrap
-        version: https://codeload.github.com/types/wordwrap/tar.gz/caf776ac962b305476b491499cb8457db9729c1a
       '@unional/fixture':
         specifier: ^6.0.2
         version: 6.0.2(typescript@5.9.3)
@@ -2464,18 +2440,11 @@ packages:
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
 
-  '@types/tmp@0.2.6':
-    resolution: {integrity: sha512-chhaNf2oKHlRkDGt+tiKE2Z5aJ6qalm7Z9rlLdBwmOiAAf09YQvvoLXjWK4HWPF1xU/fqvMgfNfpVoBscA/tKA==}
-
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/wordwrap@https://codeload.github.com/types/wordwrap/tar.gz/caf776ac962b305476b491499cb8457db9729c1a':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/types/wordwrap/tar.gz/caf776ac962b305476b491499cb8457db9729c1a}
-    version: 1.0.0
 
   '@ungap/structured-clone@1.3.3':
     resolution: {integrity: sha512-60YRaenCQcVjYEKOcG824+DRGGIQ3VKErcBoAEDJZz5bKIs2ZG+X/H9Nk+Q6EVkwJk5QNApxbrc5QtBSwtrXAg==}
@@ -6905,13 +6874,9 @@ snapshots:
     dependencies:
       '@types/node': 24.12.2
 
-  '@types/tmp@0.2.6': {}
-
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
-
-  '@types/wordwrap@https://codeload.github.com/types/wordwrap/tar.gz/caf776ac962b305476b491499cb8457db9729c1a': {}
 
   '@ungap/structured-clone@1.3.3': {}
 
