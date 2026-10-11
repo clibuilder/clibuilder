@@ -15,4 +15,4 @@ Remove zod. `t` is the only way to declare an argument or option `type`, and `co
 - **Help hints use the `t` form**: `[--name <string>]` and `<file: string>` instead of `[--name=string]` and `<file=string>`, and a string default is quoted, including the global `--format`'s.
 - **`js-yaml` is an optional peer dependency**, loaded only when a `.yaml` or `.yml` config file is read. Without it, reading one fails with a `CliError` whose code is `missing-peer-dependency`. Migration: a CLI whose users write YAML config runs `npm install js-yaml`.
 
-`zod`, `type-plus`, `tersify` and `js-yaml` leave `dependencies`. With standard-log also gone, a clean install of `clibuilder` drops from 41 packages (19 MB) in 11.5.0 to 3 (1.2 MB), and the packed tarball from 396 KB to 108.5 kB.
+`zod`, `type-plus`, `tersify` and `js-yaml` leave `dependencies`. With standard-log also gone, a clean install of `clibuilder` drops from 41 packages (19 MB) in 11.5.0 to 3 (1.2 MB), and the packed tarball from 396 KB to 108.9 kB.
