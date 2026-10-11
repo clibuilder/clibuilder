@@ -1,4 +1,5 @@
 import { encode } from '@toon-format/toon'
+import * as clibuilder from 'clibuilder'
 import { CliError, exitCodes } from 'clibuilder'
 import { type ErrorReport, errorOutput } from './error.js'
 import type { OutputFormat } from './format.js'
@@ -56,18 +57,29 @@ export type ResultOptions<T> = OutputRenderers<T> & {
 	help?: Help | undefined
 }
 
+/**
+ * What {@link Output.result} returns: return it from `run()`, and `parse()` resolves to the value.
+ *
+ * With clibuilder 11.6 or later it is an answer marked as already written, so clibuilder's result channel
+ * (`cli({ output: 'axi' })`) does not print it a second time. With an older clibuilder it is the value itself.
+ */
+export type OutputResult<T> = T | { readonly value: T }
+
 export type Output = {
 	/** The format this output writes, with the default filled in. */
 	readonly format: OutputFormat
 	/**
-	 * Writes `value` in the output's format and returns it, so a command can
-	 * `return output.result(report)` and stay testable through its return value.
+	 * Writes `value` in the output's format and returns it for `run()` to return, so a command can
+	 * `return output.result(report)` and stay testable through what `parse()` resolves to.
 	 *
 	 * `options.help` adds next-step suggestions after the result; `options.toon` / `json` / `text`
 	 * replace the rendering for that format. A renderer's output is followed by the suggestions,
 	 * encoded in the same format.
+	 *
+	 * With clibuilder 11.6 or later the value comes back marked as already written, so a cli with
+	 * `output: 'axi'`, which prints what `run()` returns, prints it once. `parse()` still resolves to the value.
 	 */
-	result<T extends object>(value: T, options?: ResultOptions<T>): T
+	result<T extends object>(value: T, options?: ResultOptions<T>): OutputResult<T>
 	/** Writes a document verbatim, whatever the format. */
 	document(content: string): void
 	/**
@@ -104,17 +116,16 @@ export function createOutput(format: OutputFormat | undefined, options: { stdout
 		result(value, options) {
 			const render = options?.[resolved]
 			const help = helpLines(options?.help)
-			if (!render) {
-				writeResult(withHelp(value, help), resolved, stdout)
-				return value
-			}
-			const body = render(value)
-			if (help.length === 0) writeDocument(body, stdout)
+			if (!render) writeResult(withHelp(value, help), resolved, stdout)
 			else {
-				const separator = body.endsWith('\n') ? '\n' : '\n\n'
-				writeDocument(`${body}${separator}${encodeResult({ help }, resolved)}`, stdout)
+				const body = render(value)
+				if (help.length === 0) writeDocument(body, stdout)
+				else {
+					const separator = body.endsWith('\n') ? '\n' : '\n\n'
+					writeDocument(`${body}${separator}${encodeResult({ help }, resolved)}`, stdout)
+				}
 			}
-			return value
+			return written(value)
 		},
 		document(content) {
 			writeDocument(content, stdout)
@@ -128,4 +139,16 @@ export function createOutput(format: OutputFormat | undefined, options: { stdout
 				: new CliError(report.message, { exitCode })
 		}
 	}
+}
+
+/**
+ * Marks a value this package already wrote, so clibuilder's result channel prints nothing more for it
+ * and `parse()` resolves to the value: the same `Symbol.for` key clibuilder's `result()` answers carry.
+ *
+ * The result channel is new in clibuilder 11.6, detected by its `result` export.
+ * An older clibuilder prints no returned value, so the value itself is returned.
+ */
+function written<T>(value: T): OutputResult<T> {
+	if (typeof (clibuilder as { result?: unknown }).result !== 'function') return value
+	return { [Symbol.for('clibuilder.answer')]: 'written', value } as { readonly value: T }
 }

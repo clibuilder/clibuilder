@@ -105,6 +105,16 @@ diagnostic.
 `args.format` is typed `'toon' | 'json' | 'text' | undefined`. `clibuilder` rejects any other value
 as a usage error before `run()` is called.
 
+:::note[Unreleased: the result is printed once]
+With the next `clibuilder` 11 minor, which is not published yet, `cli({ output: 'axi' })` prints the
+value `run()` returns ([the result channel](/clibuilder/api/cli/#the-result-channel)). With the next
+`@clibuilder/axi` patch, `output.result()` returns the value marked as already written, so the CLI
+prints it once, and `parse()` still resolves to the value. Its return type becomes
+`OutputResult<T>`: return it from `run()` rather than reading fields from it. `output.result()` keeps
+writing the value itself, so `output: 'console'` and a custom writer are unchanged. A new CLI can
+return `result(value, { help, render })` from `clibuilder` instead.
+:::
+
 ### The global `--format` option
 
 :::caution[Unreleased: `formatOption` conflicts with the global `--format`]

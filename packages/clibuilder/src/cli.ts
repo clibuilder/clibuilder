@@ -268,6 +268,11 @@ export namespace cli {
 						 * else the `cli({ format })` value, `toon` by default.
 						 */
 						format: Format
+						/**
+						 * The cli's output mode, `cli({ output })`: `'console'` by default.
+						 * Under `'axi'` the value `run()` returns is printed (see `result()`).
+						 */
+						output: Output
 					},
 					args: Command.RunArgs<A, O>
 				): Promise<any> | any
@@ -311,6 +316,11 @@ export namespace cli {
 							 * else the `cli({ format })` value, `toon` by default.
 							 */
 							format: Format
+							/**
+							 * The cli's output mode, `cli({ output })`: `'console'` by default.
+							 * Under `'axi'` the value `run()` returns is printed (see `result()`).
+							 */
+							output: Output
 						},
 						args: RunArgs<A, O>
 					): Promise<any> | any

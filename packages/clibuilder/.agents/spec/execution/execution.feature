@@ -404,6 +404,61 @@ Feature: Execution
     When it is invoked with --format json and its command throws a CliError
     Then stdout holds the report once, encoded in json
 
+  Scenario: in axi output a value returned from run is printed once in the resolved format
+    Given a cli with output axi
+    When its command returns an object, with --format toon, json or text, or none
+    Then stdout holds the value once, encoded in that format, else in the cli's format, ending on one newline
+    And nothing is written to stderr and the exit code is unset
+
+  Scenario: in axi output undefined prints nothing
+    Given a cli with output axi
+    When its command returns undefined, or returns nothing
+    Then nothing is written to stdout or stderr
+
+  Scenario: in axi output a returned string is written verbatim
+    Given a cli with output axi
+    When its command returns a string, in any format
+    Then stdout holds the string exactly, ending on one newline
+
+  Scenario: in axi output an array or a scalar is encoded under the result key
+    Given a cli with output axi
+    When its command returns an array, an array of records, a number, a boolean or null
+    Then stdout holds it encoded under the key result in the resolved format
+
+  Scenario: result adds next steps and per-format renderers
+    Given a cli with output axi
+    When its command returns result(value, { help }) with one or more help lines
+    Then the help lines are encoded as the last key, help, inside the result, and an empty list leaves the key out
+    When the command passes a renderer for the resolved format
+    Then the renderer's string is written verbatim, followed by the help encoded in the same format after a blank line
+    And a format without a renderer uses the encoder
+
+  Scenario: document writes its content verbatim
+    Given a cli with output axi
+    When its command returns document(content), in any format
+    Then stdout holds the content exactly, ending on one newline
+
+  Scenario: empty is a success with an explicit empty state
+    Given a cli with output axi
+    When its command returns empty(message), with or without help
+    Then stdout holds the message under the key empty, then any help, encoded in the resolved format
+    And the exit code is unset, so the cli exits 0
+
+  Scenario: an answer already written is not printed again
+    Given a cli with output axi
+    When its command returns an answer marked as written, as @clibuilder/axi's output.result() returns
+    Then nothing more is written to stdout
+
+  Scenario: parse resolves to the returned value
+    Given a cli in either output
+    When its command returns a value, or result(value), document(content) or empty(message)
+    Then parse resolves to the value, the content or the message
+
+  Scenario: in console output a returned value is not printed
+    Given a cli in the default console output, with or without a cli format
+    When its command returns a value, or result(), document() or empty()
+    Then nothing is written to stdout for it, as before
+
   # ── UC5 — context ──
 
   Scenario: the first config resolution starts the walk and keeps its promise

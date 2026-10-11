@@ -109,6 +109,7 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | `this.keywords` | `string[]` | The CLI's plugin keywords. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
 | `this.format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else the CLI's `format`, `'toon'` by default. |
+| `this.output` | `'console' \| 'axi'` | **Unreleased.** The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'console'` by default. |
 
 ### `args`
 
@@ -121,6 +122,10 @@ always present.
 Whatever `run()` returns (or resolves to) becomes the resolved value of
 [`parse()`](/clibuilder/api/cli/#parseargv), and the `result` from
 [`testCommand()`](/clibuilder/api/test-command/).
+
+**Unreleased:** with `cli({ output: 'axi' })` the returned value is also printed once on stdout, in
+`this.format`. `result()`, `document()` and `empty()` control how; `parse()` resolves to the value
+they wrap. See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
 ## `PluginActivationContext`
 

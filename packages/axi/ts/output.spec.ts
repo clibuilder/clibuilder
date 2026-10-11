@@ -1,13 +1,35 @@
 import { Writable } from 'node:stream'
 import { CliError, cli, isCliError } from 'clibuilder'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOutput, encodeError, encodeResult, writeDocument, writeError, writeResult } from './output.js'
+
+// switches the installed clibuilder between one with the result channel (11.6 and later) and one without
+const core = vi.hoisted(() => ({ resultChannel: true }))
+vi.mock('clibuilder', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('clibuilder')>()
+	return {
+		...actual,
+		get result() {
+			return core.resultChannel ? actual.result : undefined
+		}
+	}
+})
 
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
 beforeEach(() => {
 	stdout.mockClear()
 })
+
+afterEach(() => {
+	core.resultChannel = true
+})
+
+/** What `parse()` resolves to for what `run()` returned: the value inside an answer, else the value. */
+function resolvedValue(returned: unknown) {
+	const marker = Symbol.for('clibuilder.answer')
+	return typeof returned === 'object' && returned !== null && marker in returned ? (returned as any).value : returned
+}
 
 describe('encodeResult', () => {
 	it('encodes TOON, JSON, and text without writing', () => {
@@ -68,7 +90,7 @@ describe('createOutput', () => {
 
 	it('writes a result in its format and returns it', () => {
 		const report = { plugins: ['a'] }
-		expect(createOutput('json').result(report)).toBe(report)
+		expect(resolvedValue(createOutput('json').result(report))).toBe(report)
 		expect(stdout).toHaveBeenCalledWith('{"plugins":["a"]}\n')
 	})
 
@@ -118,7 +140,7 @@ describe('createOutput().result with help', () => {
 
 	it('returns the value without the suggestions', () => {
 		const value = { done: true }
-		expect(createOutput('toon').result(value, { help: 'Run `next`' })).toBe(value)
+		expect(resolvedValue(createOutput('toon').result(value, { help: 'Run `next`' }))).toBe(value)
 	})
 
 	it('leaves the key out when there is nothing to suggest', () => {
@@ -237,5 +259,75 @@ describe('createOutput().error', () => {
 				process.exitCode = undefined
 			})
 		}
+	})
+})
+
+describe('createOutput().result with the result channel of clibuilder', () => {
+	function memoryStream() {
+		const stream = new Writable({
+			decodeStrings: false,
+			write(chunk, _encoding, callback) {
+				stream.text += chunk
+				callback()
+			}
+		}) as Writable & { text: string }
+		stream.text = ''
+		return stream
+	}
+
+	async function run(output: cli.Output | undefined) {
+		const streams = { stdout: memoryStream(), stderr: memoryStream() }
+		const value = await cli({ name: 'app', version: '1.0.0', output, streams })
+			.command({
+				name: 'list',
+				run() {
+					return createOutput(this.format, { stdout: streams.stdout }).result(
+						{ plugins: ['a'] },
+						{ help: 'Run `next`' }
+					)
+				}
+			})
+			.parse(['node', 'app', 'list'])
+		return { value, stdout: streams.stdout.text, stderr: streams.stderr.text }
+	}
+
+	it('returns the value marked as already written, which clibuilder recognizes', () => {
+		const value = { plugins: ['a'] }
+		const returned = createOutput('toon').result(value)
+		expect(returned).not.toBe(value)
+		expect((returned as any)[Symbol.for('clibuilder.answer')]).toBe('written')
+		expect(resolvedValue(returned)).toBe(value)
+		expect(stdout).toHaveBeenCalledWith('plugins[1]: a\n')
+	})
+
+	it('returns the value itself on a clibuilder without the result channel', () => {
+		core.resultChannel = false
+		const value = { plugins: ['a'] }
+		expect(createOutput('toon').result(value)).toBe(value)
+		expect(stdout).toHaveBeenCalledWith('plugins[1]: a\n')
+	})
+
+	it.each([
+		['axi', 'axi'],
+		['console', 'console'],
+		['the default', undefined]
+	] as const)('is printed once in %s output, and parse() resolves to the value', async (_, output) => {
+		const r = await run(output)
+		expect(r.stdout).toBe('plugins[1]: a\nhelp[1]: Run `next`\n')
+		expect(r.stderr).toBe('')
+		expect(r.value).toEqual({ plugins: ['a'] })
+	})
+
+	it('writes a document once in axi output', async () => {
+		const streams = { stdout: memoryStream(), stderr: memoryStream() }
+		await cli({ name: 'app', version: '1.0.0', output: 'axi', streams })
+			.command({
+				name: 'show',
+				run() {
+					createOutput(this.format, { stdout: streams.stdout }).document('# Rules')
+				}
+			})
+			.parse(['node', 'app', 'show'])
+		expect(streams.stdout.text).toBe('# Rules\n')
 	})
 })

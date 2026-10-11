@@ -50,6 +50,13 @@ the same invocation gives the same output wherever it runs.
   returns the value, so the command stays testable through its return; a
   renderer passed for the active format replaces the encoder and is written
   verbatim; `document()` writes verbatim whatever the format.
+- With clibuilder 11.6 or later, which prints what `run()` returns under
+  `cli({ output: 'axi' })`, `result()` returns the value marked as already
+  written (clibuilder's `Symbol.for('clibuilder.answer')` answer), so the result
+  is printed once, and `parse()` still resolves to the value. With an older
+  clibuilder, detected by its missing `result` export, it returns the value
+  itself. `result()` keeps writing the value itself in both cases, so a cli in
+  `console` output, or a caller passing its own writer, still gets it.
 - Every write ends the stream on exactly one newline.
 
 ### Next steps
