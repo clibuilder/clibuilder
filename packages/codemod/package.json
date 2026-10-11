@@ -1,7 +1,6 @@
 {
 	"name": "@clibuilder/codemod",
 	"version": "0.0.0",
-	"private": true,
 	"description": "Codemod that upgrades a clibuilder 11 CLI to clibuilder 12",
 	"keywords": [
 		"cli",
