@@ -3,19 +3,34 @@ title: Configuration
 description: Let your CLI read a config file — JSON, JSONC, YAML, cjs, or mjs — and validate it per command with any Standard Schema.
 ---
 
-A CLI opts into config by declaring `config` on [`cli()`](/clibuilder/api/cli/). Doing so also makes
-`.parse()` available immediately, since a config-driven CLI can get all of its commands from an
-extension such as [plugins](/clibuilder/guides/plugins/). Config loads for the commands only. It
-does not load plugins.
+A CLI opts into config by adding the `config()` extension from the `clibuilder/config` subpath with
+[`.use()`](/clibuilder/api/cli/#useextension). Config loads for the commands only. It does not load
+plugins.
 
 ```ts
-cli({ name: 'app', version: '1.0.0', config: true })
+import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
+
+cli({ name: 'app', version: '1.0.0' }).use(config())
 ```
 
-`config: true` derives the config name from the CLI name (`app`). Pass a string to override it:
+`config()` derives the config name from the CLI name (`app`). Pass `name` to override it:
 
 ```ts
-cli({ name: 'app', version: '1.0.0', config: 'alt-config.json' })
+cli({ name: 'app', version: '1.0.0' }).use(config({ name: 'alt-config' }))
+```
+
+A CLI without `.use(config())` contains no config loader, no find-up and no parsers. `.use(config())`
+gives the CLI the global [`--show-config`](#inspecting-the-resolved-config) option, the validation of
+each command's `config` schema before `run()`, and `this.config`. The config is resolved on the first
+`parse()`, not when `cli()` is called.
+
+A command that declares `config` needs `.use(config())` on its CLI. Call `.use(config())` before
+`.command()` and `.default()`: on a CLI without it, a command with `config` is a type error, and at
+run time it fails with:
+
+```
+Error: command 'x' declares config, but the cli does not load config. Add .use(config()) from 'clibuilder/config' to the cli.
 ```
 
 ## Where the config is found
@@ -52,9 +67,11 @@ not install one for you.
 
 ```ts
 import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import { z } from 'zod'
 
-cli({ name: 'app', version: '1.0.0', config: true })
+cli({ name: 'app', version: '1.0.0' })
+  .use(config())
   .default({
     config: z.object({ presets: z.string() }),
     run() {
@@ -73,9 +90,11 @@ The same works with valibot:
 
 ```ts
 import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import * as v from 'valibot'
 
-cli({ name: 'app', version: '1.0.0', config: true })
+cli({ name: 'app', version: '1.0.0' })
+  .use(config())
   .default({
     config: v.object({ presets: v.string(), port: v.optional(v.number(), 3000) }),
     run() {
@@ -96,7 +115,8 @@ Different commands can ask for different slices of the same file — each declar
 and each validates independently.
 
 ```ts
-cli({ name: 'app', version: '1.0.0', config: true })
+cli({ name: 'app', version: '1.0.0' })
+  .use(config())
   .command({
     name: 'build',
     description: 'build the project',
@@ -189,7 +209,7 @@ export default {
 
 ## Inspecting the resolved config
 
-A CLI that accepts config gets a `--show-config` option, which prints the config it resolved and the
+A CLI with `.use(config())` gets a `--show-config` option, which prints the config it resolved and the
 file it came from. It is an answer on stdout and follows `--format`, `toon` by default:
 
 ```sh
@@ -232,11 +252,11 @@ whatever the `--format`, as in 11.5.0.
 
 ## Reading the config yourself
 
-`clibuilder` exports its config resolution, so a plugin or a tool can ask the same questions the CLI
+`clibuilder/config` exports its config resolution, so a plugin or a tool can ask the same questions the CLI
 asks — including *where* an answer came from.
 
 ```ts
-import { lookupConfig, resolveConfig } from 'clibuilder'
+import { lookupConfig, resolveConfig } from 'clibuilder/config'
 
 // where would the config come from? (no file is read)
 const { source, candidates } = lookupConfig({ cwd: process.cwd() }, 'app')
@@ -255,7 +275,7 @@ const { config } = await resolveConfig({ cwd: process.cwd(), ui }, 'app')
 
 `candidates` is every filename that was searched for, in priority order.
 
-Also exported: `loadConfig` (the config value alone), `readConfigFile` (parse one known file),
+Also exported from `clibuilder/config`: `loadConfig` (the config value alone), `readConfigFile` (parse one known file),
 `getConfigFilenames`, `getConfigFormat`, and `describeConfigSource` (render a `source` as one line).
 
 :::note
@@ -268,8 +288,8 @@ These are read-only. Writing config back to disk is not supported yet — see
 :::caution[Unreleased]
 In `clibuilder` 11, `plugins` is reserved by `clibuilder` itself and lists the packages whose
 commands get loaded. In `clibuilder` 12 (unreleased) core no longer reserves it and loads nothing.
-[`plugins()`](/clibuilder/packages/plugins/) from `@clibuilder/plugins` reads it from the resolved
-config. If the config lists plugins and the CLI loads none, it warns once.
+[`plugins()`](/clibuilder/packages/plugins/) from `@clibuilder/plugins` reads it from the config
+`.use(config())` resolved, so add `config()` before `plugins()`. If the config lists plugins and the CLI loads none, it warns once.
 :::
 
 A CLI that calls `.use(plugins())` reads a `plugins` key that lists the packages whose commands get

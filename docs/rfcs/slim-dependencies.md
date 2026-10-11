@@ -2,6 +2,7 @@
 
 - **Status:** Accepted. Maintainer decisions recorded 2026-10-11; the items in [section 8](#8-open-questions), [section 9.9](#99-open-questions) and [section 10](#10-still-open) are still open. The `t` descriptors (sections 3.4 and 3.5) are implemented in `args-minus`; the rest is design only.
 - **Amended 2026-10-10:** [section 9](#9-amendment-move-all-plugin-support-out-of-core) moves plugin loading out of core as well as discovery. It supersedes section 5.3 and closes Q3.
+- **Amended 2026-10-11:** config loading moves behind `.use(config())` in a `clibuilder/config` subpath ([#692](https://github.com/clibuilder/clibuilder/issues/692)). The `config` option of `cli()` is removed. See sections 5.2, 9.2, 9.3 and 9.4.
 - **Target:** `clibuilder@12` (breaking), shipped with [axi-native](axi-native.md)
 - **Related:** [#639](https://github.com/clibuilder/clibuilder/issues/639) (AXI-native clibuilder), `@clibuilder/axi` (#630, #636)
 - **Scope:** what `clibuilder` installs, and the public API changes that follow from removing it. Not the #639 behaviour changes, though section 4 checks the plan against them.
@@ -328,6 +329,8 @@ Also stop re-exporting `testCommand` from the main entry, so test-only code stay
 
 ### 5.2 Config loading
 
+Per [#692](https://github.com/clibuilder/clibuilder/issues/692), the loader lives in the `clibuilder/config` subpath and a CLI adds it with `.use(config())`. A CLI without it contains no loader, no find-up and no parsers. The table below describes what the loader reads.
+
 A subpath export alone **does not** reduce install size, because `dependencies` are installed whatever is imported. Only a separate package or an optional peer does.
 
 | Format | Core v12 |
@@ -488,7 +491,7 @@ Section 5.3 moved only discovery out of core and kept loading in, because repobu
 | `plugins list` / `plugins search` | `builtin/plugin_commands/` | `@clibuilder/plugins` |
 | The `plugins` key in config | read by `app/builder.ts` | read by `plugins()` through `resolveConfig`. Core no longer reserves it |
 | Registry: `createRegistry`, `defineKey`, `defineCollectionKey`, `this.registry` | `plugins/registry.ts` | **stays in core** |
-| Config resolution (`resolveConfig`, `lookupConfig`, …) | `config.ts` | stays in core |
+| Config resolution (`resolveConfig`, `lookupConfig`, …) | `config.ts`, exported from the root | moves to the `clibuilder/config` subpath, behind `.use(config())` (#692) |
 
 The registry stays because it is not specific to plugins. It is how any extension shares values with the host's commands. It has no dependencies and is about 70 lines. Keeping it in core means `this.registry` keeps working, and any extension can use it too.
 
@@ -504,8 +507,14 @@ type ExtensionContext = {
   readonly cwd: string
   readonly ui: UI
   readonly registry: RegistryOwner
+  /** Values extensions share with each other, keyed by `defineKey()`. Commands do not see them. */
+  readonly shared: SharedState
   addCommand(command: cli.Command): void
-  /** The cli's config and where it came from; `source.type` is 'none' when the cli sets no `config`. */
+  /** Adds a global option. When the caller passes it, `answer` runs instead of the command. */
+  addGlobalOption(name: string, entry: cli.Command.Options.Entry, answer: GlobalOptionAnswer): void
+  /** Adds a hook that runs before `run()`, once the arguments are valid. */
+  beforeRun(hook: BeforeRunHook): void
+  /** The config `.use(config())` resolved and where it came from; `source.type` is 'none' without it. */
   resolveConfig(): Promise<ConfigLoadResult>
 }
 
@@ -516,7 +525,14 @@ cli({ name: 'my-cli', version: '1.0.0' })
 
 - Extensions run in the order `.use()` was called. Each one is awaited before the next starts, so the command order is the same on every run. This is the same rule `loadPlugins` follows today.
 - Commands added by extensions come after the host's own `.command()` and `.default()` commands.
-- `.use()` makes `.parse()` available with no commands of its own, as `config` and `keywords` do today, because an extension may supply all of them. In v12 `config` still does, so `--show-config` and `--help` work on a CLI with no commands of its own.
+- `.use()` makes `.parse()` available with no commands of its own, because an extension may supply all of them. Config moves to `.use(config())` (#692), so `--show-config` and `--help` work on a CLI with no commands of its own once it has an extension.
+- Extensions run before the global options are resolved, so an extension can add a global option with `addGlobalOption`. The `ui` messages they write are held until the logging flags apply.
+- `shared` is a get, set and has store keyed by `defineKey()`. Extensions share values through it. A value can be replaced, and commands do not see it.
+- `addGlobalOption(name, entry, answer)` is answered instead of the command, after the logging flags apply. What `answer` returns is the answer, as for `run()`.
+- `beforeRun(hook)` runs before `run()` once the arguments are valid. A hook may set `run.config`, and fails the command by throwing a `CliError`.
+- `config()` from `clibuilder/config` is built on these: it resolves the config into shared state, adds `--show-config`, and validates each command's `config` schema in a `beforeRun` hook.
+- `config()` resolves the config on the first `parse()` that needs the command tree, not when `cli()` is called, and awaits it before the next extension runs. So `--show-config`, the `plugins()` extension after it and the unloaded-plugins warning (section 9.8) see the resolved config, and a bare `--version` still loads nothing.
+- `use()` of the extension `config()` returns brands the builder. A command that declares `config` on a builder without the brand is a type error, so `.use(config())` comes before the commands. A command the type check cannot see, such as a sub-command or one an extension adds, fails at runtime with an error that names `clibuilder/config`.
 - `--version` returns before any extension runs. This is the fast path #639 asks for (item 8). `--help` waits for extensions, because it has to list their commands.
 
 The hook is not plugin-specific. It is also the natural seam for lazy commands.
@@ -525,9 +541,11 @@ The hook is not plugin-specific. It is also the natural seam for lazy commands.
 
 ```ts
 import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import { plugins } from '@clibuilder/plugins'
 
-cli({ name: 'my-cli', version: '1.0.0', config: true })
+cli({ name: 'my-cli', version: '1.0.0' })
+  .use(config())
   .use(plugins({ keywords: ['my-cli-plugin'] }))
   .parse(process.argv)
 ```
@@ -537,7 +555,7 @@ cli({ name: 'my-cli', version: '1.0.0', config: true })
 | `keywords` | `[host.name]`, matching today's default (Q9.1) | the npm keywords `plugins list` and `plugins search` look for, and that the `dependencies` source matches |
 | `include` | `[]` | plugin packages the CLI author ships with the CLI (section 9.6) |
 | `dependencies` | `false` | load the project's direct dependencies that carry a keyword (section 9.6) |
-| `config` | `true` | read the `plugins` key from the cli's resolved config |
+| `config` | `true` | read the `plugins` key from the config `.use(config())` resolved. Add `config()` before `plugins()` |
 | `command` | `true` | add the `plugins list` / `plugins search` group |
 
 Dependencies are `import-meta-resolve`, `find-installed-packages` and `search-packages`, with `clibuilder ^12` as a peer. The two discovery packages are still imported lazily, so a CLI that never runs `plugins list` or `plugins search` never loads them.
@@ -571,7 +589,7 @@ Surveyed under `~/code` on 2026-10-10. No dependent uses `this.registry`, `this.
 
 | Package | Uses | Change |
 |---|---|---|
-| repobuddy/buddy | `config: true` loads its plugins | add `@clibuilder/plugins` and `.use(plugins())` |
+| repobuddy/buddy | `config: true` loads its plugins | add `@clibuilder/plugins`, `.use(config())` and `.use(plugins())` |
 | repobuddy/typescript | `import type { PluginActivationContext } from 'clibuilder'` | none in v12 (deprecated copy). Change the import path before v13 |
 | cyber-mux | `import type { PluginActivationContext } from 'clibuilder'` | same as repobuddy/typescript |
 | others in section 7 | no plugin use | none |

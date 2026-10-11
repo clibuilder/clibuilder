@@ -3,13 +3,15 @@
 require('clibuilder/compile-cache').enableCompileCache()
 
 const { CliError, cli, document } = require('clibuilder')
+const { config } = require('clibuilder/config')
 const { plugins } = require('@clibuilder/plugins')
 
 const app = cli({
 	name: 'test-cli',
-	version: '1.0.0',
-	config: true
+	version: '1.0.0'
 })
+	// loads the config for the commands and plugins(), and adds `--show-config`
+	.use(config())
 	.default({
 		run() {
 			// every ui message is a diagnostic on stderr in the default axi output

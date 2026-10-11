@@ -259,8 +259,8 @@ such as `my-cli deploy --version`, the version is answered after loading, as bef
 is plain text in every format. See
 [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi).
 
-One more is added only when the CLI declares `config`, since it would have nothing to report
-otherwise:
+One more is added only when the CLI has `.use(config())` from `clibuilder/config`, since it would
+have nothing to report otherwise:
 
 | Flag | Alias | Effect |
 | --- | --- | --- |

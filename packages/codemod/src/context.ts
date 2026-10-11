@@ -17,6 +17,7 @@ export type RuleId =
 	| 'show-help'
 	| 'axi-import'
 	| 'plugins'
+	| 'config'
 	| 'testing-import'
 	| 'printed-return'
 

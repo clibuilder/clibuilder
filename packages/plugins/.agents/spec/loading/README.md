@@ -106,7 +106,7 @@ the project, whichever module format the plugin ships, and exiting when done.
 
 | | |
 | --- | --- |
-| Trigger | a fixture CLI (`cli({ config: true }).use(plugins())`) is run with `node bin.js` from its own folder, its config naming a plugin |
+| Trigger | a fixture CLI (`cli({ ... }).use(config()).use(plugins())`) is run with `node bin.js` from its own folder, its config naming a plugin |
 | Inputs | the plugin package in the fixture's `node_modules`, and the command line |
 | Outcome | the plugin's command runs and the process exits with code 0 |
 

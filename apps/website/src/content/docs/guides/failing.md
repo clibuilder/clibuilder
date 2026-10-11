@@ -41,7 +41,7 @@ A command group is a command that has `commands` but no `run`, including a cli w
 It is incomplete without a sub command, so invoking it bare is a usage error too.
 
 The global options are `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli`, `--format` and
-`--show-config`. They are accepted by every command, so they are never reported as unknown. `--help` and
+`--show-config` (added by `.use(config())`). They are accepted by every command, so they are never reported as unknown. `--help` and
 `--version` are answered even when the rest of the command line is invalid, and both exit `0`:
 asking for help is not a usage error.
 

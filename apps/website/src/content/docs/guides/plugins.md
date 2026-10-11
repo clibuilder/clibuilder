@@ -33,14 +33,19 @@ and on disk.
 
 ```ts
 import { cli } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import { plugins } from '@clibuilder/plugins'
 
-cli({ name: 'my-cli', version: '1.0.0', config: true })
+cli({ name: 'my-cli', version: '1.0.0' })
+  .use(config())
   .use(plugins({ keywords: ['my-cli-plugin'] }))
   .parse(process.argv)
 ```
 
-A CLI that does not call `plugins()` has no plugin system. `config` alone loads the config for the
+Add `config()` before `plugins()`. `plugins()` reads the `plugins` key from the config that `config()`
+resolved, so without `config()` its config source sees no config.
+
+A CLI that does not call `plugins()` has no plugin system. `config()` alone loads the config for the
 commands and nothing else. If the config lists plugins and no extension reads it, the CLI warns
 once and names `@clibuilder/plugins`.
 
@@ -54,7 +59,8 @@ published against the old one.
 `<cli-name>-plugin` is the convention this library's own fixtures use, and it is a good default:
 
 ```ts
-cli({ name: 'my-cli', version: '1.0.0', config: true })
+cli({ name: 'my-cli', version: '1.0.0' })
+  .use(config())
   .use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
@@ -72,15 +78,15 @@ A few notes on the shape of the list:
 
 ```ts
 // keywords is ['my-cli'] — same as writing plugins({ keywords: ['my-cli'] })
-cli({ name: 'my-cli', version: '1.0.0', config: true }).use(plugins())
+cli({ name: 'my-cli', version: '1.0.0' }).use(config()).use(plugins())
 ```
 
-The default also applies when `config` names a different file — the keyword still comes from `name`,
+The default also applies when `config()` names a different file — the keyword still comes from `name`,
 not from the config name:
 
 ```ts
 // config file is `my-tool.json`, but the plugin keyword is still 'my-cli'
-cli({ name: 'my-cli', version: '1.0.0', config: 'my-tool' }).use(plugins())
+cli({ name: 'my-cli', version: '1.0.0' }).use(config({ name: 'my-tool' })).use(plugins())
 ```
 
 ## Listing plugins in config

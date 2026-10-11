@@ -17,8 +17,8 @@ version, the logging levels — so that no author has to declare `--help` and no
 user has to wonder whether this particular CLI supports it.
 
 The base command's option set is not fixed: `--show-config` appears only on an
-application that actually takes configuration, so a CLI never advertises an
-option that could not do anything. The global `--format` appears on every
+application with `.use(config())` from `clibuilder/config`, which adds it as a global
+option, so a CLI never advertises an option that could not do anything. The global `--format` appears on every
 application, in either output mode.
 
 **Non-goals.** How a command is matched and run belongs to `execution/`. The
@@ -48,12 +48,12 @@ user expects of any CLI.
 
 | | |
 | --- | --- |
-| Trigger | `getBaseCommand(description, { config, format })` |
-| Inputs | the application's description, whether it takes configuration, and the CLI's default format (`cli({ format })`, `toon` when unset) |
+| Trigger | `getBaseCommand(description, { format, options })` |
+| Inputs | the application's description, the CLI's default format (`cli({ format })`, `toon` when unset), and the global options extensions added |
 | Outcome | a nameless command declaring the global options |
 
-**Extensions.** `--show-config` is declared only when the application takes
-configuration. `--format <toon|json|text>` is always
+**Extensions.** `--show-config` is declared only when the application has
+`.use(config())`, which adds it with `addGlobalOption`. `--format <toon|json|text>` is always
 declared, in either output mode, defaulting to the CLI's format (`toon` when
 `cli({ format })` is unset), with no `-f` alias ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). The base command declares no `run`, so an application with no
 default command is a group like any other: invoked bare, it takes
@@ -68,7 +68,7 @@ default command is a group like any other: invoked bare, it takes
 | `--help` / `--version` / `--verbose` / `--silent` / `--debug-cli` | UC1 | — |
 | the `h` / `v` / `V` aliases | UC1 | — (`--silent` and `--debug-cli` carry none) |
 | the base command's own empty `commands` list | UC1 — so extensions can add commands to it | — |
-| `--show-config` | UC1 | an application declaring no config — it is not declared there |
+| `--show-config` | UC1 | an application without `.use(config())` — it is not declared there |
 | the global `--format` | UC1 | a command's own `format` option that does not defer to it — a startup error (`execution/`) |
 
 ## Control Flow
@@ -77,9 +77,9 @@ default command is a group like any other: invoked bare, it takes
 
 ```mermaid
 graph TD
-  B[description and config flag] --> G[declare help, version, verbose, silent, debug-cli]
+  B[description and extension options] --> G[declare help, version, verbose, silent, debug-cli]
   G --> AL["give help, version and verbose their short aliases h, v and V"]
-  AL --> CF{application takes config?}
+  AL --> CF{application has .use(config())?}
   CF -- yes --> SC[also declare show-config]
   CF -- no --> NS[do not declare show-config]
   SC --> EC[declare an empty commands list, so extensions can add commands to it]
@@ -101,7 +101,7 @@ the declaration.
 | declare an empty commands list | any | `the base command declares an empty commands list for extensions to be added to` |
 | give help, version and verbose their short aliases | any | `the global options carry their conventional short aliases` |
 | `--silent` and `--debug-cli` carry none | any | `silent and debug-cli carry no short alias` |
-| also declare show-config | the application takes config | `an application taking config also declares show-config` |
-| do not declare show-config | the application takes no config | `an application taking no config does not advertise show-config` |
+| also declare show-config | the application has `.use(config())` | `an application using config() also declares show-config` |
+| do not declare show-config | the application has no `.use(config())` | `an application not using config() does not advertise show-config` |
 | declare no run | any | `the base command declares no run of its own` |
 | the global format option | any | `every application declares the global format option` |

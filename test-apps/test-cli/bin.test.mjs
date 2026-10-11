@@ -62,7 +62,7 @@ test('--show-config --format text answers the console rendering', () => {
 	assert.match(r.stdout, /^config: .*test-clirc\.json\n\{\n {2}"plugins"/)
 })
 
-test('config-value reads the config, which config: true loads for the commands', () => {
+test('config-value reads the config, which .use(config()) loads for the commands', () => {
 	assert.deepEqual(run('config-value', 'greeting'), { code: 0, stdout: 'greeting: hello', stderr: '' })
 })
 

@@ -40,11 +40,11 @@ describe('runCodemod', () => {
 		const stderr = capture()
 		const summary = runCodemod({ patterns: ['src'], cwd, dryRun: true, addPlugins: true, stdout, stderr })
 
-		expect(summary).toEqual({ scanned: 3, changed: 2, rewritten: 9, flagged: 0, review: 2, failed: 0 })
+		expect(summary).toEqual({ scanned: 3, changed: 2, rewritten: 10, flagged: 0, review: 2, failed: 0 })
 		expect(stdout.text).toContain('--- a/src/app.ts\n+++ b/src/app.ts\n')
 		expect(stdout.text).toContain("-import { CliError, cli, command, exitCodes, z } from 'clibuilder'\n")
 		expect(stdout.text).toContain('+    "@clibuilder/plugins": "^0.2.0",')
-		expect(stderr.text).toContain('src/app.ts\n  5 rewrite(s)\n  38:11    review  printed-return `return report`')
+		expect(stderr.text).toContain('src/app.ts\n  6 rewrite(s)\n  38:11    review  printed-return `return report`')
 		expect(stderr.text).toContain('3 file(s) scanned, 2 would change.')
 		expect(readFileSync(join(cwd, 'src/app.ts'), 'utf8')).toBe(
 			readFileSync(join(fixtures, 'repobuddy-buddy/input.ts'), 'utf8')

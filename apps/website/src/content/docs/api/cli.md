@@ -23,7 +23,6 @@ namespace cli {
     name: string
     version: string
     description?: string
-    config?: string | boolean
     onUsageError?: UsageErrorHandler
     streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
     output?: 'axi' | 'console'
@@ -37,13 +36,14 @@ namespace cli {
 | `name` | `string` | **Required.** The CLI's name — used in the help message, as the default config name, and as the default keyword of [`plugins()`](/clibuilder/packages/plugins/#options). |
 | `version` | `string` | **Required.** Printed by `--version`. Since v8 this is not read from `package.json` — see [Publishing](/clibuilder/guides/publishing/). |
 | `description` | `string` | A short summary shown at the top of the help message. |
-| `config` | `string \| boolean` | Opt into a [config file](/clibuilder/guides/configuration/). `true` derives the config name from `name`; a string overrides it. |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
 | `output` | `'axi' \| 'console'` | **v12, unreleased.** How the CLI writes its answers, errors and [`ui`](/clibuilder/api/ui/) messages. Defaults to `'axi'`. `'console'` keeps the `clibuilder` 11 output. See [Streams and output](#streams-and-output). |
 | `format` | `'toon' \| 'json' \| 'text'` | **v12, unreleased.** The CLI's default format, the default of the [global `--format` option](#the-global---format-option). Defaults to `'toon'`. Answers and errors are encoded in the resolved format. Any other value throws when `cli()` is called. |
 
-`config` loads the config for the commands only. It does not load plugins.
+The `config` option of 11 is removed. A CLI loads a [config file](/clibuilder/guides/configuration/) with
+`.use(config())` from `clibuilder/config`, which loads the config for the commands only. It does not
+load plugins.
 
 :::caution[Unreleased]
 In `clibuilder` 11, a `keywords` option exists, and declaring `config` or `keywords` loads the
@@ -390,6 +390,9 @@ type ExtensionContext = {
   readonly ui: UI
   readonly registry: RegistryOwner
   addCommand(command: cli.Command): void
+  readonly shared: SharedState
+  addGlobalOption(name: string, entry: cli.Command.Options.Entry, answer: GlobalOptionAnswer): void
+  beforeRun(hook: BeforeRunHook): void
   resolveConfig(): Promise<ConfigLoadResult>
 }
 ```
@@ -401,13 +404,19 @@ type ExtensionContext = {
 | `ui` | The CLI's own [UI](/clibuilder/api/ui/), so messages follow `--silent`, `--verbose` and `--debug-cli` |
 | `registry` | The registry that commands read as `this.registry`. `register(source, key, value)` adds a value under a `defineKey()` or `defineCollectionKey()` key |
 | `addCommand(command)` | Adds a top-level command |
-| `resolveConfig()` | Resolves to the CLI's config and where it came from. `source.type` is `'none'` when the CLI sets no `config` |
+| `shared` | `get`, `set` and `has` for values that extensions share with each other, keyed by `defineKey()`. A value can be replaced, and commands do not see it |
+| `addGlobalOption(name, entry, answer)` | Adds a global option, listed with the built-in ones. When the caller passes it, `answer` runs instead of the matched command, after the logging flags apply. What it returns is the answer, as for `run()` |
+| `beforeRun(hook)` | Adds a hook that runs before `run()`, once the arguments are valid. The hook may set `run.config`, and fails the command by throwing a `CliError` |
+| `resolveConfig()` | Resolves to the config that `.use(config())` loaded and where it came from. `source.type` is `'none'` when the CLI has no `.use(config())`, or adds it after the extension that asks |
 
 When extensions run:
 
 - They run once, on the first `parse()` that needs the command tree. Building the CLI does not run them.
 - They run in the order `.use()` was called. Each one is awaited before the next starts, so the
-  command order is the same on every run.
+  command order is the same on every run. An extension that reads the config, such as `plugins()`,
+  comes after `config()`.
+- They run before the global options are resolved, so an extension can add a global option. The
+  messages they write to `ui` are held until the logging flags apply.
 - Their commands come after the CLI's own `.command()` and `.default()` commands.
 - A bare `--version` or `-v` is answered before anything loads, so extensions do not run for it.
   See [the version fast path](/clibuilder/guides/arguments-and-options/#built-in-options).
@@ -442,7 +451,7 @@ skipped.
 
 :::note[When `parse()` exists]
 `parse` appears on the type only after the builder has something to run: after `.default()`, after
-`.command()`, or immediately if the CLI was created with `config`. A config-driven CLI can get all
+`.command()`, or after `.use()`. A CLI can get all
 of its commands from an extension such as [`plugins()`](/clibuilder/packages/plugins/), so it is
 executable from the start.
 :::
@@ -458,14 +467,15 @@ the same way. Any other error thrown by your own `run()` rejects.
 ```ts
 #!/usr/bin/env node
 import { cli, command } from 'clibuilder'
+import { config } from 'clibuilder/config'
 import { z } from 'zod'
 
 cli({
   name: 'app',
   version: '1.0.0',
-  description: 'an example CLI',
-  config: true
+  description: 'an example CLI'
 })
+  .use(config())
   .default({
     config: z.object({ presets: z.string() }),
     run() {

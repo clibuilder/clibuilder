@@ -44,7 +44,7 @@ test('--help answers the structured help in toon by default', () => {
 	assert.match(r.stdout, /^name: test-cli$/m)
 })
 
-test('config-value reads the config, which config: true loads for the commands', () => {
+test('config-value reads the config, which .use(config()) loads for the commands', () => {
 	assert.deepEqual(run('config-value', 'greeting'), { code: 0, stdout: 'greeting: hello', stderr: '' })
 })
 
