@@ -16,7 +16,11 @@ There are three formats. `toon` is the default: [TOON](https://github.com/toon-f
 compact encoding that costs an agent fewer tokens to read. `json` is compact JSON, for a pipe into
 `jq`. `text` is an aligned report for a person.
 
-`@clibuilder/axi` 0.2.0 is published and available.
+`@clibuilder/axi` 0.2.0 is published and available. It is planned to be folded into `clibuilder` core
+in v12: the output, error, usage-error and format parts become built-in, and the value helpers
+(truncation, counts, `orEmpty` and the home helpers) are available from a `clibuilder/axi` subpath.
+The package is not deprecated on npm yet, so keep using it until v12 ships. Source:
+[axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#41-decision-where-clibuilderaxis-contents-belong).
 
 ## Install
 
