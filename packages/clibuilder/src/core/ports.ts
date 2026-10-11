@@ -15,7 +15,26 @@ export type UI = {
 	warn(...args: any[]): void
 	error(...args: any[]): void
 	debug(...args: any[]): void
+	/**
+	 * Shows the command's help.
+	 *
+	 * Under `cli({ output: 'axi' })`, called from `run()`, it writes the help on stdout in `this.format`,
+	 * as `--help` does: the text help under `text`, the structured help under `toon` and `json`.
+	 *
+	 * @deprecated the framework owns `--help` and answers it on stdout in `this.format`.
+	 * To answer with help from `run()`, return it: `document(text)` writes text verbatim,
+	 * and `result(value)` encodes a value in `this.format`. Removed from `ui` in v12 (axi-native RFC section 3.7).
+	 */
 	showHelp(): void
+	/**
+	 * Shows the cli version.
+	 *
+	 * Under `cli({ output: 'axi' })` it writes the version as plain text on stdout, as `--version` does.
+	 *
+	 * @deprecated the framework owns `--version` and answers it as plain text on stdout.
+	 * To answer with the version from `run()`, return it, for example `document(version)`.
+	 * Removed from `ui` in v12 (axi-native RFC section 3.7).
+	 */
 	showVersion(): void
 }
 

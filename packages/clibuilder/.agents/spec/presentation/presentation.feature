@@ -493,3 +493,58 @@ Feature: Presentation
     Given an error's message, code, details and help
     When it is laid out for encoding
     Then the keys are error, code, each details key, then help, and help is left out when empty
+
+  # ── UC3 — showHelp: examples ──
+
+  Scenario: declared examples are shown last, each description above its command line
+    Given a command declaring examples
+    When its help is rendered
+    Then an Examples section closes the help, each description indented two spaces and its command line verbatim under it, indented four
+
+  Scenario: a command with no examples shows no examples section
+    Given a command declaring no examples
+    When its help is rendered
+    Then the help has no Examples section and is otherwise unchanged
+
+  # ── UC11 — the structured help ──
+
+  Scenario: the structured help carries what the text help shows
+    Given a command declaring a description, aliases, arguments, options, a config and examples
+    When its structured help is built
+    Then it carries the name chain, the usage line, the description, the aliases, each argument and option, the config type and the examples
+    And a key with nothing to say is left out
+
+  Scenario: an option in the structured help carries its aliases, type, default, whether it is required, description and conflicts
+    Given an option declaring aliases, a type, a default and a conflict
+    When the structured help is built
+    Then the option carries its name, its aliases, its type, its default, required true or false, its description and the options it conflicts with
+
+  Scenario: the constraints of a t declaration are carried as min, max, pattern and values
+    Given options declared with t.int({ min, max }), t.string({ pattern }), t.enum(values) and t.literal(value)
+    When the structured help is built
+    Then each carries its kind as type, with min and max, the pattern as the help shows it, or the allowed values
+
+  Scenario: an array is described by its element and marked array
+    Given an option declared with t.array of an element, or a zod array
+    When the structured help is built
+    Then it carries the element's type and constraints, with array true
+
+  Scenario: a hidden alias is left out of the structured help
+    Given an option declaring an alias marked hidden
+    When the structured help is built
+    Then that alias is not among the option's aliases
+
+  Scenario: sub-commands are listed by name and the first line of their description
+    Given a group declaring sub-commands, some with aliases and descriptions of several lines
+    When its structured help is built
+    Then each sub-command carries its name, its aliases and the first line of its description, and nothing else
+
+  Scenario: the global options are listed once, apart from the root's own options
+    Given a cli whose root declares the global options
+    When the structured help of the root or of a command is built
+    Then the global options are listed once under globalOptions, and the root's options leave them out
+
+  Scenario: the structured help agrees with the text help on names, options and sub-commands
+    Given a command, a group and the root
+    When the text help and the structured help are both rendered
+    Then the text help shows the usage line, each option, argument, sub-command and example the structured help carries

@@ -80,7 +80,7 @@ await cli({ name: 'app', version: '1.0.0', streams: { stdout: capture, stderr: p
 | --- | --- | --- |
 | `ui.info`, `ui.debug` | stdout | stderr |
 | `ui.warn`, `ui.error` | stderr | stderr |
-| `ui.showHelp`, `ui.showVersion`, `--help`, `--version` | stdout | stdout |
+| `ui.showHelp`, `ui.showVersion`, `--help`, `--version` | stdout | stdout, as answers (see [below](#--help-and---version-with-output-axi)) |
 
 With `'axi'`, stdout is left for answers, so an agent or a script reading it never gets diagnostics
 mixed in. With `'axi'`, a `CliError` thrown from `run()` is also an answer: it is rendered once on
@@ -106,6 +106,68 @@ Without either option, the CLI writes exactly what it wrote before.
 If the reader of `process.stdout` closes early, as in `app | head -1`, the CLI drops the rest of its
 output and exits with code 0 instead of crashing on `EPIPE`. This applies whenever stdout is
 `process.stdout`. If you pass your own streams, handling their errors is up to you.
+
+## `--help` and `--version` with `output: 'axi'`
+
+:::caution[Unreleased]
+This is on `main` and ships in `clibuilder` 12. It is not in a published release yet.
+:::
+
+With `output: 'axi'`, the CLI owns `--help` and `--version`. Both are answers: they are written on
+stdout, even with `--silent`, nothing is written on stderr, and the CLI exits 0.
+
+`--help` follows [`--format`](#the-global---format-option). `--format text` prints the help message,
+the same text as with `output: 'console'`. `toon` and `json` print the structured help that the
+text is rendered from:
+
+```sh
+$ app deploy --help --format json
+```
+
+```json
+{
+  "name": "app deploy",
+  "usage": "app deploy <arguments> [options]",
+  "description": "Deploy the app",
+  "arguments": [{ "name": "target", "required": true, "type": "enum", "values": ["prod", "dev"], "description": "where to deploy" }],
+  "options": [{ "name": "port", "aliases": ["p"], "type": "int", "min": 1, "max": 65535, "required": false, "default": 80, "description": "port to listen on" }],
+  "examples": [{ "command": "app deploy prod --port 8080", "description": "Deploy to production on port 8080" }],
+  "globalOptions": [{ "name": "help", "aliases": ["h"], "type": "boolean", "required": false, "description": "Print help message" }]
+}
+```
+
+The real output is on one line; it is spread out here to read. `globalOptions` lists all the
+built-in options; it is cut to one here.
+
+| Key | Holds |
+| --- | --- |
+| `name` | The CLI name and the command chain, as the command is invoked |
+| `usage` | The usage line of the help message, without `Usage: ` |
+| `description`, `aliases` | The command's own |
+| `commands` | Each sub-command's `name`, `aliases`, and the first line of its `description` |
+| `arguments`, `options` | Each one's `name`, `aliases`, `type`, `required`, `default`, `description` and `conflicts`. A [`t`](/clibuilder/packages/args-minus/) declaration adds `min` and `max`, `pattern`, or the allowed `values`. An array is described by its element, with `array: true` |
+| `config` | The config type, as the help message's `Config:` section shows it |
+| `examples` | The command's [`examples`](/clibuilder/api/command/#examples) |
+| `globalOptions` | The built-in options, listed once. The root help leaves them out of its `options` |
+
+A key with nothing to say is left out. A group lists only the names and one-line descriptions of its
+sub-commands.
+
+`--version` prints the version as plain text in every format, alone or after a command, so a script
+that reads it keeps working:
+
+```sh
+$ app deploy --version --format json
+1.0.0
+```
+
+A command that calls `this.ui.showHelp()` from `run()` gets the same answer as `--help`, in
+`this.format`, and `this.ui.showVersion()` prints the plain version. Both are deprecated and leave
+`ui` in v12; return the answer from `run()` instead (see [UI](/clibuilder/api/ui/#showhelp)).
+
+With `output: 'console'`, `--help`, `--version`, `ui.showHelp()` and `ui.showVersion()` print what
+they printed before. Source:
+[axi-native section 3.7](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#37-help-is-not-agent-shaped-6397).
 
 ## The global `--format` option
 

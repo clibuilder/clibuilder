@@ -13,6 +13,7 @@ import { createRegistry } from '../plugins/registry.js'
 import { answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
+import { generateHelpMessage, generateHelpModel } from '../render/help.js'
 import {
 	describeInvalidConfig,
 	describeMissingCommand,
@@ -177,10 +178,16 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		const r = lookupCommand(s.command, rawArgs, baseCommand)
 		const { args, command } = r
 
-		if (globals.version || args.version) return createCommandInstance(context, s, r.command, registry).ui.showVersion()
+		if (globals.version || args.version) {
+			if (output === 'axi') return writeVersion()
+			return createCommandInstance(context, s, r.command, registry).ui.showVersion()
+		}
 		// `--help` is answered before the errors are reported: it is the one flag
 		// that is always valid, and asking for help is not a usage error.
-		if (globals.help || args.help) return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+		if (globals.help || args.help) {
+			if (output === 'axi') return writeHelp(r.command, baseCommand, globals.format)
+			return createCommandInstance(context, s, r.command, registry).ui.showHelp()
+		}
 
 		// declarations with `t` are converted and checked by `args-minus`, which may await a converter or a check,
 		// so it runs after `--help` and `--version` are answered
@@ -234,6 +241,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			if (output === 'axi') writeReport(describeMissingCommand(command, s.name), globals.format)
 			else commandInstance.ui.showHelp()
 			return exit(exitCodes.usage)
+		}
+		if (output === 'axi') {
+			// a command that shows its own help or version answers like `--help` and `--version` (axi-native RFC section 3.7)
+			commandInstance.ui.showHelp = () => writeHelp(command, baseCommand, globals.format)
+			commandInstance.ui.showVersion = () => writeVersion()
 		}
 		try {
 			return answer(await commandInstance.run(args as any), globals.format)
@@ -300,6 +312,25 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			if (text !== undefined) context.writeStdout(text)
 		}
 		return answerValue(returned)
+	}
+
+	/**
+	 * Answers `--help` in `axi` output: on stdout, whatever the display level.
+	 * `text` is the text help, unchanged; `toon` and `json` encode the structured help it is rendered from.
+	 */
+	function writeHelp(command: Command, baseCommand: Command, format: cli.Format) {
+		context.writeStdout(
+			format === 'text'
+				? `${generateHelpMessage(s.name, command)}\n`
+				: `${encode(generateHelpModel(s.name, command, baseCommand.options!), format)}\n`
+		)
+	}
+
+	/**
+	 * Answers `--version` in `axi` output: plain text on stdout in every format, as the bare fast path does.
+	 */
+	function writeVersion() {
+		context.writeStdout(`${s.version || 'not versioned'}\n`)
 	}
 
 	function exit(code: number) {

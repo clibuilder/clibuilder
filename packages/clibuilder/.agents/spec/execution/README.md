@@ -535,6 +535,13 @@ graph TD
 | only --version or -v? — no | `--version` after a command, config declared | `version asked of a matched command waits for config and plugins` |
 | show help | `--help`, with no other error | `help asked for shows help and runs nothing` |
 | show help | `--help`, with a usage error also present | `help is answered even when the invocation is otherwise wrong` |
+| answer the structured help, encoded in the resolved format | output axi, `--help` on a command, a group or the root | `in axi output --help is an answer in the resolved format` |
+| answer the text help, unchanged | output axi, `--help --format text` | `in axi output --help --format text is the text help, unchanged` |
+| answer the help whatever the display level | output axi, `--help --silent` | `in axi output --help is answered under --silent` |
+| answer the plain version, never encoded | output axi, `--version` bare or after a command, `--format json` | `in axi output --version is plain text in every format` |
+| answer like `--help` | output axi, `run()` calls `ui.showHelp()` | `in axi output ui.showHelp from run answers like --help` |
+| answer the plain version | output axi, `run()` calls `ui.showVersion()` | `in axi output ui.showVersion from run prints the plain version` |
+| show them through the ui, as before | output console, `run()` calls `ui.showHelp()` and `ui.showVersion()` | `in console output ui.showHelp and ui.showVersion from run are unchanged` |
 | replace the errors on a global key — none for a well-formed flag | a sub-command declaring no options, given a global flag | `a global option given to a sub-command is not reported as unknown` |
 | replace the errors on a global key — the base command's invalid value | a sub-command declaring no options, given a global flag with a malformed value | `a malformed value on a global option given to a sub-command is a usage error` |
 | resolve the global options before the usage errors | a sub-command given a display-level flag and an unknown option | `global flags apply before a sub-command's usage errors are reported` |

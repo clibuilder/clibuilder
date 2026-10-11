@@ -39,11 +39,44 @@ Commands passed inline to `.command()` or `.default()` are inferred without it �
 | `config` | `z.ZodTypeAny` | The schema this command's [config](/clibuilder/guides/configuration/) must satisfy. Declaring it triggers the config load. |
 | `context` | `Record<string, any>` | Arbitrary values handed back on `this.context` — the seam for injecting I/O in [tests](/clibuilder/guides/testing/). |
 | `commands` | `Command[]` | Sub-commands. |
+| `examples` | `{ command: string; description: string }[]` | **Unreleased.** Example invocations, shown at the end of the command's help. See [Examples](#examples). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported for this command and its sub-commands. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `run` | `function` | What the command does. |
 
 A command must have **either** a `run` or a `commands`. A command with `commands` and no `run` is a
 group: invoking it prints its help message.
+
+## Examples
+
+:::note[Unreleased]
+`examples` is on `main` and ships in `clibuilder` 12. It is not in a published release yet.
+:::
+
+`examples` lists invocations a reader can copy. `command` is the whole command line, written as the
+user types it, and `description` says what it does:
+
+```ts
+const deploy = command({
+  name: 'deploy',
+  arguments: [{ name: 'target', description: 'where to deploy' }],
+  examples: [{ command: 'app deploy prod', description: 'Deploy to production' }],
+  run(args) {}
+})
+```
+
+The help message ends with them, each description above its command line:
+
+```
+Examples:
+  Deploy to production
+    app deploy prod
+```
+
+A command without `examples` shows the same help as before. With `cli({ output: 'axi' })`, the
+structured help of `--help --format toon` and `json` carries them too (see
+[`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi)).
+An [`onUsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself) handler reads them
+from `context.command.examples`, for example to suggest a correct invocation.
 
 ## Arguments
 
@@ -103,7 +136,7 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 
 | Property | Type | Description |
 | --- | --- | --- |
-| `this.ui` | [`UI`](/clibuilder/api/ui/) | Output — `info`, `warn`, `error`, `debug`, `showHelp`, `showVersion`. |
+| `this.ui` | [`UI`](/clibuilder/api/ui/) | Output — `info`, `warn`, `error`, `debug`, and the deprecated `showHelp`, `showVersion`. |
 | `this.config` | `z.infer<ConfigType>` | The loaded, validated config. `undefined` when the command declared no `config`. |
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
 | `this.keywords` | `string[]` | The CLI's plugin keywords. |

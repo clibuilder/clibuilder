@@ -7,7 +7,7 @@ concept: [declaration-driven, error-reporting, agent-interface]
 
 Governs `src/render/help.ts`, `src/render/format.ts`, `src/render/error.ts`,
 `src/drivers/logger.ts`, `src/drivers/stream_ui.ts`, `src/drivers/streams.ts`,
-`src/render/encode.ts`, `src/render/text.ts` and `src/core/ports.ts` — rendering help and usage,
+`src/render/encode.ts`, `src/render/text.ts` and `src/core/ports.ts` — rendering help and usage as text or as a value,
 describing a usage error in words, emitting messages at their log level, and
 serializing a reported collection in the format its reader asked for. Generating the text is pure and lives in `render/`; writing it is the
 logger's, and `core/ports.ts` declares the `UI` a command author calls.
@@ -99,7 +99,7 @@ author wants that without writing it.
 | --- | --- |
 | Trigger | `showHelp(cliName, command)` |
 | Inputs | the application's name and the command declaration |
-| Outcome | usage, description, commands, arguments, options, aliases, and config, in that order |
+| Outcome | usage, description, commands, arguments, options, aliases, config, and examples, in that order |
 
 **Extensions.**
 
@@ -110,6 +110,7 @@ author wants that without writing it.
 | the command declares sub-commands | usage says a command is expected, and they are listed with their aliases |
 | an argument or option is required | usage marks the group with angle brackets rather than square ones |
 | the command declares a config schema | the schema's shape is rendered as a type |
+| the command declares examples | each description is shown above its command line, verbatim |
 
 ### UC4 — the signature format: mark what is required and what it takes
 
@@ -210,6 +211,23 @@ returned values later, read the same. Design: axi-native RFC sections 3.1 and
 | an error report | flat: `error`, `code`, the `details` fields, then `help`, which is left out when empty |
 
 Both modules import nothing from the framework (RFC section 4.1).
+
+### UC11 — `generateHelpModel`: the help as a value
+
+**Actor / goal.** An agent asks for `--help` under `--format toon` or `json` and wants the help it can parse,
+not prose (axi-native RFC section 3.7).
+
+| | |
+| --- | --- |
+| Trigger | `generateHelpModel(cliName, command, globalOptions)` |
+| Inputs | the application's name, the command declaration, and the base command's options |
+| Outcome | `name`, `usage`, `description`, `aliases`, `commands`, `arguments`, `options`, `config`, `examples`, `globalOptions`; a key with nothing to say is left out |
+
+**Extensions.** It reads the same declaration data the text help reads, and nothing more: an option's type is the
+descriptor's kind, or the zod type the text help names, with a `t` declaration's `min`, `max`, `pattern` or allowed
+`values`. Sub-commands carry only their name, aliases and the first line of their description, so group help stays
+compact. The global options are listed once, under `globalOptions`, and the root leaves them out of its `options`.
+The text renderer is left as it was; a test proves the two agree.
 
 ### UC8 — the built-in ui: write to `cli({ streams })` by `cli({ output })`
 
@@ -487,6 +505,8 @@ graph TD
 | no description section | no description declared | `a command with no description shows no description section` |
 | no commands section | no sub-commands declared | `a command with no sub-commands shows no commands section` |
 | drop every empty section | a command declaring almost nothing | `a section with nothing to show is left out rather than rendered empty` |
+| examples, last, each description above its command line | examples declared | `declared examples are shown last, each description above its command line` |
+| no examples section | no examples declared | `a command with no examples shows no examples section` |
 
 ### UC3 — the two ui shapes
 
@@ -575,6 +595,19 @@ graph TD
 | JSON.stringify | `json` | `an answer is encoded in json on one line` |
 | key: value lines | `text` | `an answer is encoded in text as key and value lines` |
 | flat, in order, empty help left out | an error report | `an error report is error, code, the details fields, then help` |
+
+### UC11 — the structured help
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| every section the text help shows, as keys; empty keys left out | a command declaring every section | `the structured help carries what the text help shows` |
+| aliases, type, default, required, description, conflicts | an option declaring each | `an option in the structured help carries its aliases, type, default, whether it is required, description and conflicts` |
+| `min`, `max`, `pattern`, `values` | `t.int`, `t.string`, `t.enum`, `t.literal` | `the constraints of a t declaration are carried as min, max, pattern and values` |
+| the element, with `array: true` | `t.array` or a zod array | `an array is described by its element and marked array` |
+| a hidden alias left out | an alias marked hidden | `a hidden alias is left out of the structured help` |
+| name, aliases, first description line | a group | `sub-commands are listed by name and the first line of their description` |
+| `globalOptions`, once | the root or a command | `the global options are listed once, apart from the root's own options` |
+| agrees with the text help | a command, a group, the root | `the structured help agrees with the text help on names, options and sub-commands` |
 
 ### UC9 — EPIPE
 

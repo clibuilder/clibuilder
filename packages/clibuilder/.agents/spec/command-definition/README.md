@@ -252,6 +252,7 @@ This node owns only the type that makes both possible.
 | declares neither | any | `a declaration with neither run nor commands is rejected` |
 | argument has `type` | any | `a typed argument types as its declared type` |
 | argument omits `type` | any | `an untyped argument types as string` |
+| kept on the command for help and the usage error handler | a command declaring `examples` | `a command may declare examples` |
 | option has `type` | non-optional type | `a typed option types as its declared type` |
 | option has `type` | optional type | `an optionally-typed option types as its type or undefined` |
 | option omits `type` | any | `an untyped option types as an optional boolean` |

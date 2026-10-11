@@ -181,3 +181,10 @@ Feature: Command definition
     When an editor reads its declaration
     Then it is marked deprecated, pointing at t
     And it is still the zod instance clibuilder validates zod declarations with
+
+  # ── UC1 — examples ──
+
+  Scenario: a command may declare examples
+    Given a command declaring examples, each a command line and a description
+    When it is registered
+    Then the examples are kept on the command, where its help and a usage error handler read them

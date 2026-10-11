@@ -88,7 +88,8 @@ describe.each([
 ] as const)('the global --format under %s', (_, options, defaultFormat) => {
 	it('is shown once in the help, in the global options', async () => {
 		const { app, stdout, stderr } = setup(options)
-		await app.command({ name: 'show', run() {} }).parse(['node', 'app', '--help'])
+		// under output axi `--help` follows `--format`, and the text help is the one that shows `--format`
+		await app.command({ name: 'show', run() {} }).parse(['node', 'app', '--help', '--format', 'text'])
 		const help = stdout.text + stderr.text
 		expect(countOf(help, '--format')).toBe(1)
 		expect(help).toContain(`(default ${defaultFormat})`)
