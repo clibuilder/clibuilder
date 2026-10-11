@@ -620,9 +620,8 @@ describe('loadConfig()', () => {
 		const a = await cli.parse(argv('has-config group config'))
 		expect(a).toEqual({ a: 1 })
 	})
-	test('no config', async () => {
+	test('no config fails a schema with a required key, naming that key', async () => {
 		const ctx = mockContext({ fixtureDir: 'no-config' })
-		ctx.ui.displayLevel = 'debug'
 		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
 			.default({
 				config: z.object({ a: z.number() }),
@@ -630,10 +629,53 @@ describe('loadConfig()', () => {
 					return this.config
 				}
 			})
-			.parse(argv('single-bin'))
-		const msg = ctx.messages
-		expect(msg).toContain('no config found')
+			.parse(argv('single-bin --format json'))
 		expect(actual).toBe(exitCodes.error)
+		expect(JSON.parse(ctx.stdout)).toEqual({
+			error: 'config fails validation',
+			code: 'invalid-config',
+			a: ['Required']
+		})
+	})
+	test('no config passes a schema whose keys all have defaults, with the defaults', async () => {
+		const ctx = mockContext({ fixtureDir: 'no-config' })
+		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.default({
+				config: z.object({ port: z.number().default(8080) }),
+				run() {
+					return this.config
+				}
+			})
+			.parse(argv('single-bin'))
+		expect(actual).toEqual({ port: 8080 })
+		expect(ctx.exitCode).toBeUndefined()
+	})
+	test('no config leaves the config undefined for a schema that accepts undefined', async () => {
+		const ctx = mockContext({ fixtureDir: 'no-config' })
+		const actual = await builder(ctx, { name: 'no-config', version: '1.0.0' })
+			.default({
+				config: z.object({ port: z.number().default(8080) }).optional(),
+				run() {
+					return { config: this.config ?? 'none' }
+				}
+			})
+			.parse(argv('single-bin'))
+		expect(actual).toEqual({ config: 'none' })
+	})
+	test('a cli with config: true and no config file says nothing about it by default', async () => {
+		const ctx = mockContext({ fixtureDir: 'no-config' })
+		await builder(ctx, { name: 'no-config', version: '1.0.0', config: true })
+			.default({ run() {} })
+			.parse(argv('single-bin'))
+		expect(ctx.messages).not.toContain('no config found')
+	})
+	test.each(['--verbose', '--debug-cli'])('%s reports the config file names searched for', async (flag) => {
+		const ctx = mockContext({ fixtureDir: 'no-config' })
+		await builder(ctx, { name: 'no-config', version: '1.0.0', config: true })
+			.default({ run() {} })
+			.parse(argv(`single-bin ${flag}`))
+		expect(ctx.messages).toContain('no config found')
+		expect(ctx.messages).toContain('no-config.json')
 	})
 })
 

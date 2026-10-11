@@ -96,7 +96,8 @@ export async function resolveConfig(
 		ui.debug(`config: ${JSON.stringify(config, undefined, 2)}`)
 		return { config, source, candidates }
 	}
-	ui.warn(`no config found under '${cwd}':\n  ${candidates.join('\n  ')}`)
+	// a debug message, shown under `--verbose` and `--debug-cli`: a cli without a config file is normal, not a warning
+	ui.debug(`no config found under '${cwd}':\n  ${candidates.join('\n  ')}`)
 	return { config: undefined, source, candidates }
 }
 

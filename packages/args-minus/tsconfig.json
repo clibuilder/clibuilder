@@ -1,8 +1,10 @@
 {
 	"extends": "@repobuddy/typescript/tsconfig/legacy/monorepo.json",
 	"compilerOptions": {
+		"declarationMap": false,
 		"outDir": "esm",
 		"rootDir": "src",
+		"sourceMap": false,
 		"exactOptionalPropertyTypes": true,
 		"verbatimModuleSyntax": true,
 		"types": ["node", "vitest/globals"]

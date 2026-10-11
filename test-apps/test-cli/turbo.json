@@ -4,7 +4,7 @@
 	"tasks": {
 		"test": {
 			"dependsOn": ["^build"],
-			"inputs": ["package.json", "bin.*", "test-clirc.json", "axi.js", "*.test.mjs"]
+			"inputs": ["package.json", "bin.*", "test-clirc.json", "axi.js", "t-plugin.js", "*.test.mjs", "*.test.js"]
 		}
 	}
 }

@@ -31,6 +31,12 @@ describe('renderText', () => {
 		)
 	})
 
+	it('skips a key whose value is undefined, as toon and json do', () => {
+		expect(renderText({ host: 'localhost', port: undefined, tags: ['a'] })).toBe(
+			['host: localhost', '', 'tags:', '  - a'].join('\n')
+		)
+	})
+
 	it('renders scalars as key and value, and a nested object as JSON', () => {
 		expect(renderText({ skills: 0, copied: false, meta: { a: 1 }, none: null })).toBe(
 			['skills: 0', 'copied: false', 'meta: {"a":1}', 'none: null'].join('\n')

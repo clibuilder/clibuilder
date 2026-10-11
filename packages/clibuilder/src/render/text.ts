@@ -24,9 +24,11 @@ function table(rows: Record<string, unknown>[]): string[] {
 /**
  * Renders a value for a person, not an agent: each key on its own line, a list of records as an
  * aligned table under its key, a list of values as bullets, and an empty list as `(none)`.
+ * A key whose value is `undefined` is skipped, as `toon` and `json` skip it.
  */
 export function renderText(value: object): string {
-	const blocks = Object.entries(value).map(([key, item]) => {
+	const entries = Object.entries(value).filter(([, item]) => item !== undefined)
+	const blocks = entries.map(([key, item]) => {
 		if (!Array.isArray(item)) return [`${key}: ${isRecord(item) ? JSON.stringify(item) : String(item)}`]
 		if (!item.length) return [`${key}: (none)`]
 		const body = item.every(isRecord) ? table(item) : item.map((entry) => `  - ${String(entry)}`)

@@ -62,7 +62,7 @@
 	],
 	"scripts": {
 		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild src/index.ts src/axi.ts src/compile_cache.ts src/testing/index.ts --bundle --platform=node --external:js-yaml --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
+		"build:cjs": "esbuild src/index.ts src/axi.ts src/compile_cache.ts src/testing/index.ts --bundle --platform=node --external:js-yaml --external:args-minus --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm tsconfig.tsbuildinfo",

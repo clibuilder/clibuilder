@@ -3,7 +3,7 @@
 	"private": true,
 	"bin": "./bin.js",
 	"scripts": {
-		"test": "node --test bin.test.mjs axi.test.mjs"
+		"test": "node --test bin.test.mjs axi.test.mjs entries.test.js"
 	},
 	"dependencies": {
 		"@clibuilder/plugins": "workspace:*",
