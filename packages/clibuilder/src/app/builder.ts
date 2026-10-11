@@ -1,5 +1,5 @@
 import { forEachKey, type RequiredPick } from 'type-plus'
-import { getBaseCommand } from '../builtin/base_command.js'
+import { getBaseCommand, yieldToGlobalFormat } from '../builtin/base_command.js'
 import { pluginsCommand } from '../builtin/plugin_commands/group.js'
 import type { cli, Extension, ExtensionContext } from '../cli.js'
 import type { Command } from '../command/internal.js'
@@ -51,7 +51,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	const loadingConfig = s.configName ? context.loadConfig(s.configName) : undefined
 	const mayAcceptPlugins = s.configName || s.keywords.length > 0
 	// v11 plugin path: the automatic `plugins` group. Removed in v12 (slim-dependencies RFC section 9.8).
-	const autoPluginsCommand = mayAcceptPlugins ? adjustCommand(s.command, pluginsCommand) : undefined
+	// a copy, because `adjustCommand` links and may rewrite the commands it is given, and the builtin is shared by every cli
+	const autoPluginsCommand = mayAcceptPlugins ? adjust(s.command, copyCommand(pluginsCommand)) : undefined
 	if (autoPluginsCommand) s.command.commands.push(autoPluginsCommand)
 
 	if (loadingConfig) {
@@ -67,12 +68,12 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		description,
 		parse: (mayAcceptPlugins ? parse : undefined) as any,
 		default(command) {
-			s.command = adjustCommand(s.command, { ...s.command, ...command })
+			s.command = adjust(s.command, { ...s.command, ...command })
 			delete (this as any)['default']
 			return { ...this, parse }
 		},
 		command(command) {
-			s.command.commands.push(adjustCommand(s.command, command))
+			s.command.commands.push(adjust(s.command, command))
 			return { ...this, parse }
 		},
 		use(extension) {
@@ -97,7 +98,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				name: s.name,
 				version: s.version || ''
 			})
-			s.command.commands.push(...commands.map((c) => adjustCommand(s.command, c)))
+			s.command.commands.push(...commands.map((c) => adjust(s.command, c)))
 		})())
 	}
 
@@ -114,7 +115,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 				ui: createExtensionUI(context, s),
 				registry,
 				addCommand(command) {
-					s.command.commands.push(adjustCommand(s.command, command as Command))
+					s.command.commands.push(adjust(s.command, command as Command))
 				},
 				async resolveConfig() {
 					if (!s.configName) return { config: undefined, source: { type: 'none' }, candidates: [] }
@@ -140,10 +141,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 		await Promise.all(pending)
 		context.ui.debug('argv:', argv.join(' '))
 		const rawArgs = parseArgv(argv)
-		const baseCommand = getBaseCommand(s.description, { config: !!s.configName })
+		const baseCommand = getBaseCommand(s.description, { config: !!s.configName, format: s.globalFormat })
 		// the global options are read from the base command alone, before the matched
 		// command's usage errors are looked at (axi-native RFC section 3.2).
-		// There is no `--format` yet, so the format is the `cli({ format })` default.
+		// A bad `--format` falls back to the `cli({ format })` default, so its usage error is reported in that.
 		const globals = resolveGlobalOptions(baseCommand, rawArgs, format)
 		if (globals.silent) {
 			delete rawArgs.silent
@@ -206,7 +207,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			}
 			s.config = config
 		}
-		const commandInstance = createCommandInstance(context, s, command, registry)
+		const commandInstance = createCommandInstance(context, s, command, registry, globals.format)
 		if (!commandInstance.run) {
 			// a command without `run` is a group: invoked bare, it is missing its
 			// sub command, so it is a usage error (#609). `--help` is handled above.
@@ -219,7 +220,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 			// a command signals failure by throwing `CliError`. Anything else is a
 			// defect in the command and keeps propagating to the caller.
 			if (!isCliError(e)) throw e
-			reportCliError(e, commandInstance.ui)
+			reportCliError(e, globals.format, commandInstance.ui)
 			return exit(e.exitCode)
 		}
 	}
@@ -243,7 +244,11 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	 * as a `debug` line, or as its message and help lines through `ui.error` in `console` output.
 	 * One from `CliError.reported()` was already reported, so nothing is written for it.
 	 */
-	function reportCliError(e: CliError, ui: { error(...args: any[]): void; debug(...args: any[]): void }) {
+	function reportCliError(
+		e: CliError,
+		format: cli.Format,
+		ui: { error(...args: any[]): void; debug(...args: any[]): void }
+	) {
 		if (isReportedCliError(e)) return
 		if (options.output === 'axi') {
 			// read field by field: a `CliError` from an older copy of clibuilder has no `code` or `details`
@@ -259,6 +264,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder & c
 	function exit(code: number) {
 		context.exit(code)
 		return code
+	}
+
+	function adjust<C extends Command>(base: Command, command: C): C {
+		return adjustCommand(base, command, !!s.globalFormat)
 	}
 }
 
@@ -352,12 +361,14 @@ function createCommandInstance(
 	ctx: Context,
 	state: state.Result,
 	command: cli.Command,
-	registry: ReturnType<typeof createRegistry>
+	registry: ReturnType<typeof createRegistry>,
+	format: cli.Format = 'toon'
 ) {
 	return {
 		...command,
 		run: (command as any).run,
 		ui: createCommandUI(ctx, state, command),
+		format,
 		config: state.config,
 		keywords: state.keywords,
 		cwd: ctx.cwd,
@@ -376,12 +387,26 @@ function createCommandUI(ctx: Context, state: state.Result, command: cli.Command
 	}
 }
 
-function adjustCommand<C extends Command>(base: Command, command: C): C {
+/**
+ * Links a command and its sub-commands to their parents.
+ *
+ * @param globalFormat whether the global `--format` is active: a command's own `format` option
+ * then gives way to it, on a copy of the command, or fails the cli (see `yieldToGlobalFormat()`).
+ */
+function adjustCommand<C extends Command>(base: Command, command: C, globalFormat: boolean): C {
+	if (globalFormat) command = yieldToGlobalFormat(command)
 	if (command.name) {
 		command.parent = base
 	}
 	if (command.commands) {
-		command.commands = command.commands.map((c) => adjustCommand(command, c))
+		command.commands = command.commands.map((c) => adjustCommand(command, c, globalFormat))
 	}
 	return command
+}
+
+/**
+ * Copies a command tree, so linking it does not touch the original.
+ */
+function copyCommand<C extends cli.Command>(command: C): C {
+	return command.commands ? { ...command, commands: command.commands.map(copyCommand) } : { ...command }
 }

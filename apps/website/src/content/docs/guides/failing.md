@@ -113,9 +113,11 @@ On `main`, for the next `clibuilder` 11 minor:
   reports. In 11 it is not enumerable, so `JSON.stringify(error)` and equality checks give what they
   did before.
 - The second argument also has `format`, the format the cli reports in, and `exitCode`, the code the
-  cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is `'toon'`, or the
-  CLI's [`cli({ format })`](/clibuilder/api/cli/#options) value (Unreleased), until the global
-  `--format` option lands.
+  cli exits with when the handler returns none (`exitCodes.usage`, `2`). `format` is the caller's
+  [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else
+  the CLI's [`cli({ format })`](/clibuilder/api/cli/#options) value, `'toon'` by default. A bad
+  `--format` value is itself one of the errors, an `invalid-value` with `allowed`, and `format` is then
+  the CLI's default.
 - The global options are read before the handler runs. `--silent` and `--verbose` are already applied
   to the `ui` it receives, and a malformed global flag, such as `--verbose=maybe`, is one of the
   errors, reported once as an `invalid-value`.
@@ -243,8 +245,9 @@ With the default [`output: 'console'`](/clibuilder/api/cli/#streams-and-output),
 the message and the help lines on stderr, as above. With `cli({ output: 'axi' })` the error is an
 answer: clibuilder renders it once on stdout, and writes nothing to stderr for it. The fields are
 flat, in this order: `error` (the message), `code`, the `details` fields, then `help`, which is left
-out when empty. The encoding is the CLI's [`format`](/clibuilder/api/cli/#options), `toon` unless
-you set another:
+out when empty. The encoding is the caller's
+[`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's
+[`format`](/clibuilder/api/cli/#options), `toon` unless you set another:
 
 ```sh
 $ my-cli plugins show foo
@@ -254,7 +257,7 @@ name: foo
 help[1]: run `my-cli plugins list` to see the installed plugins
 ```
 
-With `format: 'json'` the same error is one line of JSON, and with `format: 'text'` it is
+With `--format json` or `format: 'json'` the same error is one line of JSON, and with `text` it is
 `key: value` lines. The keys are the ones `@clibuilder/axi` and
 [axi-sdk-js](https://github.com/kunchenguid/axi) use. Under `--verbose`, a debugging copy of the
 error, with its stack, is written to stderr as a `debug` line. The CLI exits with the error's

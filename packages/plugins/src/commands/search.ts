@@ -43,7 +43,8 @@ export function searchPluginsCommand(keywords: string[]) {
 					else packages.set(name, [keywords[i]!])
 				})
 			})
-			reportPackages(this.ui, args.format, fields, [...packages].map(toPackage), keywords)
+			// `args.format` is unset when clibuilder's global `--format` is active: the local option gives way to it
+			reportPackages(this.ui, args.format ?? this.format, fields, [...packages].map(toPackage), keywords)
 		}
 	})
 }

@@ -1,4 +1,4 @@
-import { command, exitCodes as coreExitCodes, testCommand } from 'clibuilder'
+import { cli, command, exitCodes as coreExitCodes, testCommand } from 'clibuilder'
 import { describe, expect, it, vi } from 'vitest'
 import { createOutput, exitCodes, formatOption } from './index.js'
 
@@ -62,5 +62,17 @@ describe('@clibuilder/axi', () => {
 		const { exitCode } = await testCommand(listCommand(write), 'list --format yaml')
 		expect(exitCode).toBe(exitCodes.usage)
 		expect(write).not.toHaveBeenCalled()
+	})
+
+	// clibuilder's global `--format` is active under `output: 'axi'` or `cli({ format })`, and a command's own
+	// `format` option conflicts with it. The migration is to delete the local option and read `this.format`.
+	it('conflicts with the global --format of clibuilder under output axi', () => {
+		const app = cli({ name: 'app', version: '1.0.0', output: 'axi' })
+		expect(() => app.command(listCommand(vi.fn()))).toThrow(/declares its own option 'format'/)
+	})
+
+	it('keeps working in the default console output of clibuilder', () => {
+		const app = cli({ name: 'app', version: '1.0.0' })
+		expect(() => app.command(listCommand(vi.fn()))).not.toThrow()
 	})
 })

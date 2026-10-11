@@ -108,6 +108,7 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
 | `this.keywords` | `string[]` | The CLI's plugin keywords. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
+| `this.format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option) when the global option is on, else the CLI's `format`, `'toon'` by default. |
 
 ### `args`
 

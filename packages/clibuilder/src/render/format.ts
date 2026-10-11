@@ -1,3 +1,4 @@
+import { defersToGlobalFormat } from '../builtin/base_command.js'
 import { z } from '../zod.js'
 
 /**
@@ -13,12 +14,19 @@ export type OutputFormat = 'toon' | 'text' | 'json'
 /**
  * The `--format` option, declared once so every command that reports a collection
  * offers the same three values, the same wording, and the same default.
+ *
+ * It gives way to the global `--format` when that is active (under `output: 'axi'` or when `cli({ format })` is set):
+ * the option is dropped from the command, and `run()` reads `this.format` (axi-native RFC section 3.4).
  */
-export const formatOption = {
-	type: z.optional(z.enum(['toon', 'text', 'json'])),
-	description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
-	default: 'toon' as const
-}
+export const formatOption = Object.defineProperty(
+	{
+		type: z.optional(z.enum(['toon', 'text', 'json'])),
+		description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
+		default: 'toon' as const
+	},
+	defersToGlobalFormat,
+	{ value: true }
+)
 
 /**
  * Minimal `ui` surface these helpers need, so they can be handed a command's `ui`

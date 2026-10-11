@@ -87,7 +87,7 @@ export namespace lookupCommand {
 		 */
 		constraint?: string
 		/**
-		 * The values a `t.enum` declaration accepts.
+		 * The values a `t.enum` declaration, or the global `--format`, accepts.
 		 */
 		allowed?: readonly string[]
 		/**

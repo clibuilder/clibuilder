@@ -43,7 +43,8 @@ export const searchPluginsCommand = command({
 				else packages.set(name, [this.keywords[i]!])
 			})
 		})
-		reportPackages(this.ui, args.format, fields, [...packages].map(toPackage), this.keywords)
+		// `args.format` is unset when the global `--format` is active: the local option gives way to it
+		reportPackages(this.ui, args.format ?? this.format, fields, [...packages].map(toPackage), this.keywords)
 	}
 })
 

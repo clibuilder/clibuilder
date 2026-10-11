@@ -219,3 +219,11 @@ otherwise:
 | Flag | Alias | Effect |
 | --- | --- | --- |
 | `--show-config` | | Print the resolved config and the file it came from — see [Configuration](/clibuilder/guides/configuration/#inspecting-the-resolved-config) |
+
+**Unreleased:** one more is added with `cli({ output: 'axi' })` or `cli({ format })`, and `run()`
+reads it as `this.format`. Do not declare a `format` option of your own then: it fails the CLI at
+startup.
+
+| Flag | Alias | Effect |
+| --- | --- | --- |
+| `--format <toon\|json\|text>` | | The format to answer in — see [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |

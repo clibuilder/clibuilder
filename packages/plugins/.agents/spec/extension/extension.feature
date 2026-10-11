@@ -99,3 +99,10 @@ Feature: The plugins() extension
     Given a CLI with keywords, and the same CLI using plugins() with those keywords
     When each runs plugins list or plugins search, in each format
     Then both return the same value, write the same output and set the same exit code
+
+  Scenario: plugins list and search give way to the global format option of clibuilder
+    Given a cli whose global format option is active, under output axi or a cli format
+    When the extension adds plugins list and plugins search
+    Then their own format option is dropped instead of conflicting with the global one
+    And they report in this.format
+    And in the default console output with no cli format they keep their own format option

@@ -1,4 +1,6 @@
-import { testCommand } from 'clibuilder'
+import { Writable } from 'node:stream'
+import { cli, testCommand } from 'clibuilder'
+import { plugins } from '../plugins.js'
 import { pluginsCommand } from './group.js'
 import { listPluginsCommand } from './list.js'
 import { searchPluginsCommand } from './search.js'
@@ -329,5 +331,66 @@ describe('searchPluginsCommand', () => {
 		)
 
 		expect(ctx.messages).toContain('packages: 0 packages found with keywords: keyword-a, keyword-b')
+	})
+})
+
+describe('the plugins commands and the global --format of clibuilder', () => {
+	function memoryStream() {
+		const stream = new Writable({
+			decodeStrings: false,
+			write(chunk, _encoding, callback) {
+				stream.text += chunk
+				callback()
+			}
+		}) as Writable & { text: string }
+		stream.text = ''
+		return stream
+	}
+
+	async function run(options: Partial<cli.Options>, args: string[]) {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		await cli({ name: 'app', version: '1.0.0', streams: { stdout, stderr }, ...options })
+			.use(plugins({ keywords: ['app-plugin'], config: false }))
+			.parse(['node', 'app', ...args])
+		return stdout.text + stderr.text
+	}
+
+	afterEach(() => {
+		process.exitCode = undefined
+	})
+
+	test.each([
+		['output axi', { output: 'axi' }],
+		['cli({ format })', { format: 'toon' }]
+	] as const)('give way to the global --format under %s, without a conflict', async (_, options) => {
+		const help = await run(options, ['plugins', 'list', '--help'])
+		expect(help).not.toContain('--format')
+		const out = await run(options, ['plugins', 'search', '--format', 'json', '--fields', 'bogus'])
+		expect(process.exitCode).toBeUndefined()
+		expect(out).toContain('error: unknown value for --fields: bogus')
+	})
+
+	test('keep their own --format in the default console output', async () => {
+		const help = await run({}, ['plugins', 'list', '--help'])
+		expect(help.split('--format').length).toBe(2)
+	})
+
+	test('read this.format when their own option gives way', async () => {
+		const reported: unknown[] = []
+		const list = listPluginsCommand(['app-plugin'])
+		const stdout = memoryStream()
+		await cli({ name: 'app', version: '1.0.0', output: 'axi', streams: { stdout, stderr: stdout } })
+			.command({
+				...list,
+				context: { findByKeywords: () => Promise.resolve(['pkg-x']) },
+				run(args) {
+					reported.push(args.format)
+					return (list as any).run.call(this, args)
+				}
+			})
+			.parse(['node', 'app', 'list', '--format', 'json'])
+		expect(reported).toEqual([undefined])
+		expect(stdout.text).toContain('"plugins": [\n    "pkg-x"\n  ]')
 	})
 })
