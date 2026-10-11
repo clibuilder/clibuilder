@@ -617,6 +617,67 @@ describe('option arity', () => {
 	})
 })
 
+describe('global options before the command path', () => {
+	const base = getBaseCommand('', { format: 'toon' })
+	const show = command({
+		name: 'show',
+		arguments: [{ name: 'x', type: z.optional(z.string()), description: 'x' }],
+		options: { all: { type: z.optional(z.boolean()), description: 'all' } },
+		run() {}
+	})
+	const sub = command({ name: 'sub', run() {} })
+	const group = command({ name: 'group', commands: [sub] })
+	const root = command({ name: '', commands: [show, group] })
+	function lookup(args: string) {
+		return lookupCommand(root, parseArgv(argv(args)), base)
+	}
+	test('a global flag before the command name does not take the name as its value', () => {
+		const r = lookup('my-cli --verbose show x')
+		expect(r.command).toBe(show)
+		expect(r.args).toEqual({ _: [], x: 'x' })
+	})
+	test('a global option with a value before the command name takes only its value', () => {
+		const r = lookup('my-cli --format json show x')
+		expect(r.command).toBe(show)
+		expect(r.args).toEqual({ _: [], x: 'x' })
+	})
+	test('a global option with an inline value before the command name takes nothing more', () => {
+		expect(lookup('my-cli --format=json show').command).toBe(show)
+	})
+	test('a global option between a group and its sub-command', () => {
+		expect(lookup('my-cli group --format json sub').command).toBe(sub)
+		expect(lookup('my-cli group --verbose sub').command).toBe(sub)
+	})
+	test('global options before a group and its sub-command', () => {
+		expect(lookup('my-cli --verbose --format json group sub').command).toBe(sub)
+		expect(lookup('my-cli -V group sub').command).toBe(sub)
+	})
+	test('a boolean global given a literal true takes it, and the next token names the command', () => {
+		expect(lookup('my-cli --verbose true show').command).toBe(show)
+	})
+	test('a global option after the command keeps its following tokens as positionals', () => {
+		const r = lookup('my-cli show --verbose x')
+		expect(r.command).toBe(show)
+		expect(r.args).toEqual({ _: [], x: 'x' })
+	})
+	test("a command's own option before the command does not route", () => {
+		const r = lookup('my-cli --all show')
+		expect(r.command).toBe(root)
+		// an option the matched command does not declare keeps its following tokens, as today
+		expect(r.errors).toEqual([{ type: 'invalid-key', key: 'all' }])
+	})
+	test("a command's own option stops the path, even before a later global", () => {
+		expect(lookup('my-cli --all --verbose show').command).toBe(root)
+	})
+	test('the terminator still ends the command path', () => {
+		expect(lookup('my-cli -- show').command).toBe(root)
+		expect(lookup('my-cli --verbose -- show').command).toBe(root)
+	})
+	test('without a fallback, no option routes before the command', () => {
+		expect(lookupCommand(root, parseArgv(argv('my-cli --verbose show'))).command).toBe(root)
+	})
+})
+
 describe('conflicting options', () => {
 	const defaultCommand = command({
 		name: '',

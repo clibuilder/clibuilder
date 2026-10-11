@@ -123,34 +123,83 @@ export namespace lookupCommand {
 
 /**
  * @param fallback a command whose options apply to every command (the global options).
- * It only decides how many following tokens such an option takes.
+ * It decides how many following tokens such an option takes,
+ * and lets the option be given before the command path as well as after it.
  */
 export function lookupCommand(
 	command: cli.Command,
 	args: parseArgv.Result,
 	fallback?: cli.Command
 ): lookupCommand.Result {
-	const m = matchCommand(command, args)!
-	const [rawArgs, occurrences] = assignOptionValues(m[1], m[0], fallback)
-	return processCommand(m[0], rawArgs, occurrences)
+	const m = matchCommand(command, createPathCursor(args, fallback))
+	const [rawArgs, occurrences] = assignOptionValues(args, m, fallback)
+	return processCommand(m, rawArgs, occurrences)
 }
 
-function matchCommand(command: cli.Command, rawArgs: parseArgv.Result): [cli.Command, parseArgv.Result] | undefined {
+function matchCommand(command: cli.Command, path: PathCursor): cli.Command {
 	if (command.commands) {
 		const commands = command.commands
+		const token = path.peek(command)
 		for (let i = commands.length - 1; i >= 0; i--) {
 			const command = commands[i]
-			if (!command.name) return [command, rawArgs]
-			if (rawArgs._[0] !== command.name && !command.alias?.includes(rawArgs._[0])) continue
-			rawArgs._.shift()
-			if (command.commands) {
-				const m = matchCommand(command, rawArgs)
-				return m ? m : [command, rawArgs]
-			}
-			return [command, rawArgs]
+			if (!command.name) return command
+			if (token !== command.name && !command.alias?.includes(token!)) continue
+			path.consume()
+			return command.commands ? matchCommand(command, path) : command
 		}
 	}
-	return [command, rawArgs]
+	return command
+}
+
+type PathCursor = {
+	/**
+	 * The next token that may name a sub-command of `command`, or `undefined` when there is none.
+	 */
+	peek(command: cli.Command): string | undefined
+	/**
+	 * Removes the token `peek()` returned: it names the matched command, so it is no positional.
+	 */
+	consume(): void
+}
+
+/**
+ * Walks the tokens that may name the command path, in command line order.
+ *
+ * They are the positionals before the first option, then the tokens after each global option
+ * that the option does not take as its value (the base lookup knows its arity, #672).
+ * The walk stops at the first option that is not global: a command's own option is only valid after the command.
+ * A token after the terminator `--` is not walked, as it is not today.
+ */
+function createPathCursor(rawArgs: parseArgv.Result, fallback: cli.Command | undefined): PathCursor {
+	const occurrences = optionOccurrences.get(rawArgs) ?? []
+	// the token list `peek()` read from, and the index in it, or `undefined` when the walk ended
+	let current: [string[], number] | undefined
+	let next = -1
+	let index = 0
+	return {
+		peek(command) {
+			current = undefined
+			if (next < 0) {
+				if (index < rawArgs._.length) return (current = [rawArgs._, index])[0][index]
+				next = 0
+				index = -1
+			}
+			while (fallback && next < occurrences.length) {
+				const o = occurrences[next]!
+				if (index < 0) {
+					const global = lookupOptions(fallback, o.key)[1]
+					if (!global) return
+					index = countFollowing(lookupOptions(command, o.key)[1] ?? global, o)
+				}
+				if (index < o.following.length) return (current = [o.following, index])[0][index]
+				next++
+				index = -1
+			}
+		},
+		consume() {
+			current![0].splice(current![1], 1)
+		}
+	}
 }
 
 /**

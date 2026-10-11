@@ -116,6 +116,11 @@ Help lists it once, with the other global options. There is no `-f` alias, becau
 command's own `--force` or `--file`. Without `output: 'axi'` and without `format`, there is no
 global `--format`, and the CLI behaves as before.
 
+Like the other global options, it may come before the command, after it, or between a group and its
+sub-command: `app --format json list` and `app list --format json` are the same. It takes only its
+value, so the next word still names the command. See
+[Where the built-in options go](/clibuilder/guides/arguments-and-options/#where-the-built-in-options-go).
+
 `run()` reads the resolved value as `this.format`: the caller's `--format`, else the CLI's `format`,
 `'toon'` by default. The format is the same on a terminal and in a pipe.
 
