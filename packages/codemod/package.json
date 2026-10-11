@@ -1,0 +1,73 @@
+{
+	"name": "@clibuilder/codemod",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Codemod that upgrades a clibuilder 11 CLI to clibuilder 12",
+	"keywords": [
+		"cli",
+		"clibuilder",
+		"codemod",
+		"migration"
+	],
+	"homepage": "https://github.com/clibuilder/clibuilder/tree/main/packages/codemod",
+	"bugs": {
+		"url": "https://github.com/clibuilder/clibuilder/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/clibuilder/clibuilder.git",
+		"directory": "packages/codemod"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./esm/index.d.ts",
+			"import": "./esm/index.js",
+			"default": "./esm/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"main": "./esm/index.js",
+	"types": "./esm/index.d.ts",
+	"bin": {
+		"clibuilder-codemod": "./esm/bin.js"
+	},
+	"files": [
+		"esm",
+		"!**/*.map",
+		"!**/*.{spec,unit}.*"
+	],
+	"scripts": {
+		"build": "tsc",
+		"build:watch": "tsc --watch",
+		"clean": "rimraf .turbo coverage esm tsconfig.tsbuildinfo",
+		"coverage": "vitest run --coverage",
+		"depcheck": "depcheck",
+		"nuke": "run-s clean && rimraf node_modules",
+		"test": "vitest run",
+		"watch": "vitest",
+		"w": "pnpm watch"
+	},
+	"dependencies": {
+		"typescript": "^5.9.3"
+	},
+	"devDependencies": {
+		"@repobuddy/typescript": "^2.2.3",
+		"@types/node": "^24.12.2",
+		"@vitest/coverage-istanbul": "^4.1.11",
+		"depcheck": "^1.4.3",
+		"npm-run-all2": "^6.2.6",
+		"rimraf": "^5.0.10",
+		"vitest": "^4.1.11"
+	},
+	"engines": {
+		"node": ">= 20.19"
+	}
+}
