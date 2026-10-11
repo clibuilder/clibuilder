@@ -1,64 +1,143 @@
+import type { StandardSchemaV1 } from './standard_schema.js'
+import { type AnyDescriptor, type Data, isDescriptor, type OutputOf } from './t.js'
 import { type Grammar, type OptionToken, type PositionalToken, type Token, tokenizeArgs } from './tokenize_args.js'
 
 export type ArgsValue = string | number | boolean
 export type MultipleArgsValue = string[] | number[] | boolean[]
 
 /**
- * The built-in value types an option can be declared with.
+ * The built-in value types an option can be declared with by name.
+ * A descriptor from `t` can be used instead.
  */
 export type OptionType = 'boolean' | 'number' | 'string'
 
-type DeclarationOf<T extends OptionType, V> = {
-	type: T
+type Alias = {
 	/**
 	 * Other names for this option, without dashes (e.g. `'n'` for `--name`).
 	 * Parsed output always uses the declared (canonical) key.
 	 */
 	alias?: string | readonly string[]
-} & (
-	| {
-			/**
-			 * Repeat policy. `false` (the default) is last-wins.
-			 */
-			multiple?: false
-			/**
-			 * Value used when the option is absent.
-			 */
-			default?: V
-	  }
-	| {
-			/**
-			 * Collect every occurrence, in source order, into an array.
-			 */
-			multiple: true
-			/**
-			 * Values used when the option is absent.
-			 */
-			default?: readonly V[]
-	  }
-)
+}
+
+type DeclarationOf<T extends OptionType, V> = {
+	type: T
+} & Alias &
+	(
+		| {
+				/**
+				 * Repeat policy. `false` (the default) is last-wins.
+				 */
+				multiple?: false
+				/**
+				 * Value used when the option is absent.
+				 */
+				default?: V
+		  }
+		| {
+				/**
+				 * Collect every occurrence, in source order, into an array.
+				 */
+				multiple: true
+				/**
+				 * Values used when the option is absent.
+				 */
+				default?: readonly V[]
+		  }
+	)
+
+/**
+ * The value a `default` is written as: an array default may be a readonly array.
+ */
+export type DefaultOf<Out> = Out extends readonly (infer E)[] ? readonly E[] : Out
+
+/**
+ * An option declared with a descriptor from `t`.
+ */
+export type DescriptorDeclaration<D extends AnyDescriptor = AnyDescriptor> = {
+	type: D
+	/**
+	 * Value used when the option is absent. It is not converted; the descriptor's checks run on it.
+	 * An option with a `default` is always present in the output.
+	 */
+	default?: DefaultOf<OutputOf<D>>
+	/**
+	 * Not supported with a descriptor: use `t.array(element)` to collect every occurrence.
+	 */
+	multiple?: never
+} & Alias
 
 export type OptionDeclaration =
 	| DeclarationOf<'boolean', boolean>
 	| DeclarationOf<'number', number>
 	| DeclarationOf<'string', string>
+	| DescriptorDeclaration
 
 export type OptionDeclarations = Record<string, OptionDeclaration>
 
 type BaseValue<T extends OptionType> = T extends 'boolean' ? boolean : T extends 'number' ? number : string
 
-type ValueOf<D extends OptionDeclaration> = D extends { multiple: true } ? BaseValue<D['type']>[] : BaseValue<D['type']>
+type ValueOf<D extends OptionDeclaration> = D extends { type: infer T extends AnyDescriptor }
+	? // the unknown descriptor of the default `OptionDeclarations`
+		0 extends 1 & OutputOf<T>
+		? unknown
+		: OutputOf<T>
+	: D extends { type: infer T extends OptionType }
+		? D extends { multiple: true }
+			? BaseValue<T>[]
+			: BaseValue<T>
+		: never
+
+type IsPresent<D> = D extends { default: unknown } ? true : D extends { type: { isOptional: false } } ? true : false
 
 type DeclaredOptions<O extends OptionDeclarations> = {
-	[K in keyof O as O[K] extends { default: unknown } ? K : never]: ValueOf<O[K]>
+	-readonly [K in keyof O as IsPresent<O[K]> extends true ? K : never]: ValueOf<O[K]>
 } & {
-	[K in keyof O as O[K] extends { default: unknown } ? never : K]?: ValueOf<O[K]>
+	-readonly [K in keyof O as IsPresent<O[K]> extends true ? never : K]?: ValueOf<O[K]>
 }
 
 /**
- * Thrown when a declared option receives a value it cannot convert.
+ * Checks that each descriptor option's `default` has the descriptor's type.
+ */
+export type CheckDefaults<O> = {
+	[K in keyof O]: O[K] extends { type: infer D extends AnyDescriptor } ? { default?: DefaultOf<OutputOf<D>> } : unknown
+}
+
+/**
+ * Which way an input was wrong.
+ *
+ * - `unknown-option`: an undeclared option under `strict`.
+ * - `unexpected-positional`: a positional when `allowPositionals` is `false`.
+ * - `invalid-group`: an option that takes a value is not last in a short group.
+ * - `missing-value`: an option that takes a value was given none.
+ * - `invalid-value`: a value failed conversion, a constraint, or a check.
+ * - `missing-option`: a required descriptor option was absent.
+ */
+export type ParseArgsErrorKind =
+	| 'unknown-option'
+	| 'unexpected-positional'
+	| 'invalid-group'
+	| 'missing-value'
+	| 'invalid-value'
+	| 'missing-option'
+
+/**
+ * Thrown when the input does not fit the declarations: a usage error the caller can fix.
  */
 export class ParseArgsError extends Error {
+	/**
+	 * Which way the input was wrong.
+	 */
+	public readonly kind: ParseArgsErrorKind
+	/**
+	 * For an array option, the index of the element that failed.
+	 */
+	public readonly index: number | undefined
+	/**
+	 * The issues reported by a Standard Schema, when one failed.
+	 * The message never repeats their text.
+	 */
+	public readonly issues: readonly StandardSchemaV1.Issue[] | undefined
+
 	constructor(
 		message: string,
 		/**
@@ -68,11 +147,20 @@ export class ParseArgsError extends Error {
 		public readonly option: string | undefined,
 		/**
 		 * The input form that caused the error, e.g. `--count=abc`, or the positional value.
+		 * Empty for a missing option.
 		 */
-		public readonly input: string
+		public readonly input: string,
+		details: {
+			kind?: ParseArgsErrorKind | undefined
+			index?: number | undefined
+			issues?: readonly StandardSchemaV1.Issue[] | undefined
+		} = {}
 	) {
 		super(message)
 		this.name = 'ParseArgsError'
+		this.kind = details.kind ?? 'invalid-value'
+		this.index = details.index
+		this.issues = details.issues
 	}
 }
 
@@ -88,7 +176,7 @@ export type ParsedArgs<O extends OptionDeclarations = OptionDeclarations> = {
 	/**
 	 * Parsed options.
 	 * Declared options have the type of their declaration (an array when `multiple`);
-	 * a declared option with a `default` is always present.
+	 * a declared option with a `default`, or a descriptor option that is not `.optional()`, is always present.
 	 * Undeclared options are `string | true`.
 	 */
 	options: DeclaredOptions<O> & Record<string, ArgsValue | MultipleArgsValue>
@@ -108,7 +196,7 @@ export type ParseArgsConfig<O extends OptionDeclarations = OptionDeclarations> =
 	/**
 	 * Option declarations, keyed by option name.
 	 */
-	options?: O
+	options?: O & CheckDefaults<O>
 	/**
 	 * Report undeclared options as a `ParseArgsError` instead of accepting them.
 	 * Names and aliases are both checked, including each option in a short group.
@@ -138,14 +226,71 @@ export type ParseArgsConfig<O extends OptionDeclarations = OptionDeclarations> =
 
 /**
  * Parse command line input into options and positional arguments.
+ *
+ * Synchronous: if a converter or check returns a promise, it throws an `Error`
+ * asking for `parseArgsAsync()`.
  */
 export function parseArgs<const O extends OptionDeclarations = OptionDeclarations>(
 	config: ParseArgsConfig<O>
 ): ParsedArgs<O> {
+	const steps = parse(config)
+	let next = steps.next()
+	while (!next.done) {
+		const { value, option } = next.value
+		if (isThenable(value)) {
+			value.then(undefined, () => {})
+			steps.return(undefined as never)
+			throw new Error(`Option '${option}' has an asynchronous converter or check: use parseArgsAsync() to parse it`)
+		}
+		next = steps.next(value)
+	}
+	return next.value as ParsedArgs<O>
+}
+
+/**
+ * Parse command line input into options and positional arguments,
+ * awaiting asynchronous converters and checks one at a time, in order.
+ */
+export async function parseArgsAsync<const O extends OptionDeclarations = OptionDeclarations>(
+	config: ParseArgsConfig<O>
+): Promise<ParsedArgs<O>> {
+	const steps = parse(config)
+	let next = steps.next()
+	while (!next.done) {
+		let value: unknown
+		try {
+			value = await next.value.value
+		} catch (error) {
+			next = steps.throw(error)
+			continue
+		}
+		next = steps.next(value)
+	}
+	return next.value as ParsedArgs<O>
+}
+
+/**
+ * A value that may be a promise, yielded by `parse()` for the driver to resolve.
+ */
+type Step = { value: unknown; option: string }
+
+type Steps<R> = Generator<Step, R, unknown>
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+	return (
+		(typeof value === 'object' || typeof value === 'function') &&
+		value !== null &&
+		typeof (value as PromiseLike<unknown>).then === 'function'
+	)
+}
+
+function* parse(config: ParseArgsConfig): Steps<ParsedArgs> {
 	const tokens = tokenizeArgs(config.args, config.grammar)
 	const declarations: OptionDeclarations | undefined = config.options
+	checkDeclarations(declarations)
 	const canonical = canonicalNames(declarations)
 	const options = Object.create(null)
+	const sources: Record<string, string[]> = Object.create(null)
 	const _: string[] = []
 	const __: string[] = []
 
@@ -160,25 +305,41 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 			}
 			case 'option': {
 				const names = token.dashes === 1 ? Array.from(token.name) : [token.name]
-				names.forEach((raw, i) => {
+				for (let i = 0; i < names.length; i++) {
+					const raw = names[i]!
 					const isLast = i === names.length - 1
 					const name = canonical.get(raw) ?? raw
 					const declaration = declarations?.[name]
 					if (config.strict && !declaration) {
-						throw new ParseArgsError(`Unknown option '${raw}' (from '${token.raw}')`, raw, token.raw)
+						throw new ParseArgsError(`Unknown option '${raw}' (from '${token.raw}')`, raw, token.raw, {
+							kind: 'unknown-option'
+						})
 					}
-					if (!isLast && declaration && declaration.type !== 'boolean') {
+					if (!isLast && declaration && takesValue(declaration)) {
 						throw new ParseArgsError(
 							`Invalid option group '${token.raw}': '${raw}' takes a value, so it can only be the last option in a group`,
 							name,
-							token.raw
+							token.raw,
+							{ kind: 'invalid-group' }
 						)
 					}
 					const value = isLast ? (token.value ?? takeFollowingValue(declaration, remainingTokens)) : undefined
+					if (declaration && isDescriptor(declaration.type)) {
+						const d = declaration.type
+						if (d.kind === 'array') {
+							const list: unknown[] = (options[name] ??= [])
+							;(sources[name] ??= []).push(token.raw)
+							const at = { name, label: `${name}[${list.length}]`, index: list.length, token }
+							list.push(yield* convertAndCheck(d.element, value, at))
+						} else {
+							options[name] = yield* convertAndCheck(d, value, { name, label: name, index: undefined, token })
+						}
+						continue
+					}
 					const converted = convert(declaration, name, value, token)
 					if (declaration?.multiple) (options[name] ??= []).push(converted)
 					else options[name] = converted
-				})
+				}
 				break
 			}
 			case 'option-terminator': {
@@ -190,25 +351,55 @@ export function parseArgs<const O extends OptionDeclarations = OptionDeclaration
 		}
 	}
 	for (const [name, declaration] of Object.entries(declarations ?? {})) {
-		if (declaration.default !== undefined && options[name] === undefined) {
+		const descriptor = isDescriptor(declaration.type) ? declaration.type : undefined
+		if (options[name] !== undefined) {
+			if (descriptor?.kind === 'array') {
+				const input = sources[name]!.join(' ')
+				yield* runChecks(descriptor, options[name], name, (detail, issues) =>
+					usageError(name, name, input, detail, { issues })
+				)
+			}
+			continue
+		}
+		if (declaration.default !== undefined) {
+			if (descriptor) yield* checkDefault(declaration as DescriptorDeclaration, name)
 			options[name] = Array.isArray(declaration.default) ? [...declaration.default] : declaration.default
+		} else if (descriptor && !descriptor.isOptional) {
+			throw new ParseArgsError(`Missing required option '${name}'`, name, '', { kind: 'missing-option' })
 		}
 	}
-	const result: ParsedArgs<O> = { _, __, options }
+	const result: ParsedArgs = { _, __, options }
 	if (config.tokens) result.tokens = tokens
 	return result
+}
+
+function checkDeclarations(declarations: OptionDeclarations | undefined) {
+	for (const [name, declaration] of Object.entries(declarations ?? {})) {
+		const type: unknown = declaration.type
+		if (typeof type === 'object' && type !== null && !isDescriptor(type)) {
+			throw new TypeError(`Option '${name}' has a type that is neither a type name nor a descriptor from t`)
+		}
+		if (isDescriptor(type) && declaration.multiple !== undefined) {
+			throw new TypeError(`Option '${name}' cannot set 'multiple' with a descriptor: use t.array(element)`)
+		}
+	}
+}
+
+/**
+ * Throws if positionals are not allowed.
+ */
+function checkPositional(config: { allowPositionals?: boolean | undefined }, value: string) {
+	if (config.allowPositionals === false) {
+		throw new ParseArgsError(`Unexpected positional argument '${value}'`, undefined, value, {
+			kind: 'unexpected-positional'
+		})
+	}
 }
 
 /**
  * Maps every declared name and alias to its canonical name.
  * Throws if two options claim the same name.
  */
-function checkPositional(config: { allowPositionals?: boolean }, value: string) {
-	if (config.allowPositionals === false) {
-		throw new ParseArgsError(`Unexpected positional argument '${value}'`, undefined, value)
-	}
-}
-
 function canonicalNames(declarations: OptionDeclarations | undefined) {
 	const map = new Map<string, string>()
 	if (!declarations) return map
@@ -226,22 +417,38 @@ function canonicalNames(declarations: OptionDeclarations | undefined) {
 	return map
 }
 
+function elementOf(data: Data) {
+	return data.kind === 'array' ? data.element : data
+}
+
+function takesValue(declaration: OptionDeclaration) {
+	if (!isDescriptor(declaration.type)) return declaration.type !== 'boolean'
+	const data = elementOf(declaration.type)
+	return !(data.kind === 'boolean' || (data.kind === 'literal' && typeof data.value === 'boolean'))
+}
+
+function isNumeric(declaration: OptionDeclaration) {
+	if (!isDescriptor(declaration.type)) return declaration.type === 'number'
+	const data = elementOf(declaration.type)
+	return data.kind === 'number' || data.kind === 'int' || (data.kind === 'literal' && typeof data.value === 'number')
+}
+
 /**
- * A declared `number` or `string` option consumes the next token as its value
+ * A declared option that takes a value consumes the next token as its value
  * when it has no inline value.
  * The next token is taken only when it is a positional,
- * or (for `number`) an option-like token that is a valid number such as `-5`.
+ * or (for a numeric option) an option-like token that is a valid number such as `-5`.
  * Otherwise nothing is consumed and conversion reports the missing value.
  */
 function takeFollowingValue(option: OptionDeclaration | undefined, remaining: Token[]): string | undefined {
-	if (!option || option.type === 'boolean') return undefined
+	if (!option || !takesValue(option)) return undefined
 	const next = remaining[0]
 	if (!next) return undefined
 	if (next.kind === 'positional') {
 		remaining.shift()
 		return next.value
 	}
-	if (next.kind === 'option' && option.type === 'number' && Number.isFinite(toNumber(next.raw))) {
+	if (next.kind === 'option' && isNumeric(option) && Number.isFinite(toNumber(next.raw))) {
 		remaining.shift()
 		return next.raw
 	}
@@ -261,13 +468,15 @@ function convert(
 		case 'number':
 			return convertNumber(name, value, token)
 		default:
-			if (value === undefined) throw invalid(name, 'a value is required', token)
+			if (value === undefined) throw invalid(name, 'a value is required', token, 'missing-value')
 			return value
 	}
 }
 
-function invalid(name: string, detail: string, token: OptionToken) {
-	return new ParseArgsError(`Invalid value for option '${name}': ${detail} (from '${token.raw}')`, name, token.raw)
+function invalid(name: string, detail: string, token: OptionToken, kind: ParseArgsErrorKind = 'invalid-value') {
+	return new ParseArgsError(`Invalid value for option '${name}': ${detail} (from '${token.raw}')`, name, token.raw, {
+		kind
+	})
 }
 
 function toNumber(value: string) {
@@ -275,7 +484,7 @@ function toNumber(value: string) {
 }
 
 function convertNumber(name: string, value: string | undefined, token: OptionToken) {
-	if (value === undefined) throw invalid(name, 'a number is required', token)
+	if (value === undefined) throw invalid(name, 'a number is required', token, 'missing-value')
 	const num = toNumber(value)
 	if (!Number.isFinite(num)) throw invalid(name, value, token)
 	return num
@@ -288,4 +497,187 @@ function convertBoolean(name: string, value: string | undefined, token: OptionTo
 	const num = toNumber(value)
 	if (!Number.isNaN(num)) return num > 0
 	throw invalid(name, value, token)
+}
+
+// ---------------------------------------------------------------------------
+// Descriptors
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a descriptor value came from.
+ * `label` names an array element as `name[index]`.
+ */
+type Site = { name: string; label: string; index: number | undefined; token: OptionToken }
+
+type Fail = (detail: string, issues?: readonly StandardSchemaV1.Issue[]) => Error
+
+function usageError(
+	name: string,
+	label: string,
+	input: string,
+	detail: string,
+	details: {
+		kind?: ParseArgsErrorKind
+		index?: number | undefined
+		issues?: readonly StandardSchemaV1.Issue[] | undefined
+	}
+) {
+	return new ParseArgsError(`Invalid value for option '${label}': ${detail} (from '${input}')`, name, input, details)
+}
+
+function* convertAndCheck(data: Data, raw: string | undefined, site: Site): Steps<unknown> {
+	const fail: Fail = (detail, issues) =>
+		usageError(site.name, site.label, site.token.raw, detail, { index: site.index, issues })
+	const value = yield* convertDescriptor(data, raw, site, fail)
+	yield* runChecks(data, value, site.label, fail)
+	return value
+}
+
+function quote(raw: string) {
+	return `'${raw}'`
+}
+
+/**
+ * Describes what a descriptor expects, for error messages.
+ */
+function describeExpected(data: Data): string {
+	switch (data.kind) {
+		case 'string':
+			return data.pattern ? `a string matching ${data.pattern}` : 'a string'
+		case 'number':
+		case 'int': {
+			const noun = data.kind === 'int' ? 'an integer' : 'a number'
+			if (data.min !== undefined && data.max !== undefined) return `${noun} from ${data.min} to ${data.max}`
+			if (data.min !== undefined) return `${noun} of at least ${data.min}`
+			if (data.max !== undefined) return `${noun} of at most ${data.max}`
+			return noun
+		}
+		case 'boolean':
+			return 'no value, true or false'
+		case 'literal':
+			return typeof data.value === 'string' ? quote(data.value) : String(data.value)
+		case 'enum':
+			return `one of ${data.values.map(quote).join(', ')}`
+		case 'array':
+			return describeExpected(data.element)
+		case 'custom':
+			return 'a value'
+		case 'json':
+			return 'JSON'
+	}
+}
+
+function* convertDescriptor(data: Data, raw: string | undefined, site: Site, fail: Fail): Steps<unknown> {
+	const expected = () => fail(`expected ${describeExpected(data)}, got ${quote(raw!)}`)
+	if (data.kind === 'boolean' || (data.kind === 'literal' && typeof data.value === 'boolean')) {
+		const value = raw === undefined || raw === 'true' ? true : raw === 'false' ? false : undefined
+		if (value === undefined || (data.kind === 'literal' && value !== data.value)) {
+			throw raw === undefined ? fail(`expected ${describeExpected(data)}, got no value`) : expected()
+		}
+		return value
+	}
+	if (raw === undefined) {
+		throw usageError(site.name, site.label, site.token.raw, 'a value is required', {
+			kind: 'missing-value',
+			index: site.index
+		})
+	}
+	switch (data.kind) {
+		case 'string':
+			if (data.pattern) {
+				data.pattern.lastIndex = 0
+				if (!data.pattern.test(raw)) throw expected()
+			}
+			return raw
+		case 'number':
+		case 'int': {
+			const num = toNumber(raw)
+			if (!Number.isFinite(num) || (data.kind === 'int' && !Number.isInteger(num))) throw expected()
+			if ((data.min !== undefined && num < data.min) || (data.max !== undefined && num > data.max)) throw expected()
+			return num
+		}
+		case 'literal': {
+			const value = typeof data.value === 'number' ? toNumber(raw) : raw
+			if (value !== data.value) throw expected()
+			return value
+		}
+		case 'enum':
+			if (!data.values.includes(raw)) throw expected()
+			return raw
+		case 'custom':
+			try {
+				return yield { value: data.convert(raw), option: site.label }
+			} catch (error) {
+				throw usageFailure(error, fail)
+			}
+		case 'json': {
+			let value: unknown
+			try {
+				value = JSON.parse(raw)
+			} catch {
+				throw fail(`${quote(raw)} is not valid JSON`)
+			}
+			if (!data.schema) return value
+			const result = (yield {
+				value: data.schema['~standard'].validate(value),
+				option: site.label
+			}) as StandardSchemaV1.Result<unknown>
+			if (result.issues) throw fail('does not match the expected shape', result.issues)
+			return result.value
+		}
+	}
+	/* istanbul ignore next */
+	throw new TypeError(`Unknown descriptor kind '${(data as { kind: string }).kind}'`)
+}
+
+/**
+ * A plain `Error` (whose constructor is `Error` itself) from a converter is a usage error.
+ * Anything else is a runtime error and propagates.
+ */
+function usageFailure(error: unknown, fail: Fail) {
+	if (error instanceof Error && error.constructor === Error) return fail(error.message)
+	return error
+}
+
+/**
+ * Runs the descriptor's checks in declaration order. The first failing check wins.
+ */
+function* runChecks(data: Data, value: unknown, label: string, fail: Fail): Steps<void> {
+	for (const check of data.checks) {
+		if (check.type === 'fn') {
+			const result = yield { value: check.fn(value), option: label }
+			if (result === false) throw fail('failed a check')
+			if (typeof result === 'string') throw fail(result)
+		} else {
+			const result = (yield {
+				value: check.schema['~standard'].validate(value),
+				option: label
+			}) as StandardSchemaV1.Result<unknown>
+			if (result.issues) throw fail('failed a check', result.issues)
+		}
+	}
+}
+
+const checkedDefaults = new WeakMap<object, true>()
+
+/**
+ * Runs the checks of a descriptor option's `default` once, at the first parse that uses its declaration.
+ * A failure is a programmer error, not a usage error.
+ */
+function* checkDefault(declaration: DescriptorDeclaration, name: string): Steps<void> {
+	if (checkedDefaults.has(declaration)) return
+	const d = declaration.type
+	const failFor =
+		(label: string): Fail =>
+		(detail) =>
+			new Error(`The default of option '${label}' failed a check${detail === 'failed a check' ? '' : `: ${detail}`}`)
+	if (d.kind === 'array') {
+		const values = declaration.default as readonly unknown[]
+		for (let i = 0; i < values.length; i++) {
+			const label = `${name}[${i}]`
+			yield* runChecks(d.element, values[i], label, failFor(label))
+		}
+	}
+	yield* runChecks(d, declaration.default, name, failFor(name))
+	checkedDefaults.set(declaration, true)
 }

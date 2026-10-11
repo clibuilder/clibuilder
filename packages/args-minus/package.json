@@ -54,6 +54,7 @@
 	},
 	"devDependencies": {
 		"@repobuddy/typescript": "^2.2.3",
+		"@standard-schema/spec": "1.1.0",
 		"@types/node": "^24.12.2",
 		"@vitest/coverage-istanbul": "^4.1.11",
 		"depcheck": "^1.4.3",
@@ -61,7 +62,8 @@
 		"rimraf": "^5.0.10",
 		"type-plus": "8.0.0",
 		"typescript": "^5.9.3",
-		"vitest": "^4.1.11"
+		"vitest": "^4.1.11",
+		"zod": "^4.4.3"
 	},
 	"engines": {
 		"node": ">=20"

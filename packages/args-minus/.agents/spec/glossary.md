@@ -9,3 +9,7 @@
   passed through as positionals.
 - **Policy parser:** a consumer that applies an application's option declarations
   to generic tokens.
+- **Descriptor:** an option type built by `t`. It converts the raw argument to
+  a typed value; its own fields are read-only data keyed on `kind`.
+- **Check:** a function or Standard Schema attached with `.check()` that
+  validates a converted value without changing it.
