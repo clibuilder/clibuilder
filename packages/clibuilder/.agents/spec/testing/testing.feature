@@ -155,3 +155,13 @@ Feature: Testing support
     When an editor reads its declaration
     Then it is marked deprecated, pointing at clibuilder/testing
     And it is the same function clibuilder/testing exports
+
+  Scenario: messages written to stdout and stderr are captured in the order they were said
+    Given a command that says things at levels routed to stdout and to stderr
+    When it is exercised through the test helper
+    Then the messages hold one line per message, in the order they were said, whatever stream each went to
+
+  Scenario: the test helper writes through in-memory streams, not the process streams
+    Given a command that says something
+    When it is exercised through the test helper
+    Then nothing is written to the process stdout or stderr

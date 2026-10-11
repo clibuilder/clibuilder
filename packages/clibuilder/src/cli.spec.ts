@@ -1,3 +1,4 @@
+import { Writable } from 'node:stream'
 import a from 'assertron'
 import { testType } from 'type-plus/testing'
 import { cli, z } from './index.js'
@@ -115,5 +116,117 @@ it('can specify the config used by the command', () => {
 		run() {
 			testType.equal<boolean, typeof this.config.c>(true)
 		}
+	})
+})
+
+describe('streams and output', () => {
+	function memoryStream(isTTY?: boolean) {
+		const stream = new Writable({
+			decodeStrings: false,
+			write(chunk, _encoding, callback) {
+				stream.text += chunk
+				callback()
+			}
+		}) as Writable & { text: string; isTTY?: boolean }
+		stream.text = ''
+		if (isTTY) stream.isTTY = true
+		return stream
+	}
+
+	const app = (options: Partial<cli.Options>) =>
+		cli({ name: 'app', version: '1.0.0', ...options }).default({
+			run() {
+				this.ui.info('info')
+				this.ui.warn('warn')
+				this.ui.error('error')
+				return 'result'
+			}
+		})
+
+	it('writes the ui to the given streams in console mode by default', async () => {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		const result = await app({ streams: { stdout, stderr } }).parse(['node', 'app'])
+		expect(result).toBe('result')
+		expect(stdout.text).toBe('info\n')
+		expect(stderr.text).toBe('warn\nerror\n')
+	})
+
+	it('writes every ui message to stderr in axi mode', async () => {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app'])
+		expect(stdout.text).toBe('')
+		expect(stderr.text).toBe('info\nwarn\nerror\n')
+	})
+
+	it('writes the framework messages and help through the same streams', async () => {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		const code = await app({ streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
+		expect(code).toBe(2)
+		expect(stderr.text).toBe('unknown option --bogus\n')
+		expect(stdout.text).toMatch(/^\nUsage: app/)
+		process.exitCode = undefined
+	})
+
+	it('follows --verbose and --silent', async () => {
+		const verbose = { stdout: memoryStream(), stderr: memoryStream() }
+		await app({ streams: verbose }).parse(['node', 'app', '--verbose'])
+		expect(verbose.stdout.text).toContain('argv: node app --verbose')
+		const silent = { stdout: memoryStream(), stderr: memoryStream() }
+		await app({ streams: silent }).parse(['node', 'app', '--silent'])
+		expect(silent.stdout.text + silent.stderr.text).toBe('')
+	})
+
+	it('writes --version and --help to the given stdout in both modes', async () => {
+		for (const output of ['console', 'axi'] as const) {
+			for (const argv of [['--version'], ['--help', '--version']]) {
+				const stdout = memoryStream()
+				const stderr = memoryStream()
+				await app({ output, streams: { stdout, stderr } }).parse(['node', 'app', ...argv])
+				expect(stdout.text).toMatch(/^1\.0\.0\n$|^\nUsage: app/)
+				expect(stderr.text).toBe('')
+			}
+		}
+	})
+
+	it('writes the help after a usage error to stdout and the error to stderr in axi mode', async () => {
+		const stdout = memoryStream()
+		const stderr = memoryStream()
+		await app({ output: 'axi', streams: { stdout, stderr } }).parse(['node', 'app', '--bogus'])
+		expect(stderr.text).toBe('unknown option --bogus\n')
+		expect(stdout.text).toMatch(/^\nUsage: app/)
+		process.exitCode = undefined
+	})
+
+	describe('colour', () => {
+		const env = { ...process.env }
+		afterEach(() => {
+			process.env = { ...env }
+		})
+
+		it('colours a TTY stream', async () => {
+			delete process.env.NO_COLOR
+			process.env.FORCE_COLOR = '1'
+			const stderr = memoryStream(true)
+			await app({ streams: { stdout: memoryStream(true), stderr } }).parse(['node', 'app'])
+			expect(stderr.text).toContain('\u001b[31merror')
+		})
+
+		it('does not colour a TTY stream when NO_COLOR is set', async () => {
+			delete process.env.FORCE_COLOR
+			process.env.NO_COLOR = '1'
+			const stderr = memoryStream(true)
+			await app({ streams: { stdout: memoryStream(true), stderr } }).parse(['node', 'app'])
+			expect(stderr.text).toBe('warn\nerror\n')
+		})
+
+		it('never colours a stream that is not a TTY, even with FORCE_COLOR', async () => {
+			process.env.FORCE_COLOR = '3'
+			const stderr = memoryStream()
+			await app({ streams: { stdout: memoryStream(), stderr } }).parse(['node', 'app'])
+			expect(stderr.text).toBe('warn\nerror\n')
+		})
 	})
 })

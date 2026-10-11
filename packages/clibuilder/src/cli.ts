@@ -2,7 +2,7 @@ import type { DefaultOf } from 'args-minus'
 import type { RequiredPick, UnionOfValues } from 'type-plus'
 import { builder } from './app/builder.js'
 import type { ConfigLoadResult } from './config.js'
-import type { UI } from './core/ports.js'
+import type { Output as OutputMode, Streams as StreamsPort, UI } from './core/ports.js'
 import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
@@ -12,7 +12,7 @@ import type { z } from './zod.js'
 export function cli(options: RequiredPick<cli.Options, 'config'>): cli.Builder & cli.Executable
 export function cli(options: cli.Options): cli.Builder
 export function cli(options: cli.Options): cli.Builder {
-	return builder(context(), options)
+	return builder(context({ streams: options.streams, output: options.output }), options)
 }
 
 export namespace cli {
@@ -48,7 +48,40 @@ export namespace cli {
 		 * @see UsageErrorHandler
 		 */
 		onUsageError?: UsageErrorHandler
+		/**
+		 * The streams the cli writes to.
+		 * Defaults to `process.stdout` and `process.stderr`.
+		 *
+		 * Pass your own to capture or redirect the output, such as when embedding the cli.
+		 * When the reader of `process.stdout` goes away (`EPIPE`, as in `cli | head -1`),
+		 * later writes are dropped and the cli exits 0.
+		 * Streams you pass are yours to handle.
+		 *
+		 * @see Streams
+		 */
+		streams?: Streams
+		/**
+		 * Where `ui` messages go.
+		 *
+		 * - `'console'` (default): `info` and `debug` on stdout, `warn` and `error` on stderr.
+		 * - `'axi'`: every `ui` message is a diagnostic on stderr, so stdout carries only answers.
+		 *
+		 * Both modes are permanent. The default becomes `'axi'` in v12.
+		 */
+		output?: Output
 	}
+
+	/**
+	 * The two streams a cli writes to.
+	 */
+	export type Streams = StreamsPort
+
+	/**
+	 * Where `ui` messages go: `'axi'` or `'console'`.
+	 *
+	 * @see Options.output
+	 */
+	export type Output = OutputMode
 
 	/**
 	 * Takes over how usage errors are reported:
