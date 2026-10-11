@@ -1018,6 +1018,69 @@ describe('a malformed global option value under a sub command (#614)', () => {
 	})
 })
 
+describe('global options are resolved before usage errors (axi-native 3.2)', () => {
+	const sub = () => command({ name: 'sub', run: () => expect.fail('should not reach') })
+	it('applies a global flag before a sub command usage error is reported', async () => {
+		let level: string | undefined
+		const [builder, ctx] = setupBuilderTest(undefined, {
+			onUsageError(_errors, { ui }) {
+				level = ui.displayLevel
+			}
+		})
+		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --silent --bogus'))
+		expect(level).toBe('none')
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+	it('hands a malformed global flag and the sub command error to the handler, once each', async () => {
+		const onUsageError = vi.fn()
+		const [builder] = setupBuilderTest(undefined, { onUsageError })
+		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --verbose=nope --bogus'))
+		const errors: cli.UsageError[] = onUsageError.mock.calls[0][0]
+		expect(errors.map((e) => [e.type, e.code])).toEqual([
+			['invalid-value', 'invalid-value'],
+			['invalid-key', 'unknown-option']
+		])
+	})
+	it('passes the resolved format and the usage exit code to the handler', async () => {
+		const onUsageError = vi.fn()
+		const [builder] = setupBuilderTest(undefined, { onUsageError })
+		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --bogus'))
+		expect(onUsageError.mock.calls[0][1]).toMatchObject({ format: 'toon', exitCode: exitCodes.usage })
+		testType.equal<cli.Format, 'toon' | 'json' | 'text'>(true)
+	})
+	it('passes the same context to a command handler', async () => {
+		let context: cli.UsageErrorContext | undefined
+		const [builder] = setupBuilderTest()
+		await builder
+			.command({
+				name: 'ship',
+				onUsageError(_errors, c) {
+					context = c
+				},
+				run() {}
+			})
+			.parse(argv('test-cli ship --bogus'))
+		expect(context).toMatchObject({ format: 'toon', exitCode: 2 })
+		expect(context?.command.name).toBe('ship')
+	})
+	it('sets the code on every error the handler receives', async () => {
+		const onUsageError = vi.fn()
+		const [builder] = setupBuilderTest(undefined, { onUsageError })
+		await builder
+			.default({ arguments: [{ name: 'abc', description: 'arg abc' }], run() {} })
+			.parse(argv('test-cli --bogus'))
+		const errors: cli.UsageError[] = onUsageError.mock.calls[0][0]
+		expect(errors.map((e) => e.code)).toEqual(['missing-argument', 'unknown-option'])
+	})
+	it('prints a malformed global flag under a sub command once, as today', async () => {
+		const [builder, ctx] = setupBuilderTest()
+		await builder.default({ commands: [sub()] }).parse(argv('test-cli sub --verbose=nope'))
+		const msg = ctx.sl.reporter.getLogMessage()
+		expect(msg.split('invalid value for option --verbose').length).toBe(2)
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+})
+
 describe('CliError', () => {
 	it('reports the message and exits with the error code', async () => {
 		const [builder, ctx] = setupBuilderTest()

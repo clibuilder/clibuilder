@@ -98,20 +98,60 @@ export namespace cli {
 	 * The cli exits with `exitCodes.usage` (2),
 	 * unless the handler returns a different exit code.
 	 *
+	 * The global options are resolved before the handler runs,
+	 * so a malformed global flag is one of `errors`, reported once.
+	 *
 	 * @param errors the structured errors found while parsing the arguments.
 	 * @param context.command the matched command, including its declared `arguments` and `options`.
 	 * @param context.ui the matched command's `ui`.
+	 * @param context.format the format the cli reports in: `toon` until `cli({ format })` and `--format` exist.
+	 * @param context.exitCode the code the cli exits with when the handler returns none: `exitCodes.usage`.
 	 */
 	export type UsageErrorHandler = (
 		errors: UsageError[],
-		context: { command: Command; ui: UI }
+		context: UsageErrorContext
 		// biome-ignore lint/suspicious/noConfusingVoidType: a handler that returns nothing keeps the usage exit code
 	) => void | number | Promise<void | number>
+
+	/**
+	 * What an `onUsageError` handler knows besides the errors.
+	 *
+	 * @see UsageErrorHandler
+	 */
+	export type UsageErrorContext = {
+		/**
+		 * The matched command, including its declared `arguments` and `options`.
+		 */
+		command: Command
+		/**
+		 * The matched command's `ui`.
+		 */
+		ui: UI
+		/**
+		 * The format the cli reports in, resolved before the handler runs.
+		 * It is `toon` until `cli({ format })` and the global `--format` option exist.
+		 *
+		 * clibuilder always sets it. It is optional only so that code calling a handler itself keeps compiling.
+		 */
+		format?: Format
+		/**
+		 * The code the cli exits with when the handler returns none: `exitCodes.usage` (2).
+		 *
+		 * clibuilder always sets it. It is optional only so that code calling a handler itself keeps compiling.
+		 */
+		exitCode?: number
+	}
+
+	/**
+	 * The formats a cli reports in.
+	 */
+	export type Format = 'toon' | 'json' | 'text'
 
 	/**
 	 * One error found while parsing the arguments.
 	 * `type` tells which kind it is: `invalid-key`, `missing-argument`,
 	 * `extra-arguments`, `invalid-value`, `conflicting-options`, or `expect-single`.
+	 * `code` is its stable kebab-case code: `unknown-option` for `invalid-key`, else the same as `type`.
 	 */
 	export type UsageError = lookupCommand.Error
 

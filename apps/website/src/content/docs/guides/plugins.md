@@ -16,7 +16,7 @@ Two mechanisms are involved, and it helps to keep them apart:
 ## Loading plugins with `@clibuilder/plugins`
 
 [`@clibuilder/plugins`](/clibuilder/packages/plugins/) moves plugin support out of `clibuilder` into
-a package a CLI opts into with `.use(plugins())`. It is on `main` but not published yet. In
+a package a CLI opts into with `.use(plugins())`. It is published to npm. In
 `clibuilder` 11 the built-in plugin support described on the rest of this page keeps working.
 `clibuilder` 12 is planned to remove it, which makes `@clibuilder/plugins` the only way to load
 plugins (see the [v12 roadmap](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins)).
