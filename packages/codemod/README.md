@@ -8,9 +8,9 @@ npx @clibuilder/codemod src
 ```
 
 It rewrites `z` from `clibuilder` to `t`, moves `@clibuilder/axi` value helpers to `clibuilder/axi`,
-and moves `cli({ keywords })` to `.use(plugins({ keywords }))`. It flags what it cannot rewrite with a
-`// TODO(clibuilder-12): …` comment, and lists every `return <expr>` in a `run()`, which clibuilder 12
-prints.
+moves `cli({ keywords })` to `.use(plugins({ keywords }))`, and moves `testCommand` from `clibuilder`
+to `clibuilder/testing`. It flags what it cannot rewrite with a `// TODO(clibuilder-12): …` comment,
+and lists every `return <expr>` in a `run()`, which clibuilder 12 prints.
 
 | Option | Meaning |
 | --- | --- |

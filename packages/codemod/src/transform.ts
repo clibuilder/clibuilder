@@ -6,6 +6,8 @@ import {
 	flagFormatOption,
 	flagKeywords,
 	flagShowHelp,
+	moveTestingImports,
+	reportTestingImports,
 	transformAxiImports,
 	transformPlugins
 } from './rules.js'
@@ -33,7 +35,7 @@ export type TransformResult = {
  */
 export function transform(source: string, fileName: string, options: TransformOptions = {}): TransformResult {
 	if (!source.includes('clibuilder')) return { output: source, findings: [], dependencies: [] }
-	const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, scriptKind(fileName))
+	const sourceFile = parse(source, fileName)
 	if (!importsClibuilder(sourceFile)) return { output: source, findings: [], dependencies: [] }
 
 	const context = new FileContext(sourceFile, source)
@@ -44,13 +46,22 @@ export function transform(source: string, fileName: string, options: TransformOp
 	flagFormatOption(context)
 	flagShowHelp(context)
 	auditReturns(context)
+	reportTestingImports(context)
+
+	const output = applyEdits(source, context.allEdits())
+	const testing = new FileContext(parse(output, fileName), output)
+	moveTestingImports(testing)
 
 	const findings = [...context.findings].sort((a, b) => a.line - b.line || a.column - b.column)
 	return {
-		output: applyEdits(source, context.allEdits()),
+		output: applyEdits(output, testing.allEdits()),
 		findings,
 		dependencies: [...context.dependencies]
 	}
+}
+
+function parse(source: string, fileName: string) {
+	return ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, scriptKind(fileName))
 }
 
 function scriptKind(fileName: string) {

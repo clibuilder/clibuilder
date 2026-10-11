@@ -321,7 +321,7 @@ stdout or stderr, in either output, so the failure is not reported twice. It is
 harmed:
 
 ```ts
-import { testCommand } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 
 test('view rejects an unknown field', async () => {
   const { exitCode, messages } = await testCommand(view, 'view --fields bogus')

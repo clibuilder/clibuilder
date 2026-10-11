@@ -355,7 +355,7 @@ A plugin's commands are just commands, so
 [`testCommand()`](/clibuilder/api/test-command/) tests them directly, without a host CLI:
 
 ```ts
-import { testCommand } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 import { activate } from '../src/index.js'
 
 test('miku sings', async () => {

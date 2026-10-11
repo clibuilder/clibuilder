@@ -148,13 +148,18 @@ Feature: Testing support
     When its path is resolved
     Then the result is an absolute path beneath the fixtures directory
 
-  # ── testCommand from the root entry ──
+  # ── test-only code off the root entry ──
 
-  Scenario: the root testCommand export is deprecated in favour of clibuilder/testing
-    Given testCommand is imported from clibuilder rather than clibuilder/testing
-    When an editor reads its declaration
-    Then it is marked deprecated, pointing at clibuilder/testing
-    And it is the same function clibuilder/testing exports
+  Scenario: testCommand is exported from clibuilder/testing and not from the root entry
+    Given the root entry and the clibuilder/testing entry
+    When their exports are listed
+    Then clibuilder/testing exports testCommand and mockPluginContext
+    And the root entry exports neither
+
+  Scenario: the root entry's import graph does not reach test-only code
+    Given the root entry is bundled
+    When the modules it reaches are listed
+    Then none is under src/testing or src/test-utils, a mock module, or a test-only dependency
 
   # ── testCommand over in-memory streams ──
 

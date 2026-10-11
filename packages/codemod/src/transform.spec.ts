@@ -22,6 +22,7 @@ describe('fixtures', () => {
 	it.each([
 		['cyber-mux', { rewrite: 8, flag: 7, review: 2 }],
 		['repobuddy-buddy', { rewrite: 4, flag: 1, review: 1 }],
+		['repobuddy-buddy-spec', { rewrite: 1, flag: 0, review: 0 }],
 		['repobuddy-typescript', { rewrite: 4, flag: 0, review: 1 }],
 		['zod-subset', { rewrite: 11, flag: 9, review: 0 }],
 		['axi-imports', { rewrite: 2, flag: 4, review: 0 }],
@@ -36,6 +37,7 @@ describe('fixtures', () => {
 	it.each([
 		'cyber-mux',
 		'repobuddy-buddy',
+		'repobuddy-buddy-spec',
 		'repobuddy-typescript',
 		'zod-subset',
 		'axi-imports',
@@ -235,6 +237,48 @@ describe('axi imports', () => {
 	it('flags an export it does not know', () => {
 		const result = transform("import { somethingNew } from '@clibuilder/axi'\n", 'x.ts')
 		expect(result.findings[0]?.message).toContain('use the core feature that replaces it')
+	})
+})
+
+describe('testing imports', () => {
+	const run = (source: string) => transform(source, 'x.spec.ts')
+
+	it('moves testCommand from clibuilder to clibuilder/testing', () => {
+		const result = run("import { testCommand } from 'clibuilder'\n")
+		expect(result.output).toBe("import { testCommand } from 'clibuilder/testing'\n")
+		expect(result.findings.map((f) => [f.kind, f.rule, f.line])).toEqual([['rewrite', 'testing-import', 1]])
+	})
+
+	it('keeps the other names in the clibuilder import', () => {
+		expect(run("import { command, testCommand as tc } from 'clibuilder'\n").output).toBe(
+			"import { command } from 'clibuilder'\nimport { testCommand as tc } from 'clibuilder/testing'\n"
+		)
+	})
+
+	it('joins an existing clibuilder/testing import', () => {
+		expect(
+			run("import { command, testCommand } from 'clibuilder'\nimport { mockPluginContext } from 'clibuilder/testing'\n")
+				.output
+		).toBe(
+			"import { command } from 'clibuilder'\nimport { mockPluginContext, testCommand } from 'clibuilder/testing'\n"
+		)
+	})
+
+	it('moves it from the same import the zod rule rewrites', () => {
+		expect(run("import { testCommand, z } from 'clibuilder'\nexport const x = z.string()\n").output).toBe(
+			"import { t } from 'clibuilder'\nimport { testCommand } from 'clibuilder/testing'\nexport const x = t.string()\n"
+		)
+	})
+
+	it('leaves a testCommand that clibuilder/testing already provides', () => {
+		const source = "import { testCommand } from 'clibuilder/testing'\n"
+		expect(run(source)).toEqual({ output: source, findings: [], dependencies: [] })
+	})
+
+	it('flags testCommand read from a namespace import', () => {
+		const result = run("import * as clibuilder from 'clibuilder'\nawait clibuilder.testCommand(cmd, 'cmd')\n")
+		expect(result.findings.map((f) => [f.kind, f.rule, f.line])).toEqual([['flag', 'testing-import', 2]])
+		expect(result.output).toContain('// TODO(clibuilder-12): `testCommand` is not exported from `clibuilder`')
 	})
 })
 

@@ -3,10 +3,12 @@ title: API Reference
 description: Everything clibuilder exports.
 ---
 
-`clibuilder` has a small surface. Everything below is a named export of the package root:
+`clibuilder` has a small surface. Everything below is a named export of the package root, unless
+its row names a subpath:
 
 ```ts
-import { cli, command, testCommand, parseArgv, t } from 'clibuilder'
+import { cli, command, parseArgv, t } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 ```
 
 ## Functions
@@ -15,7 +17,7 @@ import { cli, command, testCommand, parseArgv, t } from 'clibuilder'
 | --- | --- |
 | [`cli()`](/clibuilder/api/cli/) | Create the CLI builder — the entry point of every application |
 | [`command()`](/clibuilder/api/command/) | Identity helper that types a standalone command object |
-| [`testCommand()`](/clibuilder/api/test-command/) | Run a command in-process and capture its result and messages |
+| [`testCommand()`](/clibuilder/api/test-command/) | Run a command in-process and capture its result and messages, from `clibuilder/testing` (the root export is removed in v12, unreleased) |
 | `defineKey()` / `defineCollectionKey()` | Create typed plugin registry keys |
 | [`parseArgv()`](/clibuilder/api/parse-argv/) | The raw argv tokenizer, exported for reuse |
 | [`enableCompileCache()`](/clibuilder/api/compile-cache/) | Opt into Node's V8 compile cache, from `clibuilder/compile-cache` |

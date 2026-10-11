@@ -17,6 +17,7 @@ export type RuleId =
 	| 'show-help'
 	| 'axi-import'
 	| 'plugins'
+	| 'testing-import'
 	| 'printed-return'
 
 export type Finding = {

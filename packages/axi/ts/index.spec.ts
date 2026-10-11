@@ -1,5 +1,6 @@
-import { cli, command, exitCodes as coreExitCodes, testCommand } from 'clibuilder'
+import { cli, command, exitCodes as coreExitCodes } from 'clibuilder'
 import * as core from 'clibuilder/axi'
+import { testCommand } from 'clibuilder/testing'
 import { describe, expect, it, vi } from 'vitest'
 import * as axi from './index.js'
 import { createOutput, exitCodes, formatOption } from './index.js'
