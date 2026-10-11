@@ -31,6 +31,12 @@
 			"require": "./cjs/index.js",
 			"default": "./cjs/index.js"
 		},
+		"./axi": {
+			"types": "./esm/axi.d.ts",
+			"import": "./esm/axi.js",
+			"require": "./cjs/axi.js",
+			"default": "./cjs/axi.js"
+		},
 		"./compile-cache": {
 			"types": "./esm/compile_cache.d.ts",
 			"import": "./esm/compile_cache.js",
@@ -56,7 +62,7 @@
 	],
 	"scripts": {
 		"build": "run-p build:cjs build:esm",
-		"build:cjs": "esbuild src/index.ts src/compile_cache.ts src/testing/index.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
+		"build:cjs": "esbuild src/index.ts src/axi.ts src/compile_cache.ts src/testing/index.ts --bundle --platform=node --alias:jsonc-parser=jsonc-parser/lib/esm/main.js --outdir=cjs && ncp package.cjs.json cjs/package.json",
 		"build:esm": "tsc",
 		"build:watch": "tsc --watch",
 		"clean": "rimraf .nyc_output .ts coverage cjs esm lib libm tsconfig.tsbuildinfo",

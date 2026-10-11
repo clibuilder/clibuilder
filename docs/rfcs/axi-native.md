@@ -248,7 +248,7 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 
 1. Core owns the AXI contract: error rendering, usage-error ranking, `--format`, the result channel, and the text and toon encoders (sections 3 and 4).
 2. The value helpers (truncation, counts, `orEmpty`, home header and collapse) move to a `clibuilder/axi` subpath of core. The subpath can be tree-shaken, and a CLI that does not import it does not pay for it.
-3. The framework-free modules in core import nothing from the framework. A lint or depcheck boundary rule enforces this, so a neutral package can later be extracted by moving files, not rewriting them.
+3. The framework-free modules in core import nothing from the framework. A lint or depcheck boundary rule enforces this, so a neutral package can later be extracted by moving files, not rewriting them. They live in `packages/clibuilder/src/axi/`, which imports only Node built-ins and its own files. A `noRestrictedImports` override in `biome.json` enforces this, and a spec repeats the check for `require()`, which the lint rule does not see. `fullOption` is declared with `t`, so it sits in the subpath entry (`src/axi.ts`) next to the re-exports of `result`, `document`, `empty` and `exitCodes`, not in the framework-free directory.
 4. `@clibuilder/axi` is deprecated on npm when v12 ships with the subpath, with a message that points at it. Until then it is not deprecated, and current users keep using it.
 
 **Not doing.**

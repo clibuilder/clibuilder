@@ -1,32 +1,15 @@
-import { homedir } from 'node:os'
+import * as axi from 'clibuilder/axi'
 
 /**
- * Shortens a path under the home directory to `~/...`: the same file for fewer tokens, and no user
- * name in the output.
+ * Shortens a path under the home directory to `~/...`.
+ *
+ * @deprecated import `collapseHome` from `clibuilder/axi` instead.
  */
-export function collapseHome(path: string, home: string = homedir()): string {
-	const rest = path.slice(home.length)
-	if (!home || !path.startsWith(home) || (rest !== '' && rest[0] !== '/' && rest[0] !== '\\')) return path
-	return `~${rest}`
-}
+export const collapseHome: typeof axi.collapseHome = axi.collapseHome
 
 /**
- * The first lines of a CLI's home view — what it prints when run with no arguments — so an agent
- * knows which tool answered: `bin: ~/.local/bin/my-cli` and `description: ...`.
+ * The first lines of a CLI's home view: `bin` and `description`.
  *
- * Spread it in front of the live content the home view shows:
- *
- * @example
- * ```ts
- * output.result({ ...homeHeader({ description: 'Manage plugins' }), plugins })
- * ```
+ * @deprecated import `homeHeader` from `clibuilder/axi` instead.
  */
-export function homeHeader(options: { description: string; bin?: string | undefined; home?: string | undefined }): {
-	bin: string
-	description: string
-} {
-	return {
-		bin: collapseHome(options.bin ?? process.argv[1] ?? '', options.home ?? homedir()),
-		description: options.description
-	}
-}
+export const homeHeader: typeof axi.homeHeader = axi.homeHeader

@@ -15,13 +15,20 @@ The formats:
 - `json` — compact JSON, for a pipe into `jq`.
 - `text` — an aligned, human-readable report.
 
+> **Deprecated with `clibuilder` 12.** The package is folded into `clibuilder`:
+> the value helpers (`truncateText`, `truncateList`, `orEmpty`, `fullOption`, `homeHeader`, `collapseHome`)
+> are re-exported from `clibuilder/axi`, and the output, error, format and usage parts are built into core
+> (`result()`, `document()`, `empty()`, the global `--format`, `CliError`, ranked usage errors).
+> Every export is marked `@deprecated` with its replacement. See the
+> [migration table](https://clibuilder.github.io/clibuilder/packages/axi/#moving-to-clibuilder-12).
+
 ## Install
 
 ```sh
 npm install @clibuilder/axi clibuilder
 ```
 
-`clibuilder` `>= 11.2` is a peer dependency. Node.js `>= 20.19`.
+`clibuilder` `^12` is a peer dependency (`^11.5.0` for 0.2). Node.js `>= 20.19`.
 
 ## Usage
 
