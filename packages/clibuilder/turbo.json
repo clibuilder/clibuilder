@@ -1,0 +1,12 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"extends": ["//"],
+	"tasks": {
+		"coverage": {
+			"inputs": ["$TURBO_EXTENDS$", "$TURBO_ROOT$/test-plugins/**"]
+		},
+		"test": {
+			"inputs": ["$TURBO_EXTENDS$", "$TURBO_ROOT$/test-plugins/**"]
+		}
+	}
+}
