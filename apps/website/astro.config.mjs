@@ -47,7 +47,12 @@ export default defineConfig({
 						{ label: 'Plugins', slug: 'guides/plugins' },
 						{ label: 'Failing', slug: 'guides/failing' },
 						{ label: 'Testing', slug: 'guides/testing' },
-						{ label: 'Publishing', slug: 'guides/publishing' }
+						{ label: 'Publishing', slug: 'guides/publishing' },
+						{
+							label: 'Upgrading to 12',
+							slug: 'guides/upgrade-to-12',
+							badge: { text: 'unreleased', variant: 'caution' }
+						}
 					]
 				},
 				{

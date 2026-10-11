@@ -1,0 +1,6 @@
+ignore-patterns:
+  - fixtures
+ignores:
+  - "@repobuddy/*"
+  - "@vitest/coverage-istanbul"
+  - rimraf

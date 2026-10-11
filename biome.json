@@ -11,6 +11,7 @@
 			"!**/esm",
 			"!**/target",
 			"!**/node_modules",
+			"!packages/codemod/fixtures",
 			"!packages/args-minus/src/standard_schema.ts"
 		]
 	},
