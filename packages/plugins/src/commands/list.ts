@@ -11,7 +11,8 @@ export function listPluginsCommand(keywords: string[]) {
 		context: { findByKeywords },
 		async run(args) {
 			const plugins = await this.context.findByKeywords(keywords, this)
-			reportPlugins(this.ui, args.format, plugins, keywords)
+			// `args.format` is unset when clibuilder's global `--format` is active: the local option gives way to it
+			reportPlugins(this.ui, args.format ?? this.format, plugins, keywords)
 			// the found names are the command's return value as well as its output: a cli
 			// embedding `plugins list` reads them from here rather than parsing the report.
 			return plugins

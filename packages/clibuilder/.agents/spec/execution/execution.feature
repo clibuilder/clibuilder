@@ -341,6 +341,44 @@ Feature: Execution
     When it is constructed
     Then the construction fails with a TypeError naming the valid formats
 
+  Scenario: in the default console output the global format option is not declared
+    Given a cli in console output built with no format
+    When a sub-command is invoked with --format json
+    Then --format is reported as an unknown option, as before
+    And the help lists no --format
+    And a command may declare its own option named format
+
+  Scenario: under output axi or cli format the global format option is accepted by every command
+    Given a cli with output axi, or one built with a format, or both
+    When a sub-command declaring no options is invoked with --format toon, json or text
+    Then no usage error is reported
+    And the help lists --format once, with the global options, defaulting to the cli's format, with no -f alias
+
+  Scenario: run reads the resolved format as this.format
+    Given a cli whose global format option is active
+    When a command is invoked with or without --format
+    Then this.format is the value passed, else the cli's format, toon by default
+    And with the global option not active this.format is the cli's format, toon
+
+  Scenario: a bad format value is a usage error reported in the default format
+    Given a cli whose global format option is active and a usage-error handler
+    When a command is invoked with --format yaml
+    Then the handler receives one invalid-value error naming the format option, the value yaml and the allowed formats
+    And the handler's context carries the cli's default format, not yaml
+    And the command does not run and the cli exits with the usage code
+    And without a handler the error is printed once by the usual usage-error report
+
+  Scenario: a command declaring its own format option fails the cli at startup
+    Given a cli whose global format option is active
+    When a command, a sub-command, the default command or a command added by an extension declares its own option named format
+    Then the cli fails with an error saying to delete the local declaration and read this.format
+    And the error points at axi-native RFC section 3.4
+
+  Scenario: in axi output a CliError is rendered in the format of the invocation
+    Given a cli with output axi
+    When it is invoked with --format json and its command throws a CliError
+    Then stdout holds the report once, encoded in json
+
   # ── UC5 — context ──
 
   Scenario: the first config resolution starts the walk and keeps its promise

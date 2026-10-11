@@ -77,12 +77,14 @@ user expects of any CLI.
 
 | | |
 | --- | --- |
-| Trigger | `getBaseCommand(description, { config })` |
-| Inputs | the application's description, and whether it takes configuration |
+| Trigger | `getBaseCommand(description, { config, format })` |
+| Inputs | the application's description, whether it takes configuration, and the CLI's format when the global `--format` is active |
 | Outcome | a nameless command declaring the global options |
 
 **Extensions.** `--show-config` is declared only when the application takes
-configuration. The base command declares no `run`, so an application with no
+configuration. `--format <toon|json|text>` is declared only when the global
+format is active (under `output: 'axi'` or `cli({ format })`), defaulting to the
+CLI's format, with no `-f` alias ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). The base command declares no `run`, so an application with no
 default command is a group like any other: invoked bare, it takes
 `execution/`'s no-`run` path, which shows help and exits with the usage code
 ([#609](https://github.com/clibuilder/clibuilder/issues/609)).
@@ -153,7 +155,8 @@ is specified there; what this node owns is the declaration.
 | `--show-config` | UC1 | an application declaring no config — it is not declared there |
 | `listPluginsCommand` and its `ls` alias | UC2 | — |
 | `searchPluginsCommand` | UC3 | — |
-| `--format` on both | UC2, UC3 | — |
+| `--format` on both | UC2, UC3 | the global `--format` — when that is active, theirs gives way: it is dropped, and they read `this.format` |
+| the global `--format` | UC1 | — (declared only under `output: 'axi'` or `cli({ format })`) |
 | `--fields` | UC3 | — (declared on `plugins search` only; `plugins list` has no extra fields to report) |
 | `pluginsCommand` | UC4 | — |
 | `findByKeywords` / `searchByKeywords`, declared as each command's `context` | UC2, UC3 — the seam a test substitutes, and what keeps the npm dependencies off the startup path | — |

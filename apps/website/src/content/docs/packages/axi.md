@@ -105,6 +105,27 @@ diagnostic.
 `args.format` is typed `'toon' | 'json' | 'text' | undefined`. `clibuilder` rejects any other value
 as a usage error before `run()` is called.
 
+### The global `--format` option
+
+:::caution[Unreleased: `formatOption` conflicts with the global `--format`]
+With the next `clibuilder` 11 minor, which is not published yet, `cli({ output: 'axi' })` and
+`cli({ format })` turn on [`clibuilder`'s global `--format`](/clibuilder/api/cli/#the-global---format-option).
+A command that then declares `format: formatOption` or `format: defineFormatOption()` fails the CLI at
+startup. Delete the option and pass `this.format` instead of `args.format`:
+
+```ts
+command({
+  name: 'list',
+  run() {
+    return createOutput(this.format).result({ items })
+  }
+})
+```
+
+Pick the default with `cli({ format })` instead of `defineFormatOption({ default })`. With the default
+`output: 'console'` and no `cli({ format })`, `formatOption` keeps working as before.
+:::
+
 ## Exports
 
 ### Output

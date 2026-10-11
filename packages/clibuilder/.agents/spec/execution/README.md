@@ -139,7 +139,10 @@ inputs they gave, or to be told precisely what was wrong.
 | `--version` or `-v` is the only argument | the version is written to stdout as plain text and the CLI exits with success, **before** the pending config load is awaited and before the configured plugins or the `use()` extensions run, so a broken config or a hanging plugin or extension cannot fail or delay it. A rejection from the config load is marked handled. Nothing is loaded yet, so a bare `-v` is the version even if a plugin, an extension or the config declares `-v` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.8) |
 | `--version` on the base command or the matched one, with any other argument | the version is shown after the pending work, and no command runs |
 | `--help` on the base command or the matched one | help is shown, and no command runs — **before** any usage error is reported |
-| any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the `cli({ format })` value, `toon` by default, until `--format` exists |
+| any invocation | the global options (`help`, `version`, `verbose`, `silent`, `debug-cli`, `show-config`) and the format are resolved from the **base command's** lookup alone, before the matched command's usage errors are looked at ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.2). The format is the caller's `--format` when the global option is active, else the `cli({ format })` value, `toon` by default |
+| the global `--format` is active: under `output: 'axi'`, or when `cli({ format })` is set | the base command declares `--format <toon\|json\|text>`, with no `-f` alias, defaulting to the CLI's format; every command accepts it, help shows it once with the global options, and `run()` reads the resolved value as `this.format` ([axi-native RFC](../../../../../docs/rfcs/axi-native.md) section 3.4). In the default `console` output with no `cli({ format })` the base command declares no `--format`, so v11 behaviour is unchanged, and `this.format` is the default, `toon` |
+| `--format` is given a value other than toon, json or text, or more than once | it is a usage error on the global key, code `invalid-value` (or `expect-single`), naming the option, the raw value and the allowed formats; the format falls back to the CLI's default, so the error is reported in that and cannot loop, and it flows through the usage-error report below |
+| the global `--format` is active and a command declares its own `format` option | the CLI fails at startup — when the command is added, or when a plugin or extension adds it — with an error pointing at axi-native RFC section 3.4 that says to delete the local declaration and read `this.format`. The `plugins` builtins in core and in `@clibuilder/plugins` mark their own option as giving way: it is dropped from the command, and they read `this.format` |
 | a usage error names a global key: one only the base command declares | base errors win for global keys: it is replaced by the base command's errors for that key. A well-formed global flag has none, so a sub-command declaring no options of its own does not report it as unknown; a malformed one is reported as the invalid value it is, once, as on the root (#614). A key the matched command declares itself is its own option, not the global one |
 | any usage error survives that filter, and no usage-error handler is declared | every error is printed, help is shown, and the CLI exits with the usage code |
 | any usage error survives that filter, and a usage-error handler is declared | the handler reports it instead — see UC6 |
@@ -148,7 +151,7 @@ inputs they gave, or to be told precisely what was wrong.
 | the matched command's `run` returns | its value is returned from `parse` |
 | the matched command has no `run` | help is shown and the CLI exits with the usage code — a group command is not a runnable command, so invoking it bare is missing its sub-command ([#609](https://github.com/clibuilder/clibuilder/issues/609)). This includes an application with no default command. `--help` on a group is answered earlier and exits with success |
 | `run` throws a `CliError`, in `console` output (the default) | its message and help lines are printed through `ui.error` and the CLI exits with the error's own code |
-| `run` throws a `CliError`, in `axi` output | the report is encoded once on stdout in the CLI's format, nothing is written to stderr for it, a debugging copy is a `debug` line, and the CLI exits with the error's own code |
+| `run` throws a `CliError`, in `axi` output | the report is encoded once on stdout in the resolved format (the caller's `--format`, else the CLI's), nothing is written to stderr for it, a debugging copy is a `debug` line, and the CLI exits with the error's own code |
 | `run` throws a `CliError` from `CliError.reported()`, in either output | nothing is printed for it, and the CLI exits with the error's own code |
 | `run` throws anything else | it propagates to the caller — a defect in the command is not the framework's to swallow |
 
@@ -309,7 +312,8 @@ the marker check, are removed in v12 (slim-dependencies RFC section 9.8).
 | `CliError` as one report object, `CliError.Report` | UC4 | the `(message, options)` form |
 | `CliError.code`, `CliError.details`, `CliError.Details` | UC4 | — |
 | `CliError.reported` | UC4 | — |
-| `cli.Options.format`, `cli.Format` | UC3 — the format a `CliError` is encoded in under `axi` output; the global `--format` is a later step | — |
+| `cli.Options.format`, `cli.Format` | UC3 — the CLI's default format; setting it turns on the global `--format` | — |
+| the global `--format`, `this.format` | UC3 — under `output: 'axi'` or `cli({ format })` | a command's own `format` option — a startup error |
 | `isCliError` | UC4 | — |
 | `context().exit` / `.resolveConfig` / `.loadPlugins` | UC5 | — |
 | `context().createCommandUI` | UC2 — each command gets its own ui before it runs | — |
@@ -541,6 +545,12 @@ graph TD
 | unchanged | `run` throws `CliError`, `console` output, with a format | `in console output a CliError is reported on stderr as before` |
 | nothing printed | `run` throws `CliError.reported()` | `a CliError already reported renders nothing` |
 | reject at construction | `cli({ format })` outside toon, json, text | `a cli format other than toon, json or text is rejected` |
+| the global `--format` is not active | `console` output, no `cli({ format })` | `in the default console output the global format option is not declared` |
+| the global `--format` is active | `output: 'axi'` or `cli({ format })` | `under output axi or cli format the global format option is accepted by every command` |
+| `this.format` | the global `--format` active, passed or not | `run reads the resolved format as this.format` |
+| a bad `--format` value | `--format yaml` | `a bad format value is a usage error reported in the default format` |
+| a command's own `format` option | the global `--format` active | `a command declaring its own format option fails the cli at startup` |
+| encode in the resolved format | `run` throws `CliError`, `axi` output, `--format json` | `in axi output a CliError is rendered in the format of the invocation` |
 | propagate | `run` throws anything else | `a command throwing anything else propagates to the caller` |
 
 ### UC4 — `CliError` and the exit codes

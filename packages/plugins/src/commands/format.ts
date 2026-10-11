@@ -13,12 +13,21 @@ export type OutputFormat = 'toon' | 'text' | 'json'
 /**
  * The `--format` option, declared once so every command that reports a collection
  * offers the same three values, the same wording, and the same default.
+ *
+ * It gives way to clibuilder's global `--format` when that is active (under `output: 'axi'`
+ * or when `cli({ format })` is set): clibuilder drops the option from the command, and `run()`
+ * reads `this.format` instead. The marker is a `Symbol.for` key, so it matches any copy of clibuilder,
+ * and a clibuilder without the global option ignores it.
  */
-export const formatOption = {
-	type: z.optional(z.enum(['toon', 'text', 'json'])),
-	description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
-	default: 'toon' as const
-}
+export const formatOption = Object.defineProperty(
+	{
+		type: z.optional(z.enum(['toon', 'text', 'json'])),
+		description: "Output format: 'toon' for agents, 'text' for humans, 'json' to pipe",
+		default: 'toon' as const
+	},
+	Symbol.for('clibuilder.defers-to-global-format'),
+	{ value: true }
+)
 
 /**
  * Minimal `ui` surface these helpers need, so they can be handed a command's `ui`

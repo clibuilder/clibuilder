@@ -4,10 +4,10 @@ import { lookupCommand } from '../invocation/lookup.js'
 import { argv } from '../test-utils/index.js'
 import { resolveGlobalOptions, resolveUsageErrors, usageErrorCode } from './usage_errors.js'
 
-function resolve(cmd: cli.Command, args: string) {
-	const baseCommand = getBaseCommand('')
+function resolve(cmd: cli.Command, args: string, globalFormat?: cli.Format) {
+	const baseCommand = getBaseCommand('', { format: globalFormat })
 	const rawArgs = parseArgv(argv(args))
-	const globals = resolveGlobalOptions(baseCommand, rawArgs, 'toon')
+	const globals = resolveGlobalOptions(baseCommand, rawArgs, globalFormat ?? 'toon')
 	const r = lookupCommand({ name: '', commands: [cmd] }, rawArgs, baseCommand)
 	return { globals, errors: resolveUsageErrors(r.errors, r.command, baseCommand, globals) }
 }
@@ -26,6 +26,43 @@ describe('usageErrorCode()', () => {
 })
 
 describe('resolveGlobalOptions()', () => {
+	it('reads --format when the global format is active', () => {
+		const { globals, errors } = resolve(command({ name: 'sub', run() {} }), 'cli sub --format text', 'json')
+		expect(globals.format).toBe('text')
+		expect(errors).toEqual([])
+	})
+	it('falls back to the default format when --format is not passed', () => {
+		const { globals } = resolve(command({ name: 'sub', run() {} }), 'cli sub', 'json')
+		expect(globals.format).toBe('json')
+	})
+	it('falls back to the default format for a bad --format, and reports it with the allowed formats', () => {
+		const { globals, errors } = resolve(command({ name: 'sub', run() {} }), 'cli sub --format yaml', 'json')
+		expect(globals.format).toBe('json')
+		expect(errors).toEqual([
+			{
+				type: 'invalid-value',
+				key: 'format',
+				value: 'yaml',
+				message: 'expected one of: toon, json, text',
+				allowed: ['toon', 'json', 'text']
+			}
+		])
+		expect(errors[0]!.code).toBe('invalid-value')
+	})
+	it('falls back to the default format for a repeated --format', () => {
+		const { globals, errors } = resolve(
+			command({ name: 'sub', run() {} }),
+			'cli sub --format json --format text',
+			'toon'
+		)
+		expect(globals.format).toBe('toon')
+		expect(errors.map((e) => e.code)).toEqual(['expect-single'])
+	})
+	it('reports --format as unknown when the global format is not active', () => {
+		const { globals, errors } = resolve(command({ name: 'sub', run() {} }), 'cli sub --format json')
+		expect(globals.format).toBe('toon')
+		expect(errors.map((e) => e.code)).toEqual(['unknown-option'])
+	})
 	it('reads the global flags from the base command', () => {
 		const { globals } = resolve(command({ name: 'sub', run() {} }), 'cli sub --verbose --bogus')
 		expect(globals).toMatchObject({ verbose: true, format: 'toon', errors: [] })

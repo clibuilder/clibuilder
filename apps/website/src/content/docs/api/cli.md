@@ -43,7 +43,7 @@ namespace cli {
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
 | `output` | `'console' \| 'axi'` | **Unreleased.** Where [`ui`](/clibuilder/api/ui/) messages and errors go. Defaults to `'console'`. See [Streams and output](#streams-and-output). |
-| `format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The format answers are encoded in. Defaults to `'toon'`. With `output: 'axi'`, a thrown [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) is encoded in it. Any other value throws when `cli()` is called. |
+| `format` | `'toon' \| 'json' \| 'text'` | **Unreleased.** The CLI's default format. Defaults to `'toon'`. Setting it, or `output: 'axi'`, turns on the [global `--format` option](#the-global---format-option). With `output: 'axi'`, a thrown [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) is encoded in the resolved format. Any other value throws when `cli()` is called. |
 
 Declaring `config` or `keywords` also adds the built-in `plugins` command to the CLI, unless the CLI
 uses [`@clibuilder/plugins`](/clibuilder/packages/plugins/), which adds its own.
@@ -103,6 +103,74 @@ Without either option, the CLI writes exactly what it wrote before.
 If the reader of `process.stdout` closes early, as in `app | head -1`, the CLI drops the rest of its
 output and exits with code 0 instead of crashing on `EPIPE`. This applies whenever stdout is
 `process.stdout`. If you pass your own streams, handling their errors is up to you.
+
+## The global `--format` option
+
+:::caution[Unreleased]
+The global `--format` and `this.format` are on `main` for the next `clibuilder` 11 minor, which is
+not published yet.
+:::
+
+With `output: 'axi'`, or when `format` is set, every command accepts `--format <toon|json|text>`.
+Help lists it once, with the other global options. There is no `-f` alias, because `-f` is often a
+command's own `--force` or `--file`. Without `output: 'axi'` and without `format`, there is no
+global `--format`, and the CLI behaves as before.
+
+`run()` reads the resolved value as `this.format`: the caller's `--format`, else the CLI's `format`,
+`'toon'` by default. The format is the same on a terminal and in a pipe.
+
+```ts
+cli({ name: 'app', version: '1.0.0', output: 'axi' })
+  .command({
+    name: 'list',
+    run() {
+      this.ui.info(`answering in ${this.format}`)
+    }
+  })
+  .parse(process.argv)
+```
+
+```sh
+$ app list --format json
+answering in json
+```
+
+The same value is the `format` of the [`onUsageError`](/clibuilder/guides/failing/#reporting-usage-errors-yourself)
+context, and with `output: 'axi'` a thrown `CliError` is encoded in it.
+
+A value other than `toon`, `json` or `text` is a usage error with exit code `2` and code
+`invalid-value`. It names the option, the value you passed and the allowed values. It is reported
+in the CLI's default format, never in the bad one:
+
+```sh
+$ app list --format yaml
+invalid value for option --format: expected one of: toon, json, text, received "yaml"
+```
+
+An `onUsageError` handler gets the error with `allowed: ['toon', 'json', 'text']`.
+
+### A command's own `format` option
+
+While the global option is on, a command that declares its own `format` option fails the CLI when
+the command is added, or when a plugin or an extension adds it. Two options with the same name would
+shadow each other. To migrate, delete the local declaration and read `this.format`:
+
+```diff
+ command({
+   name: 'list',
+-  options: { format: formatOption },
+-  run(args) {
+-    return createOutput(args.format).result({ items })
++  run() {
++    return createOutput(this.format).result({ items })
+   }
+ })
+```
+
+This includes `formatOption` and `defineFormatOption()` from
+[`@clibuilder/axi`](/clibuilder/packages/axi/#the-global---format-option). The built-in
+`plugins list` and `plugins search` read `this.format` and do not conflict. Source:
+[axi-native section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#34---format-is-not-first-class-6394).
 
 ## `Builder`
 

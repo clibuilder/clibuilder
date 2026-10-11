@@ -39,6 +39,23 @@ Feature: Built-in commands
     When its base command is built
     Then help, version, and verbose each carry their conventional short alias
 
+  Scenario: the base command declares the global format option only when it is active
+    Given an application in console output with no format, and one with output axi or a format
+    When its base command is built
+    Then the first declares no format option
+    And the second declares format, choices toon, json and text, defaulting to the cli's format, with no short alias
+
+  Scenario: the plugins commands give way to the global format option
+    Given an application whose global format option is active
+    When plugins list or plugins search is run, with or without --format
+    Then their own format option is dropped instead of conflicting, and their help does not list it
+    And they report in this.format
+
+  Scenario: the plugins commands keep their own format option otherwise
+    Given an application in console output with no format
+    When plugins list or plugins search is run with --format
+    Then their own format option, defaulting to toon, chooses the report
+
   Scenario: an application taking config also declares show-config
     Given an application that takes configuration
     When its base command is built

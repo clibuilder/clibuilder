@@ -70,9 +70,13 @@ export namespace cli {
 		 */
 		output?: Output
 		/**
-		 * The format answers are encoded in: `'toon'` (default), `'json'` or `'text'`.
+		 * The cli's default format: `'toon'` (default), `'json'` or `'text'`.
 		 *
-		 * With `output: 'axi'`, a `CliError` thrown from `run()` is rendered in this format on stdout.
+		 * Setting it, or `output: 'axi'`, turns on the global `--format <toon|json|text>` option.
+		 * The caller's `--format` then overrides this default for one invocation, and `run()` reads it as `this.format`.
+		 * A command that declares its own `format` option conflicts with the global one and fails the cli at startup.
+		 *
+		 * With `output: 'axi'`, a `CliError` thrown from `run()` is rendered in the resolved format on stdout.
 		 */
 		format?: Format
 	}
@@ -110,7 +114,8 @@ export namespace cli {
 	 * @param errors the structured errors found while parsing the arguments.
 	 * @param context.command the matched command, including its declared `arguments` and `options`.
 	 * @param context.ui the matched command's `ui`.
-	 * @param context.format the format the cli reports in: the `cli({ format })` value, `toon` by default.
+	 * @param context.format the format the cli reports in: the caller's `--format` when the global option is active and
+	 * the value is valid, else the `cli({ format })` value, `toon` by default.
 	 * @param context.exitCode the code the cli exits with when the handler returns none: `exitCodes.usage`.
 	 */
 	export type UsageErrorHandler = (
@@ -134,8 +139,10 @@ export namespace cli {
 		 */
 		ui: UI
 		/**
-		 * The format the cli reports in, resolved before the handler runs:
-		 * the `cli({ format })` value, `toon` by default, until the global `--format` option exists.
+		 * The format the cli reports in, resolved with the global options before the handler runs:
+		 * the caller's `--format` when the global option is active (under `output: 'axi'` or when `cli({ format })` is set),
+		 * else the `cli({ format })` value, `toon` by default.
+		 * A bad `--format` value is itself a usage error, reported with the default format here.
 		 *
 		 * clibuilder always sets it. It is optional only so that code calling a handler itself keeps compiling.
 		 */
@@ -256,6 +263,11 @@ export namespace cli {
 						cwd: string
 						context: Context
 						registry: Registry
+						/**
+						 * The format to answer in: the caller's `--format` when the global option is active,
+						 * else the `cli({ format })` value, `toon` by default.
+						 */
+						format: Format
 					},
 					args: Command.RunArgs<A, O>
 				): Promise<any> | any
@@ -294,6 +306,11 @@ export namespace cli {
 							keywords: string[]
 							cwd: string
 							registry: Registry
+							/**
+							 * The format to answer in: the caller's `--format` when the global option is active,
+							 * else the `cli({ format })` value, `toon` by default.
+							 */
+							format: Format
 						},
 						args: RunArgs<A, O>
 					): Promise<any> | any
