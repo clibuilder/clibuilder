@@ -539,7 +539,8 @@ function quote(raw: string) {
 function describeExpected(data: Exclude<Data, { kind: 'array' | 'custom' | 'json' }>): string {
 	switch (data.kind) {
 		case 'string':
-			return data.pattern ? `a string matching ${data.pattern}` : 'a string'
+			// only a pattern can reject a string
+			return `a string matching ${data.pattern}`
 		case 'number':
 		case 'int': {
 			const noun = data.kind === 'int' ? 'an integer' : 'a number'

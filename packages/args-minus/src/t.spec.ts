@@ -23,6 +23,13 @@ function parse(args: string[], options: OptionDeclarations) {
 	return parseArgs({ args, options }).options
 }
 
+it('keeps the ParseArgsError constructor compatible', () => {
+	const error = new ParseArgsError('message', 'n', '--n')
+	expect(error.kind).toBe('invalid-value')
+	expect(error.index).toBeUndefined()
+	expect(error.issues).toBeUndefined()
+})
+
 describe('descriptor data', () => {
 	it('is plain, readable, read-only data keyed on kind', () => {
 		const port = t.int({ min: 1, max: 65535 })
