@@ -1,4 +1,5 @@
-import { CliError, command, exitCodes, testCommand } from '../index.js'
+import { CliError, command, exitCodes } from '../index.js'
+import { testCommand } from './index.js'
 
 test('get result', async () => {
 	const { result } = await testCommand(

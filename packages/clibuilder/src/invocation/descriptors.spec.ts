@@ -1,8 +1,9 @@
 import { z } from 'zod'
 import { builder } from '../app/builder.js'
 import { mockContext } from '../drivers/context.mock.js'
-import { type cli, command, exitCodes, t, testCommand } from '../index.js'
+import { type cli, command, exitCodes, t } from '../index.js'
 import { argv } from '../test-utils/index.js'
+import { testCommand } from '../testing/index.js'
 import { convertDescriptors } from './descriptors.js'
 import { lookupCommand } from './lookup.js'
 

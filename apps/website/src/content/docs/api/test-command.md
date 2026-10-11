@@ -14,8 +14,12 @@ function testCommand(
 Runs a single command against a throwaway CLI (`test-cli`, version `1.0.0`) and returns what it did.
 No process is spawned and no config file is read.
 
+Import it from `clibuilder/testing`. clibuilder 11.5.0 also exports it, deprecated, from the root entry;
+v12 (unreleased) removes that export, so test code stays off a CLI's import graph.
+
 ```ts
-import { command, testCommand } from 'clibuilder'
+import { command } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 
 const { result, messages } = await testCommand(
   command({

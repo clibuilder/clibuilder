@@ -60,6 +60,7 @@ What it rewrites and what it flags:
 | `cli({ keywords })` | rewritten to `.use(plugins({ keywords }))` ([plugins move out of core](#plugins-move-to-clibuilderplugins)) |
 | `cli({ config })` | flagged; with `--add-plugins`, rewritten to add `.use(plugins())` |
 | `this.keywords` | flagged |
+| `import { testCommand } from 'clibuilder'` | moved to `clibuilder/testing` ([`testCommand` is only in `clibuilder/testing`](#testcommand-is-only-in-clibuildertesting)) |
 | `return <expr>` in `run()` | listed for review |
 
 When it adds an import from `@clibuilder/plugins`, it also adds the package to the nearest
@@ -437,6 +438,32 @@ expect(stderr).toContain('failed')
 
 Source: [slim-dependencies section 4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#4-logging-standard-log-and-standard-log-color).
 See [Streams and output](/clibuilder/api/cli/#streams-and-output).
+
+## `testCommand` is only in `clibuilder/testing`
+
+**On `main`.**
+
+**What changed.** The root entry no longer exports `testCommand()`. Import it from
+`clibuilder/testing`, which 11.5.0 already has, with the same signature. `clibuilder/testing` also
+exports `mockPluginContext()`. Nothing that the root entry imports reaches test-only code, so a CLI
+no longer loads the test helper and its in-memory streams when it starts.
+
+**Who is affected.** A test that imports `testCommand` from `clibuilder`, such as repobuddy/buddy's
+specs. 11.5.0 marks that export deprecated.
+
+**Fix.** Import it from `clibuilder/testing`. The codemod moves it.
+
+```ts
+// before
+import { command, testCommand } from 'clibuilder'
+
+// after
+import { command } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
+```
+
+Source: [slim-dependencies section 5.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/slim-dependencies.md#51-trivial-removals-no-api-change).
+See [`testCommand()`](/clibuilder/api/test-command/).
 
 ## Plugins move to `@clibuilder/plugins`
 

@@ -1,5 +1,6 @@
 import { Writable } from 'node:stream'
-import { cli, testCommand } from 'clibuilder'
+import { cli } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 import { plugins } from '../plugins.js'
 import { pluginsCommand } from './group.js'
 import { listPluginsCommand } from './list.js'

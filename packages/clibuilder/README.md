@@ -286,7 +286,8 @@ The CLI can search for plugins using the keywords it passes to `plugins()`.
 `testCommand()` can be used to test your command:
 
 ```ts
-import { command, testCommand } from 'clibuilder'
+import { command } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 
 test('some test', async () => {
   const { result, messages } = await testCommand(command({

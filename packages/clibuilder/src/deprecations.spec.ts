@@ -2,8 +2,6 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import * as root from './index.js'
-import * as testing from './testing/index.js'
-import { testCommand as testCommandFn } from './testing/test_command.js'
 
 const srcDir = dirname(fileURLToPath(import.meta.url))
 
@@ -41,17 +39,12 @@ describe('deprecated exports', { timeout: 30_000 }, () => {
 		expect('z' in root).toBe(false)
 	})
 
-	it('marks the root testCommand export @deprecated, pointing at clibuilder/testing', () => {
-		expect(rootDeprecations.testCommand).toMatch(/`clibuilder\/testing`/)
+	it('no longer exports testCommand, removed in v12 in favour of clibuilder/testing', () => {
+		expect('testCommand' in root).toBe(false)
 	})
 
 	it('leaves t and the clibuilder/testing testCommand undeprecated', () => {
 		expect(rootDeprecations.t).toBeUndefined()
 		expect(deprecationsOf(join(srcDir, 'testing/index.ts')).testCommand).toBeUndefined()
-	})
-
-	it('does not change what the deprecated exports are', () => {
-		expect(root.testCommand).toBe(testCommandFn)
-		expect(testing.testCommand).toBe(testCommandFn)
 	})
 })

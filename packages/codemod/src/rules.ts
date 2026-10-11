@@ -146,6 +146,78 @@ export function transformAxiImports(context: FileContext) {
 	}
 }
 
+/** Test-only exports that clibuilder 12 serves only from `clibuilder/testing`. slim-dependencies RFC section 5.1. */
+const TESTING_EXPORTS = new Set(['testCommand'])
+
+const TESTING_MOVE =
+	'`clibuilder` → `clibuilder/testing`: clibuilder 12 exports test helpers only from `clibuilder/testing`'
+
+/**
+ * Reports each test-only export imported from `clibuilder`, and flags its use through a namespace import.
+ * `moveTestingImports` makes the edit, over the output of the other rules.
+ */
+export function reportTestingImports(context: FileContext) {
+	for (const { specifier, imported } of namedImports(context.sourceFile, 'clibuilder')) {
+		if (TESTING_EXPORTS.has(imported)) context.rewrite(specifier, 'testing-import', `${imported}: ${TESTING_MOVE}`)
+	}
+	const namespaces = new Set(
+		importsFrom(context.sourceFile, 'clibuilder').flatMap((declaration) => {
+			const bindings = declaration.importClause?.namedBindings
+			return bindings && ts.isNamespaceImport(bindings) ? [bindings.name.text] : []
+		})
+	)
+	if (namespaces.size === 0) return
+	forEachNode(context.sourceFile, (node) => {
+		if (
+			ts.isPropertyAccessExpression(node) &&
+			ts.isIdentifier(node.expression) &&
+			namespaces.has(node.expression.text) &&
+			TESTING_EXPORTS.has(node.name.text)
+		) {
+			context.flag(
+				node,
+				'testing-import',
+				`\`${node.name.text}\` is not exported from \`clibuilder\` in clibuilder 12. Import it from \`clibuilder/testing\`.`
+			)
+		}
+	})
+}
+
+/**
+ * Moves the test-only exports from `clibuilder` to `clibuilder/testing`, joining an existing
+ * `clibuilder/testing` import when there is one.
+ *
+ * It runs over the output of the other rules, because the zod rule rewrites the `{ … }` of the same import.
+ */
+export function moveTestingImports(context: FileContext) {
+	const testingImports = importsFrom(context.sourceFile, 'clibuilder/testing').filter(
+		(d) => d.importClause?.namedBindings && ts.isNamedImports(d.importClause.namedBindings)
+	)
+	for (const declaration of importsFrom(context.sourceFile, 'clibuilder')) {
+		const specifiers = namedImports(context.sourceFile, 'clibuilder').filter((i) => i.declaration === declaration)
+		const moved = specifiers.filter((i) => TESTING_EXPORTS.has(i.imported)).map((i) => context.nodeText(i.specifier))
+		if (moved.length === 0) continue
+		const kept = specifiers.filter((i) => !TESTING_EXPORTS.has(i.imported)).map((i) => context.nodeText(i.specifier))
+		const typeOnly = declaration.importClause?.isTypeOnly ?? false
+		const target = testingImports.find((d) => (d.importClause?.isTypeOnly ?? false) === typeOnly)
+		if (target) {
+			const existing = namedImports(context.sourceFile, 'clibuilder/testing')
+				.filter((i) => i.declaration === target)
+				.map((i) => context.nodeText(i.specifier))
+			replaceNamedImports(context, target, [...existing, ...moved.filter((m) => !existing.includes(m))])
+			replaceNamedImports(context, declaration, kept)
+			continue
+		}
+		const line = `import ${typeOnly ? 'type ' : ''}{ ${moved.join(', ')} } from 'clibuilder/testing'`
+		if (kept.length > 0 || declaration.importClause?.name) {
+			replaceNamedImports(context, declaration, kept)
+			addImportAfter(context, declaration, line)
+		} else {
+			context.replace(declaration.getStart(context.sourceFile), declaration.end, line)
+		}
+	}
+}
+
 /**
  * clibuilder 12 no longer loads plugins from `config`. slim-dependencies RFC section 9.
  *

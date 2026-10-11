@@ -1,4 +1,5 @@
-import { command, exitCodes, t, testCommand } from 'clibuilder'
+import { command, exitCodes, t } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 import { describe, expect, it, vi } from 'vitest'
 import { formatOption } from './format.js'
 import { createUsageErrorHandler, describeUsageError } from './usage.js'

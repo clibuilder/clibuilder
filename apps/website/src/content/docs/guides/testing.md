@@ -9,7 +9,8 @@ against a throwaway CLI and hands back both what it returned and what it printed
 ## `testCommand()`
 
 ```ts
-import { command, testCommand } from 'clibuilder'
+import { command } from 'clibuilder'
+import { testCommand } from 'clibuilder/testing'
 
 test('cmd-a returns x and says miku', async () => {
   const { result, messages } = await testCommand(
