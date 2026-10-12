@@ -16,17 +16,18 @@ There are three formats. `toon` is the default: [TOON](https://github.com/toon-f
 compact encoding that costs an agent fewer tokens to read. `json` is compact JSON, for a pipe into
 `jq`. `text` is an aligned report for a person.
 
-`@clibuilder/axi` 0.2.1 is published and available, for `clibuilder` 11.
-
-:::caution[v12, unreleased: folded into `clibuilder`]
-In `clibuilder` 12 the output, error, usage-error and format parts are built into core, and the value
-helpers (truncation, counts, `orEmpty` and the home helpers) move to the
-[`clibuilder/axi`](/clibuilder/api/axi/) subpath. `@clibuilder/axi` 0.3.0 needs
-`clibuilder` 12, re-exports those helpers from `clibuilder/axi`, and marks every export
-`@deprecated`. See [Moving to `clibuilder` 12](#moving-to-clibuilder-12). The package is not deprecated
-on npm until v12 ships, so keep using it with `clibuilder` 11. Source:
+:::caution[Deprecated on npm: folded into `clibuilder` 12]
+`@clibuilder/axi` 0.3.0 is the last release, and the package is deprecated on npm. `clibuilder` 12.0.0
+builds the output, error, usage-error and format parts into core, and the value helpers (truncation,
+counts, `orEmpty` and the home helpers) live in the [`clibuilder/axi`](/clibuilder/api/axi/) subpath.
+Version 0.3.0 needs `clibuilder` 12 and keeps deprecated copies of those helpers with the same
+behavior; every export is marked `@deprecated`. Import from `clibuilder/axi` instead. See
+[Moving to `clibuilder` 12](#moving-to-clibuilder-12) and the
+[upgrade guide](/clibuilder/guides/upgrade-to-12/). Source:
 [axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#41-decision-where-clibuilderaxis-contents-belong).
 :::
+
+The rest of this page describes the package for `clibuilder` 11, with 0.2.1.
 
 ## Install
 
@@ -34,8 +35,7 @@ on npm until v12 ships, so keep using it with `clibuilder` 11. Source:
 npm install @clibuilder/axi clibuilder
 ```
 
-`clibuilder` `^11.5.0` is a peer dependency of 0.2.1. Version 0.3.0, unreleased, needs `clibuilder`
-`^12`. Node.js 20.19 or newer is required.
+`clibuilder` `^11.5.0` is a peer dependency of 0.2.1. Version 0.3.0 needs `clibuilder` `^12`. Node.js 20.19 or newer is required.
 
 0.2.1 publishes ESM and CJS. 0.3.0 is ESM-only; `require('@clibuilder/axi')` still works through
 Node's `require(esm)`.
@@ -182,8 +182,8 @@ cli({ name: 'my-cli', version: '1.0.0', onUsageError: createUsageErrorHandler() 
 The handler runs before `--format` is parsed, so it writes `toon` unless you build it with another
 `format`.
 
-:::note[Unreleased: core reports usage errors itself]
-On `main`, not in a published release. In `clibuilder` 12, with `output: 'axi'`, the default,
+:::note[Core reports usage errors itself in `clibuilder` 12]
+In `clibuilder` 12, with `output: 'axi'`, the default,
 `clibuilder` reports usage errors itself, in the caller's `--format`, so you do not need this handler. If you pass it, it still
 takes over. Core reports only the top-ranked error, codes an extra argument `extra-arguments`, and
 adds the usage line, the offending `option` or `argument`, and for an invalid value the allowed values
@@ -228,7 +228,7 @@ records where each convention came from.
 
 ## Moving to `clibuilder` 12
 
-Unreleased. Each export maps to a `clibuilder` 12 feature:
+Each export maps to a `clibuilder` 12 feature. Install `clibuilder` 12 and delete `@clibuilder/axi`:
 
 | `@clibuilder/axi` | `clibuilder` 12 |
 | --- | --- |

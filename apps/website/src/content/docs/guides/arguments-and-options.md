@@ -142,7 +142,7 @@ help[1]: "Usage: app [options]"
 ```
 
 Passing both is a [usage error](/clibuilder/guides/failing/#usage-errors) (exit code 2). The output
-above is the default `output: 'axi'` of `clibuilder` 12 (unreleased). With `output: 'console'`, and
+above is the default `output: 'axi'` of `clibuilder` 12. With `output: 'console'`, and
 in 11.5.0, it is the line `option --full cannot be used with option -n`, reported with the other
 parse errors.
 A default value does not count as passed, so `app --full` is valid here.
@@ -219,7 +219,7 @@ options: {
 The constraint shows in the help message, such as `[--port <int 1..65535>]`, `[--tag <string>...]`
 or `[ids: int >=1...]`.
 
-:::note[v12, unreleased]
+:::note[Since 12.0.0]
 In `clibuilder` 11.5.0 the types come from zod's `z`. In `clibuilder` 12 these changed:
 
 - A boolean option takes no value after it. `--flag false` no longer works. Write `--flag=false`.
@@ -245,7 +245,7 @@ Every command inherits these; you don't declare them, and you shouldn't shadow t
 | `--verbose` | `-V` | Display level `debug` |
 | `--silent` | | Display level `none` |
 | `--debug-cli` | | Display level `trace`, including clibuilder's own internal messages |
-| `--format <toon\|json\|text>` | | **v12, unreleased.** The format to answer in. See [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |
+| `--format <toon\|json\|text>` | | **Since 12.0.0.** The format to answer in. See [The global `--format` option](/clibuilder/api/cli/#the-global---format-option) |
 
 `args.help` is always present in the inferred type for that reason.
 
@@ -255,7 +255,7 @@ broken config or a slow plugin cannot fail or delay it. Because nothing is loade
 is always the version, even if a plugin, an extension or the config declares a `-v` of its own. With anything else on the command line,
 such as `my-cli deploy --version`, the version is answered after loading, as before.
 
-**v12, unreleased:** with `output: 'axi'`, the default, `--help` follows `--format` and `--version`
+Since 12.0.0, with `output: 'axi'`, the default, `--help` follows `--format` and `--version`
 is plain text in every format. See
 [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-and---version-with-output-axi).
 
@@ -271,7 +271,7 @@ the CLI at startup. In `clibuilder` 11.5.0 there is no global `--format`.
 
 ### Where the built-in options go
 
-**Unreleased:** a built-in option may come before the command, after it, or between a group and its
+Since 12.0.0, a built-in option may come before the command, after it, or between a group and its
 sub-command. These run the same command:
 
 ```sh

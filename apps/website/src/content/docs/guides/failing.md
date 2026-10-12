@@ -58,8 +58,8 @@ asking for help is not a usage error.
 
 ### Usage errors with `output: 'axi'`
 
-:::note[Unreleased]
-On `main`, not in a published release. It ships in `clibuilder` 12, where it is the default.
+:::note[Since 12.0.0]
+It ships in `clibuilder` 12, where it is the default.
 :::
 
 With `output: 'axi'`, the default, and no [`onUsageError`](#reporting-usage-errors-yourself) handler,
@@ -150,7 +150,7 @@ cli({
 
 Each error is a `cli.UsageError`, identified by its `type`:
 
-| `type` | `code` (Unreleased) | Fields |
+| `type` | `code` (since 12.0.0) | Fields |
 | --- | --- | --- |
 | `invalid-key` | `unknown-option` | `key`: the unknown option, without dashes |
 | `conflicting-options` | `conflicting-options` | `key`, `conflictsWith`: the two options, as typed |
@@ -163,8 +163,8 @@ Each error is a `cli.UsageError`, identified by its `type`:
 `ui.showHelp()` prints that command's text help on stdout. It is deprecated: in `clibuilder` 12,
 list what the caller needs in your own report instead.
 
-:::note[Unreleased: `code`, `format` and `exitCode`]
-On `main`, in `clibuilder` 12:
+:::note[Since 12.0.0: `code`, `format` and `exitCode`]
+In `clibuilder` 12:
 
 - Each error also has `code`, a stable kebab-case string. It is the same as `type`, except that
   `invalid-key` is `unknown-option`. Branch on `code` in new handlers: it is the name `clibuilder` 12
@@ -258,17 +258,17 @@ export const view = command({
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). **Unreleased:** any integer from 1 to 255; `0` and any other value throw a `RangeError`. |
-| `code` | `string` | **Unreleased.** A stable kebab-case string that says which failure this is, such as `not-found`. Defaults to `error`. Anything else throws a `RangeError`. |
-| `details` | `Record<string, scalar \| scalar[]>` | **Unreleased.** Extra fields an agent can act on, such as the name that was not found. Flat: each value is a string, number, boolean, `null`, or a list of them. A key may not be `error`, `code` or `help`. |
+| `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). **Since 12.0.0:** any integer from 1 to 255; `0` and any other value throw a `RangeError`. |
+| `code` | `string` | **Since 12.0.0.** A stable kebab-case string that says which failure this is, such as `not-found`. Defaults to `error`. Anything else throws a `RangeError`. |
+| `details` | `Record<string, scalar \| scalar[]>` | **Since 12.0.0.** Extra fields an agent can act on, such as the name that was not found. Flat: each value is a string, number, boolean, `null`, or a list of them. A key may not be `error`, `code` or `help`. |
 | `help` | `string \| string[]` | What the caller should do about it. Reported after the message, one line each. |
 | `cause` | `unknown` | The underlying error, kept for the caller to inspect. |
 
 The error carries them as `message`, `code`, `details`, `help` (always a list) and `exitCode`.
 
-:::note[Unreleased: `code`, `details` and the report form]
-`code`, `details`, `new CliError(report)`, the 1 to 255 range and `CliError.reported()` are on `main`
-and ship in `clibuilder` 12. They are not in a published release yet.
+:::note[Since 12.0.0: `code`, `details` and the report form]
+`code`, `details`, `new CliError(report)`, the 1 to 255 range and `CliError.reported()` ship in
+`clibuilder` 12.
 :::
 
 You can also pass the whole report as one object:
@@ -297,8 +297,8 @@ propagating out of `parse()` untouched.
 
 ### Errors with `output: 'axi'`
 
-:::note[Unreleased]
-On `main`, not in a published release. It ships in `clibuilder` 12, where it is the default.
+:::note[Since 12.0.0]
+It ships in `clibuilder` 12, where it is the default.
 :::
 
 With [`output: 'axi'`](/clibuilder/api/cli/#streams-and-output), the default, the error is an
@@ -330,7 +330,7 @@ lines on stderr instead, one line each.
 `CliError.reported(exitCode)` is for a failure that something else already printed, such as
 `@clibuilder/axi`'s `output.error()`. The CLI exits with `exitCode`, and prints nothing for it on
 stdout or stderr, in either output, so the failure is not reported twice. It is
-**Unreleased**, like the rest of this section.
+new in 12.0.0, like the rest of this section.
 
 ## Asserting on failures in tests
 

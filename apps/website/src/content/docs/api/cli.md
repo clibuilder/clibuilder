@@ -37,18 +37,18 @@ namespace cli {
 | `version` | `string` | **Required.** Printed by `--version`. Since v8 this is not read from `package.json` — see [Publishing](/clibuilder/guides/publishing/). |
 | `description` | `string` | A short summary shown at the top of the help message. |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported, for every command that declares no handler of its own. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
-| `streams` | `{ stdout, stderr }` | **Unreleased.** The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
-| `output` | `'axi' \| 'console'` | **v12, unreleased.** How the CLI writes its answers, errors and [`ui`](/clibuilder/api/ui/) messages. Defaults to `'axi'`. `'console'` keeps the `clibuilder` 11 output. See [Streams and output](#streams-and-output). |
-| `format` | `'toon' \| 'json' \| 'text'` | **v12, unreleased.** The CLI's default format, the default of the [global `--format` option](#the-global---format-option). Defaults to `'toon'`. Answers and errors are encoded in the resolved format. Any other value throws when `cli()` is called. |
+| `streams` | `{ stdout, stderr }` | The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
+| `output` | `'axi' \| 'console'` | How the CLI writes its answers, errors and [`ui`](/clibuilder/api/ui/) messages. Defaults to `'axi'`. `'console'` keeps the `clibuilder` 11 output. See [Streams and output](#streams-and-output). |
+| `format` | `'toon' \| 'json' \| 'text'` | The CLI's default format, the default of the [global `--format` option](#the-global---format-option). Defaults to `'toon'`. Answers and errors are encoded in the resolved format. Any other value throws when `cli()` is called. |
 
 The `config` option of 11 is removed. A CLI loads a [config file](/clibuilder/guides/configuration/) with
 `.use(config())` from `clibuilder/config`, which loads the config for the commands only. It does not
 load plugins.
 
-:::caution[Unreleased]
+:::caution[Changed in 12.0.0]
 In `clibuilder` 11, a `keywords` option exists, and declaring `config` or `keywords` loads the
 plugins that the config's `plugins` key names and adds the built-in `plugins` command. In
-`clibuilder` 12 (unreleased) all of that moved to
+`clibuilder` 12 all of that moved to
 [`@clibuilder/plugins`](/clibuilder/packages/plugins/): `keywords` is removed from `cli()` and
 becomes an option of `plugins()`, and `this.keywords` is removed. A CLI that wants plugins calls
 `.use(plugins())`. See [Roadmap to v12](/clibuilder/roadmap/v12/#plugins-move-to-clibuilderplugins).
@@ -56,8 +56,8 @@ becomes an option of `plugins()`, and `this.keywords` is removed. A CLI that wan
 
 ## Streams and output
 
-:::caution[Unreleased]
-`streams` and `output` are on `main` and ship in `clibuilder` 12. In 11.5.0 there is no `output`
+:::note[Since 12.0.0]
+`streams` and `output` ship in `clibuilder` 12.0.0. In 11.5.0 there is no `output`
 option, and the CLI behaves as `output: 'console'` does.
 :::
 
@@ -106,7 +106,7 @@ In both modes the CLI writes through its built-in UI:
   otherwise a non-empty `NO_COLOR` turns colour off.
 - It does not add a `clibuilder` prefix to the framework's own messages.
 
-**v12, unreleased:** the built-in UI is the only one, and `clibuilder` no longer depends on
+**Since 12.0.0:** the built-in UI is the only one, and `clibuilder` no longer depends on
 standard-log. A CLI on `clibuilder` 11.5.0 writes through standard-log instead, which prefixes the
 framework's own messages with `clibuilder` and colours their `error` and `warn` text even when
 stderr is not a terminal. See
@@ -117,10 +117,6 @@ output and exits with code 0 instead of crashing on `EPIPE`. This applies whenev
 `process.stdout`. If you pass your own streams, handling their errors is up to you.
 
 ## `--help` and `--version` with `output: 'axi'`
-
-:::caution[Unreleased]
-This is on `main` and ships in `clibuilder` 12. It is not in a published release yet.
-:::
 
 With `output: 'axi'`, the default, the CLI owns `--help` and `--version`. Both are answers: they are written on
 stdout, even with `--silent`, nothing is written on stderr, and the CLI exits 0.
@@ -180,11 +176,6 @@ they printed before. Source:
 [axi-native section 3.7](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#37-help-is-not-agent-shaped-6397).
 
 ## The global `--format` option
-
-:::caution[Unreleased]
-The global `--format` and `this.format` are on `main` and ship in `clibuilder` 12. They are not in a
-published release yet.
-:::
 
 Every command accepts `--format <toon|json|text>`, in both output modes. Help lists it once, with
 the other global options. There is no `-f` alias, because `-f` is often a command's own `--force`
@@ -258,11 +249,6 @@ This includes `formatOption` and `defineFormatOption()` from
 [axi-native section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#34---format-is-not-first-class-6394).
 
 ## The result channel
-
-:::caution[Unreleased]
-The result channel, `result()`, `document()`, `empty()` and `this.output` are on `main` and ship in
-`clibuilder` 12. They are not in a published release yet.
-:::
 
 With `output: 'axi'`, the default, `run()` returns the answer and the CLI prints it: once, on
 stdout, in [`this.format`](#the-global---format-option), with nothing on stderr. `parse()` still

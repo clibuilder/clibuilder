@@ -26,7 +26,7 @@ rush add -p clibuilder
 
 ## Module formats
 
-`clibuilder` 11 publishes both ESM and CJS. `clibuilder` 12 (unreleased) publishes ESM only, and
+`clibuilder` 11 publishes both ESM and CJS. `clibuilder` 12 publishes ESM only, and
 `require('clibuilder')` still works through Node's `require(esm)`, which Node.js 20.19 and newer have
 unflagged. Either of these works:
 
@@ -49,7 +49,7 @@ exports. You install nothing for it.
 import { t } from 'clibuilder'
 ```
 
-:::note[v12, unreleased]
+:::note[Since 12.0.0]
 Before `clibuilder` 12, types came from zod, re-exported as `z`. See
 [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
 :::

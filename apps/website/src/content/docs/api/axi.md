@@ -3,9 +3,8 @@ title: clibuilder/axi
 description: Value helpers that shape what a command returns for an agent — truncation, counts, the empty state and the home header.
 ---
 
-:::note[v12, unreleased]
-The `clibuilder/axi` subpath is on `main` and ships in `clibuilder` 12. It is not in a published
-release. With `clibuilder` 11.5.0, use the same helpers from [`@clibuilder/axi`](/clibuilder/packages/axi/).
+:::note[Since 12.0.0]
+The `clibuilder/axi` subpath ships in `clibuilder` 12.0.0. With `clibuilder` 11.5.0, use the same helpers from [`@clibuilder/axi`](/clibuilder/packages/axi/).
 :::
 
 ```ts

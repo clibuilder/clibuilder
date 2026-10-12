@@ -37,7 +37,7 @@ type UI = {
 
 All four logging methods take any number of arguments and join them, like `console.log`.
 
-In `clibuilder` 12 (unreleased) all of them go to stderr, which leaves stdout for answers. With
+In `clibuilder` 12 all of them go to stderr, which leaves stdout for answers. With
 `cli({ output: 'console' })`, and in 11.5.0, `info` and `debug` go to stdout, and `warn` and `error`
 go to stderr. See [Streams and output](/clibuilder/api/cli/#streams-and-output).
 
@@ -69,7 +69,7 @@ is usually the better behavior.
 
 ## `showHelp()`
 
-:::caution[Deprecated, Unreleased]
+:::caution[Deprecated since 12.0.0]
 `showHelp()` and `showVersion()` are deprecated in `clibuilder` 12. They stay on `ui` in 12, so a
 command that shows its own help keeps working, and they are removed in a later major. The CLI owns
 `--help` and `--version`. To answer with help or a version from `run()`, return it:
@@ -114,7 +114,7 @@ Arguments and options are written in the same notation:
 | `name: string`, `<int 1..65535>` | The declared type and its constraint, when there is one |
 | `...` | Variadic or repeatable, declared with `t.array(...)` |
 
-A command that declares [`examples`](/clibuilder/api/command/#examples) (Unreleased) gets an
+A command that declares [`examples`](/clibuilder/api/command/#examples) gets an
 `Examples:` section at the end.
 
 A boolean option is a flag, so it shows as `[--flag]` rather than `[--flag=boolean]`. An option with

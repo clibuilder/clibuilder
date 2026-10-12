@@ -12,7 +12,7 @@ the value is converted and checked before `run()` is called. `t` is re-exported 
 [`args-minus`](/clibuilder/packages/args-minus/), which is the reference for every builder, for
 `.check()` and for the errors.
 
-:::note[v12, unreleased]
+:::note[Since 12.0.0]
 In `clibuilder` 11.5.0 `t` works beside zod's `z`. In `clibuilder` 12 `z` is gone and `t` is the only
 way to declare a `type`. See [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
 :::
