@@ -7,19 +7,24 @@ import { encode } from './render/encode.js'
 import { testCommand } from './testing/index.js'
 
 describe('clibuilder/axi', () => {
-	it('exports the value helpers, the result channel and the exit codes', () => {
+	it('exports the value helpers, the output contract, the runner and the exit codes', () => {
 		expect(Object.keys(axi).sort()).toEqual([
 			'CliError',
 			'collapseHome',
 			'defaultTextLimit',
 			'document',
 			'empty',
+			'encode',
+			'errorOutput',
 			'exitCodes',
+			'formats',
 			'fullOption',
 			'homeHeader',
 			'isCliError',
 			'orEmpty',
+			'printAnswer',
 			'result',
+			'runScript',
 			'truncateList',
 			'truncateText'
 		])
@@ -80,6 +85,45 @@ describe('axi/', () => {
 					return relative(dir, resolve(dirname(file), s)).startsWith('..')
 				})
 				.map((s) => `${relative(dir, file)} -> ${s}`)
+		)
+		expect(offenders).toEqual([])
+	})
+})
+
+// tier B (axi-native RFC section 4.1): `biome.json` holds the lint rule; this also covers `require()`
+describe('tier B', () => {
+	const src = dirname(fileURLToPath(import.meta.url))
+	const contract = ['render/encode.ts', 'render/answer.ts', 'render/text.ts', 'app/errors.ts']
+	const allowed = [...contract, 'axi/', 'script/']
+
+	function files(path: string): string[] {
+		return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
+			const file = join(path, entry.name)
+			if (entry.isDirectory()) return files(file)
+			return entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts') ? [file] : []
+		})
+	}
+
+	it('keeps the output contract and the runner free of the framework', () => {
+		const specifier = /(?:\bfrom|\bimport|\brequire\s*\()\s*\(?\s*['"]([^'"]+)['"]/g
+		const tierB = [...contract.map((f) => join(src, f)), ...files(join(src, 'script'))]
+		const offenders = tierB.flatMap((file) =>
+			// comments hold example imports
+			[
+				...readFileSync(file, 'utf8')
+					.replace(/\/\*[\s\S]*?\*\//g, '')
+					.matchAll(specifier)
+			]
+				.map((m) => m[1] as string)
+				.filter((s) => {
+					if (s === '@toon-format/toon' || s === 'args-minus') return false
+					if (!s.startsWith('.')) return true
+					const target = relative(src, resolve(dirname(file), s))
+						.replace(/\\/g, '/')
+						.replace(/\.js$/, '.ts')
+					return !allowed.some((a) => (a.endsWith('/') ? target.startsWith(a) : target === a))
+				})
+				.map((s) => `${relative(src, file)} -> ${s}`)
 		)
 		expect(offenders).toEqual([])
 	})
