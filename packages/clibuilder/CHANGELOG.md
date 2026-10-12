@@ -1,5 +1,175 @@
 # Change Log
 
+## 12.0.0
+
+### Major Changes
+
+- 0e61d44: Plugin support moved out of core into [`@clibuilder/plugins`](https://www.npmjs.com/package/@clibuilder/plugins). Upgrading from 11.5.0:
+  
+  - Config loads the config for your commands only. It no longer loads the plugins named by the config's `plugins` key. Config itself moved to `.use(config())` from `clibuilder/config` (see the config entry).
+  - The `keywords` option of `cli()` and `this.keywords` in `run()` are removed. Pass them to `plugins({ keywords })` instead, which defaults to the CLI's name as before.
+  - The `plugins list` / `plugins search` group is no longer added when `config` or `keywords` is set. `plugins()` adds it.
+  - `import-meta-resolve`, `find-installed-packages` and `search-packages` are no longer dependencies of `clibuilder`.
+  
+  Migration:
+  
+  ```diff
+  + import { config } from 'clibuilder/config'
+  + import { plugins } from '@clibuilder/plugins'
+  
+  - cli({ name: 'my-cli', version: '1.0.0', config: true, keywords: ['my-cli-plugin'] })
+  + cli({ name: 'my-cli', version: '1.0.0' })
+  +   .use(config())
+  +   .use(plugins({ keywords: ['my-cli-plugin'] }))
+  ```
+  
+  A CLI whose config lists `plugins` but that loads none (no extension reads the config) warns once, naming `@clibuilder/plugins`, so plugins do not stop loading silently. For example, repobuddy/buddy relies on `cli({ config: true })` loading plugins and needs `.use(config())` and `.use(plugins())`.
+  
+  Unchanged: the registry (`defineKey`, `defineCollectionKey`, `this.registry`) and `mockPluginContext` from `clibuilder/testing`. A plugin's `activate(context)` gets the same context as in 11. `import type { PluginActivationContext } from 'clibuilder'` still compiles but is deprecated: import it from `@clibuilder/plugins`. The copy in `clibuilder` is removed in 13.
+- af37209: Config loading moved behind `.use(config())` from the new `clibuilder/config` subpath ([#692](https://github.com/clibuilder/clibuilder/issues/692)). A CLI without it contains no config loader, no find-up and no parsers. Upgrading from 11.5.0:
+  
+  | Before | After |
+  | --- | --- |
+  | `cli({ name, version, config: true })` | `cli({ name, version }).use(config())` |
+  | `cli({ ..., config: 'other' })` | `cli({ ... }).use(config({ name: 'other' }))` |
+  | `import { resolveConfig } from 'clibuilder'` | `import { resolveConfig } from 'clibuilder/config'` |
+  
+  - The `config` option of `cli()` is removed.
+  - `lookupConfig`, `resolveConfig`, `loadConfig`, `readConfigFile`, `getConfigFilenames`, `getConfigFormat`, `describeConfigSource` and the types `ConfigFormat`, `ConfigLoadResult`, `ConfigLookupResult` and `ConfigSource` are exported from `clibuilder/config` only.
+  - `.use(config())` adds `--show-config`, validates each command's `config` schema before `run()`, and gives `run()` the config as `this.config`. The output and the `invalid-config` errors are the same as in 11.
+  - A command that declares `config` must come after `.use(config())`: otherwise it is a type error. A command the type check cannot see, such as a sub-command, fails at runtime with an error naming `clibuilder/config`. In 11 such a command loaded the config by the CLI's name without `cli({ config })`.
+  - The config is resolved on the first `parse()`, not when `cli()` is called.
+  - With `@clibuilder/plugins`, add `.use(config())` before `.use(plugins())`: `plugins()` reads the `plugins` key from the config `config()` resolved.
+  
+  `cli().use()` extensions can now do what `config()` does. `ExtensionContext` adds `shared`, values shared between extensions keyed by `defineKey()`, `addGlobalOption(name, entry, answer)` and `beforeRun(hook)`. `resolveConfig()` returns the config `config()` resolved. Extensions now run before the global options are resolved, and what they log is held until the logging flags apply.
+  
+  `@clibuilder/codemod` replaces `cli({ config })` with `.use(config())`, adds the `clibuilder/config` import, and moves the config functions and types from `clibuilder` to `clibuilder/config`. A `config` value it cannot read is flagged with a `TODO(clibuilder-12)` comment.
+- 8194d17: Make `cli({ output: 'axi' })` the default, so stdout carries only answers. `cli({ output: 'console' })` is the permanent opt-out, with the 11.5.0 output.
+  
+  Coming from 11.5.0, a CLI that does not set `output` changes like this:
+  
+  - **A value `run()` returns is printed** once on stdout, encoded in `this.format`, with nothing on stderr. `parse()` still resolves to the value. An object is encoded in the format, an array or a scalar under the `result` key (such as `result[2]: a,b`), and a string is written verbatim. New helpers control the printed form: `result(value, { help, render })` adds next-step lines as a `help` list and per-format renderers, `document(content)` writes the content exactly as given, and `empty(message, { help })` is a success with an explicit empty state. Migration: return `undefined` when nothing should print, wrap the value in one of these helpers, or set `output: 'console'`. `npx @clibuilder/codemod src` lists every `return <expr>` in a `run()` for review (add `--dry-run` to preview it).
+  - **Every `ui` call is a diagnostic on stderr**, `ui.info` and `ui.debug` included. Migration: return the answer instead of logging it, or set `output: 'console'`.
+  - **A thrown `CliError` is reported once on stdout**, encoded as `error`, `code`, the `details` fields and `help`, and nothing is written to stderr for it.
+  - **A usage error is reported as the top-ranked one, coded, on stdout**, with exit code 2 and no help after it. The ranking is unknown option, conflicting options, invalid value, expect single, missing argument, extra arguments. The report holds `error`, `code` (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`), the offending `option` or `argument`, the `value` as typed, and `help`: the usage line and, where it fixes the mistake, the valid options, arguments or commands. An `invalid-value` error adds the allowed values of a `t.enum` or `--format`, or the constraint of a `t` declaration such as `int 1..65535`. A command group invoked without a sub-command is code `missing-command`, listing its sub-commands, exit code 2. A config that fails the command's schema is code `invalid-config`, with the messages for each failing key, exit code 1. `cli({ onUsageError })` and a command's own `onUsageError` still take over.
+  - **`--help` is an answer on stdout that follows `--format`**: the structured help under `toon` and `json`, the text help under `text`. `--version` is plain text on stdout, alone or after a command.
+  - **The global `--format <toon|json|text>` is declared in every CLI**, in both output modes. Help lists it once with the global options, it has no `-f` alias, and `this.format` is the caller's `--format`, else `cli({ format })`, else `toon`. A bad value such as `--format yaml` is an `invalid-value` usage error listing the allowed formats, reported in the CLI's default format. A command that declares its own `format` option, including `formatOption` and `defineFormatOption()` from `@clibuilder/axi`, fails the CLI at startup. Migration: delete the local option and read `this.format`.
+  - **`run()` reads the output mode as `this.output`**, `'axi'` by default.
+  - **`testCommand` follows the default.** Its `messages` include the printed answer. It takes a fourth argument, `{ output }`, to test a CLI in `output: 'console'`: `testCommand(cmd, 'cmd', undefined, { output: 'console' })`.
+  
+  `cli({ output: 'console' })` keeps the 11.5.0 output byte for byte, except that the help lists the global `--format`. A spec runs the same invocations against 11.5.0 and against 12 to hold it to that.
+  
+  `ui.showHelp()` and `ui.showVersion()` stay on `ui` in 12 and are deprecated. Called from `run()` in `axi` output they answer like `--help` and `--version`, in `this.format`. Anywhere else, and in `console` output, they write the text help and the version on stdout, as in 11. They are removed in a later major. Migration: return the help or version from `run()` with `document()` or `result()`.
+- ecb0db4: `clibuilder` 12 is ESM-only: the CommonJS build in `cjs/` is gone.
+  
+  - `require('clibuilder')`, `require('clibuilder/axi')`, `require('clibuilder/testing')` and `require('clibuilder/compile-cache')` still work on Node.js 20.19 and later, the `engines` floor, through `require(esm)`.
+  - The `exports` shape changed: every entry point is `{ types, default }` pointing at `esm/`, with no `import` or `require` condition, and the top-level `main` field is removed. `types` stays for older resolvers.
+  - TypeScript reports error TS1479 (an ES module cannot be imported with `require`) in a CommonJS file compiled with `module: node16`, or with `module: nodenext` before TypeScript 5.8. The declarations were already ESM in 11.x, so this is not new, but it now matches what Node does. *Migrate:* use TypeScript 5.8 or later with `module: nodenext`. `module: commonjs` with `moduleResolution: node10` still resolves the root entry through the top-level `types` field.
+  - Jest's CommonJS runtime cannot load ES modules. *Migrate:* run Jest with ESM support, or move to a test runner that loads ES modules, such as Vitest or `node --test`.
+- fe84abc: Remove standard-log and standard-log-color. Every CLI now writes through a built-in UI over the new `cli({ streams })` option, which takes the `stdout` and `stderr` to write to, `process.stdout` and `process.stderr` by default. `--verbose`, `--silent` and `--debug-cli` work as before, and `testCommand()` still returns `messages`, one line per message.
+  
+  With `output: 'console'`, `info` and `debug` still go to stdout and `warn` and `error` to stderr. Two things change from 11.5.0 in every output:
+  
+  - **Colour only on a terminal.** `error` is red and `warn` is yellow only on a stream that is a TTY, following `NO_COLOR` and `FORCE_COLOR`. In 11.5.0 standard-log-color wrapped clibuilder's own `error` and `warn` text in colour codes even when stderr was a pipe or a file. Migration: if a script or test matched those escape codes, match the plain text.
+  - **No `clibuilder` prefix.** clibuilder's own messages, such as the ones `--debug-cli` shows, no longer start with `clibuilder`. Migration: match the message without the prefix.
+  
+  When the reader of stdout closes early, as in `cli | head -1`, the CLI now drops the rest of its output and exits 0 instead of crashing on `EPIPE`.
+  
+  Also removed from `dependencies`: `pad-right`, `wordwrap`, `tmp` and `tslib`. Help text is unchanged.
+- 18b7725: Remove zod. `t` is the only way to declare an argument or option `type`, and `config` takes any Standard Schema, or none.
+  
+  - **`z` is removed**, with `isZodArray`, `isZodBoolean`, `isZodEnum`, `isZodNumber`, `isZodObject`, `isZodOptional` and `isZodString`. Migration: `import { t } from 'clibuilder'` and declare types with `t`: `z.optional(z.number())` becomes `t.number().optional()`. `npx @clibuilder/codemod src` rewrites the supported calls (add `--dry-run` to preview the diff).
+  - **A zod 3 `config` from `z` is gone.** Migration: import your schema library yourself (`import { z } from 'zod'`); zod 3.24 or later, zod 4, valibot and arktype all work. Help builds the `Config:` section from the schema's JSON Schema only, so a zod 3 config, which has none, no longer shows one.
+  - **A boolean option takes no value after it.** `--dry false` leaves `false` as a positional, for an option declared without a `type` too and for `--verbose`, `--help` and the other global flags. Migration: write `--dry=false`.
+  - **An array option takes one value per occurrence.** Migration: write `--tag a --tag b` instead of `--tag a b`.
+  - **An option that is neither `.optional()` nor given a `default` must be passed.** zod typed it as present but did not enforce it. Migration: add `.optional()` where the option may be left out.
+  - **A single-valued option given twice gets no value**, beside its `expect-single` usage error. zod also used the last value.
+  - **`z.coerce`, `.transform()` and `.default()` in an option type have no equivalent.** Migration: convert with `t.custom(raw => value)`, put the default in the option's `default`, and validate with `.check()`.
+  - **`cli.UsageError`'s `keyType` is removed.** Migration: read `keyKind`, the kind string. Usage error messages use the `args-minus` wording, such as `expected a number`.
+  - **Help hints use the `t` form**: `[--name <string>]` and `<file: string>` instead of `[--name=string]` and `<file=string>`, and a string default is quoted, including the global `--format`'s.
+  - **`js-yaml` is an optional peer dependency**, loaded only when a `.yaml` or `.yml` config file is read. Without it, reading one fails with a `CliError` whose code is `missing-peer-dependency`. Migration: a CLI whose users write YAML config runs `npm install js-yaml`.
+  
+  `zod`, `type-plus`, `tersify` and `js-yaml` leave `dependencies`. With standard-log also gone, a clean install of `clibuilder` drops from 41 packages (19 MB) in 11.5.0 to 3 (1.2 MB), and the packed tarball from 396 KB to 108.9 kB.
+- 1d2d7a3: `--show-config` is an answer on stdout in `output: 'axi'`, the default, instead of `ui.info` lines on stderr. It follows `--format`: `toon` and `json` encode `source` (`file`, `package.json` or `none`), `path`, `property` for a `package.json` source, and `config`; `text` prints the lines 11.5.0 printed. It writes nothing to stderr and exits 0. In `output: 'console'` it is unchanged.
+  
+  Coming from 11.5.0, the default output of `--show-config` is now `toon`, not the `config: <path>` line and the JSON. Migration: pass `--format text` for the 11.5.0 lines, `--format json` to read the fields, or set `output: 'console'`.
+- 36d0a1d: `testCommand()` is no longer exported from the root entry. Import it from `clibuilder/testing`, which 11.5.0 already exports.
+  
+  Upgrading from 11.5.0:
+  
+  ```diff
+  - import { command, testCommand } from 'clibuilder'
+  + import { command } from 'clibuilder'
+  + import { testCommand } from 'clibuilder/testing'
+  ```
+  
+  `@clibuilder/codemod` makes this change (`npx @clibuilder/codemod src`, or `--dry-run` to preview). `mockPluginContext()` stays in `clibuilder/testing`.
+  
+  The root entry's import graph no longer reaches any test-only code, so a CLI no longer loads the test helper, the mock context and its in-memory streams when it starts. Bundled, the root entry goes from 48 to 43 modules.
+- 40d26cf: `testCommand(command, argv, options?)` takes one `options` object, `{ config, output, format }`, where it took `(command, argv, config?, options?)`. It also runs a `.default()` command. `@clibuilder/codemod` rewrites the old positional arguments.
+  
+  ```diff
+  - await testCommand(cmd, 'cmd', { a: 1 }, { output: 'console' })
+  + await testCommand(cmd, 'cmd', { config: { a: 1 }, output: 'console' })
+  ```
+  
+  `mockPluginContext.Params` is now `mockPluginContext.Options`, and `loadPlugins.Context` is `loadPlugins.Options`. The old names stay as deprecated aliases, removed in clibuilder 13.
+  
+  `clibuilder/testing` adds `mockExtensionContext()`, which builds the `ExtensionContext` for testing an extension and captures the commands, global options, `beforeRun` hooks and shared state it adds.
+- b27bf6f: Add the upgrade guide for clibuilder 12, [Upgrading from clibuilder 11 to 12](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/), and the `@clibuilder/codemod` package that does the mechanical part of the upgrade.
+  
+  Upgrading from 11.5.0: run `npx @clibuilder/codemod src`, then fix each `TODO(clibuilder-12)` comment it leaves and review the returned values it lists. The codemod rewrites `z` from `clibuilder` to `t`, moves the `@clibuilder/axi` value helpers to `clibuilder/axi`, moves `cli({ keywords })` to `.use(plugins({ keywords }))` from `@clibuilder/plugins`, and replaces `cli({ config })` with `.use(config())` from `clibuilder/config`. It flags what it cannot rewrite safely: zod forms outside the `t` subset and zod type annotations, a command's own `format` option, `ui.showHelp()` and `ui.showVersion()`, the other `@clibuilder/axi` imports, and `cli({ config })` without `plugins()`.
+  
+  `@clibuilder/codemod` 0.1.0 is published with this release. Preview with `npx @clibuilder/codemod --dry-run src`.
+
+### Minor Changes
+
+- 6809fee: `clibuilder/axi` now works without `cli()`. It exports the output contract (`encode`, `errorOutput`, `printAnswer`, `formats` and the `Format` type) next to `CliError` and `isCliError`, and adds `runScript(command, { argv?, streams? })`. `runScript` takes the same `{ options, run }` object you pass to `cli().command()`, parses `--format` and the options, prints what `run()` returns, and resolves to the exit code. `this` in `run()` is `{ format, ui }` with `ui` on stderr, so a command that reads `this.config` is a type error. A thrown `CliError` is reported on stdout with its exit code, and a bad invocation is reported with code `usage` and exit 2.
+  
+  `encode` and `printAnswer` are synchronous, and `@toon-format/toon` stays a static import.
+- b5ec612: Add the `clibuilder/axi` subpath, which holds the value helpers from `@clibuilder/axi`: `truncateText`, `truncateList`, `defaultTextLimit`, `fullOption`, `orEmpty`, `homeHeader` and `collapseHome`. It also re-exports `result`, `document`, `empty` and `exitCodes`, so one import covers a command. `fullOption` is declared with `t.boolean().optional()` instead of zod.
+  
+  If you use `@clibuilder/axi`, import the value helpers from `clibuilder/axi` instead, for example `import { truncateList } from 'clibuilder/axi'`.
+- 31eec28: A command's `config` takes any Standard Schema, such as zod 3.24 or later, zod 4, valibot or arktype. It is validated with `~standard.validate`, which is awaited when it returns a promise, and `this.config` is typed from the schema's output. A failure is reported with each issue's message under the dotted path of the value that failed, or under `(config)` when the issue has no path, and the cli exits with code 1. Help shows the config under `Config:` from the JSON Schema of its input when the schema implements `~standard.jsonSchema`, and leaves the section out otherwise.
+  
+  `this.config` is the config schema's output, not the loaded input. In 11.5.0 a `.default()` or `.transform()` in a config schema had no effect. Now defaults are filled in and transforms applied, and `z.object()` strips keys it does not declare.
+  
+  With no config file, a schema that rejects `undefined` is validated against `{}`, so a command whose config keys all have defaults runs with them, in a CLI and in `testCommand()` without a config. A missing required key is reported by name. In 11.5.0 both failed with `expected object, received undefined`.
+  
+  `no config found` and the file names searched for are a `debug` message, shown under `--verbose` and `--debug-cli`, not a warning on every run.
+- ad6b788: Accept the global options before the command.
+  
+  `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli`, `--show-config` and the global `--format` may come before the command, after it, or between a group and its sub-command: `app --verbose deploy`, `app --format json plugins list` and `app plugins --format json list` run the same command as `app deploy --verbose` and `app plugins list --format json`. Before, a global option before the command took the command name as its value, so these were usage errors.
+  
+  A global option that takes a value, such as `--format json`, takes only that value. Its arity comes from the base command, the same source the global options are read from, so the value is never read as a command name.
+  
+  A command's own options still go after the command: `app --force deploy` stays a usage error that names `--force` as unknown, and words after `--` never name a command.
+  
+  One invocation that worked before changes: when the default command takes an argument, `app --verbose deploy` used to pass `deploy` to it; it now runs the `deploy` command, as `app deploy` does.
+- 20aaa9c: A command may declare `examples: { command, description }[]`. They are shown in an `Examples` section at the end of the command's text help, each description above its command line, and a usage error handler reads them from `context.command.examples`. A command that declares none shows the same text help as before.
+  
+  The structured help that `--help` answers under `--format toon` and `--format json` holds `name`, `usage`, `description`, `aliases`, `commands` (name, aliases and the first line of each description), `arguments` and `options` (type, `min`, `max`, `pattern` or allowed `values` of a `t` declaration, default, `required`, description, conflicts), `config`, `examples`, and the global options once under `globalOptions`.
+- 5dbee67: `CliError` is now a structured report. Besides `message`, `help` and `exitCode`, it carries a `code`, a stable kebab-case string that says which failure it is (`error` by default), and `details`, a flat record of extra fields. Pass them as options, `new CliError(message, { code, details })`, or pass the whole report, `new CliError({ message, code, details, help, exitCode })`. `exitCode` accepts any integer from 1 to 255, and `0` or any other value now throws a `RangeError`.
+  
+  In the default `axi` output, a `CliError` thrown from `run()` is reported on stdout with these fields, in `this.format`, and a debugging copy is a `debug` line under `--verbose`. The new `cli({ format })` option sets the default format: `'toon'` (the default, through `@toon-format/toon`), `'json'` or `'text'`. In `output: 'console'`, errors are reported as in 11.5.0.
+  
+  `CliError.reported(exitCode)` is a `CliError` for a failure that was already reported: the CLI exits with `exitCode` and prints nothing for it.
+- 73adba2: Resolve the global options before usage errors are reported, and tell `onUsageError` more.
+  
+  The global options (`--help`, `--version`, `--verbose`, `--silent`, `--debug-cli`, `--show-config` and `--format`) are read from the base command before the matched command's usage errors are looked at. The base command is the one source for them: a well-formed global flag is never an unknown option under a sub-command, and a malformed one, such as `--verbose=maybe`, is reported once as the invalid value it is.
+  
+  The `onUsageError` context gains `format`, the format the CLI reports in, the same as `this.format`, and `exitCode`, the code the CLI exits with when the handler returns none (`exitCodes.usage`). The new `cli.UsageErrorContext` and `cli.Format` types describe them.
+  
+  Each `UsageError` handed to `onUsageError` gains `code`, a stable kebab-case string beside `type`: `unknown-option` for `invalid-key`, and the same as `type` for `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` and `extra-arguments`. It is not enumerable, so `JSON.stringify` and equality checks on an error are unchanged.
+
+### Patch Changes
+
+- a05bdfa: The `exitCodes` TSDoc and the Failing guide now state that core names only 0, 1 and 2, and that a cli sets any other exit code (1 to 255) on `CliError` and names the failure with `code`.
+- e1fb5ef: Fix the published types: `cli({ streams })` now takes a small structural stream type (`write(chunk: string)`, with optional `isTTY` and `hasColors()`) instead of `NodeJS.WritableStream`. A TypeScript consumer without `@types/node` and with `skipLibCheck: false` no longer gets error TS2503 (cannot find namespace `NodeJS`) from `clibuilder`'s declarations. `process.stdout` and `process.stderr` still fit.
+- ac9c2fb: Replace the `jsonc-parser` dependency with an internal comment and trailing-comma stripper that feeds `JSON.parse`. Valid `.json` and `.jsonc` config files parse as before, and core's only dependencies are now `@toon-format/toon` and `args-minus`. A parse error message now carries the `JSON.parse` message instead of a `jsonc-parser` error code.
+- e395442: Fix the plugin example in the README, which used a nonexistent `PluginCli.ActivationContext`, and state that 12 is ESM-only with `require()` through `require(esm)`.
+- 6f59df9: `clibuilder/axi` also exports `CliError` and `isCliError`, so one import covers a command. `clibuilder/compile-cache` exports only `enableCompileCache`; the test hook it leaked is internal. `truncateText`, `truncateList` and `homeHeader` gain `Options`/`Result` namespaces, and `runCodemod` and `transform` in `@clibuilder/codemod` gain `Options`/`Summary`/`Result` in place of the flat `RunOptions`, `RunSummary`, `TransformOptions` and `TransformResult`. The registry, config loading, `UI` and `ExtensionContext` exports are documented.
+
 ## 11.5.0
 
 ### Minor Changes
