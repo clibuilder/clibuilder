@@ -1,6 +1,6 @@
 {
 	"name": "clibuilder",
-	"version": "11.5.0",
+	"version": "12.0.0",
 	"description": "A CLI building library",
 	"keywords": [
 		"builder",

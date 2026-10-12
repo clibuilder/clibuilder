@@ -1,6 +1,6 @@
 {
 	"name": "@clibuilder/plugins",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Plugin loading and the plugins command group for clibuilder CLIs",
 	"keywords": [
 		"cli",
