@@ -1,6 +1,10 @@
 /**
  * The exit codes a clibuilder cli uses, following the AXI convention so an agent
  * can tell success, failure, and a wrongly called command apart.
+ *
+ * These three are the whole named set. A cli that needs more (such as 3 for an auth failure)
+ * sets `CliError`'s `exitCode`, any integer from 1 to 255, and names the failure with its `code`.
+ * The exit code says success, failure or usage error; `code` says which failure.
  */
 export const exitCodes = {
 	/** The command did what was asked, including no-ops. */

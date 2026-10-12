@@ -28,6 +28,17 @@ exitCodes.usage   // 2
 This is the convention a caller driving your cli through a shell expects: `2` means *do not retry
 this invocation, it is malformed*, while `1` means *the invocation was fine, the world was not*.
 
+### Codes above 2 belong to your cli
+
+clibuilder names three codes and no more. Clis that need finer exit codes, such as `3` for an
+authentication failure or `4` for not found, set them on the error themselves with
+[`CliError`'s `exitCode`](#failing-from-a-command), any integer from 1 to 255. No named set above 2
+is defined, in core or in `@clibuilder/axi`, because existing clis disagree on what `3` to `7` mean.
+
+The exit code says *success*, *failure* or *usage error*. The `code` string on the error says *which*
+failure. Scripts branch on the first, agents on the second, so give every failure a stable `code`
+even when you also pick a custom exit code.
+
 clibuilder sets `process.exitCode` rather than calling `process.exit()`, so pending writes to stdout
 are never truncated — node exits with the recorded code once your cli is done.
 
