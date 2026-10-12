@@ -53,8 +53,7 @@ export default defineConfig({
 						{ label: 'Publishing', slug: 'guides/publishing' },
 						{
 							label: 'Upgrading to 12',
-							slug: 'guides/upgrade-to-12',
-							badge: { text: 'unreleased', variant: 'caution' }
+							slug: 'guides/upgrade-to-12'
 						}
 					]
 				},
@@ -79,8 +78,7 @@ export default defineConfig({
 						{ label: '@clibuilder/axi', slug: 'packages/axi' },
 						{
 							label: '@clibuilder/plugins',
-							slug: 'packages/plugins',
-							badge: { text: 'unreleased', variant: 'caution' }
+							slug: 'packages/plugins'
 						},
 						{ label: 'args-minus', slug: 'packages/args-minus' }
 					]

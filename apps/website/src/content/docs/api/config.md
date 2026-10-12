@@ -7,7 +7,7 @@ description: The config() extension and the functions that find and read a confi
 import { config } from 'clibuilder/config'
 ```
 
-Unreleased, in 12. A CLI that reads config adds `config()` with [`.use()`](/clibuilder/api/cli/#useextension). The
+Since 12.0.0, a CLI that reads config adds `config()` with [`.use()`](/clibuilder/api/cli/#useextension). The
 [Configuration guide](/clibuilder/guides/configuration/) covers what it does for a CLI. This page lists the exports.
 
 ## `config(options?)`

@@ -52,11 +52,11 @@ there is no second place to declare the shape of `args` — it is inferred from 
   single-file CLI works without shipping its manifest.
 - **Plugins are loaded through config.** Earlier versions scanned `node_modules` to discover
   plugins. Now the config file lists them explicitly, which is dramatically faster to start and works
-  with Yarn PnP and pnpm. In `clibuilder` 12 (unreleased) `@clibuilder/plugins` does this loading,
+  with Yarn PnP and pnpm. In `clibuilder` 12 `@clibuilder/plugins` does this loading,
   not core.
 - **`keywords` drive plugin lookup.** The `plugins search` and `plugins list` commands use them. In
-  `clibuilder` 12 (unreleased) `keywords` is an option of `plugins()`, not of `cli()`.
-- **ESM is distributed alongside CJS.** `clibuilder` 12 (unreleased) is ESM-only, and `require()`
+  `clibuilder` 12 `keywords` is an option of `plugins()`, not of `cli()`.
+- **ESM is distributed alongside CJS.** `clibuilder` 12 is ESM-only, and `require()`
   still loads it on Node.js 20.19 and newer.
 
 ## Where next

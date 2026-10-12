@@ -39,7 +39,7 @@ Commands passed inline to `.command()` or `.default()` are inferred without it �
 | `config` | Standard Schema | The schema this command's [config](/clibuilder/guides/configuration/) must satisfy, from your own `zod`, valibot or arktype. Declaring it triggers the config load. |
 | `context` | `Record<string, any>` | Arbitrary values handed back on `this.context` — the seam for injecting I/O in [tests](/clibuilder/guides/testing/). |
 | `commands` | `Command[]` | Sub-commands. |
-| `examples` | `{ command: string; description: string }[]` | **Unreleased.** Example invocations, shown at the end of the command's help. See [Examples](#examples). |
+| `examples` | `{ command: string; description: string }[]` | Example invocations, shown at the end of the command's help. See [Examples](#examples). |
 | `onUsageError` | `UsageErrorHandler` | Takes over how usage errors are reported for this command and its sub-commands. See [Reporting usage errors yourself](/clibuilder/guides/failing/#reporting-usage-errors-yourself). |
 | `run` | `function` | What the command does. |
 
@@ -47,10 +47,6 @@ A command must have **either** a `run` or a `commands`. A command with `commands
 group: invoking it prints its help message.
 
 ## Examples
-
-:::note[Unreleased]
-`examples` is on `main` and ships in `clibuilder` 12. It is not in a published release yet.
-:::
 
 `examples` lists invocations a reader can copy. `command` is the whole command line, written as the
 user types it, and `description` says what it does:
@@ -141,8 +137,8 @@ Declare it as a **method**, not an arrow function — `this` is what carries the
 | `this.config` | the config schema's output type | The loaded, validated config. `undefined` when the command declared no `config`. |
 | `this.cwd` | `string` | The directory the CLI was invoked from. |
 | `this.context` | `Context` | Whatever the command declared as `context`. |
-| `this.format` | `'toon' \| 'json' \| 'text'` | **v12, unreleased.** The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's `format`, `'toon'` by default. |
-| `this.output` | `'axi' \| 'console'` | **v12, unreleased.** The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'axi'` by default. |
+| `this.format` | `'toon' \| 'json' \| 'text'` | The format to answer in: the caller's [`--format`](/clibuilder/api/cli/#the-global---format-option), else the CLI's `format`, `'toon'` by default. |
+| `this.output` | `'axi' \| 'console'` | The CLI's [`output`](/clibuilder/api/cli/#streams-and-output) mode, `'axi'` by default. |
 
 ### `args`
 
@@ -156,7 +152,7 @@ Whatever `run()` returns (or resolves to) becomes the resolved value of
 [`parse()`](/clibuilder/api/cli/#parseargv), and the `result` from
 [`testCommand()`](/clibuilder/api/test-command/).
 
-**v12, unreleased:** with `output: 'axi'`, the default, the returned value is also printed once on
+**Since 12.0.0:** with `output: 'axi'`, the default, the returned value is also printed once on
 stdout, in `this.format`. With `output: 'console'` it is not printed. `result()`, `document()` and `empty()` control how; `parse()` resolves to the value
 they wrap. See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
@@ -165,8 +161,8 @@ they wrap. See [The result channel](/clibuilder/api/cli/#the-result-channel).
 The argument a [plugin's](/clibuilder/guides/plugins/) `activate()` receives. Import the type from
 [`@clibuilder/plugins`](/clibuilder/packages/plugins/#writing-a-plugin).
 
-:::caution[Unreleased]
-In `clibuilder` 12 (unreleased) `this.keywords` is removed, and `PluginActivationContext` is
+:::caution[Changed in 12.0.0]
+In `clibuilder` 12 `this.keywords` is removed, and `PluginActivationContext` is
 exported from `clibuilder` only as a deprecated copy that 13 removes. In `clibuilder` 11,
 `this.keywords` holds the CLI's plugin keywords.
 :::

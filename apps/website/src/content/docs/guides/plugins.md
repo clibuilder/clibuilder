@@ -222,12 +222,12 @@ my-cli-plugin-git
 many results there turned out to be. A value outside the three is a usage error: the CLI reports it
 and exits with code `2` rather than quietly falling back to the default.
 
-**v12, unreleased:** every CLI has a
+Since 12.0.0, every CLI has a
 [global `--format`](/clibuilder/api/cli/#the-global---format-option). The sub-commands drop their
 own `--format` and report in the global one, so its default is the CLI's `format`. On
 `clibuilder` 11.5.0 they declare their own.
 
-**v12, unreleased:** with `output: 'axi'`, the default, the sub-commands return their report as the
+Since 12.0.0, with `output: 'axi'`, the default, the sub-commands return their report as the
 [answer](/clibuilder/api/cli/#the-result-channel), and the CLI prints it once on stdout. With
 `output: 'console'` they write it through `ui` as above. `--format json`
 then carries the `help` list too, and nothing installed or found is an empty state:

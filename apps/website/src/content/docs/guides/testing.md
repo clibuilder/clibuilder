@@ -40,7 +40,7 @@ test('cmd-a returns x and says miku', async () => {
   a returned value, a `CliError` report or a usage error. A test can assert on user-facing output
   without capturing stdout.
 
-**v12, unreleased:** `testCommand()` runs the cli in the default `output: 'axi'`, so `messages`
+Since 12.0.0, `testCommand()` runs the cli in the default `output: 'axi'`, so `messages`
 includes the printed answer. To test a cli that sets `output: 'console'`, pass the same mode as
 `options.output`. Then a returned value is not printed, as in 11.5.0:
 

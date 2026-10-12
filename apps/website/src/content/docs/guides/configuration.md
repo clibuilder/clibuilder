@@ -105,7 +105,7 @@ cli({ name: 'app', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-:::note[v12, unreleased]
+:::note[Since 12.0.0]
 In `clibuilder` 11.5.0 the schema comes from `z`, re-exported by `clibuilder`, and the command gets
 the config as it was loaded, so a `.default()` or `.transform()` had no effect. See
 [zod is replaced by `t`](/clibuilder/guides/upgrade-to-12/#zod-is-replaced-by-t).
@@ -256,9 +256,9 @@ whatever the `--format`, as in 11.5.0.
 
 ## The `plugins` key
 
-:::caution[Unreleased]
+:::note[Since 12.0.0]
 In `clibuilder` 11, `plugins` is reserved by `clibuilder` itself and lists the packages whose
-commands get loaded. In `clibuilder` 12 (unreleased) core no longer reserves it and loads nothing.
+commands get loaded. In `clibuilder` 12 core no longer reserves it and loads nothing.
 [`plugins()`](/clibuilder/packages/plugins/) from `@clibuilder/plugins` reads it from the config
 `.use(config())` resolved, so add `config()` before `plugins()`. If the config lists plugins and the CLI loads none, it warns once.
 :::

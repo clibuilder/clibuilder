@@ -15,12 +15,14 @@ The formats:
 - `json` — compact JSON, for a pipe into `jq`.
 - `text` — an aligned, human-readable report.
 
-> **Deprecated with `clibuilder` 12.** The package is folded into `clibuilder`:
+> **Deprecated on npm.** 0.3.0 is the last release. The package is folded into `clibuilder` 12.0.0:
 > the value helpers (`truncateText`, `truncateList`, `orEmpty`, `fullOption`, `homeHeader`, `collapseHome`)
-> are re-exported from `clibuilder/axi`, and the output, error, format and usage parts are built into core
+> live in `clibuilder/axi`, and the output, error, format and usage parts are built into core
 > (`result()`, `document()`, `empty()`, the global `--format`, `CliError`, ranked usage errors).
-> Every export is marked `@deprecated` with its replacement. See the
-> [migration table](https://clibuilder.github.io/clibuilder/packages/axi/#moving-to-clibuilder-12).
+> The exports of 0.3.0 are deprecated copies with the same behavior, each marked `@deprecated` with its
+> replacement. Import from `clibuilder/axi` instead. See the
+> [migration table](https://clibuilder.github.io/clibuilder/packages/axi/#moving-to-clibuilder-12) and the
+> [upgrade guide](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/).
 
 ## Install
 
@@ -246,7 +248,7 @@ plugins[2]: plugin-a,plugin-b
 | `orEmpty(items, message)` | The message instead of an empty list |
 | `homeHeader({ description, bin?, home? })` | `bin` and `description`, for the home view |
 | `collapseHome(path, home?)` | Shortens a path under the home directory to `~/...` |
-| `exitCodes` | Re-exported from `clibuilder`: `success` 0, `error` 1, `usage` 2 |
+| `exitCodes` | The same object as in `clibuilder`: `success` 0, `error` 1, `usage` 2 |
 
 The conventions behind these, and where they came from, are in
 [`docs/findings`](docs/findings/README.md).

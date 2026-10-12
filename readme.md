@@ -18,17 +18,17 @@ Key highlights:
 
 - Support standalone CLI
   - `name` and `version` are now required and not read from `package.json`.
-- Plugins are loaded through config (in v12, unreleased, by `@clibuilder/plugins`)
+- Plugins are loaded through config (in v12, by `@clibuilder/plugins`)
   - This drastically improve startup time, as it does not scan `node_modules` anymore.
   - Also better support other package manager such as `yarn PnP` and `pnpm`.
-- `keywords` are now used for plugin lookup (in v12, unreleased, an option of `plugins()`).
-- Distribute `ESM` along with `CJS` (in v12, unreleased, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
+- `keywords` are now used for plugin lookup (in v12, an option of `plugins()`).
+- Distribute `ESM` along with `CJS` (in v12, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
 
 ## Feature Highlights
 
 - support default commands and sub-commands `my-cli cmd1 cmd2 cmd3`
 - configuration file support
-- plugin support: write commands in separate packages and reuse by multiple CLI
+- plugin support through `@clibuilder/plugins`: write commands in separate packages and reuse by multiple CLI
 - type inference for arguments and options with the `t` descriptors (exported as `t`),
   and config validation with any [Standard Schema](https://standardschema.dev) such as zod or valibot
 - opt-in V8 compile cache for faster startup\

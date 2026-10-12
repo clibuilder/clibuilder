@@ -8,11 +8,12 @@ the `plugins list` and `plugins search` commands. A CLI opts in with one call to
 [`.use()`](/clibuilder/api/cli/#useextension). A CLI that does not call it has no plugin system to
 learn.
 
-`@clibuilder/plugins` 0.1.0 is published to npm. It needs `clibuilder` 11.5.0 or later.
+`@clibuilder/plugins` 0.2.0 is published to npm. It needs `clibuilder` 12.0.0 or later. 0.1.0 needs
+`clibuilder` 11.5.0 or later.
 
-:::caution[Unreleased]
-In `clibuilder` 12, `plugins()` is the only way to load plugins. The next `@clibuilder/plugins`
-release (a 0.x minor) requires `clibuilder ^12` as a peer. With `clibuilder` 11, keep using
+:::note[Since 12.0.0]
+In `clibuilder` 12, `plugins()` is the only way to load plugins. `@clibuilder/plugins` 0.2.0
+requires `clibuilder ^12` as a peer. With `clibuilder` 11, keep using
 `@clibuilder/plugins` 0.1.0.
 :::
 
@@ -24,10 +25,10 @@ Install it with:
 npm install @clibuilder/plugins clibuilder
 ```
 
-`clibuilder` `^11.5.0 || ^12` is the peer dependency of 0.1.0. The next release requires
+`clibuilder` `^11.5.0 || ^12` is the peer dependency of 0.1.0. 0.2.0 requires
 `clibuilder ^12`. Node.js 20.19 or newer is required.
 
-0.1.0 publishes ESM and CJS. The next release is ESM-only; `require('@clibuilder/plugins')` still
+0.1.0 publishes ESM and CJS. 0.2.0 is ESM-only; `require('@clibuilder/plugins')` still
 works through Node's `require(esm)`.
 
 ## Usage
@@ -136,7 +137,7 @@ behavior, and it applies to `@clibuilder/plugins` 0.1.0. You can switch a CLI be
 +   .use(plugins({ keywords: ['my-cli-plugin'] }))
 ```
 
-**Unreleased:** `clibuilder` 12 removes its own plugin loading, the `keywords` option,
+Since 12.0.0, `clibuilder` removes its own plugin loading, the `keywords` option,
 `this.keywords` and the automatic `plugins` group, so there is nothing to skip. `plugins()` is the
 only way to load plugins, and it adds the `plugins` group unless you pass `command: false`. If the
 config lists plugins and the CLI loads none, `clibuilder` 12 warns once and names this package. The

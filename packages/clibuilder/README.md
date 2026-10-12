@@ -18,6 +18,8 @@ A highly customizable command line application builder.
 
 ## What's new in v12
 
+`clibuilder` 12.0.0 changes the defaults. `@clibuilder/axi` is deprecated on npm: import its value helpers from `clibuilder/axi`.
+
 - Agent-facing output is the default (`cli({ output: 'axi' })`):
   - a value returned from `run()` is printed on stdout, in the format the caller asked for with the global `--format <toon|json|text>`;
   - a thrown `CliError` and a usage error are reported once, coded, on stdout;
@@ -42,7 +44,7 @@ Key highlights:
 
 - support default commands and sub-commands `my-cli cmd1 cmd2 cmd3`
 - configuration file support
-- plugin support: write commands in separate packages and reuse by multiple CLI
+- plugin support through [`@clibuilder/plugins`](https://www.npmjs.com/package/@clibuilder/plugins): write commands in separate packages and reuse by multiple CLI
 - type inference for arguments and options with the `t` descriptors (exported as `t`),
   and config validation with any [Standard Schema](https://standardschema.dev) such as zod or valibot
 

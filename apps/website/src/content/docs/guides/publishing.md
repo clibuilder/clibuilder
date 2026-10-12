@@ -94,7 +94,7 @@ numbers, and how users can point the cache elsewhere.
 ## Export it as a library
 
 If you expect consumers to `import` your commands as a library as well as run the binary, publish ESM
-with a `types` and a `default` condition, as `clibuilder` 12 (unreleased) does:
+with a `types` and a `default` condition, as `clibuilder` 12 does:
 
 ```json
 {

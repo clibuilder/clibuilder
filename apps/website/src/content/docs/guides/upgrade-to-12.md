@@ -3,7 +3,7 @@ title: Upgrading from clibuilder 11 to 12
 description: "What clibuilder 12 changes for a CLI author, in the order you upgrade, with the one-line fix for each change and a codemod for the mechanical parts."
 ---
 
-`clibuilder` 12 is unreleased. This page describes what it changes for a CLI built on `clibuilder`
+`clibuilder` 12.0.0 is published. This page describes what it changes for a CLI built on `clibuilder`
 11.5.0, and how to upgrade. It covers both RFCs that set the design of 12:
 
 - [axi-native](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md): output
@@ -14,12 +14,10 @@ description: "What clibuilder 12 changes for a CLI author, in the order you upgr
 The RFCs are the authority. Where this page differs from them, they win.
 
 Each section says what changed, who is affected, the one-line fix, and shows the code before and
-after. Each section also has one of these labels:
+after. Each section also has one label:
 
-- **On `main`**: the code is merged and ships in 12. You can try most of it in a v11 CLI that sets
-  `cli({ output: 'axi' })`.
-- **Pending**: the RFC decides it, but the change is not merged yet. The section describes the
-  target behaviour from the RFC, and the details can still change in its pull request.
+- **Shipped in 12.0.0**: the change is in `clibuilder` 12.0.0.
+- **Available in 11.5.0**: you can adopt it in a v11 CLI before you upgrade.
 
 [The roadmap](/clibuilder/roadmap/v12/) tracks the status of each change.
 
@@ -69,7 +67,7 @@ change the result of the first run.
 
 ## Output modes: `axi` is the default
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `clibuilder` 12 has two output modes, and `axi` is the default. Both modes
 are permanent, and neither is deprecated. `axi` makes stdout carry only answers, in a format an
@@ -112,7 +110,7 @@ Source: [axi-native section 3.10](https://github.com/clibuilder/clibuilder/blob/
 
 ## `ui.*` writes to stderr
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** In `axi` mode, the default, every `ui` call is a diagnostic on stderr, including `ui.info`.
 Answers go to stdout.
@@ -138,7 +136,7 @@ Source: [axi-native section 3.10](https://github.com/clibuilder/clibuilder/blob/
 
 ## Returned values are printed
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** In `axi` mode, the default, a value other than `undefined` returned from `run()` is printed on stdout, encoded
 in the resolved [format](#--format-is-global). `parse()` still resolves to the value, so tests and
@@ -173,7 +171,7 @@ See [The result channel](/clibuilder/api/cli/#the-result-channel).
 
 ## `CliError` carries a code and details
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `new CliError(message, { code, details, help, exitCode })` is the structured
 report of a failure. In `axi` mode core renders it once, on stdout, in the resolved format, under
@@ -203,7 +201,7 @@ See [Errors with `output: 'axi'`](/clibuilder/guides/failing/#errors-with-output
 
 ## Usage errors are ranked and coded
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** In `axi` mode, the default, only the top-ranked usage error is reported, on stdout, in the
 resolved format, with exit code 2. It has a `code`: `unknown-option`, `conflicting-options`,
@@ -231,7 +229,7 @@ See [Usage errors with `output: 'axi'`](/clibuilder/guides/failing/#usage-errors
 
 ## `--format` is global
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** Every command accepts `--format <toon|json|text>`, in both output modes, and
 `run()` reads the resolved value from `this.format`. The help lists it with the other global
@@ -268,7 +266,7 @@ See [The global `--format` option](/clibuilder/api/cli/#the-global---format-opti
 
 ## `--help` and `--version` belong to core
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** In `axi` mode, the default, core answers `--help` on stdout, following
 `--format`: text help under `text`, and the structured help under `toon` and `json`. `--version` is
@@ -300,7 +298,7 @@ See [`--help` and `--version` with `output: 'axi'`](/clibuilder/api/cli/#--help-
 
 ## `--show-config` answers on stdout
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** In `axi` mode, the default, `--show-config` is an answer on stdout, following
 `--format`, with nothing on stderr from it and exit code 0. `text` prints the lines 11 printed. `toon`
@@ -328,7 +326,7 @@ See [Inspecting the resolved config](/clibuilder/guides/configuration/#inspectin
 
 ## zod is replaced by `t`
 
-**On `main`.** `t` is re-exported from `clibuilder` since 11.5.0. In 12, `z`, zod and the
+**Shipped in 12.0.0.** `t` is re-exported from `clibuilder` since 11.5.0. In 12, `z`, zod and the
 `isZodArray`, `isZodBoolean`, … helpers are removed.
 
 **What changed.** Options and arguments declare their `type` with the `t` descriptors from
@@ -406,7 +404,7 @@ See [`t`](/clibuilder/api/t/).
 
 ## `config` takes a Standard Schema, and stores its output
 
-**On `main`.** A `z` schema from `clibuilder` no longer exists in 12.
+**Shipped in 12.0.0.** A `z` schema from `clibuilder` no longer exists in 12.
 
 **What changed.** A command's `config` takes any Standard Schema: zod 3.24 or later, zod 4, valibot,
 arktype and others. `this.config` is the schema's **output**, not the loaded input. Defaults are
@@ -436,7 +434,7 @@ See [Configuration](/clibuilder/guides/configuration/).
 
 ## `js-yaml` is an optional peer dependency
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `clibuilder` no longer installs `js-yaml`. It loads it only when it reads a
 `.yaml` or `.yml` config file. Without it, reading one fails with a `CliError` whose code is
@@ -455,7 +453,7 @@ See [Configuration](/clibuilder/guides/configuration/).
 
 ## standard-log is removed
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `clibuilder` no longer depends on standard-log and standard-log-color. Every CLI
 writes through a built-in UI to `cli({ streams: { stdout, stderr } })`, which defaults to
@@ -484,7 +482,7 @@ See [Streams and output](/clibuilder/api/cli/#streams-and-output).
 
 ## `testCommand` is only in `clibuilder/testing`
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** The root entry no longer exports `testCommand()`. Import it from
 `clibuilder/testing`, which 11.5.0 already has. `testCommand(command, argv, options?)` takes one
@@ -512,7 +510,7 @@ See [`testCommand()`](/clibuilder/api/test-command/).
 
 ## ESM-only
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `clibuilder`, `@clibuilder/plugins` and `@clibuilder/axi` no longer publish a
 CommonJS build. Each entry point in `exports` is `{ types, default }` and points at the ES module in
@@ -551,7 +549,7 @@ See [Installation](/clibuilder/getting-started/installation/#module-formats).
 
 ## Config loads through `.use(config())`
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** The `config` option of `cli()` is removed. Config loading is an extension from
 the `clibuilder/config` subpath. A CLI without `.use(config())` contains no config loader, no
@@ -598,7 +596,7 @@ Run the codemod with `npx @clibuilder/codemod`, as in [Run the codemod first](#r
 
 ## Plugins move to `@clibuilder/plugins`
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** Core no longer loads plugins from `config`, the `keywords` option and
 `this.keywords` are removed, and core no longer adds the `plugins` command group. A CLI loads
@@ -629,12 +627,13 @@ The details, including what stays in core, are in
 
 ## `@clibuilder/axi` moves into `clibuilder`
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
-**What changed.** `@clibuilder/axi` has no further development. Its value helpers are in the
+**What changed.** `@clibuilder/axi` 0.3.0 is the last release, and the package is deprecated on npm. Its value helpers are in the
 [`clibuilder/axi`](/clibuilder/api/axi/) subpath: `truncateText`, `truncateList`,
 `defaultTextLimit`, `fullOption`, `orEmpty`, `homeHeader` and `collapseHome`, with `exitCodes`,
 `result`, `document` and `empty`. Its output, error, format and usage parts are built into core.
+0.3.0 keeps deprecated copies of the value helpers with the same behavior.
 
 **Who is affected.** Every CLI that imports `@clibuilder/axi`.
 
@@ -655,7 +654,7 @@ Source: [axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/m
 
 ## Exit codes are 0, 1 and 2
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** Core uses three exit codes: 0 for success, 1 for a failure, and 2 for a usage
 error. `CliError.exitCode` accepts any integer from 1 to 255, and 0 is rejected. Neither core nor
@@ -678,7 +677,7 @@ Source: [axi-native section 3.6](https://github.com/clibuilder/clibuilder/blob/m
 
 ## A bare `--version` is answered first
 
-**On `main`**, released in 11.5.0.
+**Available in 11.5.0.**
 
 **What changed.** When `--version` or `-v` is the only argument, core prints the version as plain
 text before the config loads and before plugins and extensions run. Any other invocation, such as
@@ -701,7 +700,7 @@ Source: [axi-native section 3.8](https://github.com/clibuilder/clibuilder/blob/m
 
 ## Global options may come before the command
 
-**On `main`.**
+**Shipped in 12.0.0.**
 
 **What changed.** `--help`, `--version`, `--verbose`, `--silent`, `--debug-cli`, `--show-config`
 and `--format` may come before the command, after it, or between a group and its sub-command. A

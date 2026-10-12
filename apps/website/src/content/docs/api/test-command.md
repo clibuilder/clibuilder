@@ -15,7 +15,7 @@ Runs a single command against a throwaway CLI (`test-cli`, version `1.0.0`) and 
 No process is spawned and no config file is read.
 
 Import it from `clibuilder/testing`. clibuilder 11.5.0 also exports it, deprecated, from the root entry;
-v12 (unreleased) removes that export, so test code stays off a CLI's import graph.
+12.0.0 removes that export, so test code stays off a CLI's import graph.
 
 ```ts
 import { command } from 'clibuilder'
@@ -45,7 +45,7 @@ expect(messages).toBe('miku\nx')
 | `command` | `cli.Command \| cli.Command.DefaultCommand` | The command to run. Sub-commands come along with it. A `.default()` command runs the same way, with `argv` holding only its arguments. |
 | `argv` | `string` | The command line *after* the CLI name — `'cmd-a --flag value'`. |
 | `options.config` | `Record<string, any>` | Stands in for the config file the command would have loaded. Still validated against the command's `config` schema. |
-| `options.output` | `'axi' \| 'console'` | **v12, unreleased.** The [output mode](/clibuilder/api/cli/#streams-and-output) of the CLI under test, as `cli({ output })` takes it. Defaults to `'axi'`. Pass `'console'` to test a CLI that sets `output: 'console'`. |
+| `options.output` | `'axi' \| 'console'` | The [output mode](/clibuilder/api/cli/#streams-and-output) of the CLI under test, as `cli({ output })` takes it. Defaults to `'axi'`. Pass `'console'` to test a CLI that sets `output: 'console'`. |
 | `options.format` | `'toon' \| 'json' \| 'text'` | The CLI's default [format](/clibuilder/api/cli/), as `cli({ format })` takes it. Defaults to `'toon'`. |
 
 ## Returns
