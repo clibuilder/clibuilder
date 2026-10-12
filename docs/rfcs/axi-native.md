@@ -262,7 +262,7 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 **Decided before 12.0.0** (reversing either later would be a break):
 
 - `encode` and `printAnswer` stay synchronous, with `@toon-format/toon` imported statically. Lazy toon is rejected: it would make them async right after they become public, and toon is on the default path anyway (#688).
-- Config moves behind `.use(config())` in a `clibuilder/config` subpath of core, not a new package ([#692](https://github.com/clibuilder/clibuilder/issues/692)). This supersedes the earlier recommendation in #689 to keep config a `cli()` option. A CLI without the extension carries no loader, no find-up and no parsers. `jsonc-parser` is replaced by an internal stripper ([#693](https://github.com/clibuilder/clibuilder/issues/693), closes slim-dependencies Q4). The stripper merged in #694, and `.use(config())` lands with #692.
+- Config moves behind `.use(config())` in a `clibuilder/config` subpath of core, not a new package ([#692](https://github.com/clibuilder/clibuilder/issues/692)). This supersedes the earlier recommendation in #689 to keep config a `cli()` option. A CLI without the extension carries no loader, no find-up and no parsers. `jsonc-parser` is replaced by an internal stripper ([#693](https://github.com/clibuilder/clibuilder/issues/693), closes slim-dependencies Q4). The stripper merged in #694, and `.use(config())` merged in #697.
 
 **Not doing.**
 
@@ -271,9 +271,9 @@ The conventions track an upstream spec that is still before 1.0, so they change 
 
 **Consequences.**
 
-- `@clibuilder/axi` has no v12 release; 0.3.0 is its final, deprecation release. Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
+- `@clibuilder/axi` 0.3.0 is its final, deprecation release (the pending changeset `axi-deprecated.md` marks every export `@deprecated`; npm is at 0.2.1 until v12 ships). Its users move to `clibuilder` and `clibuilder/axi` with the v12 migration (section 5, item 8).
 - The boundary rule is added to the repo's lint or depcheck configuration before the subpath is created (done; the subpath was created in #680).
-- The tier B boundary is added before the output functions are exported from the subpath.
+- The tier B boundary is added before the output functions are exported from the subpath (done in #704).
 - The headless runner has a bundle-size test (`script/bundle_size.spec.ts`: runner entry at most 22 KB minified, rolldown).
 - An extracted neutral package, if one is ever needed, must never import clibuilder.
 - Deprecating `@clibuilder/axi` on npm needs an explicit decision when v12 is published.
