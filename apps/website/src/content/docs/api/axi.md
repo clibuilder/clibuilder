@@ -97,7 +97,10 @@ prints the answer the way `output: 'axi'` does, and resolves to the exit code. I
 - A thrown `CliError` is printed with `errorOutput()` on stdout and resolves to its `exitCode`.
 - A bad invocation is printed the same way with code `usage` and resolves to 2. It is a plain
   [args-minus](/clibuilder/packages/args-minus/) message: no ranking and no `help` list.
-- Positional `arguments`, `conflicts` and an option named `format` are not supported.
+- Positional `arguments` and `conflicts` are not supported, on purpose: the lookup `cli()` uses for them, and for
+  ranked usage errors, would add about 10 KB to a runner capped at 22 KB. An option named `format` is not
+  supported either, and `cli()` rejects it too: `--format` is global, so read `this.format`. A test runs one
+  command through both `cli().command()` and `runScript()` and checks that the answers and `CliError` reports match.
 - Any other error rejects.
 
 The runner and the output contract import only `args-minus`, `@toon-format/toon` and each other, so a script

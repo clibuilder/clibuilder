@@ -83,7 +83,10 @@ export namespace runScript {
 
 	/**
 	 * The command `runScript()` runs: the same `{ options, run }` that `cli().command()` takes.
-	 * Positional `arguments`, `config` and `format` are not accepted.
+	 * Positional `arguments`, `config` and an option named `format` are not accepted, on purpose:
+	 * the runner stays under the 22 KB bundle cap (`script/bundle_size.spec.ts`), and the lookup that
+	 * `cli()` uses for positionals, `conflicts` and ranked usage errors costs about 10 KB more.
+	 * `format` is rejected by `cli()` too, which owns `--format`: read `this.format` instead.
 	 */
 	export type Command<O extends Entries = Entries> = {
 		name?: string
@@ -107,6 +110,7 @@ export namespace runScript {
  *
  * - A thrown `CliError` is reported with `errorOutput()` on stdout and resolves to its `exitCode`.
  * - A bad invocation (unknown option, bad value, a positional) is reported the same way with code `usage`, and resolves to 2.
+ *   Unlike `cli()`, it reports the error `args-minus` finds first, coded `usage`, without ranking or a `help` list.
  * - Any other error rejects.
  *
  * It does not set `process.exitCode`. Do it from the result: `process.exitCode = await runScript(command)`.
