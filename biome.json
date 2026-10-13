@@ -148,11 +148,15 @@
 											"!../render/answer.js",
 											"!../render/text.js",
 											"!../render/ref.js",
+											"!../render/usage_error.js",
 											"!../app/errors.js",
+											"!../invocation/argv.js",
+											"!../invocation/descriptors.js",
+											"!../invocation/lookup.js",
 											"!node:fs",
 											"!node:path"
 										],
-										"message": "script/ is the headless runner and must not reach cli, app, builder, invocation, config or help (axi-native RFC section 4.1, tier B). Import only args-minus, @toon-format/toon, src/axi, render/{encode,answer,text,ref}, app/errors, and node:fs and node:path to find a ref's target."
+										"message": "script/ is the headless runner and must not reach cli, app, builder, config or plugins (axi-native RFC section 4.1, tier B). Import only args-minus, @toon-format/toon, src/axi, render/{encode,answer,text,ref,usage_error}, app/errors, the invocation lookup (invocation/{argv,descriptors,lookup}), and node:fs and node:path to find a ref's target."
 									}
 								]
 							}

@@ -1,21 +1,18 @@
 /**
- * The headless runner: runs a command's `{ options, run }` without `cli()`.
- * Imports only `args-minus` and the framework-free output contract (axi-native RFC section 4.1, tier B).
+ * The headless runner: runs a command's `{ arguments, options, run }` without `cli()`.
+ * It looks the invocation up and reports usage errors with the code `cli()` uses (`invocation/`, `render/usage_error`),
+ * and never reaches `cli()`, the builder or config (axi-native RFC section 4.1, tier B).
  */
 
-import {
-	type AnyDescriptor,
-	type DefaultOf,
-	type OptionDeclaration,
-	type OutputOf,
-	ParseArgsError,
-	parseArgsAsync,
-	t
-} from 'args-minus'
+import { type AnyDescriptor, type DefaultOf, type OutputOf, t } from 'args-minus'
 import { helpLinesOf, isCliError, isReportedCliError } from '../app/errors.js'
+import { parseArgv } from '../invocation/argv.js'
+import { convertDescriptors } from '../invocation/descriptors.js'
+import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
 import { printAnswer } from '../render/answer.js'
 import { encode, errorOutput, formats, type Format as OutputFormat } from '../render/encode.js'
 import { type RefsMode, renderHelp } from '../render/ref.js'
+import { describeUsageError, topUsageError } from '../render/usage_error.js'
 import { readScriptData, type ScriptData, scriptResolver } from './refs.js'
 
 export namespace runScript {
@@ -72,20 +69,48 @@ export namespace runScript {
 		ui: UI
 	}
 
-	/** An option, as in `cli.Command.Options`. `conflicts` is not supported headless. */
+	/** A positional argument, as in `cli.Command.Argument`. Without a `type` it is a string. */
+	export type Argument<Name extends string = string, T extends AnyDescriptor = AnyDescriptor> = {
+		name: Name
+		description: string
+		type?: T
+	}
+
+	/** An option, as in `cli.Command.Options`. */
 	export type Entry<T extends AnyDescriptor = AnyDescriptor> = {
 		description: string
 		type?: T
 		/** The value used when the option is not passed. It is not converted, but the descriptor's checks run on it. */
 		default?: DefaultOf<OutputOf<T>>
 		alias?: Array<string | { alias: string; hidden: boolean }>
-		conflicts?: never
+		/** Names of the options this one cannot be used with. Passing both is a usage error; a default does not count. */
+		conflicts?: readonly string[]
 	}
 
 	export type Entries = Record<string, Entry>
 
-	/** The value `run()` gets for each option: the descriptor's output, `boolean | undefined` for a flag without a type. */
-	export type Args<O extends Entries> = {
+	/**
+	 * The value `run()` gets for each argument and option: the descriptor's output,
+	 * `string` for an argument without a type and `boolean | undefined` for a flag without one.
+	 */
+	export type Args<O extends Entries, A extends readonly Argument[] = []> = OptionArgs<O> & ArgumentArgs<A>
+
+	/** An argument array whose names are not literal, such as one not declared `as const`, types every name as `any`. */
+	export type ArgumentArgs<A extends readonly Argument[]> = string extends A[number]['name']
+		? Record<string, any>
+		: {
+				[E in A[number] as E['name']]: E['type'] extends infer T
+					? T extends AnyDescriptor
+						? 0 extends 1 & OutputOf<T>
+							? any
+							: T extends { isOptional: false }
+								? OutputOf<T>
+								: OutputOf<T> | undefined
+						: string
+					: never
+			}
+
+	export type OptionArgs<O extends Entries> = {
 		[K in keyof O]: O[K]['type'] extends infer T
 			? T extends AnyDescriptor
 				? 0 extends 1 & OutputOf<T>
@@ -98,21 +123,19 @@ export namespace runScript {
 	}
 
 	/**
-	 * The command `runScript()` runs: the same `{ options, run }` that `cli().command()` takes.
-	 * Positional `arguments`, `config` and an option named `format` are not accepted, on purpose:
-	 * the runner stays under the 22 KB bundle cap (`script/bundle_size.spec.ts`), and the lookup that
-	 * `cli()` uses for positionals, `conflicts` and ranked usage errors costs about 10 KB more.
-	 * `format` is rejected by `cli()` too, which owns `--format`: read `this.format` instead.
+	 * The command `runScript()` runs: the same `{ arguments, options, run }` that `cli().command()` takes.
+	 * `config` and sub-commands are not accepted, and neither is an option named `format`:
+	 * `cli()` rejects that too, as it owns `--format`. Read `this.format` instead.
 	 */
-	export type Command<O extends Entries = Entries> = {
+	export type Command<O extends Entries = Entries, A extends readonly Argument[] = []> = {
 		name?: string
 		description?: string
 		alias?: string[]
 		examples?: readonly unknown[]
+		arguments?: A
 		options?: O & { format?: never }
-		arguments?: undefined
 		config?: undefined
-		run(this: Context, args: Args<O>): unknown
+		run(this: Context, args: Args<O, A>): unknown
 	}
 }
 
@@ -125,8 +148,9 @@ export namespace runScript {
  * and `this` has no `config`: a command that reads it is a type error here.
  *
  * - A thrown `CliError` is reported with `errorOutput()` on stdout and resolves to its `exitCode`.
- * - A bad invocation (unknown option, bad value, a positional) is reported the same way with code `usage`, and resolves to 2.
- *   Unlike `cli()`, it reports the error `args-minus` finds first, coded `usage`, without ranking or a `help` list.
+ * - A bad invocation is reported as `cli({ output: 'axi' })` reports it: the top-ranked usage error alone, with its `code`
+ *   (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`),
+ *   `details` and `help`, and resolves to 2. The usage line names the command, as there is no cli name.
  * - Any other error rejects.
  *
  * It does not set `process.exitCode`. Do it from the result: `process.exitCode = await runScript(command)`.
@@ -144,8 +168,11 @@ export namespace runScript {
  * })
  * ```
  */
-export async function runScript<const O extends runScript.Entries = runScript.Entries>(
-	command: runScript.Command<O>,
+export async function runScript<
+	const O extends runScript.Entries = runScript.Entries,
+	const A extends readonly runScript.Argument[] = []
+>(
+	command: runScript.Command<O, A>,
 	{ argv = process.argv.slice(2), streams = process, refs = 'help', commands }: runScript.Options = {}
 ): Promise<number> {
 	const { stdout, stderr } = streams
@@ -155,30 +182,25 @@ export async function runScript<const O extends runScript.Entries = runScript.En
 		throw new TypeError("a command run by runScript() cannot declare its own 'format' option: read this.format instead")
 	}
 
-	const declarations: Record<string, OptionDeclaration> = {
-		...Object.fromEntries(Object.entries(command.options ?? {}).map(([name, entry]) => [name, declarationOf(entry)])),
-		format: { type: t.enum(formats as [runScript.Format, ...runScript.Format[]]), default: 'toon' }
-	}
-	let format: runScript.Format = 'toon'
+	// the command as `cli()` would look it up, named by itself as there is no cli name, with `--format` as its own option
+	const target = { ...command, name: undefined } as any
+	const declared = { ...target, options: { ...command.options, format: formatEntry } }
+	const r = lookupCommand(declared, parseArgv(['', '', ...argv]))
+	await convertDescriptors(r)
+	const { _, format: parsed, ...args } = r.args as Record<string, any>
+	const formatInvalid = r.errors.some((e) => 'key' in e && lookupOptions(declared, e.key)[0] === 'format')
+	const format: runScript.Format = formatInvalid ? 'toon' : parsed
 	try {
-		const { options } = await parseArgsAsync({
-			args: [...argv],
-			options: declarations,
-			strict: true,
-			allowPositionals: false
-		})
-		const { format: parsed, ...args } = options
-		format = parsed as runScript.Format
+		const error = topUsageError(r.errors)
+		if (error) {
+			write(stdout, errorOutput(describeUsageError(error, target, command.name ?? 'script', false)), format)
+			return 2
+		}
 		const returned = await command.run.call({ format, ui }, args as any)
 		const text = printAnswer(returned, format, { resolve, refs })
 		if (text !== undefined) stdout.write(text)
 		return 0
 	} catch (e) {
-		if (e instanceof ParseArgsError) {
-			const details = e.option === undefined ? undefined : { option: e.option }
-			write(stdout, errorOutput({ message: e.message, code: 'usage', details }), format)
-			return 2
-		}
 		if (!isCliError(e)) throw e
 		if (!isReportedCliError(e)) {
 			const { help } = renderHelp(helpLinesOf(e), resolve)
@@ -189,17 +211,14 @@ export async function runScript<const O extends runScript.Entries = runScript.En
 	}
 }
 
-function write(stream: runScript.WritableStream, report: Record<string, unknown>, format: runScript.Format) {
-	stream.write(`${encode(report, format)}\n`)
+const formatEntry = {
+	description: 'Output format',
+	type: t.enum(formats as [runScript.Format, ...runScript.Format[]]),
+	default: 'toon'
 }
 
-function declarationOf(entry: runScript.Entry): OptionDeclaration {
-	const alias = entry.alias?.map((a) => (typeof a === 'string' ? a : a.alias))
-	return {
-		type: entry.type ?? 'boolean',
-		...(alias ? { alias } : {}),
-		...(entry.default === undefined ? {} : { default: entry.default })
-	} as OptionDeclaration
+function write(stream: runScript.WritableStream, report: Record<string, unknown>, format: runScript.Format) {
+	stream.write(`${encode(report, format)}\n`)
 }
 
 const thresholds: Record<runScript.DisplayLevel, number> = { none: 0, info: 1, debug: 2, trace: 3 }

@@ -41,18 +41,25 @@ export function usageErrorCode<E extends lookupCommand.Error>(error: E): NonNull
 /**
  * One usage error as an agent reads it: message, `code`, the offending option or argument in `details`,
  * and `help` with the usage line and, where it fixes the mistake, what is valid.
+ * `hasHelp` is false for `runScript()`, which takes no `--help`, so the valid options do not offer it.
  */
 export function describeUsageError(
 	error: lookupCommand.Error,
 	command: cli.Command,
-	cliName: string
+	cliName: string,
+	hasHelp = true
 ): Required<ErrorFields> {
 	const usage = generateUsageSection(cliName, command as Command)
 	const message = formatLookupError(error, command)
 	const code = usageErrorCode(error)
 	switch (error.type) {
 		case 'invalid-key':
-			return { message, code, details: { option: optionName(error.key) }, help: [usage, optionsHelp(command, cliName)] }
+			return {
+				message,
+				code,
+				details: { option: optionName(error.key) },
+				help: [usage, optionsHelp(command, cliName, hasHelp)]
+			}
 		case 'conflicting-options':
 			return {
 				message,
@@ -80,7 +87,12 @@ export function describeUsageError(
 			// an option declared with `t` that is neither optional nor defaulted must be passed
 			const isOption = !command.arguments?.some((a) => a.name === error.name) && !!command.options?.[error.name]
 			return isOption
-				? { message, code, details: { option: optionName(error.name) }, help: [usage, optionsHelp(command, cliName)] }
+				? {
+						message,
+						code,
+						details: { option: optionName(error.name) },
+						help: [usage, optionsHelp(command, cliName, hasHelp)]
+					}
 				: { message, code, details: { argument: error.name }, help: [usage, argumentsHelp(command, cliName)] }
 		}
 		case 'extra-arguments':
@@ -148,12 +160,13 @@ function argumentsHelp(command: cli.Command, cliName: string) {
 	return args.length > 0 ? `\`${name}\` takes: ${args.join(' ')}` : `\`${name}\` takes no arguments`
 }
 
-function optionsHelp(command: cli.Command, cliName: string) {
+function optionsHelp(command: cli.Command, cliName: string, hasHelp: boolean) {
 	const name = command.name || cliName
 	const options = Object.keys(command.options ?? {}).map(optionName)
+	const help = hasHelp ? ' (--help always allowed)' : ''
 	return options.length > 0
-		? `valid options for \`${name}\`: ${options.join(', ')} (--help always allowed)`
-		: `\`${name}\` takes no options (--help always allowed)`
+		? `valid options for \`${name}\`: ${options.join(', ')}${help}`
+		: `\`${name}\` takes no options${help}`
 }
 
 function valueHelp(error: lookupCommand.InvalidValueType, label: string) {

@@ -97,6 +97,14 @@ describe('tier B', () => {
 	const src = dirname(fileURLToPath(import.meta.url))
 	const contract = ['render/encode.ts', 'render/answer.ts', 'render/text.ts', 'render/ref.ts', 'app/errors.ts']
 	const allowed = [...contract, 'axi/', 'script/']
+	// the runner also shares `cli()`'s lookup and usage-error report (#706); `script/bundle_size.spec.ts` checks it bundles nothing else
+	const scriptAllowed = [
+		...allowed,
+		'render/usage_error.ts',
+		'invocation/argv.ts',
+		'invocation/descriptors.ts',
+		'invocation/lookup.ts'
+	]
 
 	function files(path: string): string[] {
 		return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
@@ -125,7 +133,8 @@ describe('tier B', () => {
 					const target = relative(src, resolve(dirname(file), s))
 						.replace(/\\/g, '/')
 						.replace(/\.js$/, '.ts')
-					return !allowed.some((a) => (a.endsWith('/') ? target.startsWith(a) : target === a))
+					const list = relative(src, file).startsWith('script') ? scriptAllowed : allowed
+					return !list.some((a) => (a.endsWith('/') ? target.startsWith(a) : target === a))
 				})
 				.map((s) => `${relative(src, file)} -> ${s}`)
 		)
