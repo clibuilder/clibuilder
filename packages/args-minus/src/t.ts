@@ -118,7 +118,13 @@ export type OutputOf<D> = D extends { readonly [output]: infer Out } ? Out : nev
 export type StringOptions = { readonly pattern?: RegExp }
 export type NumberOptions = { readonly min?: number; readonly max?: number }
 
+// a `Symbol.for` key, so a descriptor from another copy of args-minus in the same process is recognized;
+// its value is the descriptor format version, raised only when the data shape changes incompatibly
+const descriptorBrand: unique symbol = Symbol.for('args-minus.descriptor') as any
+const descriptorVersion = 1
+
 const methods = {
+	[descriptorBrand]: descriptorVersion,
 	optional(this: Data) {
 		return create({ ...this, isOptional: true })
 	},
@@ -234,10 +240,8 @@ export const t = {
 	 * Every occurrence of the option, each converted and checked by `element`, in order.
 	 */
 	array<E extends ElementDescriptor>(element: E): Descriptor<OutputOf<E>[], false, ArrayData & DataCommon> {
-		const data = element as Partial<Data> | undefined
-		if (typeof data?.kind !== 'string' || !Object.prototype.isPrototypeOf.call(methods, data)) {
-			throw new TypeError('t.array: element must be a descriptor')
-		}
+		const data: unknown = element
+		if (!isDescriptor(data)) throw new TypeError('t.array: element must be a descriptor')
 		if (data.kind === 'array') throw new TypeError('t.array: element cannot be an array')
 		if (data.isOptional) throw new TypeError('t.array: element cannot be optional')
 		return make({ kind: 'array', element })
@@ -260,8 +264,14 @@ export const t = {
 }
 
 /**
- * Whether a value is a descriptor created by `t`.
+ * Whether a value is a descriptor created by `t`,
+ * from this copy of args-minus or from any other copy with the same descriptor format.
  */
 export function isDescriptor(value: unknown): value is AnyDescriptor {
-	return typeof value === 'object' && value !== null && Object.prototype.isPrototypeOf.call(methods, value)
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		(value as { [descriptorBrand]?: unknown })[descriptorBrand] === descriptorVersion &&
+		typeof (value as Partial<Data>).kind === 'string'
+	)
 }

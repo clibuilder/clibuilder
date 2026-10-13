@@ -143,6 +143,16 @@ Feature: Option parsing with descriptors
     When the descriptor is built
     Then it throws
 
+  Scenario: a descriptor from another copy of args-minus is accepted
+    Given a descriptor built by a second copy of args-minus with the same descriptor format
+    When it is checked with isDescriptor, declared as an option type, or passed to t.array
+    Then it is a descriptor and parses like one built by this copy
+
+  Scenario: a descriptor of another format version is rejected
+    Given a value branded as a descriptor of a different format version
+    When it is checked with isDescriptor or passed to t.array
+    Then it is not a descriptor and t.array throws
+
   # ── Error fields ──
 
   Scenario: a ParseArgsError names the raw value and what was wrong apart from its message
