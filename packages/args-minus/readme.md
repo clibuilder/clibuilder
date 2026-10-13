@@ -240,6 +240,12 @@ descriptor. The descriptor's own fields are its data, a read-only union keyed
 on `kind` (`Data`), so `{ ...t.int({ min: 1 }) }` is
 `{ kind: 'int', min: 1, isOptional: false, checks: [] }`.
 
+`isDescriptor(value)` tells a descriptor apart from other values. It accepts a
+descriptor from any copy of args-minus loaded in the same process, such as a
+copy bundled into a CLI and another installed for its plugins, as long as both
+use the same descriptor format. A copy of the data (`{ ...descriptor }`) is not
+a descriptor.
+
 ### Checks
 
 `.check()` validates the converted value. It never changes the value or its

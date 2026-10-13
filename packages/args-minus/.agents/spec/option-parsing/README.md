@@ -33,6 +33,11 @@ framework.
   `t.literal`, an optional or array `t.array` element) throw when built.
 - Reading a descriptor's data: its own enumerable fields are a read-only union
   keyed on `kind`, with `isOptional` and `checks`.
+- `isDescriptor(value)`: whether a value is a descriptor. A descriptor from
+  another copy of args-minus in the same process (a bundled CLI and its
+  separately installed plugins, duplicate installs) is accepted when it has the
+  same descriptor format; the brand is a `Symbol.for('args-minus.descriptor')`
+  key whose value is the format version.
 
 ## Failure classification
 

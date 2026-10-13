@@ -87,6 +87,46 @@ describe('descriptor data', () => {
 	})
 })
 
+describe('descriptors from another copy of args-minus', () => {
+	// the query makes vite load t.ts again as a separate module instance, like a second installed or bundled copy
+	const copyPath = './t.js?copy'
+	const loadCopy = async (): Promise<typeof import('./t.js')> => import(/* @vite-ignore */ copyPath)
+
+	it('loads a separate instance', async () => {
+		const copy = await loadCopy()
+		expect(copy.t).not.toBe(t)
+		expect(Object.getPrototypeOf(copy.t.int())).not.toBe(Object.getPrototypeOf(t.int()))
+	})
+
+	it('is a descriptor, both ways', async () => {
+		const copy = await loadCopy()
+		expect(isDescriptor(copy.t.int().optional())).toBe(true)
+		expect(copy.isDescriptor(t.int().optional())).toBe(true)
+	})
+
+	it('parses options declared with it', async () => {
+		const copy = await loadCopy()
+		const options = {
+			port: { type: copy.t.int({ min: 1 }) },
+			tags: { type: copy.t.array(t.string()) },
+			mode: { type: t.array(copy.t.enum(['a', 'b'])).optional() }
+		}
+		expect(parseArgs({ args: ['--port=8', '--tags=x', '--mode=a'], options }).options).toEqual({
+			port: 8,
+			tags: ['x'],
+			mode: ['a']
+		})
+		expect(errorOf(() => parseArgs({ args: ['--port=0', '--tags=x'], options })).kind).toBe('invalid-value')
+	})
+
+	it('rejects a descriptor of another format version', () => {
+		const brand = Symbol.for('args-minus.descriptor')
+		const future = Object.assign(Object.create({ [brand]: 2 }), { kind: 'int', isOptional: false, checks: [] })
+		expect(isDescriptor(future)).toBe(false)
+		expect(() => t.array(future)).toThrow('t.array: element must be a descriptor')
+	})
+})
+
 describe('conversion', () => {
 	it('converts strings, with an optional pattern', () => {
 		expect(parse(['--s', 'abc'], { s: { type: t.string() } })).toEqual({ s: 'abc' })
