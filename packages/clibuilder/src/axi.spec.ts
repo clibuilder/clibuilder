@@ -22,7 +22,9 @@ describe('clibuilder/axi', () => {
 			'homeHeader',
 			'isCliError',
 			'orEmpty',
+			'placeholder',
 			'printAnswer',
+			'ref',
 			'result',
 			'runScript',
 			'truncateList',
@@ -93,7 +95,7 @@ describe('axi/', () => {
 // tier B (axi-native RFC section 4.1): `biome.json` holds the lint rule; this also covers `require()`
 describe('tier B', () => {
 	const src = dirname(fileURLToPath(import.meta.url))
-	const contract = ['render/encode.ts', 'render/answer.ts', 'render/text.ts', 'app/errors.ts']
+	const contract = ['render/encode.ts', 'render/answer.ts', 'render/text.ts', 'render/ref.ts', 'app/errors.ts']
 	const allowed = [...contract, 'axi/', 'script/']
 
 	function files(path: string): string[] {
@@ -117,6 +119,8 @@ describe('tier B', () => {
 				.map((m) => m[1] as string)
 				.filter((s) => {
 					if (s === '@toon-format/toon' || s === 'args-minus') return false
+					// the runner finds a ref's target script on disk (next-step-refs RFC section 5)
+					if ((s === 'node:fs' || s === 'node:path') && relative(src, file).startsWith('script')) return false
 					if (!s.startsWith('.')) return true
 					const target = relative(src, resolve(dirname(file), s))
 						.replace(/\\/g, '/')

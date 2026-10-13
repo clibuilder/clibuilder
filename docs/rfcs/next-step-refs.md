@@ -1,6 +1,6 @@
 # RFC: `ref()` and an opt-in `next[N]{run,why}` key
 
-- **Status:** Proposed. Design only; no code changes.
+- **Status:** Implemented in [#714](https://github.com/clibuilder/clibuilder/pull/714). The questions in section 8 are still open.
 - **Issue:** [#696](https://github.com/clibuilder/clibuilder/issues/696) (split from [#688](https://github.com/clibuilder/clibuilder/issues/688) item 4)
 - **Related:** [axi-native](axi-native.md) section 3.5 (the result channel) and section 10 item 24; [`docs/evals/next-ref/`](../evals/next-ref/README.md); [cyberuni/universal-plugin#177](https://github.com/cyberuni/universal-plugin/issues/177) (the command map)
 - **Target:** a minor after 12.0.0. Everything here is additive.
@@ -50,6 +50,7 @@ run({ gid }) {
 - **Shape.** A ref is plain data tagged with `Symbol.for('clibuilder.ref')`, like an `Answer`, so a ref made by one copy of clibuilder is read by another. It lives in `render/` and imports nothing from the framework (axi-native section 4.1, tier B), so `runScript()` bundles it at a few hundred bytes.
 - **Placeholders.** AXI principle 9 asks for placeholders such as `<id>` when the next value is not known yet. `placeholder('name')` renders as `<name>`, unquoted. A plain string value `'<name>'` is a real value and is shell-quoted. The marker is explicit so a value that happens to start with `<` is never left unquoted.
 - **Option rendering.** Each option renders as `--name value`, in the order given. `true` renders as `--name`, and `false` and `undefined` are left out. An array repeats the flag. Values are quoted with POSIX single quotes when they contain anything outside `[A-Za-z0-9_./:@%+=,-]`. Aliases are never used.
+- **No positional arguments yet.** A ref passes options only. `runScript()` does not take positionals, and a ref that fills a positional of a `cli()` command would need the target's argument order, which a script cannot see. An option name that is really an argument name fails the `cli()` check below.
 
 ## 4. Rendering a ref
 
@@ -69,9 +70,9 @@ A ref is resolved to one runnable line, `run`, by a resolver the runner supplies
 
 **Errors keep `help`.** A ref in a `CliError` always renders in the `help` form, whatever `refs` says. The error shape is the one core's conformance test compares with axi-sdk-js's `errorOutput()` (axi-native section 9), and that test stays as it is.
 
-**When there is no runnable line.** The issue's rule is that an agent never gets a bare command path. A ref the resolver cannot render is dropped, with one `ui.debug` line naming it, and is never written as a path. In `cli()` this cannot happen, because the target is in the command tree (section 5). In `runScript()` it happens only for a script compiled without the map, or for a plugin that ships to no package and does not bundle the target.
+**When there is no runnable line.** The issue's rule is that an agent never gets a bare command path. A ref the resolver cannot render is dropped and is never written as a path. In `cli()` this cannot happen, because the target is in the command tree (section 5). In `runScript()` it happens only for a script compiled without the map, or for a plugin that ships to no package and does not bundle the target.
 
-**Validation.** In `cli()` the resolver looks the target up in the command tree and renders each value through the target's own descriptor. An unknown command or option, or a value the descriptor rejects, throws a programmer error rather than printing a wrong line, so a command's own tests catch it. `runScript()` has only the map of paths, not the targets' descriptors, so it checks that the path is in the map and renders values as given. Because one command function serves both entries, the `cli()` test of that function is what checks its refs.
+**Validation.** In `cli()` the resolver walks the command tree by name or alias. A path that names no command, or an option that neither the target nor the global options declare, throws a programmer error rather than printing a wrong line, so a command's own tests catch it. Values are rendered as given; a descriptor converts a string into a value, not back, so there is nothing to render them through. `runScript()` has only the map of bundled scripts, and a target that is not bundled is still valid (it renders through `pnpm exec` or `npx`), so it does not check. Because one command function serves both entries, the `cli()` test of that function is what checks its refs.
 
 ## 5. How the command map reaches core
 
@@ -99,12 +100,15 @@ globalThis.__SKILL_SCRIPT__ = {"package":"cyber-asana","bin":"cyber-asana","vers
 
 | Part | Change | Package |
 | --- | --- | --- |
-| `ref()`, `placeholder()`, `Ref`, `HelpLine` | new, in `render/`, exported from `clibuilder/axi` | `clibuilder` |
-| `result`, `empty`, `CliError` | `help` accepts `HelpLine` | `clibuilder` |
+| `ref()`, `placeholder()`, `Ref`, `HelpLine` | new, in `render/`, exported from `clibuilder` and `clibuilder/axi` | `clibuilder` |
+| `result`, `empty` | `help` accepts `HelpLine` | `clibuilder` |
+| `CliError` | the `help` option accepts `HelpLine`. The `help` field stays `string[]`, with a ref read as ``Run `<path> …` `` without a cli name, so code that reads it is unchanged. The lines as given sit under `Symbol.for('clibuilder.CliError.helpLines')` for the runners | `clibuilder` |
 | `printAnswer(returned, format)` | gains an optional third argument, `{ resolve, refs }`; without it a ref renders as `` Run `<path> …` `` with no CLI name, for callers outside both runners | `clibuilder` |
 | `cli({ refs })` | `'help'` (default) or `'next'`; the resolver walks the command tree | `clibuilder` |
 | `runScript({ refs, commands })` | same `refs`; `commands` overrides the global | `clibuilder` |
 | contract test | `__SKILL_SCRIPT__` field names against a universal-plugin fixture | `clibuilder` |
+| boundary | `render/ref.ts` joins the tier B contract files; `script/` may import `node:fs` and `node:path` to find the target script | `biome.json`, `axi.spec.ts` |
+| runner bundle cap | 22 KB to 24 KB: the resolver and the ref rendering add about 2 KB to `runScript()` | `script/bundle_size.spec.ts` |
 
 All of it is additive, so it ships in a minor. A command that never calls `ref()` prints exactly what it prints today.
 

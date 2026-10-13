@@ -12,9 +12,11 @@ import {
 	parseArgsAsync,
 	t
 } from 'args-minus'
-import { isCliError, isReportedCliError } from '../app/errors.js'
+import { helpLinesOf, isCliError, isReportedCliError } from '../app/errors.js'
 import { printAnswer } from '../render/answer.js'
 import { encode, errorOutput, formats, type Format as OutputFormat } from '../render/encode.js'
+import { type RefsMode, renderHelp } from '../render/ref.js'
+import { readScriptData, type ScriptData, scriptResolver } from './refs.js'
 
 export namespace runScript {
 	/** The format `--format` and `this.format` take: `toon` (default), `json` or `text`. */
@@ -31,7 +33,21 @@ export namespace runScript {
 		argv?: readonly string[] | undefined
 		/** Where output goes. Defaults to `process.stdout` and `process.stderr`. */
 		streams?: { stdout: WritableStream; stderr: WritableStream } | undefined
+		/**
+		 * Where the `ref()` lines in an answer's `help` go: `'help'` (default) or `'next'`, as in `cli({ refs })`.
+		 * A `CliError` keeps its refs in `help` either way.
+		 */
+		refs?: RefsMode | undefined
+		/**
+		 * The command map refs are rendered from. Defaults to `globalThis.__SKILL_SCRIPT__`,
+		 * which `universal-plugin plugin build` writes into each compiled skill script.
+		 * Without either, a ref is left out of the output.
+		 */
+		commands?: ScriptData | undefined
 	}
+
+	/** The command map a compiled skill script carries (cyberuni/universal-plugin#177). */
+	export type CommandMap = ScriptData
 
 	/** How much `this.ui` shows. */
 	export type DisplayLevel = 'none' | 'info' | 'debug' | 'trace'
@@ -130,10 +146,11 @@ export namespace runScript {
  */
 export async function runScript<const O extends runScript.Entries = runScript.Entries>(
 	command: runScript.Command<O>,
-	{ argv = process.argv.slice(2), streams = process }: runScript.Options = {}
+	{ argv = process.argv.slice(2), streams = process, refs = 'help', commands }: runScript.Options = {}
 ): Promise<number> {
 	const { stdout, stderr } = streams
 	const ui = createUI(stderr)
+	const resolve = scriptResolver(commands ?? readScriptData())
 	if (command.options && 'format' in command.options) {
 		throw new TypeError("a command run by runScript() cannot declare its own 'format' option: read this.format instead")
 	}
@@ -153,7 +170,7 @@ export async function runScript<const O extends runScript.Entries = runScript.En
 		const { format: parsed, ...args } = options
 		format = parsed as runScript.Format
 		const returned = await command.run.call({ format, ui }, args as any)
-		const text = printAnswer(returned, format)
+		const text = printAnswer(returned, format, { resolve, refs })
 		if (text !== undefined) stdout.write(text)
 		return 0
 	} catch (e) {
@@ -164,7 +181,8 @@ export async function runScript<const O extends runScript.Entries = runScript.En
 		}
 		if (!isCliError(e)) throw e
 		if (!isReportedCliError(e)) {
-			write(stdout, errorOutput({ message: e.message, code: e.code, details: e.details, help: e.help }), format)
+			const { help } = renderHelp(helpLinesOf(e), resolve)
+			write(stdout, errorOutput({ message: e.message, code: e.code, details: e.details, help }), format)
 			ui.debug(e)
 		}
 		return e.exitCode

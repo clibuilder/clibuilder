@@ -4,6 +4,7 @@
  */
 
 import { encode, type Format } from './encode.js'
+import { type HelpLine, type RefResolver, type RefsMode, renderHelp } from './ref.js'
 
 // a `Symbol.for` key, so an answer from one copy of clibuilder is recognized by another in the same process
 const answerKey: unique symbol = Symbol.for('clibuilder.answer') as any
@@ -15,9 +16,10 @@ export namespace result {
 	export type Options<T> = {
 		/**
 		 * Next-step suggestions, encoded after the result as `help[N]`.
-		 * One string or several; none, or an empty list, leaves the key out.
+		 * One line or several; none, or an empty list, leaves the key out.
+		 * A line is a string, or a `ref()` the runner renders as a command line.
 		 */
-		help?: string | readonly string[] | undefined
+		help?: HelpLine | readonly HelpLine[] | undefined
 		/**
 		 * Replaces the encoder for one or more formats.
 		 * The string a renderer returns is written verbatim, followed by the encoded `help`.
@@ -28,8 +30,8 @@ export namespace result {
 
 export namespace empty {
 	export type Options = {
-		/** Next-step suggestions, encoded after the empty state as `help[N]`. */
-		help?: string | readonly string[] | undefined
+		/** Next-step suggestions, encoded after the empty state as `help[N]`. A line is a string or a `ref()`. */
+		help?: HelpLine | readonly HelpLine[] | undefined
 	}
 }
 
@@ -39,10 +41,10 @@ type Tagged<Kind extends string, Fields> = { readonly [answerKey]: Kind } & Fiel
 export type Answer<T = unknown> =
 	| Tagged<
 			'result',
-			{ readonly value: T; readonly help: readonly string[]; readonly render: result.Options<T>['render'] }
+			{ readonly value: T; readonly help: readonly HelpLine[]; readonly render: result.Options<T>['render'] }
 	  >
 	| Tagged<'document', { readonly value: string }>
-	| Tagged<'empty', { readonly value: string; readonly help: readonly string[] }>
+	| Tagged<'empty', { readonly value: string; readonly help: readonly HelpLine[] }>
 	| Tagged<'written', { readonly value: T }>
 
 /**
@@ -106,38 +108,51 @@ export function answerValue(returned: unknown): any {
 	return isAnswer(returned) ? returned.value : returned
 }
 
+export namespace printAnswer {
+	export type Options = {
+		/** Renders a `ref()` as a command line. Defaults to the command path and its options, without a cli name. */
+		resolve?: RefResolver | undefined
+		/** `'help'` (default) renders refs as `help` strings; `'next'` encodes them as `next[N]{run,why}`. */
+		refs?: RefsMode | undefined
+	}
+}
+
 /**
  * The text written on stdout for what `run()` returned, ending on one newline, or `undefined` when nothing is printed.
  * A string is written verbatim, an object is encoded, and an array or scalar is encoded under the `result` key
  * so `help` has a place beside it.
  */
-export function printAnswer(returned: unknown, format: Format): string | undefined {
+export function printAnswer(returned: unknown, format: Format, options: printAnswer.Options = {}): string | undefined {
 	if (returned === undefined) return undefined
-	if (!isAnswer(returned)) return print(returned, [], format)
+	const tail = (lines: readonly HelpLine[]) => renderHelp(lines, options.resolve, options.refs)
+	if (!isAnswer(returned)) return print(returned, tail([]), format)
 	switch (returned[answerKey]) {
 		case 'written':
 			return undefined
 		case 'document':
 			return line(returned.value)
 		case 'empty':
-			return line(encode(withHelp({ empty: returned.value }, returned.help), format))
+			return line(encode(withHelp({ empty: returned.value }, tail(returned.help)), format))
 		case 'result': {
 			const render = returned.render?.[format]
-			if (render) return withRenderedHelp(render(returned.value), returned.help, format)
-			return print(returned.value, returned.help, format)
+			if (render) return withRenderedHelp(render(returned.value), tail(returned.help), format)
+			return print(returned.value, tail(returned.help), format)
 		}
 	}
 }
 
-function print(value: unknown, help: readonly string[], format: Format) {
-	if (typeof value === 'string') return withRenderedHelp(value, help, format)
-	return line(encode(withHelp(toRecord(value), help), format))
+type Tail = ReturnType<typeof renderHelp>
+
+function print(value: unknown, tail: Tail, format: Format) {
+	if (typeof value === 'string') return withRenderedHelp(value, tail, format)
+	return line(encode(withHelp(toRecord(value), tail), format))
 }
 
-function withRenderedHelp(body: string, help: readonly string[], format: Format) {
-	if (help.length === 0) return line(body)
+function withRenderedHelp(body: string, tail: Tail, format: Format) {
+	const rest = withHelp({}, tail)
+	if (Object.keys(rest).length === 0) return line(body)
 	const separator = body.endsWith('\n') ? '\n' : '\n\n'
-	return line(`${body}${separator}${encode({ help: [...help] }, format)}`)
+	return line(`${body}${separator}${encode(rest, format)}`)
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -145,16 +160,24 @@ function toRecord(value: unknown): Record<string, unknown> {
 	return { result: value }
 }
 
-// `help` goes last, and a `help` key on the value gives way to it
-function withHelp(value: Record<string, unknown>, help: readonly string[]) {
-	if (help.length === 0) return value
-	const { help: _, ...rest } = value
-	return { ...rest, help: [...help] }
+// `help` and `next` go last, and a `help` or `next` key on the value gives way to them
+function withHelp(value: Record<string, unknown>, { help, next }: Tail) {
+	if (help.length === 0 && next.length === 0) return value
+	const out: Record<string, unknown> = { ...value }
+	if (help.length > 0) {
+		delete out.help
+		out.help = help
+	}
+	if (next.length > 0) {
+		delete out.next
+		out.next = next
+	}
+	return out
 }
 
-function helpLines(help: string | readonly string[] | undefined): string[] {
+function helpLines(help: HelpLine | readonly HelpLine[] | undefined): HelpLine[] {
 	if (help === undefined) return []
-	return typeof help === 'string' ? [help] : [...help]
+	return Array.isArray(help) ? [...help] : [help as HelpLine]
 }
 
 function line(text: string) {

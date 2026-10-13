@@ -27,6 +27,7 @@ namespace cli {
     streams?: { stdout: NodeJS.WritableStream; stderr: NodeJS.WritableStream }
     output?: 'axi' | 'console'
     format?: 'toon' | 'json' | 'text'
+    refs?: 'help' | 'next'
   }
 }
 ```
@@ -40,6 +41,7 @@ namespace cli {
 | `streams` | `{ stdout, stderr }` | The streams the CLI writes to. Defaults to `process.stdout` and `process.stderr`. See [Streams and output](#streams-and-output). |
 | `output` | `'axi' \| 'console'` | How the CLI writes its answers, errors and [`ui`](/clibuilder/api/ui/) messages. Defaults to `'axi'`. `'console'` keeps the `clibuilder` 11 output. See [Streams and output](#streams-and-output). |
 | `format` | `'toon' \| 'json' \| 'text'` | The CLI's default format, the default of the [global `--format` option](#the-global---format-option). Defaults to `'toon'`. Answers and errors are encoded in the resolved format. Any other value throws when `cli()` is called. |
+| `refs` | `'help' \| 'next'` | Where the [`ref()`](#next-steps-as-command-lines-ref) lines in an answer go. Defaults to `'help'`, which keeps the AXI shape. `'next'` encodes them as `next[N]{run,why}`. Any other value throws when `cli()` is called. |
 
 The `config` option of 11 is removed. A CLI loads a [config file](/clibuilder/guides/configuration/) with
 `.use(config())` from `clibuilder/config`, which loads the config for the commands only. It does not
@@ -308,6 +310,46 @@ Every answer ends on one newline.
 
 `run()` reads the output mode as `this.output`, `'axi'` by default. Source:
 [axi-native section 3.5](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#35-no-result-channel-6395).
+
+### Next steps as command lines: `ref()`
+
+A `help` line can be a `ref()` instead of a string. It names another command by its path and fills its options,
+and the CLI renders it as a complete command line. The same command, run as a script through
+[`runScript()`](/clibuilder/api/axi/#run-a-command-as-a-script), renders it for that channel instead.
+
+```ts
+import { placeholder, ref, result } from 'clibuilder'
+
+run({ gid }) {
+  const task = getTask(gid)
+  return result(task, {
+    help: [
+      ref('task get', { gid: task.parent }, 'show the parent task'),
+      ref('task update', { gid, name: placeholder('name') }, 'rename it')
+    ]
+  })
+}
+```
+
+```sh
+$ app task get --gid 12
+gid: "12"
+help[2]: Run `app task get --gid 7` to show the parent task,Run `app task update --gid 12 --name <name>` to rename it
+```
+
+- **`ref(path, options?, why?)`.** `path` is the command path without the CLI name. Options render as `--name value`
+  in the order given: `true` as `--name`, `false` and `undefined` left out, an array as a repeated flag. A value the
+  shell would split or expand is single-quoted. `why` is a verb phrase, rendered as ``Run `…` to <why>``.
+- **`placeholder(name)`** is a value the agent fills in, rendered unquoted as `<name>`.
+- **Checked against the command tree.** A path that names no command, or an option the command and the global
+  options do not have, throws when the answer is printed, so the command's own tests catch it. Aliases work in
+  the path. Positional arguments are not supported yet.
+- **`cli({ refs: 'next' })`** moves the refs of a returned answer out of `help` and encodes them as
+  `next[N]{run,why}`, after `help`. Plain strings stay in `help`. `next` is a clibuilder extension, not part of AXI.
+- **Errors keep `help`.** A ref in a `CliError` is always a `help` line, so the error keeps the axi-sdk-js shape.
+  `CliError.help` reads it as a string without the CLI name.
+
+Source: [next-step-refs RFC](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/next-step-refs.md).
 
 ## `Builder`
 

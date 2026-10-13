@@ -13,8 +13,9 @@ import { answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
 import { generateHelpMessage, generateHelpModel } from '../render/help.js'
+import { type Ref, refArgs, renderHelp } from '../render/ref.js'
 import { describeMissingCommand, describeUsageError, topUsageError } from '../render/usage_error.js'
-import { type CliError, exitCodes, isCliError, isReportedCliError } from './errors.js'
+import { type CliError, exitCodes, helpLinesOf, isCliError, isReportedCliError } from './errors.js'
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
 
@@ -22,6 +23,10 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	const s = state(options)
 	const format = options.format ?? 'toon'
 	const output = options.output ?? 'axi'
+	const refs = options.refs ?? 'help'
+	if (refs !== 'help' && refs !== 'next') {
+		throw new TypeError(`cli({ refs }) must be 'help' or 'next', received ${String(refs)}`)
+	}
 	if (!formats.includes(format)) {
 		throw new TypeError(`cli({ format }) must be one of ${formats.join(', ')}, received ${String(format)}`)
 	}
@@ -249,15 +254,17 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		ui: { error(...args: any[]): void; debug(...args: any[]): void }
 	) {
 		if (isReportedCliError(e)) return
+		// a ref in a `CliError` is always a `help` line: the error keeps the axi-sdk-js shape
+		const { help } = renderHelp(helpLinesOf(e), resolveRef)
 		if (output === 'axi') {
 			// read field by field: a `CliError` from an older copy of clibuilder has no `code` or `details`
-			const report = errorOutput({ message: e.message, code: e.code ?? 'error', details: e.details, help: e.help })
+			const report = errorOutput({ message: e.message, code: e.code ?? 'error', details: e.details, help })
 			context.writeStdout(`${encode(report, format)}\n`)
 			ui.debug(e)
 			return
 		}
 		ui.error(e.message)
-		for (const h of e.help) ui.error(h)
+		for (const h of help) ui.error(h)
 	}
 
 	function writeReport(report: ErrorFields, format: cli.Format) {
@@ -267,7 +274,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	// prints the answer only in `axi` output (axi-native RFC section 3.5); `parse()` resolves to the value either way
 	function answer(returned: unknown, format: cli.Format) {
 		if (output === 'axi') {
-			const text = printAnswer(returned, format)
+			const text = printAnswer(returned, format, { resolve: resolveRef, refs })
 			if (text !== undefined) context.writeStdout(text)
 		}
 		return answerValue(returned)
@@ -280,6 +287,21 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 				? `${generateHelpMessage(s.name, command)}\n`
 				: `${encode(generateHelpModel(s.name, command, baseCommand.options!), format)}\n`
 		)
+	}
+
+	// a ref names a command of this cli; one that names no command or option is a defect in the cli, so it throws
+	function resolveRef(ref: Ref) {
+		let command: Command = s.command
+		for (const word of ref.path.split(' ')) {
+			const next = command.commands?.find((c) => c.name === word || c.alias?.includes(word))
+			if (!next) throw new TypeError(`ref('${ref.path}'): ${s.name} has no command "${ref.path}"`)
+			command = next
+		}
+		for (const name of Object.keys(ref.options)) {
+			if (command.options?.[name] || s.command.options?.[name]) continue
+			throw new TypeError(`ref('${ref.path}'): the command has no option "${name}"`)
+		}
+		return [s.name, ref.path, ...refArgs(ref)].join(' ')
 	}
 
 	function writeVersion() {

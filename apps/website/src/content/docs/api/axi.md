@@ -60,10 +60,11 @@ help[1]: Run `my-cli list --full` to see every task
 | `homeHeader({ description, bin?, home? })` | `bin` and `description`, for what the CLI shows when run with no arguments |
 | `collapseHome(path, home?)` | Shortens a path under the home directory to `~/...` |
 | `result`, `document`, `empty` | The [result channel](/clibuilder/api/cli/#the-result-channel) helpers, re-exported from `clibuilder` |
+| `ref`, `placeholder` | [Next steps as command lines](/clibuilder/api/cli/#next-steps-as-command-lines-ref), re-exported from `clibuilder` |
 | `exitCodes`, `CliError`, `isCliError` | Re-exported from `clibuilder` |
-| `encode(value, format)`, `errorOutput(fields)`, `printAnswer(returned, format)` | The output contract: encode a value, build the error report, and turn what `run()` returned into the text `output: 'axi'` prints. All synchronous |
+| `encode(value, format)`, `errorOutput(fields)`, `printAnswer(returned, format, { resolve?, refs? })` | The output contract: encode a value, build the error report, and turn what `run()` returned into the text `output: 'axi'` prints. All synchronous. Without `resolve`, a ref renders as its path and options, without a CLI name |
 | `formats`, `Format` | The formats an answer is encoded in: `toon`, `json`, `text` |
-| `runScript(command, { argv?, streams? })` | Runs a command without `cli()`. See [Run a command as a script](#run-a-command-as-a-script) |
+| `runScript(command, { argv?, streams?, refs?, commands? })` | Runs a command without `cli()`. See [Run a command as a script](#run-a-command-as-a-script) |
 
 ## Run a command as a script
 
@@ -98,13 +99,31 @@ prints the answer the way `output: 'axi'` does, and resolves to the exit code. I
 - A bad invocation is printed the same way with code `usage` and resolves to 2. It is a plain
   [args-minus](/clibuilder/packages/args-minus/) message: no ranking and no `help` list.
 - Positional `arguments` and `conflicts` are not supported, on purpose: the lookup `cli()` uses for them, and for
-  ranked usage errors, would add about 10 KB to a runner capped at 22 KB. An option named `format` is not
+  ranked usage errors, would add about 10 KB to a runner capped at 24 KB. An option named `format` is not
   supported either, and `cli()` rejects it too: `--format` is global, so read `this.format`. A test runs one
   command through both `cli().command()` and `runScript()` and checks that the answers and `CliError` reports match.
 - Any other error rejects.
 
+### Refs in a script
+
+A [`ref()`](/clibuilder/api/cli/#next-steps-as-command-lines-ref) in a script's answer is rendered from the command
+map that `universal-plugin plugin build` writes into each compiled skill script, as `globalThis.__SKILL_SCRIPT__`
+([cyberuni/universal-plugin#177](https://github.com/cyberuni/universal-plugin/issues/177)). The first that applies:
+
+| Target | Rendered |
+| --- | --- |
+| a script in the same plugin | `node <real path of the target script> --gid 1` |
+| the package's bin is in `node_modules/.bin` of the working directory or a parent | `pnpm exec <bin> task get --gid 1` |
+| the package and version are known | `npx <package>@<version> task get --gid 1` |
+| none of these, or no command map | the ref is left out |
+
+The real path is taken from the running script, so the line works through a pnpm link, a copy or a plugin cache.
+`runScript({ commands })` passes the map directly, for a test or another build tool. `runScript({ refs: 'next' })`
+works as in `cli()`. The runner cannot see the other commands' options, so it does not check a ref: the `cli()`
+test of the same command does.
+
 The runner and the output contract import only `args-minus`, `@toon-format/toon` and each other, so a script
-that imports `clibuilder/axi` does not load `cli()`. A test keeps the bundled and minified runner under 22 KB.
+that imports `clibuilder/axi` does not load `cli()`. A test keeps the bundled and minified runner under 24 KB.
 
 ## No framework imports
 
@@ -113,7 +132,7 @@ other, never the rest of `clibuilder`, and a lint rule in `biome.json` enforces 
 does not use `clibuilder` can later reuse them by moving the files. Only the subpath entry adds
 `fullOption` and the re-exports.
 
-A second tier is also kept free of the framework: `render/{encode,answer,text}.ts`, `app/errors.ts` and
+A second tier is also kept free of the framework: `render/{encode,answer,text,ref}.ts`, `app/errors.ts` and
 `src/script/`. They may import `args-minus`, `@toon-format/toon` and the files above, and never `cli`, `app`,
-`invocation`, `config` or `help`. Source:
+`invocation`, `config` or `help`. `src/script/` also imports `node:fs` and `node:path`, to find a ref's target script. Source:
 [axi-native section 4.1](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#41-decision-where-clibuilderaxis-contents-belong).
