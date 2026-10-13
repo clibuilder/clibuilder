@@ -15,8 +15,12 @@ export const exitCodes = {
 	usage: 2
 } as const
 
+import { bareResolver, type HelpLine, isRef, refHelp } from '../render/ref.js'
+
 const cliErrorBrand: unique symbol = Symbol.for('clibuilder.CliError')
 const reportedBrand: unique symbol = Symbol.for('clibuilder.CliError.reported')
+// the help lines as given, refs included, for the runner to render
+const helpLinesKey: unique symbol = Symbol.for('clibuilder.CliError.helpLines')
 
 // rendered report keys; a `details` field may not reuse one
 const reservedKeys = ['error', 'code', 'help']
@@ -57,8 +61,9 @@ export namespace CliError {
 		/**
 		 * What the caller should do about it, such as the command that fixes it.
 		 * Printed after the message, one line each.
+		 * A line is a string, or a `ref()` the runner renders as a command line in the `help` list.
 		 */
-		help?: string | readonly string[] | undefined
+		help?: HelpLine | readonly HelpLine[] | undefined
 		cause?: unknown
 	}
 
@@ -116,7 +121,9 @@ export class CliError extends Error {
 	readonly exitCode: number
 	readonly code: string
 	readonly details: CliError.Details
+	/** The help lines as strings. A `ref()` reads here without a cli name; the runner renders it in full. */
 	readonly help: string[]
+	readonly [helpLinesKey]: HelpLine[]
 	// declared here, not from `ErrorOptions`, to compile against the `ES2020` target
 
 	readonly cause?: unknown
@@ -132,13 +139,21 @@ export class CliError extends Error {
 		this.exitCode = validateExitCode(report.exitCode ?? exitCodes.error)
 		this.code = validateCode(report.code ?? 'error')
 		this.details = validateDetails(report.details ?? {})
-		this.help = report.help === undefined ? [] : typeof report.help === 'string' ? [report.help] : [...report.help]
+		const lines: HelpLine[] =
+			report.help === undefined ? [] : Array.isArray(report.help) ? [...report.help] : [report.help as HelpLine]
+		this[helpLinesKey] = lines
+		this.help = lines.map((h) => (isRef(h) ? refHelp(bareResolver(h), h.why) : h))
 		this.cause = report.cause
 	}
 }
 
 export function isCliError(err: unknown): err is CliError {
 	return !!err && typeof err === 'object' && (err as any)[cliErrorBrand] === true
+}
+
+/** The help lines of `err` as given, refs included. A `CliError` from an older copy of clibuilder has only `help`. */
+export function helpLinesOf(err: CliError): readonly HelpLine[] {
+	return (err as any)[helpLinesKey] ?? err.help ?? []
 }
 
 /** Whether `err` is a `CliError` from `CliError.reported()`, which renders nothing. */

@@ -14,6 +14,7 @@ export { CliError, exitCodes, isCliError } from './app/errors.js'
 export * from './axi/index.js'
 export { type Answer, document, empty, printAnswer, type Renderer, result } from './render/answer.js'
 export { type ErrorFields, encode, errorOutput, type Format, formats } from './render/encode.js'
+export { type HelpLine, type Placeholder, placeholder, type Ref, type RefsMode, ref } from './render/ref.js'
 export { runScript } from './script/index.js'
 
 /**

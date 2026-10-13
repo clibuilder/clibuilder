@@ -5,6 +5,7 @@ import type { Output as OutputMode, Streams as StreamsPort, UI } from './core/po
 import { context } from './drivers/context.js'
 import type { lookupCommand } from './invocation/lookup.js'
 import type { CollectionKey, Registry, RegistryKey, RegistryOwner, ValueKey } from './plugins/registry.js'
+import type { RefsMode } from './render/ref.js'
 import type { AnyDescriptor, OutputOf, StandardSchemaV1 } from './t.js'
 import type { UnionOfValues } from './type_utils.js'
 
@@ -60,6 +61,17 @@ export namespace cli {
 		 * With `output: 'axi'`, the default, answers and reports are encoded in the resolved format on stdout.
 		 */
 		format?: Format
+		/**
+		 * Where the `ref()` lines in an answer's `help` go: `'help'` (default) or `'next'`.
+		 *
+		 * - `'help'`: each ref is rendered as a `help` string, ``Run `<name> task get --gid 1` to <why>``.
+		 *   The output keeps the AXI shape, so an agent or axi-sdk-js sees nothing new.
+		 * - `'next'`: the refs in a returned answer are encoded as `next[N]{run,why}` after `help`.
+		 *   A clibuilder extension to AXI. A `CliError` keeps its refs in `help` either way.
+		 *
+		 * Plain string help lines stay in `help` in both modes.
+		 */
+		refs?: RefsMode
 	}
 
 	/** The two streams a cli writes to. */
