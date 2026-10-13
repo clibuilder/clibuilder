@@ -5,17 +5,36 @@ import { cli, t } from '../index.js'
 const greet = {
 	name: 'greet',
 	description: 'greet someone',
+	arguments: [
+		{ name: 'name', description: 'who', type: t.string() },
+		{ name: 'salutation', description: 'how', type: t.string().optional() }
+	] as const,
 	options: {
-		name: { description: 'who', type: t.string() },
 		times: { description: 'how often', type: t.number(), default: 1 },
+		loud: { description: 'shout', conflicts: ['quiet'] },
 		fail: { description: 'fail with a CliError', type: t.string().optional() },
 		quiet: { description: 'fail without a report' }
 	},
-	run({ name, times, fail, quiet }: { name: string; times: number; fail?: string | undefined; quiet?: boolean }) {
+	run({
+		name,
+		salutation = 'hello',
+		times,
+		loud,
+		fail,
+		quiet
+	}: {
+		name: string
+		salutation?: string | undefined
+		times: number
+		loud?: boolean | undefined
+		fail?: string | undefined
+		quiet?: boolean | undefined
+	}) {
 		if (quiet) throw CliError.reported(4)
 		if (fail)
 			throw new CliError(`cannot greet ${name}`, { code: fail, details: { name }, help: 'try again', exitCode: 3 })
-		return result({ greeting: `hello ${name}`, times })
+		const greeting = `${salutation} ${name}`
+		return result({ greeting: loud ? greeting.toUpperCase() : greeting, times })
 	}
 }
 
@@ -52,10 +71,12 @@ afterEach(() => {
 
 describe.each(['toon', 'json', 'text'])('one command through cli() and runScript(), --format %s', (format) => {
 	it.each([
-		['an answer', ['--name', 'ann']],
-		['an answer with a default overridden', ['--name', 'ann', '--times', '3']],
-		['a CliError', ['--name', 'ann', '--fail', 'not-found']],
-		['a reported CliError', ['--name', 'ann', '--quiet']]
+		['an answer', ['ann']],
+		['an answer with an optional argument', ['ann', 'hi']],
+		['an answer with a default overridden', ['ann', '--times', '3']],
+		['an answer with a flag', ['ann', '--loud']],
+		['a CliError', ['ann', '--fail', 'not-found']],
+		['a reported CliError', ['ann', '--quiet']]
 	])('gives the same output and exit code for %s', async (_, args) => {
 		const argv = [...args, '--format', format]
 		const a = await viaCli(argv)
@@ -66,14 +87,19 @@ describe.each(['toon', 'json', 'text'])('one command through cli() and runScript
 	})
 
 	it('exits with the CliError exit code', async () => {
-		expect((await viaScript(['--name', 'ann', '--fail', 'x', '--format', format])).exitCode).toBe(3)
+		expect((await viaScript(['ann', '--fail', 'x', '--format', format])).exitCode).toBe(3)
 	})
 
-	// a usage error is reported by both, in the caller's format, with exit 2.
-	// `runScript()` does not rank them: it reports code `usage`, where `cli()` reports the coded kind (#706)
+	// a usage error is reported by both as the top-ranked error, coded, in the caller's format, with exit 2.
+	// `runScript()` has no cli name and no `--help`, so its usage line names the command alone and its help does not offer `--help`.
 	it.each([
-		['an unknown option', ['--name', 'ann', '--nope'], 'unknown-option'],
-		['a bad value', ['--name', 'ann', '--times', 'abc'], 'invalid-value']
+		['an unknown option', ['ann', '--nope'], 'unknown-option'],
+		['conflicting options', ['ann', '--loud', '--quiet'], 'conflicting-options'],
+		['a bad value', ['ann', '--times', 'abc'], 'invalid-value'],
+		['a repeated option', ['ann', '--times', '1', '--times', '2'], 'expect-single'],
+		['a missing argument', [], 'missing-argument'],
+		['an extra argument', ['ann', 'hi', 'there'], 'extra-arguments'],
+		['the top-ranked of several errors', ['--times', 'abc', '--nope'], 'unknown-option']
 	])('reports %s as a usage error with exit 2', async (_, args, code) => {
 		const argv = [...args, '--format', format]
 		const a = await viaCli(argv)
@@ -81,8 +107,15 @@ describe.each(['toon', 'json', 'text'])('one command through cli() and runScript
 		expect(a.exitCode).toBe(exitCodes.usage)
 		expect(b.exitCode).toBe(exitCodes.usage)
 		expect(a.out).toContain(code)
-		expect(b.out).toContain('usage')
-		expect(b.out).toContain('error')
-		expect(a.out).toContain('error')
+		expect(b.out).toBe(a.out.replace('Usage: app greet', 'Usage: greet').replace(/ \(--help always allowed\)/g, ''))
 	})
+})
+
+it('reports a bad --format as cli() does, in toon', async () => {
+	const a = await viaCli(['ann', '--format', 'xml'])
+	const b = await viaScript(['ann', '--format', 'xml'])
+	expect(b.exitCode).toBe(exitCodes.usage)
+	expect(b.exitCode).toBe(a.exitCode)
+	expect(b.out).toContain('code: invalid-value')
+	expect(b.out).toBe(a.out.replace('Usage: app greet', 'Usage: greet'))
 })

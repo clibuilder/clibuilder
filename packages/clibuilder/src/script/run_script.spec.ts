@@ -122,22 +122,76 @@ describe('runScript', () => {
 		expect(s.out).toEqual([])
 	})
 
-	it('reports a usage error with code usage and exits 2', async () => {
+	it('reports the top-ranked usage error with its code and exits 2', async () => {
 		const s = streams()
 		const code = await runScript(
 			{ options: { n: { description: 'count', type: t.number() } }, run: () => ({}) },
 			{ argv: ['--n', 'abc'], streams: s.streams }
 		)
 		expect(code).toBe(exitCodes.usage)
-		expect(s.out.join('')).toMatch(/^error: .*\ncode: usage\noption: n\n$/)
+		expect(s.out.join('')).toBe(
+			'error: "invalid value for option -n: expected a number, received \\"abc\\""\n' +
+				'code: invalid-value\n' +
+				'option: "-n"\n' +
+				'value: abc\n' +
+				'help[2]: "Usage: script <options>","expected for -n: number (received \\"abc\\")"\n'
+		)
 	})
 
-	it('rejects an unknown option and a positional as usage errors', async () => {
-		for (const argv of [['--nope'], ['file']]) {
+	it('reports an unknown option and an extra positional with their codes', async () => {
+		for (const [argv, code] of [
+			[['--nope'], 'unknown-option'],
+			[['file'], 'extra-arguments']
+		] as const) {
 			const s = streams()
-			expect(await runScript({ run: () => ({}) }, { argv, streams: s.streams })).toBe(2)
-			expect(s.out.join('')).toContain('code: usage')
+			expect(await runScript({ run: () => ({}) }, { argv: [...argv], streams: s.streams })).toBe(2)
+			expect(s.out.join('')).toContain(`code: ${code}`)
+			expect(s.out.join('')).not.toContain('--help')
 		}
+	})
+
+	it('passes positional arguments to run()', async () => {
+		const s = streams()
+		await runScript(
+			{
+				arguments: [
+					{ name: 'src', description: 'from' },
+					{ name: 'n', description: 'count', type: t.number().optional() }
+				],
+				run: (args) => ({ src: args.src, n: args.n })
+			},
+			{ argv: ['a.txt', '2', '--format', 'json'], streams: s.streams }
+		)
+		expect(s.out.join('')).toBe('{"src":"a.txt","n":2}\n')
+	})
+
+	it('reports conflicting options, and a default does not count as passed', async () => {
+		const command = {
+			options: {
+				all: { description: 'all', conflicts: ['only'] },
+				only: { description: 'only', type: t.string().optional() },
+				n: { description: 'n', type: t.number(), default: 1, conflicts: ['all'] }
+			},
+			run: () => ({ ok: true })
+		}
+		const s = streams()
+		expect(await runScript(command, { argv: ['--all', '--only', 'x'], streams: s.streams })).toBe(2)
+		expect(s.out.join('')).toContain('code: conflicting-options')
+		expect(await runScript(command, { argv: ['--all'], streams: streams().streams })).toBe(0)
+	})
+
+	it('takes arguments and conflicts declared inline', async () => {
+		const s = streams()
+		const code = await runScript(
+			{
+				arguments: [{ name: 'src', description: 'from' }],
+				options: { all: { description: 'all', conflicts: ['none'] }, none: { description: 'none' } },
+				run: ({ src, all }) => ({ src, all })
+			},
+			{ argv: ['a', '--all', '--format', 'json'], streams: s.streams }
+		)
+		expect(code).toBe(0)
+		expect(s.out.join('')).toBe('{"src":"a","all":true}\n')
 	})
 
 	it('rejects a bad --format as a usage error', async () => {
@@ -194,6 +248,24 @@ describe('runScript', () => {
 					// @ts-expect-error `s` is optional
 					const bad: string = args.s
 					return [n, s, bad]
+				}
+			})
+		expect(_typed).toBeTypeOf('function')
+	})
+
+	it('types args from the arguments', () => {
+		const _typed = () =>
+			runScript({
+				arguments: [
+					{ name: 'src', description: 'from' },
+					{ name: 'n', description: 'count', type: t.number().optional() }
+				],
+				run(args) {
+					const src: string = args.src
+					const n: number | undefined = args.n
+					// @ts-expect-error `n` is optional
+					const bad: number = args.n
+					return [src, n, bad]
 				}
 			})
 		expect(_typed).toBeTypeOf('function')

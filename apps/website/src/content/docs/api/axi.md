@@ -68,7 +68,7 @@ help[1]: Run `my-cli list --full` to see every task
 
 ## Run a command as a script
 
-`runScript()` runs the same `{ options, run }` object you pass to `cli().command()`, so a command has one
+`runScript()` runs the same `{ arguments, options, run }` object you pass to `cli().command()`, so a command has one
 definition and two entries: the cli and a plain script.
 
 ```ts
@@ -90,18 +90,20 @@ $ node greet.js --name bob --format json
 {"greeting":"hello bob"}
 ```
 
-It parses `--format` and the command's options from `argv` (default `process.argv.slice(2)`), calls `run()`,
+It parses `--format`, the command's arguments and its options from `argv` (default `process.argv.slice(2)`), calls `run()`,
 prints the answer the way `output: 'axi'` does, and resolves to the exit code. It does not set `process.exitCode`.
 
 - `this` is `{ format, ui }` and nothing else. `this.ui` writes to stderr. There is no `config`, `cwd` or `registry`,
   so a command that reads `this.config` is a type error.
 - A thrown `CliError` is printed with `errorOutput()` on stdout and resolves to its `exitCode`.
-- A bad invocation is printed the same way with code `usage` and resolves to 2. It is a plain
-  [args-minus](/clibuilder/packages/args-minus/) message: no ranking and no `help` list.
-- Positional `arguments` and `conflicts` are not supported, on purpose: the lookup `cli()` uses for them, and for
-  ranked usage errors, would add about 10 KB to a runner capped at 24 KB. An option named `format` is not
-  supported either, and `cli()` rejects it too: `--format` is global, so read `this.format`. A test runs one
-  command through both `cli().command()` and `runScript()` and checks that the answers and `CliError` reports match.
+- A bad invocation is printed as `output: 'axi'` prints it: the top-ranked usage error alone, with its `code`
+  (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or
+  `extra-arguments`), `details` and `help`, and resolves to 2. As there is no cli name, the usage line names the
+  command (`Usage: greet [options]`), or `script` when it has no `name`. The runner takes no `--help`, so `help`
+  does not offer it.
+- `config` and sub-commands are not supported. An option named `format` is not supported either, and `cli()`
+  rejects it too: `--format` is global, so read `this.format`. A test runs one command through both
+  `cli().command()` and `runScript()` and checks that the answers, `CliError` reports and usage errors match.
 - Any other error rejects.
 
 ### Refs in a script
@@ -122,8 +124,10 @@ The real path is taken from the running script, so the line works through a pnpm
 works as in `cli()`. The runner cannot see the other commands' options, so it does not check a ref: the `cli()`
 test of the same command does.
 
-The runner and the output contract import only `args-minus`, `@toon-format/toon` and each other, so a script
-that imports `clibuilder/axi` does not load `cli()`. A test keeps the bundled and minified runner under 24 KB.
+The output contract imports only `args-minus`, `@toon-format/toon` and itself. The runner adds the argument lookup
+and usage-error report it shares with `cli()`, and `node:fs` and `node:path` to find a ref's target, so a script
+that imports `clibuilder/axi` does not load `cli()`. A test keeps the bundled and minified runner under 34 KB and
+checks that it bundles nothing else.
 
 ## No framework imports
 
