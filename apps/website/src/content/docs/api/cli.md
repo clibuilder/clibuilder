@@ -340,6 +340,8 @@ help[2]: Run `app task get --gid 7` to show the parent task,Run `app task update
 - **`ref(path, options?, why?)`.** `path` is the command path without the CLI name. Options render as `--name value`
   in the order given: `true` as `--name`, `false` and `undefined` left out, an array as a repeated flag. A value the
   shell would split or expand is single-quoted. `why` is a verb phrase, rendered as ``Run `…` to <why>``.
+  A ref passes only the options given: it does not copy the current invocation's global options, such as
+  `--repo`, and never adds a confirmation flag such as `--ack`.
 - **`placeholder(name)`** is a value the agent fills in, rendered unquoted as `<name>`.
 - **Checked against the command tree.** A path that names no command, or an option the command and the global
   options do not have, throws when the answer is printed, so the command's own tests catch it. Aliases work in
