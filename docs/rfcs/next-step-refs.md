@@ -1,6 +1,6 @@
 # RFC: `ref()` and an opt-in `next[N]{run,why}` key
 
-- **Status:** Implemented in [#714](https://github.com/clibuilder/clibuilder/pull/714). The questions in section 8 are still open.
+- **Status:** Implemented in [#714](https://github.com/clibuilder/clibuilder/pull/714). Section 8 records the decisions on Q1 and Q2; Q3 is still open.
 - **Issue:** [#696](https://github.com/clibuilder/clibuilder/issues/696) (split from [#688](https://github.com/clibuilder/clibuilder/issues/688) item 4)
 - **Related:** [axi-native](axi-native.md) section 3.5 (the result channel) and section 10 item 24; [`docs/evals/next-ref/`](../evals/next-ref/README.md); [cyberuni/universal-plugin#177](https://github.com/cyberuni/universal-plugin/issues/177) (the command map)
 - **Target:** a minor after 12.0.0. Everything here is additive.
@@ -114,6 +114,6 @@ All of it is additive, so it ships in a minor. A command that never calls `ref()
 
 ## 8. Open questions
 
-1. **Per-answer opt-in.** `refs` is set per CLI. Should `result(v, { refs: 'next' })` also exist, so one command can opt in without the rest? Proposed, awaiting Council: no, until an author asks; mixed shapes in one CLI are harder for an agent to learn.
-2. **Carrying flags forward.** Principle 9 asks to carry forward disambiguating flags such as `--repo`. Should a ref copy the current invocation's global options automatically? Proposed, awaiting Council: no; the author passes them, because the runner cannot tell which ones disambiguate.
+1. **Per-answer opt-in.** `refs` is set per CLI. Should `result(v, { refs: 'next' })` also exist, so one command can opt in without the rest? **Decided 2026-10-14 ([#717](https://github.com/clibuilder/clibuilder/issues/717)): no, until an author asks.** `refs` stays set per CLI; mixed shapes in one CLI are harder for an agent to learn.
+2. **Carrying flags forward.** Principle 9 asks to carry forward disambiguating flags such as `--repo`. Should a ref copy the current invocation's global options automatically? **Decided 2026-10-14 ([#718](https://github.com/clibuilder/clibuilder/issues/718)): no.** A ref does not copy the current invocation's global options. The author passes the ones that disambiguate, because the runner cannot tell which ones do. A ref line also never adds a confirmation flag such as `--ack` on its own.
 3. **A second eval.** The design does not wait for it, since the feature is opt-in. When a CLI with a large `--help`, or a set of skill scripts, opts in, rerun `docs/evals/next-ref/` against it to decide whether `next` should ever become a default. Rerun on a fixture with a 255-line or absent `--help` ([Q3 results](../evals/next-ref/README.md#q3-a-cli-with-a-large-or-absent---help)): `next` removed the failed rollback calls when help was absent and made no difference when help was large but complete. It does not settle the default, because a `help` string carrying the full command was not tested.
