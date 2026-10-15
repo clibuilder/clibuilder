@@ -1,5 +1,24 @@
 # Change Log
 
+## 12.1.0
+
+### Minor Changes
+
+- 8955060: Add `ref()` and `placeholder()`: a `help` line that names another command, rendered as a complete command line. Under `cli()` it reads `<name> task get --gid 1` and is checked against the command tree. Under `runScript()` it renders as the sibling script, `pnpm exec <bin>` or a pinned `npx`, from the command map `universal-plugin plugin build` embeds. By default a ref is a plain `help` string, so the output keeps the AXI shape. `cli({ refs: 'next' })` and `runScript({ refs: 'next' })` encode refs as `next[N]{run,why}` instead. `CliError` keeps refs in `help`.
+- d7f37b3: `runScript()` accepts positional `arguments` and `conflicts`, and reports a bad invocation as `cli({ output: 'axi' })` does:
+  the top-ranked usage error alone, with its code (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`), `details` and `help`, and exit 2.
+  It shares `cli()`'s argument lookup instead of reporting code `usage` (#706).
+  A test runs one command through `cli().command()` and `runScript()` and checks that the answers, `CliError` reports and usage errors match.
+
+### Patch Changes
+
+- 60459d7: Accept option descriptors from another copy of `args-minus` in the same process.
+  `isDescriptor()` now checks a `Symbol.for('args-minus.descriptor')` brand that carries the descriptor format version, instead of prototype identity,
+  so a CLI that bundles clibuilder no longer rejects the commands of plugins built against their own `args-minus` (#711).
+- 885dd71: Update the README for the published 12.0.0: `@clibuilder/axi` is deprecated on npm, and plugin support comes from `@clibuilder/plugins`.
+- Updated dependencies [60459d7]
+  - args-minus@0.2.1
+
 ## 12.0.0
 
 ### Major Changes
