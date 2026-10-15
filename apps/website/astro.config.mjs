@@ -15,6 +15,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'clibuilder',
+			logo: { src: './public/favicon.svg' },
 			description: 'A highly customizable command line application builder for Node.js.',
 			social: [
 				{
