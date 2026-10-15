@@ -45,6 +45,7 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						{ label: 'Commands', slug: 'guides/commands' },
+						{ label: 'Naming Commands', slug: 'guides/naming-commands' },
 						{ label: 'Arguments & Options', slug: 'guides/arguments-and-options' },
 						{ label: 'Configuration', slug: 'guides/configuration' },
 						{ label: 'Plugins', slug: 'guides/plugins' },
