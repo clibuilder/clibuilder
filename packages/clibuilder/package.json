@@ -52,7 +52,8 @@
 		"esm",
 		"src",
 		"!**/*.internal.*",
-		"!**/*.{accept,integrate,spec,system,test,unit}.*"
+		"!**/*.{accept,integrate,spec,system,test,unit}.*",
+		"CHANGELOG.md"
 	],
 	"scripts": {
 		"build": "tsc",
