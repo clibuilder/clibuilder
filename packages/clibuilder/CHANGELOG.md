@@ -1,5 +1,13 @@
 # Change Log
 
+## 12.1.1
+
+### Patch Changes
+
+- 48fbee2: Include `CHANGELOG.md` in the published package.
+- Updated dependencies [48fbee2]
+  - args-minus@0.2.2
+
 ## 12.1.0
 
 ### Minor Changes
