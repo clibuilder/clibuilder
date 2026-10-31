@@ -1,5 +1,11 @@
 # args-minus
 
+## 0.2.2
+
+### Patch Changes
+
+- 48fbee2: Include `CHANGELOG.md` in the published package.
+
 ## 0.2.1
 
 ### Patch Changes

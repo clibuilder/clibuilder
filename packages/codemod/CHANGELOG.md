@@ -1,5 +1,11 @@
 # @clibuilder/codemod
 
+## 0.1.1
+
+### Patch Changes
+
+- 48fbee2: Include `CHANGELOG.md` in the published package.
+
 ## 0.1.0
 
 ### Minor Changes
