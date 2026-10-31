@@ -41,7 +41,8 @@
 	"files": [
 		"esm",
 		"!**/*.map",
-		"!**/*.{spec,unit}.*"
+		"!**/*.{spec,unit}.*",
+		"CHANGELOG.md"
 	],
 	"scripts": {
 		"build": "tsc",
