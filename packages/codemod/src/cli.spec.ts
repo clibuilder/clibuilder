@@ -187,7 +187,7 @@ describe('clibuilder-codemod cli', () => {
 		const { stdout } = await run(project(), '--help')
 		expect(stdout).toContain('name: clibuilder-codemod')
 		expect(stdout).toContain('arguments[1]{name,required,type,array,description}:')
-		expect(stdout).toContain('name: dry-run')
+		expect(stdout).toMatch(/^ {2}dry-run,/m)
 		expect(stdout).toContain('clibuilder-codemod --dry-run src')
 	})
 

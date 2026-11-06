@@ -12,7 +12,7 @@ import { createRegistry } from '../plugins/registry.js'
 import { answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
-import { commandSignature, generateHelpMessage, generateHelpModel } from '../render/help.js'
+import { commandSignature, generateHelpMessage, generateHelpModel, tabularHelpModel } from '../render/help.js'
 import { type Ref, refArgs, renderHelp } from '../render/ref.js'
 import { commandName, describeMissingCommand, describeUsageError, topUsageError } from '../render/usage_error.js'
 import { type CliError, exitCodes, helpLinesOf, isCliError, isReportedCliError } from './errors.js'
@@ -284,12 +284,17 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		return answerValue(returned)
 	}
 
+	function helpModel(command: Command, baseCommand: Command, format: cli.Format) {
+		const model = generateHelpModel(s.name, command, baseCommand.options!)
+		return format === 'toon' ? tabularHelpModel(model) : model
+	}
+
 	// `--help` in `axi` output goes to stdout whatever the display level
 	function writeHelp(command: Command, baseCommand: Command, format: cli.Format) {
 		context.writeStdout(
 			format === 'text'
 				? `${generateHelpMessage(s.name, command)}\n`
-				: `${encode(generateHelpModel(s.name, command, baseCommand.options!), format)}\n`
+				: `${encode(helpModel(command, baseCommand, format), format)}\n`
 		)
 	}
 

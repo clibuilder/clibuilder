@@ -379,3 +379,34 @@ function describeData(data: DescriptorData): HelpModel.Type {
 			return { type: data.kind }
 	}
 }
+
+/**
+ * The structured help shaped for `toon`: each collection of rows becomes a uniform table.
+ *
+ * TOON writes an array as a table only when every row has the same keys and every cell is a scalar.
+ * A row of the help model leaves out a key with nothing to say, and some keys hold an array,
+ * so the collections fell back to list form. Here every row of a collection carries the union of its keys,
+ * a missing one as `null`, and an array of scalars as one comma-joined string.
+ * The `json` shape is unchanged: this is applied for `toon` only.
+ */
+export function tabularHelpModel(model: HelpModel): Record<string, unknown> {
+	const shaped: Record<string, unknown> = { ...model }
+	for (const key of ['commands', 'arguments', 'options', 'examples', 'globalOptions'] as const) {
+		const rows = model[key]
+		if (rows) shaped[key] = uniformRows(rows)
+	}
+	return shaped
+}
+
+function uniformRows(rows: readonly object[]) {
+	const keys: string[] = []
+	for (const row of rows) for (const key of Object.keys(row)) if (!keys.includes(key)) keys.push(key)
+	return rows.map((row) => Object.fromEntries(keys.map((key) => [key, cell((row as Record<string, unknown>)[key])])))
+}
+
+function cell(value: unknown) {
+	if (value === undefined) return null
+	if (Array.isArray(value)) return value.map(String).join(',')
+	if (typeof value === 'object' && value !== null) return JSON.stringify(value)
+	return value
+}

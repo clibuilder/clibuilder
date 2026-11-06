@@ -130,6 +130,21 @@ function answerPackages(
 				siblingRef(command, 'list', {}, 'see which of them are installed')
 			),
 			render: {
+				// the encoder cannot tabulate an array cell, so `--fields keywords` renders its own table:
+				// the cell joins the keywords on a space, and the json shape is unchanged.
+				...(fields.keywords
+					? {
+							toon: () =>
+								[
+									...toonTable(
+										'packages',
+										['name', 'keywords'],
+										shown.items.map((p) => [p.name, p.keywords.join(' ')])
+									),
+									...(shown.count ? [`count: ${shown.count}`] : [])
+								].join('\n')
+						}
+					: {}),
 				text: () =>
 					[
 						...proseLines({ noun: 'package', plural: 'packages' }, shown.items, describe, keywords),
