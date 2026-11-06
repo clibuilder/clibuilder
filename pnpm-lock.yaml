@@ -336,19 +336,7 @@ importers:
 
   packages/clibuilder/fixtures/empty-config: {}
 
-  packages/clibuilder/fixtures/has-cjs-config:
-    dependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
   packages/clibuilder/fixtures/has-config:
-    dependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/has-dot-cjs-config:
     dependencies:
       clibuilder:
         specifier: workspace:*
@@ -367,12 +355,6 @@ importers:
         version: link:../..
 
   packages/clibuilder/fixtures/has-dot-mjs-config:
-    dependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/has-dot-rc-cjs-config:
     dependencies:
       clibuilder:
         specifier: workspace:*
@@ -457,12 +439,6 @@ importers:
         version: link:../..
 
   packages/clibuilder/fixtures/has-pjson-config:
-    dependencies:
-      clibuilder:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/clibuilder/fixtures/has-rc-cjs-config:
     dependencies:
       clibuilder:
         specifier: workspace:*
@@ -654,34 +630,6 @@ importers:
         specifier: workspace:*
         version: link:../../../../test-plugins/esm-plugin
 
-  packages/plugins/fixtures/cli-with-one-plugin:
-    devDependencies:
-      '@clibuilder/plugins':
-        specifier: workspace:*
-        version: link:../..
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../../../clibuilder
-
-  test-apps/test-cli:
-    dependencies:
-      '@clibuilder/plugins':
-        specifier: workspace:*
-        version: link:../../packages/plugins
-      cjs-plugin:
-        specifier: workspace:*
-        version: link:../../test-plugins/cjs-plugin
-      clibuilder:
-        specifier: workspace:*
-        version: link:../../packages/clibuilder
-    devDependencies:
-      esbuild:
-        specifier: ^0.20.0
-        version: 0.20.2
-
   test-apps/test-cli-esm:
     dependencies:
       '@clibuilder/plugins':
@@ -711,8 +659,6 @@ importers:
   test-plugins/bad-plugin: {}
 
   test-plugins/bad-plugin-no-index: {}
-
-  test-plugins/cjs-plugin: {}
 
   test-plugins/esm-plugin: {}
 

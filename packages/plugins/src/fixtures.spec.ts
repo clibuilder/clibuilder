@@ -21,14 +21,6 @@ async function run(fixture: string, ...args: string[]) {
 
 // the plugin commands log through `ui.info`, a diagnostic on stderr, and return the echoed value,
 // which the default `axi` output prints on stdout
-it('loads a CommonJS plugin the config names', async () => {
-	expect(await run('cli-with-one-plugin', 'one', 'echo', 'hello')).toMatchObject({
-		stdout: 'hello',
-		stderr: 'echo hello\n',
-		exitCode: 0
-	})
-})
-
 it('loads an ESM plugin the config names', async () => {
 	// esm-plugin logs `echo` alone
 	expect(await run('cli-with-one-esm-plugin', 'one', 'echo', 'hello')).toMatchObject({

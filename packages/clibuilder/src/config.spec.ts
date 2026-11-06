@@ -186,7 +186,6 @@ describe('jsonc config (#341)', () => {
 		['a.yml', 'yaml'],
 		['a.yaml', 'yaml'],
 		['a.js', 'module'],
-		['a.cjs', 'module'],
 		['a.mjs', 'module'],
 		['.my-clirc', 'unknown']
 	])('%s is parsed as %s', (path, format) => {
@@ -289,9 +288,9 @@ describe('getConfigFilenames()', () => {
 })
 
 describe('module config', () => {
-	it('loads a `.cjs` config through its export', async () => {
+	it('loads a `.mjs` config through its default export', async () => {
 		const name = nextConfigName()
-		const { cwd } = scaffold({ [`${name}.cjs`]: 'module.exports = { a: 1 }\n' })
+		const { cwd } = scaffold({ [`${name}.mjs`]: 'export default { a: 1 }\n' })
 
 		expect(await loadConfig({ cwd, ui }, name)).toEqual({ a: 1 })
 	})

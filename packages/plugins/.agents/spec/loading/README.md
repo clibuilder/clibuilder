@@ -114,7 +114,6 @@ the project, whichever module format the plugin ships, and exiting when done.
 
 | Cause | Outcome |
 | --- | --- |
-| the plugin is CommonJS | it loads and its command runs |
 | the plugin is an ES module | it loads and its command runs |
 | the plugin's command is asynchronous ([#286](https://github.com/clibuilder/clibuilder/issues/286)) | the process exits on its own once the command resolves, rather than staying alive |
 
@@ -197,6 +196,5 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| it loads and its command runs | a CommonJS plugin the config names | `a CommonJS plugin loads and runs in a real process` |
 | it loads and its command runs | an ES module plugin the config names | `an ES module plugin loads and runs in a real process` |
 | the process exits on its own | an asynchronous plugin command | `the process exits after an asynchronous plugin command resolves` |
