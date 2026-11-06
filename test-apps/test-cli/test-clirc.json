@@ -1,4 +1,0 @@
-{
-	"plugins": ["cjs-plugin"],
-	"greeting": "hello"
-}

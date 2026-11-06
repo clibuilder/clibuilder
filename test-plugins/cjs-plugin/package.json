@@ -1,8 +1,0 @@
-{
-	"name": "cjs-plugin",
-	"version": "0.0.0",
-	"private": true,
-	"keywords": [
-		"test-cli"
-	]
-}

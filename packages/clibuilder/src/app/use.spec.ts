@@ -182,7 +182,7 @@ describe('use()', () => {
 			})
 			.default({ run() {} })
 			.parse(argv('test-cli'))
-		expect(result?.config).toEqual({ plugins: ['cjs-plugin'] })
+		expect(result?.config).toEqual({ plugins: ['esm-plugin'] })
 		expect(result?.source).toMatchObject({ type: 'file' })
 	})
 })

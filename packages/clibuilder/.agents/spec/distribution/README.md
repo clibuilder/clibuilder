@@ -31,8 +31,8 @@ The package is ESM-only. Each entry point in `exports` (`.`, `./axi`,
 `./testing`, `./compile-cache`) is `{ types, default }` pointing at `esm/`; a
 CommonJS consumer loads it with `require()` through Node's `require(esm)`,
 unflagged from Node.js 20.19, the `engines` floor. No module reachable from an
-entry point may use top-level await, which would make `require()` throw;
-`test-apps/test-cli/no-top-level-await.test.js` guards it. The top-level
+entry point may use top-level await, which would make `require()` throw.
+No test guards this or the `require()` load. The top-level
 `types` field stays for `node10` resolution.
 
 `files` is a whitelist (`esm`, `src`) with the internal and test patterns

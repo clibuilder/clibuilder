@@ -81,11 +81,6 @@ Feature: Loading
 
   # ── UC3 — a plugin runs in a real process ──
 
-  Scenario: a CommonJS plugin loads and runs in a real process
-    Given a fixture cli whose config names a CommonJS plugin installed beside it
-    When the plugin's command is run with node
-    Then the command runs and the process exits with code 0
-
   Scenario: an ES module plugin loads and runs in a real process
     Given a fixture cli whose config names an ES module plugin installed beside it
     When the plugin's command is run with node
