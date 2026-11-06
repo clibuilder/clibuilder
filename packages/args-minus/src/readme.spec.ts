@@ -21,7 +21,7 @@ const examples = blocks.flatMap((block) =>
 )
 
 it('finds the readme examples', () => {
-	expect(examples.length).toBeGreaterThanOrEqual(18)
+	expect(examples.length).toBeGreaterThanOrEqual(3)
 })
 
 describe('readme examples', () => {

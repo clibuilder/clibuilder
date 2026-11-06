@@ -1,5 +1,5 @@
 import { testType } from 'type-plus/testing'
-import { type ArgsValue, type MultipleArgsValue, ParseArgsError, parseArgs, tokenizeArgs } from './index.js'
+import { type ArgsValue, type MultipleArgsValue, ParseArgsError, parseArgs, t, tokenizeArgs } from './index.js'
 
 it('passes positional arguments into _ ', () => {
 	expect(parseArgs({ args: ['a', 'b'] })._).toEqual(['a', 'b'])
@@ -499,5 +499,93 @@ describe('option names that exist on Object.prototype', () => {
 	it.each(names)('permissive keeps an undeclared --%s as a string', (name) => {
 		const r = parseArgs({ args: [`--${name}=1`], options })
 		expect(Object.getOwnPropertyDescriptor(r.options, name)?.value).toBe('1')
+	})
+})
+
+// The examples the args-minus docs page shows, moved here from the readme.
+describe('documented examples', () => {
+	function expectThrows(fn: () => unknown, text: string) {
+		let error: unknown
+		try {
+			fn()
+		} catch (e) {
+			error = e
+		}
+		expect(error).toBeInstanceOf(ParseArgsError)
+		expect((error as Error).message).toContain(text)
+	}
+
+	it('fails a check that returns a message', () => {
+		expectThrows(
+			() =>
+				parseArgs({ args: ['--n=3'], options: { n: { type: t.int().check((n) => n % 2 === 0 || 'must be even') } } }),
+			"Invalid value for option 'n': must be even (from '--n=3')"
+		)
+	})
+
+	it('names the failing element of an array option', () => {
+		expectThrows(
+			() =>
+				parseArgs({
+					args: ['--tag=a', '--tag=B'],
+					options: { tag: { type: t.array(t.string({ pattern: /^[a-z]+$/ })) } }
+				}),
+			"Invalid value for option 'tag[1]'"
+		)
+	})
+
+	it('gives the inline value to the last option of a short group', () => {
+		expect(parseArgs({ args: ['-abc=1', '--long'] }).options).toEqual({ a: true, b: true, c: '1', long: true })
+	})
+
+	it('takes a negative number as the value of a number option', () => {
+		expect(parseArgs({ args: ['a', '--n', '-5', 'b'], options: { n: { type: 'number' } } })).toEqual({
+			_: ['a', 'b'],
+			__: [],
+			options: { n: -5 }
+		})
+	})
+
+	it('does not take an option-like argument as a value', () => {
+		expectThrows(
+			() => parseArgs({ args: ['--name', '--x'], options: { name: { type: 'string' } } }),
+			"option 'name': a value is required"
+		)
+	})
+
+	it('converts number and boolean type names', () => {
+		expect(
+			parseArgs({ args: ['--n=1.5', '--b=0'], options: { n: { type: 'number' }, b: { type: 'boolean' } } }).options
+		).toEqual({ n: 1.5, b: false })
+		expectThrows(
+			() => parseArgs({ args: ['--n=abc'], options: { n: { type: 'number' } } }),
+			"Invalid value for option 'n': abc (from '--n=abc')"
+		)
+	})
+
+	it('resolves aliases in a short group, with a value-taking option last', () => {
+		const options = {
+			verbose: { type: 'boolean', alias: 'v' },
+			name: { type: 'string', alias: 'n' }
+		} as const
+		expect(parseArgs({ args: ['-vn', 'Ada'], options }).options).toEqual({ verbose: true, name: 'Ada' })
+		expectThrows(() => parseArgs({ args: ['-nv'], options }), "Invalid option group '-nv'")
+	})
+
+	it('collects a multiple option and fills a default', () => {
+		expect(
+			parseArgs({
+				args: ['-i', 'a', '--inc=b'],
+				options: { inc: { type: 'string', multiple: true, alias: 'i' }, n: { type: 'number', default: 3 } }
+			}).options
+		).toEqual({ inc: ['a', 'b'], n: 3 })
+	})
+
+	it('rejects an unknown option in strict mode, and a positional when positionals are not allowed', () => {
+		expectThrows(
+			() => parseArgs({ args: ['--nope'], options: { a: { type: 'boolean' } }, strict: true }),
+			"Unknown option 'nope' (from '--nope')"
+		)
+		expectThrows(() => parseArgs({ args: ['x'], allowPositionals: false }), "Unexpected positional argument 'x'")
 	})
 })

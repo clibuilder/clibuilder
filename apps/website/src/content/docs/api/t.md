@@ -63,7 +63,10 @@ or any [Standard Schema](https://standardschema.dev), such as `t.string().check(
 - An array argument is variadic. It consumes the remaining positional arguments.
 - A failed conversion or check is an `invalid-value` usage error. The CLI prints the help message and
   does not run the command.
-- Async converters and checks are awaited by clibuilder.
+- Async converters and checks are awaited by clibuilder. They run after `--help` and `--version` are
+  answered, so asking for help never converts a value.
+- A converter that throws a plain `Error` is an `invalid-value` usage error with that message. Any
+  other throw is a bug, and it propagates.
 
 ## Help hints
 

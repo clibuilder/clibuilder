@@ -162,3 +162,31 @@ it('keeps every = after the first in the value', () => {
 		]
 	)
 })
+
+// The examples the args-minus docs page shows, moved here from the readme.
+describe('documented examples', () => {
+	it('tokenizes options, positionals and the terminator in source order', () => {
+		expect(tokenizeArgs(['--name=Ada', '-v', 'file', '--', '-x'])).toEqual([
+			{ kind: 'option', index: 0, name: 'name', dashes: 2, raw: '--name=Ada', value: 'Ada' },
+			{ kind: 'option', index: 1, name: 'v', dashes: 1, raw: '-v', value: undefined },
+			{ kind: 'positional', index: 2, value: 'file' },
+			{ kind: 'option-terminator', index: 3 },
+			{ kind: 'positional', index: 4, value: '-x' }
+		])
+	})
+
+	it('treats a lone dash as a positional and an empty inline value as the empty string', () => {
+		expect(tokenizeArgs(['-', '--a='])).toEqual([
+			{ kind: 'positional', index: 0, value: '-' },
+			{ kind: 'option', index: 1, name: 'a', dashes: 2, raw: '--a=', value: '' }
+		])
+	})
+
+	it('uses a custom grammar', () => {
+		expect(tokenizeArgs(['/v', '::', '/x'], { modifiers: '/', terminator: '::' })).toEqual([
+			{ kind: 'option', index: 0, name: 'v', dashes: 1, raw: '/v', value: undefined },
+			{ kind: 'option-terminator', index: 1 },
+			{ kind: 'positional', index: 2, value: '/x' }
+		])
+	})
+})
