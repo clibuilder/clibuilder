@@ -45,19 +45,21 @@ there is no second place to declare the shape of `args` — it is inferred from 
 - **An opt-in startup cache** — [`enableCompileCache()`](/clibuilder/api/compile-cache/) turns on
   Node's V8 compile cache from your bin script.
 
-## What's new in v8
+## What's new in v12
 
-- **Standalone CLI support.** `name` and `version` are now required options on
-  [`cli()`](/clibuilder/api/cli/) rather than being read from `package.json`, so a bundled,
-  single-file CLI works without shipping its manifest.
-- **Plugins are loaded through config.** Earlier versions scanned `node_modules` to discover
-  plugins. Now the config file lists them explicitly, which is dramatically faster to start and works
-  with Yarn PnP and pnpm. In `clibuilder` 12 `@clibuilder/plugins` does this loading,
-  not core.
-- **`keywords` drive plugin lookup.** The `plugins search` and `plugins list` commands use them. In
-  `clibuilder` 12 `keywords` is an option of `plugins()`, not of `cli()`.
-- **ESM is distributed alongside CJS.** `clibuilder` 12 is ESM-only, and `require()`
-  still loads it on Node.js 20.19 and newer.
+- **Agent-facing output is the default.** With [`output: 'axi'`](/clibuilder/api/cli/#streams-and-output),
+  the value `run()` returns is printed on stdout in the format the caller asks for with `--format`
+  (`toon`, `json` or `text`). A `CliError` or a usage error is reported once, with a code, and every
+  `ui.*` message is a diagnostic on stderr. `output: 'console'` keeps the 11 behaviour, and is not
+  deprecated.
+- **`t` replaces zod.** Arguments and options declare their type with [`t`](/clibuilder/api/t/), and
+  `config` takes any Standard Schema from your own dependency.
+- **A slimmer core.** Config loads through [`.use(config())`](/clibuilder/api/config/), plugins
+  through [`@clibuilder/plugins`](/clibuilder/packages/plugins/), and the AXI helpers come from
+  [`clibuilder/axi`](/clibuilder/api/axi/).
+
+See [Upgrading to 12](/clibuilder/guides/upgrade-to-12/) for every change, with the fix for each and
+a codemod for the mechanical parts.
 
 ## Where next
 
