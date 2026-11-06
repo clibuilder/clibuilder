@@ -222,8 +222,8 @@ or the constraint. See
 | `collapseHome(path, home?)` | Shortens a path under the home directory to `~/...` |
 
 The package also re-exports `exitCodes` from `clibuilder`. The
-[package README](https://github.com/clibuilder/clibuilder/tree/main/packages/axi#readme) has more
-examples, and [`docs/findings`](https://github.com/clibuilder/clibuilder/tree/main/packages/axi/docs/findings)
+[package README](https://github.com/clibuilder/clibuilder/tree/@clibuilder/axi@0.3.0/packages/axi#readme) has more
+examples, and [`docs/findings`](https://github.com/clibuilder/clibuilder/tree/@clibuilder/axi@0.3.0/packages/axi/docs/findings)
 records where each convention came from.
 
 ## Moving to `clibuilder` 12

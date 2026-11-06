@@ -14,8 +14,7 @@ const entries = [
 	'clibuilder/axi',
 	'clibuilder/testing',
 	'clibuilder/compile-cache',
-	'@clibuilder/plugins',
-	'@clibuilder/axi'
+	'@clibuilder/plugins'
 ]
 
 /** The files the static import graph of `entry` reaches. */

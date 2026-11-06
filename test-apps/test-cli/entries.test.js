@@ -23,9 +23,8 @@ test('a descriptor from clibuilder/axi is a descriptor to clibuilder, and runs t
 	assert.equal(r.result, true)
 })
 
-test('@clibuilder/plugins and @clibuilder/axi load through require()', () => {
+test('@clibuilder/plugins loads through require()', () => {
 	assert.equal(typeof require('@clibuilder/plugins').plugins, 'function')
-	assert.ok(require('@clibuilder/axi').exitCodes)
 })
 
 test('testCommand from clibuilder/testing runs a command with a t option', async () => {
