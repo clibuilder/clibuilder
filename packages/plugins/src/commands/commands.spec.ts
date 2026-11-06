@@ -521,6 +521,14 @@ describe('plugins list and search under output axi', () => {
 		expect(r.stderr).toBe('')
 	})
 
+	test('plugins search writes the keywords as a table in toon, the json shape unchanged', async () => {
+		const r = await run(group({ found: ['pkg-x'] }), 'plugins search --fields keywords')
+		expect(r.stdout).toBe(
+			'packages[1]{name,keywords}:\n  pkg-x,kw-a\n\nhelp[1]: Run `app plugins list` to see which of them are installed\n'
+		)
+		expect(r.value).toEqual({ packages: [{ name: 'pkg-x', keywords: ['kw-a'] }] })
+	})
+
 	test('plugins search renders the found packages and their keywords as prose in text', async () => {
 		const r = await run(group({ found: ['pkg-x'] }), 'plugins search --fields keywords --format text')
 		expect(r.stdout).toBe(

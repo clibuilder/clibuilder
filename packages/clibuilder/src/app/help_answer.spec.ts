@@ -64,7 +64,23 @@ describe('--help under output axi', () => {
 		expect(r.stderr).toBe('')
 		expect(r.exitCode).toBeUndefined()
 		expect(r.stdout.endsWith('\n')).toBe(true)
-		expect(decode(r.stdout)).toEqual(JSON.parse((await run(`${args} --format json`)).stdout))
+		const json = JSON.parse((await run(`${args} --format json`)).stdout)
+		const toon: any = decode(r.stdout)
+		expect(toon.name).toBe(json.name)
+		expect(toon.usage).toBe(json.usage)
+		expect(toon.globalOptions.map((o: any) => o.name)).toEqual(json.globalOptions.map((o: any) => o.name))
+	})
+
+	it('writes commands and globalOptions as tables in toon', async () => {
+		const out = (await run('remote --help')).stdout
+		expect(out).toContain('commands[2]{name,description,aliases}:')
+		expect(out).toMatch(/globalOptions\[6\]\{[^}]*\}:/)
+		expect(out).not.toMatch(/^ {2}- /m)
+		const commands: any = (decode(out) as any).commands
+		expect(commands).toEqual([
+			{ name: 'add', aliases: null, description: 'Add a remote' },
+			{ name: 'remove', aliases: 'rm', description: 'Remove a remote' }
+		])
 	})
 
 	it('says nothing about options for a command whose only option gave way to the global --format', async () => {
