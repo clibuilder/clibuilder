@@ -1,6 +1,11 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
 	"extends": ["@repobuddy/biome/recommended"],
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
 	"files": {
 		"includes": [
 			"!**/.astro",

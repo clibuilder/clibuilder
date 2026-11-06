@@ -7,7 +7,7 @@ Node and pnpm are pinned in `mise.toml` and managed by [mise](https://mise.jdx.d
 ```sh
 mise install  # node 24 + pnpm 12 at the pinned versions
 pnpm install
-pnpm verify   # lint + build + coverage + depcheck + size, then the test-apps
+pnpm verify   # biome check + build + coverage + depcheck + size, then the test-apps
 ```
 
 CI does not read `mise.toml`: it takes node from `.node-version` and pnpm from
