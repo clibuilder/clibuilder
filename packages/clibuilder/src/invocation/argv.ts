@@ -1,3 +1,4 @@
+import { getProp, setProp } from '../props.js'
 import { type OptionOccurrence, optionOccurrences } from './argv_occurrences.js'
 
 export namespace parseArgv {
@@ -86,9 +87,10 @@ function endOption(state: parseArgv.State) {
 	const { key, values } = state
 	const args = { ...state.args }
 
-	if (!args[key]) args[key] = []
-	if (values.length === 0) args[key].push('true')
-	else args[key].push(...values)
+	const list = getProp(args, key) ?? []
+	if (values.length === 0) list.push('true')
+	else list.push(...values)
+	setProp(args, key, list)
 
 	return { args, key: '', values: [] }
 }

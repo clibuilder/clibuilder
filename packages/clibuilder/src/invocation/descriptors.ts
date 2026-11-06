@@ -1,6 +1,7 @@
 import { type OptionDeclaration, ParseArgsError, type ParsedArgs, parseArgs, parseArgsAsync } from 'args-minus'
 import type { cli } from '../cli.js'
 import { describeConstraint } from '../descriptor.js'
+import { setProp } from '../props.js'
 import type { AnyDescriptor } from '../t.js'
 import type { lookupCommand } from './lookup.js'
 
@@ -83,7 +84,7 @@ function configOf(input: DescriptorInput) {
 }
 
 function assign(result: lookupCommand.Result, input: DescriptorInput, { options }: ParsedArgs) {
-	if (options[input.name] !== undefined) result.args[input.name] = options[input.name] as any
+	if (options[input.name] !== undefined) setProp(result.args, input.name, options[input.name] as any)
 }
 
 function report(result: lookupCommand.Result, input: DescriptorInput, e: unknown) {

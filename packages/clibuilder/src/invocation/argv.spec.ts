@@ -136,3 +136,26 @@ describe('pipe (--) syntax', () => {
 function testParse(input: string, expected: parseArgv.Result) {
 	expect(parseArgv(argv(input))).toEqual(expected)
 }
+
+describe('option names that exist on Object.prototype (#724)', () => {
+	const names = ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'valueOf']
+
+	test.each(names)('--%s 1 is parsed like any other option', (name) => {
+		const result = parseArgv(argv(`cli --${name} 1`))
+		expect(Object.keys(result)).toEqual(['_', name])
+		expect(result).toEqual({ _: [], [name]: ['1'] })
+		expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+	})
+	test.each(names)('--%s without a value gets true, and repeats append', (name) => {
+		expect(parseArgv(argv(`cli --${name} --${name}=x`))).toEqual({ _: [], [name]: ['true', 'x'] })
+	})
+	test('--__proto__ leaves the prototype and Object.prototype alone', () => {
+		const before = Object.getOwnPropertyNames(Object.prototype)
+		const accessor = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__')
+		const result = parseArgv(argv('cli --__proto__ 1 --__proto__ 2'))
+		expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+		expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toEqual(['1', '2'])
+		expect(Object.getOwnPropertyNames(Object.prototype)).toEqual(before)
+		expect(Object.getOwnPropertyDescriptor(Object.prototype, '__proto__')).toEqual(accessor)
+	})
+})
