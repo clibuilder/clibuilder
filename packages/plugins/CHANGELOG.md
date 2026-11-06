@@ -1,5 +1,34 @@
 # @clibuilder/plugins
 
+## 0.3.0
+
+### Minor Changes
+
+- 92e6ec4: The `plugins` commands follow the AXI conventions page under `output: 'axi'`:
+  
+  - A bare `plugins` answers with the installed plugins followed by the group's own `commands`, instead of a `missing-command` error. A sub-command a host adds to the group is listed too. Under `output: 'console'` it still prints its help and exits with code 2.
+  - `plugins list`, `plugins search` and a bare `plugins` cut a list longer than 20 entries, add `count: 20 of 47 total`, and offer `--full`, a new option that shows every entry.
+  - Next steps are complete command lines checked against the command tree, such as ``Run `my-cli plugins search` to find plugins to install``. A next step is offered only when the command it names is in the group.
+  - A registry search that fails is a `CliError` with code `registry-search-failed` and exit code 1, reported in the caller's format, instead of an uncaught error.
+- 54524bd: `--format toon` now writes more collections as tables ([AXI conventions, change 1](https://clibuilder.github.io/clibuilder/getting-started/axi/#change-1-toon-only-for-collections)).
+  
+  - Structured help (`--help`): `commands`, `arguments`, `options`, `examples` and `globalOptions` are tables. Every row carries the same columns, a column a row has nothing for is `null`, and an array cell (aliases, values, conflicts) is one comma-joined string. `json` is unchanged.
+  - `plugins search --fields keywords` is a table with the keywords joined on a space. `json` is unchanged.
+  
+  Migration: if you decode `toon` help and read `aliases`, `values` or `conflicts` as arrays, split the string on `,`, and treat `null` as absent.
+
+### Patch Changes
+
+- db0079d: `plugins list` finds plugins under Yarn Plug'n'Play, including ESM-only plugins whose `exports` hide `package.json` (via find-installed-packages 4.0.2).
+- Updated dependencies [92e6ec4]
+- Updated dependencies [4ec1b3f]
+- Updated dependencies [9df09b2]
+- Updated dependencies [2ca9e2f]
+- Updated dependencies [803c72f]
+- Updated dependencies [dafe2df]
+- Updated dependencies [54524bd]
+  - clibuilder@12.2.0
+
 ## 0.2.1
 
 ### Patch Changes
