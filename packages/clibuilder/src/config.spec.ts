@@ -286,3 +286,12 @@ describe('getConfigFilenames()', () => {
 		expect(candidates).not.toContain('..app.json')
 	})
 })
+
+describe('module config', () => {
+	it('loads a `.mjs` config through its default export', async () => {
+		const name = nextConfigName()
+		const { cwd } = scaffold({ [`${name}.mjs`]: 'export default { a: 1 }\n' })
+
+		expect(await loadConfig({ cwd, ui }, name)).toEqual({ a: 1 })
+	})
+})
