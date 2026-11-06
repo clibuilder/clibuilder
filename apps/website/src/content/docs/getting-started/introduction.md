@@ -61,6 +61,7 @@ there is no second place to declare the shape of `args` — it is inferred from 
 
 ## Where next
 
+- [AXI Conventions](/clibuilder/getting-started/axi/) — the agent-facing output rules `clibuilder` follows.
 - [Installation](/clibuilder/getting-started/installation/) — add it to your project.
 - [Your First CLI](/clibuilder/getting-started/first-cli/) — an end-to-end walkthrough.
 - [API Reference](/clibuilder/api/) — every export, in detail.
