@@ -28,6 +28,8 @@ Recorded by the maintainer on 2026-10-11. Each row is described in full in the s
 | 14 | zod is replaced by the `t` descriptors from `args-minus`. A descriptor converts the raw string; `.check()` only validates. Both may be async. A conversion that reads files, resolves paths against `cwd`, calls the network or depends on other options belongs in `run()` and throws a `CliError`. | 3.1, [slim-dependencies section 3.4](slim-dependencies.md#34-design-c) |
 | 15 | Only the top-ranked usage error is reported. It carries a `help` list with the command's usage line and, for `invalid-value`, the option, the raw value, and the violated constraint or the allowed values. | 3.3 |
 
+**Decision 3.** Superseded on 2026-11-06 by [#737](https://github.com/clibuilder/clibuilder/pull/737): toon uses TOON only for collections (AXI conventions page, change 1).
+
 ## 1. Summary
 
 `@clibuilder/axi` 0.2 layers the AXI conventions on top of clibuilder. Six CLIs were surveyed and each rebuilds the same pieces, because clibuilder's defaults point the other way: errors and usage errors go to stderr as prose, there is no shared `--format`, and `run()` return values are not an output channel.
@@ -342,6 +344,7 @@ Resolved on 2026-10-11:
 2. ~~**Non-`undefined` return is printed.** Or require an explicit `result()` wrapper first?~~ **Resolved:** a plain return is printed in `axi` mode; `result(value, { render })` controls the printed form (section 3.5).
 3. ~~**toon in core.** A hand-rolled subset, or `@toon-format/toon`?~~ **Resolved:** `@toon-format/toon`, as core's single third-party runtime dependency (section 3.4).
 4. ~~**Single-object and error output.** Plain `key: value` for those, TOON only for collections?~~ **Resolved:** the official encoder for everything (section 3.4).
+   Superseded on 2026-11-06 by [#737](https://github.com/clibuilder/clibuilder/pull/737): toon uses TOON only for collections (AXI conventions page, change 1).
 5. ~~**`ui.info` routing.** Does `ui.info` move to stderr?~~ **Resolved:** in `axi` mode every `ui.*` call goes to stderr; in `console` mode `ui.info` stays on stdout (section 3.10). Shared with slim-dependencies Q5.
 6. ~~**Exit codes 3 to 7.** Ship a named set in axi, or leave it to each CLI?~~ **Resolved:** no named set anywhere; `exitCode` is open from 1 to 255 (section 3.6).
 7. ~~**`legacy` lifetime.** One major or permanent?~~ **Resolved:** renamed `console`, and permanent (section 3.10).

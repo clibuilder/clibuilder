@@ -27,7 +27,7 @@ test('a usage error is one coded error on stdout, exit 2, nothing on stderr', ()
 		[
 			'error: unknown option --bogus',
 			'code: unknown-option',
-			'option: "--bogus"',
+			'option: --bogus',
 			'help[2]: "Usage: axi-cli show <arguments> [options]","valid options for `show`: --port, --priority (--help always allowed)"',
 			''
 		].join('\n')

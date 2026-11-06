@@ -199,7 +199,7 @@ describe('what stays a usage error', () => {
 		const r = await run('--all show')
 		expect(r.ran).toBeUndefined()
 		expect(r.stdout).toContain('code: unknown-option')
-		expect(r.stdout).toContain('option: "--all"')
+		expect(r.stdout).toContain('option: --all')
 		expect(r.exitCode).toBe(exitCodes.usage)
 	})
 

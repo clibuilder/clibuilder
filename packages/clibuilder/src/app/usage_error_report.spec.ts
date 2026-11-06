@@ -195,9 +195,9 @@ describe('usage errors under output axi', () => {
 		const r = await run('show 1 --priority urgent')
 		expect(r.stdout).toBe(
 			[
-				"error: \"invalid value for option --priority: expected one of 'low', 'normal', 'high', received \\\"urgent\\\"\"",
+				"error: invalid value for option --priority: expected one of 'low', 'normal', 'high', received \"urgent\"",
 				'code: invalid-value',
-				'option: "--priority"',
+				'option: --priority',
 				'value: urgent',
 				'help[2]: "Usage: app show <arguments> [options]","allowed for --priority: low, normal, high (received \\"urgent\\")"',
 				''

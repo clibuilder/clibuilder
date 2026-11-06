@@ -418,10 +418,12 @@ Feature: Presentation
 
   # ── UC10 — encode an answer in the cli's format ──
 
-  Scenario: an answer is encoded in toon by the official encoder
-    Given a plain object
+  Scenario: an answer is encoded in toon with TOON only for its collections
+    Given a plain object with string fields, a nested object and arrays
     When it is encoded in toon
-    Then the text is what @toon-format/toon encodes, with no trailing newline
+    Then each array is what @toon-format/toon encodes for it
+    And each string field outside any array is an unquoted key: value line, unless a TOON decoder would read it otherwise
+    And a TOON decoder reads the text back to the object, with no trailing newline
 
   Scenario: an answer is encoded in json on one line
     Given a plain object

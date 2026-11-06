@@ -216,9 +216,9 @@ in the CLI's default format, never in the bad one:
 
 ```sh
 $ app list --format yaml
-error: "invalid value for option --format: expected one of 'toon', 'json', 'text', received \"yaml\""
+error: invalid value for option --format: expected one of 'toon', 'json', 'text', received "yaml"
 code: invalid-value
-option: "--format"
+option: --format
 value: yaml
 help[2]: "Usage: app list","allowed for --format: toon, json, text (received \"yaml\")"
 ```
