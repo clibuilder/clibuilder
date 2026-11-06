@@ -293,10 +293,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	function writeHelp(command: Command, baseCommand: Command, format: cli.Format) {
 		context.writeStdout(
 			format === 'text'
-				? `${generateHelpMessage(s.name, command, { signatures: true })}
-`
-				: `${encode(helpModel(command, baseCommand, format), format)}
-`
+				? `${generateHelpMessage(s.name, command, { signatures: true })}\n`
+				: `${encode(helpModel(command, baseCommand, format), format)}\n`
 		)
 	}
 

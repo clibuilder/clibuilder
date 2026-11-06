@@ -73,13 +73,13 @@ describe('--help under output axi', () => {
 
 	it('writes commands and globalOptions as tables in toon', async () => {
 		const out = (await run('remote --help')).stdout
-		expect(out).toContain('commands[2]{name,description,aliases}:')
-		expect(out).toMatch(/globalOptions\[6\]\{[^}]*\}:/)
+		expect(out).toContain('commands[2]{name,usage,description,aliases}:')
+		expect(out).toMatch(/globalOptions\[2\]\{[^}]*\}:/)
 		expect(out).not.toMatch(/^ {2}- /m)
 		const commands: any = (decode(out) as any).commands
 		expect(commands).toEqual([
-			{ name: 'add', aliases: null, description: 'Add a remote' },
-			{ name: 'remove', aliases: 'rm', description: 'Remove a remote' }
+			{ name: 'add', usage: 'add', aliases: null, description: 'Add a remote' },
+			{ name: 'remove', usage: 'remove', aliases: 'rm', description: 'Remove a remote' }
 		])
 	})
 
