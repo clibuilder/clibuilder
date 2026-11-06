@@ -106,8 +106,11 @@ and walking all twelve resources one by one cost only 9% more than the whole sur
   its name and the first line of its description. Only the root lists every global option; any other
   node lists `help` and `format` and names the rest under `otherGlobalOptions`.
 - There is no command that prints the whole tree.
-- A group may have its own `run()`, so a bare group can return live data. `clibuilder` does not attach
-  the group's verbs to that answer. Return them yourself if you want them there.
+- A group may have its own `run()`, so a bare group can return live data. When `run()` answers with
+  `result()` or `empty()`, core adds a `valid commands for <group>: ...` line to the answer's `help`, so
+  you do not add the verbs by hand. It leaves an answer alone when its value already has a `commands` key,
+  as the `plugins` group's does, and it adds nothing to a plain returned value. `output: 'console'` is
+  unchanged.
 - A group without a `run()` is a `missing-command` usage error, not live data. Its `help` lists the
   group's sub-commands with their required arguments, such as `get <id>`, and nothing more.
 
