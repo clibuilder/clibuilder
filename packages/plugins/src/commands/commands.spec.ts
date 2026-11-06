@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream'
-import { cli } from 'clibuilder'
+import { cli, command } from 'clibuilder'
 import { testCommand } from 'clibuilder/testing'
 import { plugins } from '../plugins.js'
 import { pluginsCommand } from './group.js'
@@ -447,80 +447,191 @@ describe('plugins list and search under output axi', () => {
 			.parse(['node', 'app', ...args.split(' ')])
 		return { value, stdout: stdout.text, stderr: stderr.text, exitCode: process.exitCode }
 	}
-	const list = (installed: string[]) => ({
-		...listPluginsCommand(['kw-a']),
-		context: { findByKeywords: () => Promise.resolve(installed) }
-	})
-	const search = (found: string[]) => ({
-		...searchPluginsCommand(['kw-a']),
-		context: { searchByKeywords: () => Promise.resolve(found) }
-	})
+
+	type Found = { installed?: string[]; found?: string[] | Error }
+
+	// the `plugins` group with the npm lookups replaced, so `list` and `search` have their siblings
+	function group({ installed = [], found = [] }: Found = {}) {
+		const findByKeywords = () => Promise.resolve(installed)
+		const searchByKeywords = () => (found instanceof Error ? Promise.reject(found) : Promise.resolve(found))
+		const builtin = pluginsCommand({ keywords: ['kw-a'] })
+		return {
+			...builtin,
+			context: { findByKeywords },
+			commands: builtin.commands!.map((c) => ({ ...c, context: { findByKeywords, searchByKeywords } }))
+		}
+	}
+	const names = (n: number) => Array.from({ length: n }, (_, i) => `pkg-${i + 1}`)
 
 	afterEach(() => {
 		process.exitCode = undefined
 	})
 
 	test.each([
-		['toon', 'plugins[2]: pkg-x,pkg-y\nhelp[1]: Run `plugins search` to find more plugins on npm\n'],
-		['json', '{"plugins":["pkg-x","pkg-y"],"help":["Run `plugins search` to find more plugins on npm"]}\n'],
+		['toon', 'plugins[2]: pkg-x,pkg-y\nhelp[1]: Run `app plugins search` to find more plugins on npm\n'],
+		['json', '{"plugins":["pkg-x","pkg-y"],"help":["Run `app plugins search` to find more plugins on npm"]}\n'],
 		[
 			'text',
-			'found the following plugins:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `plugins search` to find more plugins on npm\n'
+			'found the following plugins:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `app plugins search` to find more plugins on npm\n'
 		]
 	] as const)('plugins list prints the installed plugins once on stdout in %s', async (format, expected) => {
-		const r = await run(list(['pkg-x', 'pkg-y']), `list --format ${format}`)
+		const r = await run(group({ installed: ['pkg-x', 'pkg-y'] }), `plugins list --format ${format}`)
 		expect(r.stdout).toBe(expected)
 		expect(r.stderr).toBe('')
 		expect(r.value).toEqual({ plugins: ['pkg-x', 'pkg-y'] })
 	})
 
-	test('plugins list states nothing installed as an empty state', async () => {
-		const r = await run(list([]), 'list --format json')
+	test('plugins list states nothing installed as an empty state, offering the search', async () => {
+		const r = await run(group(), 'plugins list --format json')
 		expect(r.stdout).toBe(
-			'{"empty":"0 installed plugins found with keywords: kw-a","help":["Run `plugins search` to find plugins to install"]}\n'
+			'{"empty":"0 installed plugins found with keywords: kw-a","help":["Run `app plugins search` to find plugins to install"]}\n'
 		)
 		expect(r.exitCode).toBeUndefined()
 	})
 
+	test('plugins list offers no search when it is added without its group', async () => {
+		const list = { ...listPluginsCommand(['kw-a']), context: { findByKeywords: () => Promise.resolve([]) } }
+		const r = await run(list, 'list --format json')
+		expect(r.stdout).toBe('{"empty":"0 installed plugins found with keywords: kw-a"}\n')
+	})
+
+	test('plugins list cuts a long list, counts it, and offers --full', async () => {
+		const r = await run(group({ installed: names(25) }), 'plugins list --format json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			plugins: names(20),
+			count: '20 of 25 total',
+			help: [
+				'Run `app plugins list --full` to list every installed plugin',
+				'Run `app plugins search` to find more plugins on npm'
+			]
+		})
+		const full = await run(group({ installed: names(25) }), 'plugins list --full --format json')
+		expect(JSON.parse(full.stdout).plugins).toEqual(names(25))
+		expect(JSON.parse(full.stdout).count).toBeUndefined()
+	})
+
+	test('plugins list says how much it showed in text', async () => {
+		const r = await run(group({ installed: names(21) }), 'plugins ls --format text')
+		expect(r.stdout).toContain('  pkg-20\n\nshowing 20 of 21 total\n\nhelp:\n')
+	})
+
 	test('plugins search prints the found packages once on stdout', async () => {
-		const r = await run(search(['pkg-x']), 'search')
-		expect(r.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `plugins list` to see which of them are installed\n')
+		const r = await run(group({ found: ['pkg-x'] }), 'plugins search')
+		expect(r.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `app plugins list` to see which of them are installed\n')
 		expect(r.stderr).toBe('')
 	})
 
 	test('plugins search renders the found packages and their keywords as prose in text', async () => {
-		const r = await run(search(['pkg-x']), 'search --fields keywords --format text')
+		const r = await run(group({ found: ['pkg-x'] }), 'plugins search --fields keywords --format text')
 		expect(r.stdout).toBe(
-			'found one package: pkg-x (kw-a)\n\nhelp:\n  - Run `plugins list` to see which of them are installed\n'
+			'found one package: pkg-x (kw-a)\n\nhelp:\n  - Run `app plugins list` to see which of them are installed\n'
 		)
 		expect(r.value).toEqual({ packages: [{ name: 'pkg-x', keywords: ['kw-a'] }] })
 	})
 
 	test('plugins search renders the found names as prose in text', async () => {
-		const r = await run(search(['pkg-x', 'pkg-y']), 'search --format text')
+		const r = await run(group({ found: ['pkg-x', 'pkg-y'] }), 'plugins search --format text')
 		expect(r.stdout).toBe(
-			'found the following packages:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `plugins list` to see which of them are installed\n'
+			'found the following packages:\n\n  pkg-x\n  pkg-y\n\nhelp:\n  - Run `app plugins list` to see which of them are installed\n'
 		)
 	})
 
+	test('plugins search cuts a long list, counts it, and offers --full with the same --fields', async () => {
+		const r = await run(group({ found: names(30) }), 'plugins search --fields keywords --format json')
+		const answer = JSON.parse(r.stdout)
+		expect(answer.packages).toHaveLength(20)
+		expect(answer.count).toBe('20 of 30 total')
+		expect(answer.help).toEqual([
+			'Run `app plugins search --fields keywords --full` to list every package found',
+			'Run `app plugins list` to see which of them are installed'
+		])
+		const full = await run(group({ found: names(30) }), 'plugins search --full --format json')
+		expect(JSON.parse(full.stdout).packages).toEqual(names(30))
+	})
+
 	test('plugins search states nothing found as an empty state', async () => {
-		const r = await run(search([]), 'search')
+		const r = await run(group(), 'plugins search')
 		expect(r.stdout).toBe('empty: 0 packages found with keywords: kw-a\n')
 	})
 
 	test('plugins search reports an unknown --fields value as a usage error on stdout', async () => {
-		const r = await run(search([]), 'search --fields bogus --format json')
-		expect(JSON.parse(r.stdout)).toMatchObject({ error: 'unknown value for --fields: bogus', code: 'invalid-value' })
+		const r = await run(group(), 'plugins search --fields bogus --format json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			error: 'unknown value for --fields: bogus',
+			code: 'invalid-value',
+			option: 'fields',
+			value: 'bogus',
+			help: [
+				'The only extra field is `keywords`',
+				'Run `app plugins search --fields keywords` to list each package with its keywords'
+			]
+		})
 		expect(r.stderr).toBe('')
 		expect(r.exitCode).toBe(2)
 	})
 
+	test('plugins search reports a registry it cannot reach as a coded error, not a crash', async () => {
+		const r = await run(group({ found: new Error('fetch failed') }), 'plugins search --format json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			error: 'cannot search the npm registry: fetch failed',
+			code: 'registry-search-failed',
+			help: ['Check that the npm registry is reachable', 'Run `app plugins search` to search again']
+		})
+		expect(r.stderr).toBe('')
+		expect(r.exitCode).toBe(1)
+	})
+
+	test('plugins, invoked bare, shows the installed plugins followed by its own commands', async () => {
+		const r = await run(group({ installed: ['pkg-x'] }), 'plugins')
+		expect(r.stdout).toBe('plugins[1]: pkg-x\ncommands[2]: list,search\n')
+		expect(r.exitCode).toBeUndefined()
+		expect(r.value).toEqual({ plugins: ['pkg-x'], commands: ['list', 'search'] })
+	})
+
+	test('plugins, invoked bare with nothing installed, says so and offers the search', async () => {
+		const r = await run(group(), 'plugins --format json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			plugins: '0 installed plugins found with keywords: kw-a',
+			commands: ['list', 'search'],
+			help: ['Run `app plugins search` to find plugins to install']
+		})
+	})
+
+	test('plugins, invoked bare with many installed, cuts the list and offers plugins list --full', async () => {
+		const r = await run(group({ installed: names(22) }), 'plugins --format json')
+		expect(JSON.parse(r.stdout)).toEqual({
+			plugins: names(20),
+			count: '20 of 22 total',
+			commands: ['list', 'search'],
+			help: ['Run `app plugins list --full` to list every installed plugin']
+		})
+	})
+
+	test('plugins, invoked bare, lists a sub-command a host adds to its copy of the group', async () => {
+		const g = group()
+		const install = command({ name: 'install', arguments: [{ name: 'plugin', description: 'the plugin' }], run() {} })
+		const r = await run({ ...g, commands: [...g.commands, install] }, 'plugins --format json')
+		expect(JSON.parse(r.stdout).commands).toEqual(['list', 'search', 'install'])
+	})
+
+	test('plugins, invoked bare under output console, prints its help and exits 2 as before', async () => {
+		const r = await run(group(), 'plugins', consoleOutput)
+		expect(r.stdout).toContain('Usage: app plugins <command>')
+		expect(r.exitCode).toBe(2)
+	})
+
 	test('keep the console output and return values unchanged under output console', async () => {
-		const listed = await run(list(['pkg-x']), 'list', consoleOutput)
+		const listed = await run(group({ installed: ['pkg-x'] }), 'plugins list', consoleOutput)
 		expect(listed.stdout).toBe('plugins[1]: pkg-x\nhelp[1]: Run `plugins search` to find more plugins on npm\n')
 		expect(listed.value).toEqual(['pkg-x'])
-		const searched = await run(search(['pkg-x']), 'search', consoleOutput)
+		const searched = await run(group({ found: ['pkg-x'] }), 'plugins search', consoleOutput)
 		expect(searched.stdout).toBe('packages[1]: pkg-x\nhelp[1]: Run `plugins list` to see which of them are installed\n')
 		expect(searched.value).toBeUndefined()
+	})
+
+	test('plugins search reports a registry it cannot reach under output console too', async () => {
+		const r = await run(group({ found: new Error('fetch failed') }), 'plugins search', consoleOutput)
+		expect(r.stderr).toContain('cannot search the npm registry: fetch failed')
+		expect(r.exitCode).toBe(1)
 	})
 })

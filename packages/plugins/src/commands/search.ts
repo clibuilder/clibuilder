@@ -1,14 +1,19 @@
-import { CliError, command, exitCodes, t } from 'clibuilder'
+import { CliError, command, empty, exitCodes, result, t } from 'clibuilder'
 import {
-	answers,
 	formatOption,
+	fullOption,
+	helpLines,
 	type OutputFormat,
 	type OutputUI,
 	proseLines,
 	reportProse,
+	searchFailed,
+	selfRef,
+	siblingRef,
 	toonArray,
 	toonHelp,
-	toonTable
+	toonTable,
+	truncate
 } from './format.js'
 import { searchByKeywords } from './npm.js'
 
@@ -21,14 +26,15 @@ export function searchPluginsCommand(keywords: string[]) {
 			fields: {
 				type: t.string().optional(),
 				description: "Extra fields to report, comma separated. Only 'keywords' is available"
-			}
+			},
+			full: fullOption
 		},
 		context: { searchByKeywords },
 		async run(args) {
 			const fields = parseFields(args.fields)
 			if (!fields) {
 				// under clibuilder's `output: 'axi'` a failure is a `CliError`, reported once on stdout by clibuilder
-				if (this.output === 'axi') throw unknownFields(args.fields)
+				if (this.output === 'axi') throw unknownFields(this, args.fields)
 				this.ui.info(`error: unknown value for --fields: ${args.fields}`)
 				this.ui.info(toonHelp('The only extra field is `keywords`. Run `plugins search --fields keywords`'))
 				return
@@ -36,7 +42,12 @@ export function searchPluginsCommand(keywords: string[]) {
 			// `searchByKeywords` matches packages carrying *all* of the keywords it is given.
 			// A cli declaring several keywords wants a package matching *any* of them, so query
 			// one keyword at a time and union the results, first-seen order wins.
-			const found = await Promise.all(keywords.map((keyword) => this.context.searchByKeywords([keyword])))
+			// a registry that cannot be reached is a coded failure, reported in the caller's format, not a crash
+			const found = await Promise.all(keywords.map((keyword) => this.context.searchByKeywords([keyword]))).catch(
+				(error) => {
+					throw searchFailed(error, selfRef(this, { fields: args.fields }, 'search again'))
+				}
+			)
 			// a `Map` keyed by name is the union and the provenance in one pass: insertion order is
 			// first-seen order, and a package matched by a later keyword appends rather than repeats.
 			const packages = new Map<string, string[]>()
@@ -48,7 +59,9 @@ export function searchPluginsCommand(keywords: string[]) {
 				})
 			})
 			// under clibuilder's `output: 'axi'` the report is the answer: returned, and printed once on stdout by clibuilder
-			if (this.output === 'axi') return answerPackages(fields, [...packages].map(toPackage), keywords)
+			if (this.output === 'axi') {
+				return answerPackages(this, { ...fields, raw: args.fields }, [...packages].map(toPackage), keywords, args.full)
+			}
 			// `args.format` is unset when clibuilder's global `--format` is active: the local option gives way to it
 			reportPackages(this.ui, args.format ?? this.format, fields, [...packages].map(toPackage), keywords)
 		}
@@ -79,30 +92,49 @@ function parseFields(fields: string | undefined) {
 /**
  * The unknown `--fields` value as a usage error under `output: 'axi'`.
  */
-function unknownFields(value: string | undefined) {
+function unknownFields(command: unknown, value: string | undefined) {
 	return new CliError(`unknown value for --fields: ${value}`, {
 		code: 'invalid-value',
 		exitCode: exitCodes.usage,
 		details: { option: 'fields', value: String(value) },
-		help: 'The only extra field is `keywords`. Run `plugins search --fields keywords`'
+		help: helpLines(
+			'The only extra field is `keywords`',
+			selfRef(command, { fields: 'keywords' }, 'list each package with its keywords')
+		)
 	})
 }
 
 /**
  * The search result as the answer under `output: 'axi'`, in the shape {@link reportPackages} logs:
  * `packages` (with their keywords under `--fields keywords`) with a next step, prose under `--format text`,
- * and an explicit empty state.
+ * and an explicit empty state. A long list is cut to the first entries, with `count` and a `--full` next step.
  */
-function answerPackages(fields: { keywords: boolean }, packages: FoundPackage[], keywords: string[]) {
-	const { result, empty } = answers()
+function answerPackages(
+	command: unknown,
+	fields: { keywords: boolean; raw: string | undefined },
+	packages: FoundPackage[],
+	keywords: string[],
+	full: boolean | undefined
+) {
 	if (packages.length === 0) return empty(`0 packages found with keywords: ${keywords.join(', ')}`)
+	const shown = truncate(packages, full)
 	const describe = (p: FoundPackage) => (fields.keywords ? `${p.name} (${p.keywords.join(', ')})` : p.name)
 	return result(
-		{ packages: fields.keywords ? packages : packages.map((p) => p.name) },
 		{
-			help: 'Run `plugins list` to see which of them are installed',
+			packages: fields.keywords ? shown.items : shown.items.map((p) => p.name),
+			...(shown.count ? { count: shown.count } : {})
+		},
+		{
+			help: helpLines(
+				shown.count ? selfRef(command, { fields: fields.raw, full: true }, 'list every package found') : undefined,
+				siblingRef(command, 'list', {}, 'see which of them are installed')
+			),
 			render: {
-				text: () => proseLines({ noun: 'package', plural: 'packages' }, packages, describe, keywords).join('\n')
+				text: () =>
+					[
+						...proseLines({ noun: 'package', plural: 'packages' }, shown.items, describe, keywords),
+						...(shown.count ? ['', `showing ${shown.count}`] : [])
+					].join('\n')
 			}
 		}
 	)

@@ -1,5 +1,4 @@
-import * as clibuilder from 'clibuilder'
-import { t } from 'clibuilder'
+import { CliError, type HelpLine, ref, t } from 'clibuilder'
 
 /**
  * How a command renders a collection it reports.
@@ -114,10 +113,73 @@ export function proseLines<T>(
 }
 
 /**
- * clibuilder's result-channel helpers, read from the namespace so that this package still loads
- * against a clibuilder from before them (the peer range started at 11.5.0 before clibuilder 12).
- * They are only called under `output: 'axi'`, which `this.output` reports only on a clibuilder that has them.
+ * How many entries `plugins list` and `plugins search` show before they cut the list (AXI rules 3 and 4).
  */
-export function answers(): Pick<typeof clibuilder, 'result' | 'empty'> {
-	return { result: clibuilder.result, empty: clibuilder.empty }
+export const listLimit = 20
+
+/**
+ * The `--full` option: shows every entry instead of the first {@link listLimit}.
+ */
+export const fullOption = {
+	type: t.boolean().optional(),
+	description: `Show every entry instead of the first ${listLimit}`
+}
+
+/**
+ * Keeps the first {@link listLimit} items unless `full` is set.
+ * `count` reads `20 of 847 total`, and is set only when something was cut.
+ */
+export function truncate<T>(items: readonly T[], full?: boolean | undefined) {
+	if (full || items.length <= listLimit) return { items: [...items], count: undefined }
+	return { items: items.slice(0, listLimit), count: `${listLimit} of ${items.length} total` }
+}
+
+/**
+ * The parts of a running command these helpers read: its name, and the parent clibuilder links it to.
+ */
+export type CommandNode = { name: string; parent?: CommandNode | undefined; commands?: CommandNode[] | undefined }
+
+/**
+ * A ref to `name`, a sibling of `command` in the command tree, such as `plugins search` from `plugins list`.
+ *
+ * The path comes from where the command is mounted, so the ref stays valid when a host nests the `plugins` group.
+ * It is `undefined` when the sibling is not there, such as for `plugins list` added on its own:
+ * a next step that would fail is not offered (AXI change 3).
+ */
+export function siblingRef(command: unknown, name: string, options: Record<string, unknown>, why: string) {
+	const parent = (command as CommandNode).parent
+	if (!parent?.commands?.some((c) => c.name === name)) return undefined
+	return ref([...commandPath(parent), name].join(' '), options, why)
+}
+
+/**
+ * A ref to `command` itself, with `options`, such as `plugins search --full`.
+ */
+export function selfRef(command: unknown, options: Record<string, unknown>, why: string) {
+	const path = commandPath(command as CommandNode)
+	return path.length > 0 ? ref(path.join(' '), options, why) : undefined
+}
+
+function commandPath(command: CommandNode) {
+	const names: string[] = []
+	for (let c: CommandNode | undefined = command; c; c = c.parent) if (c.name) names.unshift(c.name)
+	return names
+}
+
+/**
+ * The help lines that are set, in order.
+ */
+export function helpLines(...lines: Array<HelpLine | undefined>): HelpLine[] {
+	return lines.filter((l): l is HelpLine => l !== undefined)
+}
+
+/**
+ * A failed registry search as a `CliError`, so it is reported in the caller's format instead of crashing.
+ */
+export function searchFailed(error: unknown, retry: HelpLine | undefined) {
+	const reason = error instanceof Error ? error.message : String(error)
+	return new CliError(`cannot search the npm registry: ${reason}`, {
+		code: 'registry-search-failed',
+		help: helpLines('Check that the npm registry is reachable', retry)
+	})
 }

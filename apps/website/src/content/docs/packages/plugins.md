@@ -86,6 +86,31 @@ import, or exports no `activate`, is skipped with a warning.
 `find-installed-packages` and `search-packages` are imported only when `plugins list` or
 `plugins search` runs, so a CLI that does not run them does not load them.
 
+## The commands
+
+With `output: 'axi'`, the default, each command returns its answer, in the global `--format`:
+
+| Command | Answer |
+| --- | --- |
+| `plugins` | The installed plugins, followed by the group's own `commands`. A host that adds a sub-command to the group gets it listed too |
+| `plugins list` (`ls`) | The installed plugins |
+| `plugins search` | The packages on npm that carry one of `keywords`. `--fields keywords` adds the keywords each one matched |
+
+```sh
+$ my-cli plugins
+plugins[1]: my-cli-plugin-git
+commands[2]: list,search
+```
+
+A list longer than 20 entries is cut to the first 20, with `count: 20 of 47 total` and a next step
+that adds `--full`, which shows them all. No plugins, or no packages found, is an empty state that
+names the keywords. Each next step is a complete command line, offered only when the command it
+names is in the group. A registry search that fails is an error with code `registry-search-failed`,
+exit code 1.
+
+With `output: 'console'`, the commands log their report through the CLI's `ui` as in 0.2.0, and a
+bare `plugins` prints its help and exits with code 2.
+
 ## Exports
 
 | Export | Purpose |

@@ -1,13 +1,17 @@
-import { command } from 'clibuilder'
+import { command, empty, result } from 'clibuilder'
 import {
-	answers,
 	formatOption,
+	fullOption,
+	helpLines,
 	type OutputFormat,
 	type OutputUI,
 	proseLines,
 	reportProse,
+	selfRef,
+	siblingRef,
 	toonArray,
-	toonHelp
+	toonHelp,
+	truncate
 } from './format.js'
 import { findByKeywords } from './npm.js'
 
@@ -16,12 +20,12 @@ export function listPluginsCommand(keywords: string[]) {
 		name: 'list',
 		alias: ['ls'],
 		description: 'List installed plugins',
-		options: { format: formatOption },
+		options: { format: formatOption, full: fullOption },
 		context: { findByKeywords },
 		async run(args) {
 			const plugins = await this.context.findByKeywords(keywords, this)
 			// under clibuilder's `output: 'axi'` the report is the answer: returned, and printed once on stdout by clibuilder
-			if (this.output === 'axi') return answerPlugins(plugins, keywords)
+			if (this.output === 'axi') return answerPlugins(this, plugins, keywords, args.full)
 			// `args.format` is unset when clibuilder's global `--format` is active: the local option gives way to it
 			reportPlugins(this.ui, args.format ?? this.format, plugins, keywords)
 			// the found names are the command's return value as well as its output: a cli
@@ -34,20 +38,28 @@ export function listPluginsCommand(keywords: string[]) {
 /**
  * The installed plugins as the answer under `output: 'axi'`, in the shape {@link reportPlugins} logs:
  * `plugins` with a next step, prose under `--format text`, and an explicit empty state.
+ * A long list is cut to the first entries, with `count` and a `--full` next step.
  */
-function answerPlugins(plugins: string[], keywords: string[]) {
-	const { result, empty } = answers()
+function answerPlugins(command: unknown, plugins: string[], keywords: string[], full: boolean | undefined) {
 	if (plugins.length === 0) {
 		return empty(`0 installed plugins found with keywords: ${keywords.join(', ')}`, {
-			help: 'Run `plugins search` to find plugins to install'
+			help: helpLines(siblingRef(command, 'search', {}, 'find plugins to install'))
 		})
 	}
+	const shown = truncate(plugins, full)
 	return result(
-		{ plugins },
+		{ plugins: shown.items, ...(shown.count ? { count: shown.count } : {}) },
 		{
-			help: 'Run `plugins search` to find more plugins on npm',
+			help: helpLines(
+				shown.count ? selfRef(command, { full: true }, 'list every installed plugin') : undefined,
+				siblingRef(command, 'search', {}, 'find more plugins on npm')
+			),
 			render: {
-				text: (v) => proseLines({ noun: 'plugin', plural: 'plugins' }, v.plugins, (p) => p, keywords).join('\n')
+				text: (v) =>
+					[
+						...proseLines({ noun: 'plugin', plural: 'plugins' }, v.plugins, (p) => p, keywords),
+						...(v.count ? ['', `showing ${v.count}`] : [])
+					].join('\n')
 			}
 		}
 	)
