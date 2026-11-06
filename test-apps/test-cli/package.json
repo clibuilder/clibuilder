@@ -7,7 +7,6 @@
 		"test": "node --test bin.test.mjs axi.test.mjs entries.test.js no-top-level-await.test.js"
 	},
 	"dependencies": {
-		"@clibuilder/axi": "workspace:*",
 		"@clibuilder/plugins": "workspace:*",
 		"cjs-plugin": "workspace:*",
 		"clibuilder": "workspace:*"
