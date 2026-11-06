@@ -62,67 +62,6 @@ type builders `t`, and the `ParseArgsError` class.
 Each function takes the arguments already split into an array: pass `process.argv.slice(2)` (Node),
 `Deno.args`, or `Bun.argv.slice(2)`.
 
-## `tokenizeArgs(args, grammar?)`
-
-`tokenizeArgs()` splits arguments into tokens in source order. It makes no decisions about values: it
-does not know which options exist, and it never consumes the next argument.
-
-| Token | Fields |
-| --- | --- |
-| `{ kind: 'option' }` | `index`, `name` (without modifiers), `dashes` (number of leading modifier characters), `raw` (the argument as given), `value` (text after the first `=`, if any) |
-| `{ kind: 'positional' }` | `index`, `value` |
-| `{ kind: 'option-terminator' }` | `index` |
-
-`index` is the position in the input array and is never reordered.
-
-```ts
-tokenizeArgs(['--name=Ada', '-v', 'file', '--', '-x'])
-// => [
-//   { kind: 'option', index: 0, name: 'name', dashes: 2, raw: '--name=Ada', value: 'Ada' },
-//   { kind: 'option', index: 1, name: 'v', dashes: 1, raw: '-v', value: undefined },
-//   { kind: 'positional', index: 2, value: 'file' },
-//   { kind: 'option-terminator', index: 3 },
-//   { kind: 'positional', index: 4, value: '-x' }
-// ]
-```
-
-The rules:
-
-- An argument that starts with one or more modifier characters (`-` by default), followed by a name,
-  is an option. `-` alone is a positional, and so is an argument made only of modifiers, other than
-  the terminator.
-- `=` splits the name from an inline value at its first occurrence. An empty value (`--a=`) is the
-  empty string.
-- The terminator (`--` by default) is matched exactly. Every later argument is a positional, even if
-  it looks like an option.
-
-```ts
-tokenizeArgs(['-', '--a='])
-// => [
-//   { kind: 'positional', index: 0, value: '-' },
-//   { kind: 'option', index: 1, name: 'a', dashes: 2, raw: '--a=', value: '' }
-// ]
-```
-
-### Grammar
-
-The second argument changes the syntax. The defaults are `{ modifiers: '-', terminator: '--' }`.
-
-- `modifiers` is a string or an array of single characters, other than `=`, that start an option.
-  Their count is reported in `dashes`.
-- `terminator` is the exact argument that ends option parsing.
-
-An invalid grammar throws an `Error`. The token order, `index` and `raw` never depend on the grammar.
-
-```ts
-tokenizeArgs(['/v', '::', '/x'], { modifiers: '/', terminator: '::' })
-// => [
-//   { kind: 'option', index: 0, name: 'v', dashes: 1, raw: '/v', value: undefined },
-//   { kind: 'option-terminator', index: 1 },
-//   { kind: 'positional', index: 2, value: '/x' }
-// ]
-```
-
 ## `parseArgs(config)`
 
 `parseArgs()` applies option declarations to the tokens.
@@ -272,10 +211,24 @@ parseArgs({ args: ['x'], allowPositionals: false })
 // throws ParseArgsError: Unexpected positional argument 'x'
 ```
 
-## Using `t` in clibuilder
+## `parseArgs()` and `parseArgsAsync()`
 
-`clibuilder` re-exports `t`. See [`t`](/clibuilder/api/t/) for how a command declares its arguments
-and options with it.
+`parseArgs()` is synchronous. `parseArgsAsync()` takes the same config and resolves to the same
+result, and it awaits converters, checks and schemas one at a time, in input order.
+
+Use `parseArgsAsync()` when any `t.custom()` converter, check function or schema returns a promise.
+If one does under `parseArgs()`, it throws an `Error` that names the option and asks for
+`parseArgsAsync()`.
+
+```ts
+import { parseArgsAsync, t } from 'args-minus'
+
+await parseArgsAsync({
+  args: ['--n=3'],
+  options: { n: { type: t.int().check(async (n) => n > 5 || 'too small') } }
+})
+// rejects with ParseArgsError: Invalid value for option 'n': too small (from '--n=3')
+```
 
 ## Declaring options with `t`
 
@@ -395,7 +348,7 @@ The rules:
 
 - A returned `false`, a returned string, or a schema issue is an `invalid-value` usage error.
 - A check that throws, or whose promise rejects, is not a usage error. The error propagates as it is.
-- A check may be async. Use `parseArgsAsync()` for it (see below).
+- A check may be async. Use `parseArgsAsync()` for it (see [`parseArgs()` and `parseArgsAsync()`](#parseargs-and-parseargsasync)).
 - Checks run in declaration order, and the first failure wins.
 - On `t.array()`, a check on the element runs on each element, and a check on the array runs on the
   whole array.
@@ -455,25 +408,6 @@ That covers reading a file, resolving a path against the working directory, call
 and anything that depends on another option. An async converter or check is allowed, but I/O in one
 delays every parse that sets the option, and its failure is rarely one the caller can fix.
 
-## `parseArgs()` and `parseArgsAsync()`
-
-`parseArgs()` is synchronous. `parseArgsAsync()` takes the same config and resolves to the same
-result, and it awaits converters, checks and schemas one at a time, in input order.
-
-Use `parseArgsAsync()` when any `t.custom()` converter, check function or schema returns a promise.
-If one does under `parseArgs()`, it throws an `Error` that names the option and asks for
-`parseArgsAsync()`.
-
-```ts
-import { parseArgsAsync, t } from 'args-minus'
-
-await parseArgsAsync({
-  args: ['--n=3'],
-  options: { n: { type: t.int().check(async (n) => n > 5 || 'too small') } }
-})
-// rejects with ParseArgsError: Invalid value for option 'n': too small (from '--n=3')
-```
-
 ## Errors
 
 Input that does not fit the declarations throws a `ParseArgsError`. Match on its fields, not on the
@@ -513,9 +447,75 @@ of `args-minus` loaded in the same process, such as a copy bundled into a CLI an
 for its plugins, as long as both use the same descriptor format. A copy of the data
 (`{ ...descriptor }`) is not a descriptor.
 
+## `tokenizeArgs(args, grammar?)`
+
+`tokenizeArgs()` splits arguments into tokens in source order. It makes no decisions about values: it
+does not know which options exist, and it never consumes the next argument.
+
+| Token | Fields |
+| --- | --- |
+| `{ kind: 'option' }` | `index`, `name` (without modifiers), `dashes` (number of leading modifier characters), `raw` (the argument as given), `value` (text after the first `=`, if any) |
+| `{ kind: 'positional' }` | `index`, `value` |
+| `{ kind: 'option-terminator' }` | `index` |
+
+`index` is the position in the input array and is never reordered.
+
+```ts
+tokenizeArgs(['--name=Ada', '-v', 'file', '--', '-x'])
+// => [
+//   { kind: 'option', index: 0, name: 'name', dashes: 2, raw: '--name=Ada', value: 'Ada' },
+//   { kind: 'option', index: 1, name: 'v', dashes: 1, raw: '-v', value: undefined },
+//   { kind: 'positional', index: 2, value: 'file' },
+//   { kind: 'option-terminator', index: 3 },
+//   { kind: 'positional', index: 4, value: '-x' }
+// ]
+```
+
+The rules:
+
+- An argument that starts with one or more modifier characters (`-` by default), followed by a name,
+  is an option. `-` alone is a positional, and so is an argument made only of modifiers, other than
+  the terminator.
+- `=` splits the name from an inline value at its first occurrence. An empty value (`--a=`) is the
+  empty string.
+- The terminator (`--` by default) is matched exactly. Every later argument is a positional, even if
+  it looks like an option.
+
+```ts
+tokenizeArgs(['-', '--a='])
+// => [
+//   { kind: 'positional', index: 0, value: '-' },
+//   { kind: 'option', index: 1, name: 'a', dashes: 2, raw: '--a=', value: '' }
+// ]
+```
+
+### Grammar
+
+The second argument changes the syntax. The defaults are `{ modifiers: '-', terminator: '--' }`.
+
+- `modifiers` is a string or an array of single characters, other than `=`, that start an option.
+  Their count is reported in `dashes`.
+- `terminator` is the exact argument that ends option parsing.
+
+An invalid grammar throws an `Error`. The token order, `index` and `raw` never depend on the grammar.
+
+```ts
+tokenizeArgs(['/v', '::', '/x'], { modifiers: '/', terminator: '::' })
+// => [
+//   { kind: 'option', index: 0, name: 'v', dashes: 1, raw: '/v', value: undefined },
+//   { kind: 'option-terminator', index: 1 },
+//   { kind: 'positional', index: 2, value: '/x' }
+// ]
+```
+
 ## Compatibility
 
 `args-minus` follows semantic versioning. These are stable and change only in a major version: the
 exports on this page, the token shapes and field names, the descriptor data, the parsing rules on
 this page, and the error class and its fields. The error message text is informative only: match on
 `ParseArgsError` and its fields instead.
+
+## Using `t` in clibuilder
+
+`clibuilder` re-exports `t`. See [`t`](/clibuilder/api/t/) for how a command declares its arguments
+and options with it.

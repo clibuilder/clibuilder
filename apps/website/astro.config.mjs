@@ -78,12 +78,12 @@ export default defineConfig({
 				{
 					label: 'Packages',
 					items: [
-						{ label: '@clibuilder/axi', slug: 'packages/axi' },
+						{ label: 'args-minus', slug: 'packages/args-minus' },
 						{
 							label: '@clibuilder/plugins',
 							slug: 'packages/plugins'
 						},
-						{ label: 'args-minus', slug: 'packages/args-minus' }
+						{ label: '@clibuilder/axi', slug: 'packages/axi' }
 					]
 				},
 				{

@@ -25,6 +25,9 @@ command({
 there is no second place to declare the shape of `args` — it is inferred from `arguments` and
 `options`, using the [`t`](/clibuilder/api/t/) type descriptors.
 
+`clibuilder` is built on [`args-minus`](/clibuilder/packages/args-minus/), a dependency-free argument
+parser that you can also use on its own in Node.js, Deno and Bun.
+
 ## What it does
 
 - **Commands and sub-commands** — `my-cli repo create` nests to any depth, with aliases. See
