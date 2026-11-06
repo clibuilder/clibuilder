@@ -3,7 +3,7 @@
 - **Status:** Accepted. Maintainer decisions recorded 2026-10-11; the items in [section 10](#10-open-questions) are still open. Design only; no code changes.
 - **Target:** `clibuilder@12` (breaking), shipped with [slim-dependencies](slim-dependencies.md)
 - **Issue:** [#639](https://github.com/clibuilder/clibuilder/issues/639)
-- **Related:** [#667](https://github.com/clibuilder/clibuilder/issues/667) (where `@clibuilder/axi`'s contents belong, section 4.1); [#636](https://github.com/clibuilder/clibuilder/pull/636) (`@clibuilder/axi` completion) and its [findings](../../packages/axi/docs/findings/README.md); #607, #608, #609, #614
+- **Related:** [#667](https://github.com/clibuilder/clibuilder/issues/667) (where `@clibuilder/axi`'s contents belong, section 4.1); [#636](https://github.com/clibuilder/clibuilder/pull/636) (`@clibuilder/axi` completion) and its [findings](https://github.com/clibuilder/clibuilder/blob/%40clibuilder/axi%400.3.0/packages/axi/docs/findings/README.md); #607, #608, #609, #614
 - **Scope:** the nine friction points in #639, and what each one changes in core versus `@clibuilder/axi`. Not the dependency work, though section 8 checks the two plans against each other.
 
 ## Decisions
@@ -114,7 +114,7 @@ The `format` option exists only as an internal `formatOption` for the `plugins` 
 - `--format <toon|json|text>` joins the base command, so it is accepted by every command and shown once in help. The alias `-f` is **not** reserved (it is commonly a command's own `--force` or `--file`).
 - The resolved value is on `this.format` in `run()` and in the usage-error context.
 - **Default `toon`.** This matches the existing builtin default and the EFF measurements, and it keeps agent output cheap. A CLI changes it with `cli({ format: 'text' })`.
-- **No TTY or agent detection.** Universal-plugin ADR-0005 rejected it, and the survey found none. The format is the same on a terminal and a pipe, so output is reproducible.
+- **No TTY or agent detection.** The survey found none. Universal-plugin [ADR-0005](https://github.com/cyberuni/universal-plugin/blob/bf5282dde50cb70e3bbacd37fcb6ba1b59469dc8/packages/universal-plugin/.agents/spec/design/decisions/0005-repo-project-init-setup.md#L121) rejects a related idea, making the CLI interactive on a TTY, because a command's behavior should not depend on how it was invoked. The format is the same on a terminal and a pipe, so output is reproducible.
 - **Encoders.** Core ships `json`, `text`, and `toon`. `toon` uses the official `@toon-format/toon` encoder for every value, including single objects and errors, so core's output cannot disagree with the spec. This is core's single third-party runtime dependency (slim-dependencies section 5.5). It is the same choice the reference axi-sdk-js makes. A command that needs a different rendering for one result passes per-format renderers to `result()` (section 3.5).
 - A command that declares its own `format` option conflicts with the global one. v12 makes that a startup error with a pointer to this RFC, rather than letting the two shadow each other.
 
