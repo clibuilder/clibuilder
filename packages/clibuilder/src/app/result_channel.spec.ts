@@ -295,3 +295,39 @@ describe('this.output', () => {
 		expect(output).toBe(expected)
 	})
 })
+
+describe('a group answering from run() under output axi', () => {
+	async function runGroup(returns: () => unknown, output: 'axi' | 'console' = 'axi') {
+		const stdout = memoryStream()
+		await cli({ name: 'app', version: '1.0.0', output, format: 'json', streams: { stdout, stderr: memoryStream() } })
+			.command({
+				name: 'tasks',
+				commands: [
+					{ name: 'add', run() {} },
+					{ name: 'rm', run() {} }
+				],
+				run: returns as any
+			})
+			.parse(['node', 'app', 'tasks'])
+		return stdout.text
+	}
+
+	it('offers its own verbs in the help of a result()', async () => {
+		const text = await runGroup(() => result({ n: 1 }, { help: 'Run `app x`' }))
+		expect(JSON.parse(text).help).toEqual(['Run `app x`', 'valid commands for `app tasks`: add, rm'])
+	})
+
+	it('offers its verbs after an empty() state', async () => {
+		const text = await runGroup(() => empty('0 tasks'))
+		expect(JSON.parse(text).help).toEqual(['valid commands for `app tasks`: add, rm'])
+	})
+
+	it('leaves an answer that already lists commands as it is', async () => {
+		const text = await runGroup(() => result({ commands: ['add'] }))
+		expect(JSON.parse(text)).toEqual({ commands: ['add'] })
+	})
+
+	it('leaves a plain value as it is', async () => {
+		expect(JSON.parse(await runGroup(() => ({ n: 1 })))).toEqual({ n: 1 })
+	})
+})

@@ -12,9 +12,9 @@ import { createRegistry } from '../plugins/registry.js'
 import { answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
-import { generateHelpMessage, generateHelpModel } from '../render/help.js'
+import { commandSignature, generateHelpMessage, generateHelpModel } from '../render/help.js'
 import { type Ref, refArgs, renderHelp } from '../render/ref.js'
-import { describeMissingCommand, describeUsageError, topUsageError } from '../render/usage_error.js'
+import { commandName, describeMissingCommand, describeUsageError, topUsageError } from '../render/usage_error.js'
 import { type CliError, exitCodes, helpLinesOf, isCliError, isReportedCliError } from './errors.js'
 import { state } from './state.js'
 import { resolveGlobalOptions, resolveUsageErrors } from './usage_errors.js'
@@ -237,7 +237,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 			commandInstance.ui.showVersion = () => writeVersion()
 		}
 		try {
-			return answer(await commandInstance.run(args as any), globals.format)
+			return answer(await commandInstance.run(args as any), globals.format, command)
 		} catch (e) {
 			// a command signals failure by throwing `CliError`. Anything else is a
 			// defect in the command and keeps propagating to the caller.
@@ -272,9 +272,13 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	}
 
 	// prints the answer only in `axi` output (axi-native RFC section 3.5); `parse()` resolves to the value either way
-	function answer(returned: unknown, format: cli.Format) {
+	function answer(returned: unknown, format: cli.Format, command?: Command) {
 		if (output === 'axi') {
-			const text = printAnswer(returned, format, { resolve: resolveRef, refs })
+			// a group that answers with live data also offers its own verbs (AXI change 2, #741)
+			const verbs = command?.commands?.length
+				? `valid commands for \`${commandName(command, s.name)}\`: ${command.commands.map(commandSignature).join(', ')}`
+				: undefined
+			const text = printAnswer(returned, format, { resolve: resolveRef, refs, verbs })
 			if (text !== undefined) context.writeStdout(text)
 		}
 		return answerValue(returned)

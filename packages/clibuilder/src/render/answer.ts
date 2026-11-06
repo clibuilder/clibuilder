@@ -114,6 +114,11 @@ export namespace printAnswer {
 		resolve?: RefResolver | undefined
 		/** `'help'` (default) renders refs as `help` strings; `'next'` encodes them as `next[N]{run,why}`. */
 		refs?: RefsMode | undefined
+		/**
+		 * A help line naming the verbs of the group that answered, added to a `result()` or `empty()` answer
+		 * unless its value already has a `commands` key.
+		 */
+		verbs?: string | undefined
 	}
 }
 
@@ -125,6 +130,8 @@ export namespace printAnswer {
 export function printAnswer(returned: unknown, format: Format, options: printAnswer.Options = {}): string | undefined {
 	if (returned === undefined) return undefined
 	const tail = (lines: readonly HelpLine[]) => renderHelp(lines, options.resolve, options.refs)
+	const withVerbs = (value: unknown, lines: readonly HelpLine[]) =>
+		options.verbs && !hasOwnCommands(value) ? [...lines, options.verbs] : lines
 	if (!isAnswer(returned)) return print(returned, tail([]), format)
 	switch (returned[answerKey]) {
 		case 'written':
@@ -132,13 +139,18 @@ export function printAnswer(returned: unknown, format: Format, options: printAns
 		case 'document':
 			return line(returned.value)
 		case 'empty':
-			return line(encode(withHelp({ empty: returned.value }, tail(returned.help)), format))
+			return line(encode(withHelp({ empty: returned.value }, tail(withVerbs(returned.value, returned.help))), format))
 		case 'result': {
 			const render = returned.render?.[format]
-			if (render) return withRenderedHelp(render(returned.value), tail(returned.help), format)
-			return print(returned.value, tail(returned.help), format)
+			if (render)
+				return withRenderedHelp(render(returned.value), tail(withVerbs(returned.value, returned.help)), format)
+			return print(returned.value, tail(withVerbs(returned.value, returned.help)), format)
 		}
 	}
+}
+
+function hasOwnCommands(value: unknown) {
+	return typeof value === 'object' && value !== null && 'commands' in value
 }
 
 type Tail = ReturnType<typeof renderHelp>
