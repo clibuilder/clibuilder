@@ -4,9 +4,8 @@
 // the startup path of every CLI invocation (~16ms), and they are reached through
 // each command's `context` so a test can substitute a fake.
 
-// Discovery of installed plugins happens here. It walks `node_modules`, so it finds nothing
-// under Yarn PnP (#575). The fix is one PnP-aware resolver shared with the `dependencies`
-// source in `../dependencies.ts` (slim-dependencies RFC section 9.6).
+// Discovery of installed plugins happens here. `find-installed-packages` 4.0.2 and later
+// also finds them under Yarn PnP, including plugins whose `exports` hide `package.json` (#575).
 export const findByKeywords: typeof import('find-installed-packages').findByKeywords = async (...args) =>
 	(await import('find-installed-packages')).findByKeywords(...args)
 

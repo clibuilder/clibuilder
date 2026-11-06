@@ -35,8 +35,8 @@ async function findPackageJson(cwd: string) {
  * `node_modules/<name>` in the project directory, then in each ancestor.
  *
  * This is the one place a dependency is located on disk. It walks `node_modules`,
- * so it finds nothing under Yarn PnP. That is the same gap as #575 (`plugins list`
- * finds nothing under Yarn PnP), and one PnP-aware resolver should fix both
+ * so it finds nothing under Yarn PnP. `plugins list` no longer has this gap (#575,
+ * fixed in `find-installed-packages` 4.0.2); this source still does
  * (slim-dependencies RFC section 9.6).
  */
 async function readDependencyPackageJson(projectDir: string, name: string) {

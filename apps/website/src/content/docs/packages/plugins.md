@@ -147,6 +147,5 @@ plugin registry (`defineKey`, `defineCollectionKey` and `this.registry`) stays i
 
 ## Known gaps
 
-Under Yarn PnP, `plugins list` finds nothing
-([#575](https://github.com/clibuilder/clibuilder/issues/575)), and the `dependencies` source cannot
-read a dependency's `package.json`.
+Under Yarn PnP, the `dependencies` source cannot read a dependency's `package.json`. `plugins list`
+works under Yarn PnP ([#575](https://github.com/clibuilder/clibuilder/issues/575)).
