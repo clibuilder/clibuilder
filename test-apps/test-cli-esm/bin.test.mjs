@@ -68,6 +68,24 @@ test('plugins search is reachable', () => {
 	assert.match(r.stdout, /Usage: test-cli plugins search/)
 })
 
+test('the plugins group carries the install sub-command the cli adds to it', () => {
+	const r = run('plugins', '--help', '--format', 'text')
+	assert.equal(r.code, 0)
+	assert.match(r.stdout, /list \(ls\), search, install/)
+})
+
+test('plugins install rejects a spec that is not a package name before running a package manager', () => {
+	const r = run('plugins', 'install', 'pkg;rm', '--format', 'json')
+	assert.equal(r.code, 2)
+	assert.equal(r.stderr, '')
+	assert.deepEqual(JSON.parse(r.stdout), {
+		error: 'not a package name: pkg;rm',
+		code: 'invalid-value',
+		plugin: 'pkg;rm',
+		help: ['Run `test-cli plugins search` to see the plugin names']
+	})
+})
+
 test('an unknown command is a usage error', () => {
 	const r = run('no-such-command')
 	assert.equal(r.code, 2)

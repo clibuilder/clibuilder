@@ -252,6 +252,9 @@ $ npm install my-cli-plugin    # install it
                                # then add it to `plugins` in the config file
 ```
 
+To give your users a `plugins install` command, or a plugins page on your CLI's website, see
+[Plugin Directory](/clibuilder/guides/plugin-directory/).
+
 ## Writing a plugin
 
 Export an `activate` function that takes a `PluginActivationContext` and calls `addCommand`. Import
