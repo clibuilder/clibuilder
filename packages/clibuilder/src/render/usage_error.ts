@@ -143,7 +143,7 @@ function keyName(key: string, command: cli.Command) {
 		: { label: optionName(key), details: { option: optionName(key) } }
 }
 
-function commandName(command: cli.Command, cliName: string) {
+export function commandName(command: cli.Command, cliName: string) {
 	const names: string[] = []
 	for (let c: Command | undefined = command; c; c = c.parent) if (c.name) names.unshift(c.name)
 	return [cliName, ...names].join(' ')
