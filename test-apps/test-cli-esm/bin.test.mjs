@@ -58,7 +58,7 @@ test('plugins list finds the installed plugin carrying the test-cli keyword', ()
 	assert.equal(r.code, 0)
 	assert.deepEqual(JSON.parse(r.stdout), {
 		plugins: ['esm-plugin'],
-		help: ['Run `plugins search` to find more plugins on npm']
+		help: ['Run `test-cli plugins search` to find more plugins on npm']
 	})
 })
 
@@ -72,6 +72,13 @@ test('the plugins group carries the install sub-command the cli adds to it', () 
 	const r = run('plugins', '--help', '--format', 'text')
 	assert.equal(r.code, 0)
 	assert.match(r.stdout, /list \(ls\), search, install/)
+})
+
+test('plugins, invoked bare, shows the installed plugins followed by its own commands', () => {
+	const r = run('plugins', '--format', 'json')
+	assert.equal(r.code, 0)
+	assert.equal(r.stderr, '')
+	assert.deepEqual(JSON.parse(r.stdout), { plugins: ['esm-plugin'], commands: ['list', 'search', 'install'] })
 })
 
 test('plugins install rejects a spec that is not a package name before running a package manager', () => {

@@ -32,15 +32,30 @@ npx @clibuilder/codemod src
 
 `@clibuilder/codemod` runs through `npx`; it needs no install.
 
-It takes files, directories and globs. `--dry-run` prints a unified diff and writes nothing. It
-ends with a summary of three kinds of finding:
+It takes files, directories and globs, and it answers like any clibuilder 12 command. By default it
+prints [TOON](https://github.com/toon-format/toon) on stdout, with a count of each kind of finding:
 
 - **rewritten**: the codemod changed the code. Review the diff.
 - **flagged**: the codemod could not change the code safely. It added a
   `// TODO(clibuilder-12): …` comment above the line that says what to do. Search for
   `TODO(clibuilder-12)` and fix each one by hand.
-- **returns to review**: every `return <expr>` in a `run()`, listed with its file and line, because
+- **review**: every `return <expr>` in a `run()`, listed with its file and line, because
   12 prints it (see [Returned values are printed](#returned-values-are-printed)).
+
+`findings` lists the flagged and reviewed lines as `file:line:column`, 30 at most. When there are more,
+`count` says how many were cut and `--full` lists them all. Rewrites are counted, not listed.
+
+| Option | Effect |
+| --- | --- |
+| `--dry-run` | Print a unified diff on stdout and write nothing. The report goes to stderr. |
+| `--add-plugins` | Add `.use(plugins())` to every `cli()` that sets `config`. |
+| `--format json` | Print the same answer as JSON. |
+| `--format text` | Print the report as plain prose. |
+| `--full` | List every finding instead of the first 30. |
+
+It exits `0` on success, `1` when a file could not be read or parsed (the answer names the files, and
+the other files are still changed unless you passed `--dry-run`), and `2` when it was called wrongly, such
+as with no path. `--help` and `--version` work as in any clibuilder 12 command.
 
 What it rewrites and what it flags:
 

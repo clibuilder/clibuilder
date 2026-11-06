@@ -136,6 +136,14 @@ Commands:
 plugins <command> -h     Get help for <command>
 ```
 
+Invoked bare, `plugins` shows the installed plugins, followed by the group's own commands:
+
+```sh
+$ my-cli plugins
+plugins[3]: my-cli-plugin,my-cli-plugin-git,@acme/my-cli-plugin-deploy
+commands[2]: list,search
+```
+
 The two sub-commands answer two different questions.
 
 ### `plugins list` — what is installed
@@ -146,15 +154,15 @@ any of the CLI's keywords. It reads the local dependency tree only; it never tou
 ```sh
 $ my-cli plugins list
 plugins[3]: my-cli-plugin,my-cli-plugin-git,@acme/my-cli-plugin-deploy
-help[1]: Run `plugins search` to find more plugins on npm
+help[1]: Run `my-cli plugins search` to find more plugins on npm
 ```
 
 With none installed:
 
 ```sh
 $ my-cli plugins list
-plugins: 0 installed plugins found with keywords: my-cli-plugin
-help[1]: Run `plugins search` to find plugins to install
+empty: 0 installed plugins found with keywords: my-cli-plugin
+help[1]: Run `my-cli plugins search` to find plugins to install
 ```
 
 Note what `list` is *not*: it reports what is installed, not what is loaded. A package can appear
@@ -168,7 +176,7 @@ how a user finds a plugin they have not installed yet.
 ```sh
 $ my-cli plugins search
 packages[3]: my-cli-plugin,my-cli-plugin-git,@acme/my-cli-plugin-deploy
-help[1]: Run `plugins list` to see which of them are installed
+help[1]: Run `my-cli plugins list` to see which of them are installed
 ```
 
 `search` also takes `--fields keywords`, which reports which of the CLI's keywords found each
@@ -176,10 +184,17 @@ package — worth asking when one broad keyword can pull in a package that is no
 
 ```sh
 $ my-cli plugins search --fields keywords
-packages[2]{name,keywords}:
-  my-cli-plugin,my-cli
-  shared-tool,my-cli unional
+packages[2]:
+  - name: my-cli-plugin
+    keywords[1]: my-cli
+  - name: shared-tool
+    keywords[2]: my-cli,unional
+help[1]: Run `my-cli plugins list` to see which of them are installed
 ```
+
+A list longer than 20 entries is cut to the first 20, with `count: 20 of 47 total` and a next step
+that adds `--full`, which shows them all. Each next step names a command in the group, with the
+CLI's name, so it runs as written.
 
 ### `--format` — who is reading
 
@@ -188,7 +203,10 @@ Both sub-commands take `--format <toon|text|json>`. The default is `toon`, follo
 agent far more often than by a person, and toon is the cheaper read for one.
 
 The `--format text` and `--format json` examples below are the `output: 'console'` rendering. With
-the default `output: 'axi'`, the report is an answer, as the end of this section shows.
+the default `output: 'axi'`, the report is an answer, as the end of this section shows. With
+`output: 'console'`, the `toon` report is the one above, except that the next steps leave out the
+CLI's name and nothing installed reads `plugins: 0 installed plugins found ...`, and a bare
+`plugins` prints the group's help and exits with code `2`.
 
 `--format text` is the human-readable prose, and it is the one form that varies with the count:
 
@@ -234,14 +252,15 @@ then carries the `help` list too, and nothing installed or found is an empty sta
 
 ```sh
 $ my-cli plugins list --format json
-{"plugins":["my-cli-plugin"],"help":["Run `plugins search` to find more plugins on npm"]}
+{"plugins":["my-cli-plugin"],"help":["Run `my-cli plugins search` to find more plugins on npm"]}
 
 $ my-cli plugins list
-empty: "0 installed plugins found with keywords: my-cli-plugin"
-help[1]: Run `plugins search` to find plugins to install
+empty: 0 installed plugins found with keywords: my-cli-plugin
+help[1]: Run `my-cli plugins search` to find plugins to install
 ```
 
-An unknown `--fields` value is then an error with code `invalid-value` and exit code `2`.
+An unknown `--fields` value is then an error with code `invalid-value` and exit code `2`. A registry
+search that fails is an error with code `registry-search-failed` and exit code `1`.
 
 Neither sub-command installs anything or edits your config. Adopting a plugin stays a deliberate,
 two-step act:

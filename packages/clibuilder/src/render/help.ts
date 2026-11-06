@@ -34,11 +34,25 @@ export function generateUsageSection(cliName: string, command: Command) {
 	if (command.arguments) {
 		message += command.arguments.some((a) => isRequired(a, true)) ? ' <arguments>' : ' [arguments]'
 	}
-	if (command.options) {
-		const options = command.options
+	if (hasOptions(command)) {
+		const options = command.options!
 		message += Object.keys(options).some((k) => isRequired(options[k], false)) ? ' <options>' : ' [options]'
 	}
 	return message
+}
+
+// a command whose only option gave way to the global `--format` is left with an empty `options`
+function hasOptions(command: Command) {
+	return !!command.options && Object.keys(command.options).length > 0
+}
+
+/**
+ * A sub-command as a bare group lists it: its name and its required arguments, such as `get <id>`
+ * (AXI change 2: names and required arguments only).
+ */
+export function commandSignature(command: cli.Command) {
+	const required = (command.arguments ?? []).filter((a) => isRequired(a, true)).map((a) => `<${a.name}>`)
+	return [command.name, ...required].join(' ')
 }
 
 function isRequired({ type, default: d }: { type?: cli.Command.Type; default?: unknown }, defaultValue: boolean) {
@@ -104,15 +118,16 @@ function generateArgumentsSection(command: Command) {
 }
 
 function generateOptionsSection(command: Command) {
-	if (!command.options) return ''
+	if (!hasOptions(command)) return ''
 
 	let message = 'Options:\n'
 	const entries: string[][] = []
 	let maxOptionStrWidth = 0
-	for (const key in command.options) {
-		const value = command.options[key]
+	const options = command.options!
+	for (const key in options) {
+		const value = options[key]
 		const optionStr = formatKeyValue(key, value)
-		const description = formatDescription(value, conflictsOf(key, command.options))
+		const description = formatDescription(value, conflictsOf(key, options))
 		entries.push([optionStr, description])
 		maxOptionStrWidth = Math.max(maxOptionStrWidth, optionStr.length)
 	}

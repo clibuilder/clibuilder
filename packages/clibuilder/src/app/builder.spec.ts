@@ -1325,8 +1325,24 @@ describe('--show-config with output axi', () => {
 			.default({ run() {} })
 			.parse(argv('test-cli --show-config --format json'))
 
-		expect(JSON.parse(ctx.stdout)).toEqual({ source: 'none', config: null })
+		expect(JSON.parse(ctx.stdout)).toEqual({
+			source: 'none',
+			config: null,
+			help: [
+				'No config found in this directory or a parent. Create `test-clirc.json` or another config file (`--show-config --verbose` lists the names), or add a "test-cli" key to package.json'
+			]
+		})
 		expect(ctx.exitCode).toBeUndefined()
+	})
+
+	it('says where to put a config under --format text when none was found', async () => {
+		const [builder, ctx] = setupBuilderTest(undefined, { output: 'axi' })
+		await builder
+			.use(config())
+			.default({ run() {} })
+			.parse(argv('test-cli --show-config --format text'))
+
+		expect(ctx.stdout).toMatch(/^config: not found\n\nhelp:\n {2}- No config found in this directory or a parent\./)
 	})
 
 	it('is answered under --silent', async () => {

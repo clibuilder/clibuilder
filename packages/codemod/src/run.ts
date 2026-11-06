@@ -27,16 +27,44 @@ export namespace runCodemod {
 	}
 }
 
+export namespace codemod {
+	export type Options = {
+		readonly patterns: readonly string[]
+		readonly cwd: string
+		readonly dryRun?: boolean | undefined
+		readonly addPlugins?: boolean | undefined
+	}
+
+	export type FileFinding = Finding & { readonly file: string }
+
+	export type Result = {
+		readonly summary: runCodemod.Summary
+		/** Every finding, rewrites included, in file order. `file` is relative to `cwd`. */
+		readonly findings: readonly FileFinding[]
+		/** The files that could not be read or parsed. */
+		readonly failures: readonly { readonly file: string; readonly message: string }[]
+		/** The `package.json` files that got dependencies, and the names added to each. */
+		readonly dependencies: readonly { readonly file: string; readonly names: readonly string[] }[]
+		/** In dry-run, the unified diff of every change, empty when nothing would change or when writing. */
+		readonly diff: string
+		/** The report in file order, as `runCodemod` prints it: findings and errors per file, then the dependency notes. */
+		readonly report: string
+	}
+}
+
 /**
- * Runs the codemod over the files `patterns` name, and prints what it did and what is left to do.
- * With `dryRun`, the changes are printed as a unified diff on stdout and the report goes to stderr.
+ * Scans, transforms and (unless `dryRun`) writes the files `patterns` name, and returns what happened as data.
  */
-export function runCodemod(options: runCodemod.Options): runCodemod.Summary {
+export function codemod(options: codemod.Options): codemod.Result {
 	const { cwd, dryRun = false } = options
-	const report = dryRun ? options.stderr : options.stdout
 	const files = expandPatterns(options.patterns, cwd)
 	const dependencies = new Map<string, Set<string>>()
 	const summary = { scanned: files.length, changed: 0, rewritten: 0, flagged: 0, review: 0, failed: 0 }
+	const findings: codemod.FileFinding[] = []
+	const failures: { file: string; message: string }[] = []
+	const added: { file: string; names: string[] }[] = []
+	let report = ''
+	let diff = ''
 
 	for (const file of files) {
 		const relative = path.relative(cwd, file).split(path.sep).join('/')
@@ -47,18 +75,21 @@ export function runCodemod(options: runCodemod.Options): runCodemod.Summary {
 			result = transform(source, file, { addPlugins: options.addPlugins })
 		} catch (error) {
 			summary.failed++
-			report.write(`${relative}\n  error: ${error instanceof Error ? error.message : String(error)}\n`)
+			const message = error instanceof Error ? error.message : String(error)
+			failures.push({ file: relative, message })
+			report += `${relative}\n  error: ${message}\n`
 			continue
 		}
-		if (result.findings.length > 0) report.write(formatFindings(relative, result.findings))
+		if (result.findings.length > 0) report += formatFindings(relative, result.findings)
 		for (const finding of result.findings) {
+			findings.push({ ...finding, file: relative })
 			if (finding.kind === 'rewrite') summary.rewritten++
 			else if (finding.kind === 'flag') summary.flagged++
 			else summary.review++
 		}
 		if (result.output !== source) {
 			summary.changed++
-			if (dryRun) options.stdout.write(unifiedDiff(relative, source, result.output))
+			if (dryRun) diff += unifiedDiff(relative, source, result.output)
 			else fs.writeFileSync(file, result.output)
 		}
 		if (result.dependencies.length > 0) {
@@ -76,15 +107,31 @@ export function runCodemod(options: runCodemod.Options): runCodemod.Summary {
 		const after = addDependencies(before, [...names])
 		if (after === before) continue
 		const relative = path.relative(cwd, packageJson).split(path.sep).join('/')
-		report.write(
-			`${relative}\n  rewrite  added ${[...names].join(', ')} to dependencies; run your package manager's install\n`
-		)
-		if (dryRun) options.stdout.write(unifiedDiff(relative, before, after))
+		added.push({ file: relative, names: [...names] })
+		report += `${relative}\n  rewrite  added ${[...names].join(', ')} to dependencies; run your package manager's install\n`
+		if (dryRun) diff += unifiedDiff(relative, before, after)
 		else fs.writeFileSync(packageJson, after)
 	}
 
-	report.write(formatSummary(summary, dryRun))
-	return summary
+	return { summary, findings, failures, dependencies: added, diff, report }
+}
+
+/**
+ * Runs the codemod over the files `patterns` name, and prints what it did and what is left to do.
+ * With `dryRun`, the changes are printed as a unified diff on stdout and the report goes to stderr.
+ */
+export function runCodemod(options: runCodemod.Options): runCodemod.Summary {
+	const { dryRun = false } = options
+	const report = dryRun ? options.stderr : options.stdout
+	const result = codemod(options)
+	if (result.diff) options.stdout.write(result.diff)
+	report.write(formatReport(result, dryRun))
+	return result.summary
+}
+
+/** The prose report: what `runCodemod` prints. */
+export function formatReport(result: codemod.Result, dryRun: boolean) {
+	return result.report + formatSummary(result.summary, dryRun)
 }
 
 function formatFindings(file: string, findings: readonly Finding[]) {

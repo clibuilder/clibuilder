@@ -116,7 +116,29 @@ describe('encode() toon of a collection', () => {
 })
 
 describe('encode() toon reads back with a toon decoder', () => {
-	const pieces = ['a', ' ', ': ', ',', '"', '\\', '-', '#', '[', ']', '{', '}', '|', '\n', '\t', '1', '.', 'e', 'true', 'null', '[]']
+	const pieces = [
+		'a',
+		' ',
+		': ',
+		',',
+		'"',
+		'\\',
+		'-',
+		'#',
+		'[',
+		']',
+		'{',
+		'}',
+		'|',
+		'\n',
+		'\t',
+		'1',
+		'.',
+		'e',
+		'true',
+		'null',
+		'[]'
+	]
 	// a fixed seed, so a failure reproduces
 	let seed = 1
 	const next = () => {
