@@ -38,6 +38,7 @@ export default defineConfig({
 					label: 'Getting Started',
 					items: [
 						{ label: 'Introduction', slug: 'getting-started/introduction' },
+						{ label: 'AXI Conventions', slug: 'getting-started/axi' },
 						{ label: 'Installation', slug: 'getting-started/installation' },
 						{ label: 'Your First CLI', slug: 'getting-started/first-cli' }
 					]
