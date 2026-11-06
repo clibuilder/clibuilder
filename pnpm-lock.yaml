@@ -545,8 +545,8 @@ importers:
   packages/plugins:
     dependencies:
       find-installed-packages:
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^4.0.2
+        version: 4.0.2
       import-meta-resolve:
         specifier: ^4.2.0
         version: 4.2.0
@@ -3194,6 +3194,10 @@ packages:
 
   find-installed-packages@4.0.1:
     resolution: {integrity: sha512-5bQRIhtLkyLRXxDsUX/GzXLx7vlfFJIlrPinxpmDD0s1n26UzA6Fxva1YOWTW3J31mDL683yZUIxohR3n7ZhUg==}
+    engines: {bun: '>=1.0', node: '>=20.19'}
+
+  find-installed-packages@4.0.2:
+    resolution: {integrity: sha512-WlGcs8PfOx1IMizd1IxKvQVCFgpcVd1sngVjGLnpsZ/66NYvvwIPXCrMv6ib8Oji7VX7KYETr/p1FJMgvtC9Yg==}
     engines: {bun: '>=1.0', node: '>=20.19'}
 
   findup-sync@5.0.0:
@@ -7775,6 +7779,12 @@ snapshots:
       package-manager-detector: 1.8.0
       temp: 0.9.4
       unpartial: 1.0.7
+
+  find-installed-packages@4.0.2:
+    dependencies:
+      package-manager-detector: 1.8.0
+      temp: 0.9.4
+      unpartial: 1.0.8
 
   findup-sync@5.0.0:
     dependencies:
