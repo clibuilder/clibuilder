@@ -1412,3 +1412,17 @@ describe('parse() resolves to the exit code it records', () => {
 		expect(ctx.exitCode).toBeUndefined()
 	})
 })
+
+describe('option names that exist on Object.prototype (#724)', () => {
+	const names = ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'valueOf']
+	const sub = () => command({ name: 'sub', run: () => expect.fail('should not reach') })
+
+	it.each(names)('reports --%s as an unknown option instead of throwing', async (name) => {
+		const onUsageError = vi.fn()
+		const [builder, ctx] = setupBuilderTest(undefined, { onUsageError })
+		await builder.default({ commands: [sub()] }).parse(argv(`test-cli sub --${name} 1`))
+		const errors: cli.UsageError[] = onUsageError.mock.calls[0][0]
+		expect(errors.map((e) => [e.type, e.code, 'key' in e && e.key])).toEqual([['invalid-key', 'unknown-option', name]])
+		expect(ctx.exitCode).toBe(exitCodes.usage)
+	})
+})

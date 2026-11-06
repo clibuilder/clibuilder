@@ -1,5 +1,6 @@
 import type { cli } from '../cli.js'
 import { takesValue } from '../descriptor.js'
+import { getOwn, hasOwn, setOwn } from '../own_keys.js'
 import { type AnyDescriptor, type DescriptorKind, t } from '../t.js'
 import type { parseArgv } from './argv.js'
 import { type OptionOccurrence, optionOccurrences } from './argv_occurrences.js'
@@ -196,11 +197,11 @@ function assignOptionValues(
 		if (declared) descriptorOccurrences.push({ key: o.key, tokens: [o.raw, ...taken] })
 		positionals.push(...o.following.slice(count))
 		const own = o.inline.length + taken.length > 0 ? [...o.inline, ...taken] : ['true']
-		values[o.key] = [...(values[o.key] ?? []), ...own]
+		setOwn(values, o.key, [...(getOwn(values, o.key) ?? []), ...own])
 	}
 	const result: parseArgv.Result = { ...rawArgs, _: [...rawArgs._, ...positionals] }
 	// a key missing from `rawArgs` was removed by the caller (`builder` consumes the global flags).
-	for (const key of Object.keys(values)) if (rawArgs[key]) result[key] = values[key]!
+	for (const key of Object.keys(values)) if (hasOwn(rawArgs, key)) setOwn(result, key, values[key]!)
 	return [result, descriptorOccurrences]
 }
 
@@ -328,7 +329,7 @@ function collectDescriptorOptions(state: State, occurrences: DescriptorOccurrenc
 export function lookupOptions(command: cli.Command, key: string): [string, cli.Command.Options.Entry] | [] {
 	const opts = command.options
 	if (!opts) return []
-	const options = opts[key]
+	const options = getOwn(opts, key)
 	if (options) return [key, options]
 	const optKey = Object.keys(opts).find((k) => {
 		const opt = opts[k]

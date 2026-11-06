@@ -233,4 +233,11 @@ describe('describeInvalidConfig()', () => {
 			help: []
 		})
 	})
+	it('keeps a key that exists on Object.prototype as its own detail (#724)', () => {
+		const errors = JSON.parse('{"__proto__":["bad"],"constructor":["worse"]}')
+		const { details } = describeInvalidConfig(errors)
+		expect(Object.getPrototypeOf(details)).toBe(Object.prototype)
+		expect(Object.keys(details)).toEqual(['__proto__', 'constructor'])
+		expect(JSON.stringify(details)).toBe('{"__proto__":["bad"],"constructor":["worse"]}')
+	})
 })

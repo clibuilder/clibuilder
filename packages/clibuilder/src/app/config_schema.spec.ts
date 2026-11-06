@@ -67,6 +67,23 @@ describe('config from a zod 3 schema', () => {
 		expect(messages).toContain('Usage: app')
 		expect(exitCode).toBe(exitCodes.error)
 	})
+
+	it('reports a config key that exists on Object.prototype like any other key (#724)', async () => {
+		const { messages, exitCode } = await runWithConfig(
+			{
+				config: z.record(z.number()),
+				run() {
+					expect.fail('should not run')
+				}
+			},
+			JSON.parse('{"constructor":"x","__proto__":"y","toString":"z"}')
+		)
+		expect(messages).toContain(`config fails validation:
+  constructor: Expected number, received string
+  __proto__: Expected number, received string
+  toString: Expected number, received string`)
+		expect(exitCode).toBe(exitCodes.error)
+	})
 })
 
 describe('config from a zod 4 schema', () => {

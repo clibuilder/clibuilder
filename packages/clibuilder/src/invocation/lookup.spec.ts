@@ -741,3 +741,31 @@ describe('conflicting options', () => {
 		expect(errors).toEqual([{ type: 'conflicting-options', key: 'env', conflictsWith: 'template' }])
 	})
 })
+
+describe('option names that exist on Object.prototype (#724)', () => {
+	const names = ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'valueOf']
+
+	test.each(names)('an undeclared --%s is an unknown option', (name) => {
+		const cmd = command({ name: '', options: { flag: { description: 'a flag' } }, run() {} })
+		const { errors } = testLookupCommand(cmd, `my-cli --${name} 1`)
+		expect(errors).toEqual([{ type: 'invalid-key', key: name }])
+	})
+	test.each(names)('an undeclared --%s is an unknown option on a command without options', (name) => {
+		const { errors } = testLookupCommand({ name: '', run() {} }, `my-cli --${name}`)
+		expect(errors).toEqual([{ type: 'invalid-key', key: name }])
+	})
+	test.each(names)('a declared %s option gets its value', (name) => {
+		const options: Record<string, cli.Command.Options.Entry> = {}
+		Object.defineProperty(options, name, {
+			value: { type: t.string(), description: 'x' },
+			enumerable: true,
+			writable: true,
+			configurable: true
+		})
+		const cmd = command({ name: '', options, run() {} })
+		const { args, errors } = testLookupCommand(cmd, `my-cli --${name} 1`)
+		expect(errors).toEqual([])
+		expect(Object.getOwnPropertyDescriptor(args, name)?.value).toBe('1')
+		expect(Object.getPrototypeOf(args)).toBe(Object.prototype)
+	})
+})

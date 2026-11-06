@@ -1,6 +1,7 @@
 import type { cli } from '../cli.js'
 import type { Command } from '../command/internal.js'
 import type { lookupCommand } from '../invocation/lookup.js'
+import { setOwn } from '../own_keys.js'
 import type { ErrorFields } from './encode.js'
 import { formatLookupError } from './error.js'
 import { generateUsageSection } from './help.js'
@@ -127,7 +128,7 @@ const reservedKeys = ['error', 'code', 'help']
 export function describeInvalidConfig(errors: Record<string, string[] | undefined>): Required<ErrorFields> {
 	const details: Record<string, string[]> = {}
 	for (const [key, messages] of Object.entries(errors)) {
-		if (messages) details[reservedKeys.includes(key) ? `config.${key}` : key] = messages
+		if (messages) setOwn(details, reservedKeys.includes(key) ? `config.${key}` : key, messages)
 	}
 	return { message: 'config fails validation', code: 'invalid-config', details, help: [] }
 }

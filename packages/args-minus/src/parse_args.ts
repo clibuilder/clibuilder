@@ -318,7 +318,8 @@ function* parse(config: ParseArgsConfig): Steps<ParsedArgs> {
 					const raw = names[i]!
 					const isLast = i === names.length - 1
 					const name = canonical.get(raw) ?? raw
-					const declaration = declarations?.[name]
+					// own keys only, so `--constructor` or `--__proto__` finds no `Object.prototype` member
+					const declaration = declarations && hasOwn(declarations, name) ? declarations[name] : undefined
 					if (config.strict && !declaration) {
 						throw new ParseArgsError(`Unknown option '${raw}' (from '${token.raw}')`, raw, token.raw, {
 							kind: 'unknown-option'
@@ -383,6 +384,11 @@ function* parse(config: ParseArgsConfig): Steps<ParsedArgs> {
 	const result: ParsedArgs = { _, __, options }
 	if (config.tokens) result.tokens = tokens
 	return result
+}
+
+function hasOwn(object: object, key: string) {
+	// biome-ignore lint/suspicious/noPrototypeBuiltins: `Object.hasOwn` is not in the ES2020 lib this package targets
+	return Object.prototype.hasOwnProperty.call(object, key)
 }
 
 function checkDeclarations(declarations: OptionDeclarations | undefined) {

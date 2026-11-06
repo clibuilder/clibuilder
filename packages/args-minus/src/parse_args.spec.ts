@@ -486,3 +486,18 @@ describe('custom grammar', () => {
 		)
 	})
 })
+
+describe('option names that exist on Object.prototype', () => {
+	const names = ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'valueOf']
+	const options = { name: { type: 'string' } } as const
+
+	it.each(names)('strict reports an undeclared --%s as unknown', (name) => {
+		expect(() => parseArgs({ args: [`--${name}=1`], options, strict: true })).toThrow(
+			`Unknown option '${name}' (from '--${name}=1')`
+		)
+	})
+	it.each(names)('permissive keeps an undeclared --%s as a string', (name) => {
+		const r = parseArgs({ args: [`--${name}=1`], options })
+		expect(Object.getOwnPropertyDescriptor(r.options, name)?.value).toBe('1')
+	})
+})
