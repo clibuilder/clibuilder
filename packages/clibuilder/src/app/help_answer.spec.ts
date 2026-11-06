@@ -127,17 +127,17 @@ describe('--help under output axi', () => {
 		expect(help.commands).toBeUndefined()
 	})
 
-	it('lists the global options once', async () => {
+	it('lists only the relevant global options on a non-root node', async () => {
 		const help = JSON.parse((await run('deploy --help --format json')).stdout)
-		expect(help.globalOptions.map((o: any) => o.name)).toEqual([
-			'help',
-			'version',
-			'verbose',
-			'silent',
-			'debug-cli',
-			'format'
-		])
+		expect(help.globalOptions.map((o: any) => o.name)).toEqual(['help', 'format'])
+		expect(help.otherGlobalOptions).toEqual(['version', 'verbose', 'silent', 'debug-cli'])
 		expect(help.globalOptions.find((o: any) => o.name === 'format')).toMatchObject({ default: 'toon' })
+	})
+
+	it('shows a group its sub-commands with full signatures, in text', async () => {
+		const r = await run('remote --help --format text')
+		expect(r.stdout).toContain('Commands:\n  add')
+		expect(r.stdout).toContain('remove (rm)')
 	})
 
 	it('keeps the global options out of the root options', async () => {
@@ -145,9 +145,10 @@ describe('--help under output axi', () => {
 		expect(help.name).toBe('app')
 		expect(help.options).toBeUndefined()
 		expect(help.globalOptions).toHaveLength(6)
+		expect(help.otherGlobalOptions).toBeUndefined()
 		expect(help.commands).toEqual([
-			{ name: 'deploy', description: 'Deploy the app' },
-			{ name: 'remote', description: 'Manage remotes' }
+			{ name: 'deploy', usage: 'deploy <target: prod|dev> [-p|--port <int 1..65535>]', description: 'Deploy the app' },
+			{ name: 'remote', usage: 'remote <command>', description: 'Manage remotes' }
 		])
 	})
 
@@ -155,8 +156,8 @@ describe('--help under output axi', () => {
 		const help = JSON.parse((await run('remote --help --format json')).stdout)
 		expect(help).toMatchObject({ name: 'app remote', usage: 'app remote <command>' })
 		expect(help.commands).toEqual([
-			{ name: 'add', description: 'Add a remote' },
-			{ name: 'remove', aliases: ['rm'], description: 'Remove a remote' }
+			{ name: 'add', usage: 'add', description: 'Add a remote' },
+			{ name: 'remove', aliases: ['rm'], usage: 'remove', description: 'Remove a remote' }
 		])
 	})
 
@@ -165,7 +166,9 @@ describe('--help under output axi', () => {
 		['a group', 'remote', group]
 	])('answers for %s in text with the text help, unchanged', async (_, name, c) => {
 		const r = await run(`${name} --help --format text`)
-		expect(r.stdout).toBe(`${generateHelpMessage('app', { ...c, parent: { name: '' } as any })}\n`)
+		expect(r.stdout).toBe(
+			`${generateHelpMessage('app', { ...c, parent: { name: '' } as any }, { signatures: true })}\n`
+		)
 		expect(r.stderr).toBe('')
 	})
 
@@ -248,7 +251,7 @@ describe('--help under output axi', () => {
 		expect(help.description).toBeUndefined()
 		expect(help.arguments).toEqual([{ name: 'value', required: true }])
 		expect(help.options).toEqual([{ name: 'level', aliases: ['l'], required: false }])
-		expect(help.commands).toEqual([{ name: 'sub' }])
+		expect(help.commands).toEqual([{ name: 'sub', usage: 'sub' }])
 	})
 
 	it('describes t.number and t.int with one bound or none', async () => {
@@ -370,7 +373,9 @@ describe('ui.showHelp() and ui.showVersion() from run()', () => {
 
 	it('under output console writes the text help and the version through the ui, as before', async () => {
 		const r = await run('self', { output: 'console' }, self)
-		expect(r.stdout).toBe(`${generateHelpMessage('app', { ...self, parent: { name: '' } as any })}\n1.2.3\n`)
+		expect(r.stdout).toBe(
+			`${generateHelpMessage('app', { ...self, parent: { name: '' } as any }, { signatures: true })}\n1.2.3\n`
+		)
 		expect(r.stderr).toBe('')
 	})
 })

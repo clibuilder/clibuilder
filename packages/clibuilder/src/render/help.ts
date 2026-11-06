@@ -11,11 +11,15 @@ const INDENT = 2
 const RIGHT_PADDING = 2
 const MIN_LHS_WIDTH = 25
 
-export function generateHelpMessage(cliName: string, command: Command) {
+/**
+ * `signatures` lists a group's sub-commands with their full signatures (AXI change 2).
+ * Left off, the list is names only, as `output: 'console'` has always printed it.
+ */
+export function generateHelpMessage(cliName: string, command: Command, options?: { signatures?: boolean }) {
 	const helpSections = [
 		generateUsageSection(cliName, command),
 		generateDescriptionSection(command),
-		generateCommandsSection(command),
+		generateCommandsSection(command, options?.signatures ?? false),
 		generateArgumentsSection(command),
 		generateOptionsSection(command),
 		generateAliasSection(command),
@@ -74,26 +78,42 @@ function getCommandNameChain(cliName: string, command: Command) {
 	return [cliName, ...commands.map((c) => c.name).filter((x) => x)]
 }
 
-function generateCommandsSection(command: Command) {
-	const commandNames = getCommandsNamesAndAlias(command.commands)
-	if (commandNames.length === 0) return ''
-
-	return `Commands:
-  ${wrap(commandNames.join(', '), 80)}
-
-${(command.name ? `${command.name} <command> -h` : '  <command> -h').padEnd(MIN_LHS_WIDTH)}Get help for <command>`
+/**
+ * A sub-command as its group's `--help` lists it: name, alias, and the full signature of its
+ * arguments and options, such as `add <name: string> [--force]` (AXI change 2: a node's --help is its schema).
+ */
+export function commandFullSignature(command: cli.Command) {
+	const parts = [command.alias?.length ? `${command.name} (${command.alias.join('|')})` : command.name]
+	if (command.commands && command.commands.length > 0) parts.push('<command>')
+	for (const a of command.arguments ?? []) parts.push(a.type ? formatArgumentDescriptor(a.name, a.type) : `<${a.name}>`)
+	if (hasOptions(command)) {
+		const options = command.options!
+		for (const key in options) parts.push(formatKeyValue(key, options[key]))
+	}
+	return parts.join(' ')
 }
 
-function getCommandsNamesAndAlias(commands: cli.Command[] | undefined) {
-	const result: string[] = []
-	if (commands) {
-		commands.forEach((c) => {
-			if (c.alias) {
-				result.push(`${c.name} (${c.alias.join('|')})`)
-			} else result.push(c.name)
-		})
+function generateCommandsSection(command: Command, signatures: boolean) {
+	const commands = command.commands ?? []
+	if (commands.length === 0) return ''
+	if (!signatures) {
+		const names = commands.map((c) => (c.alias ? `${c.name} (${c.alias.join('|')})` : c.name))
+		return `Commands:
+  ${wrap(names.join(', '), 80)}
+
+${(command.name ? `${command.name} <command> -h` : '  <command> -h').padEnd(MIN_LHS_WIDTH)}Get help for <command>`
 	}
-	return result
+	const sigs = commands.map(commandFullSignature)
+	const width = Math.max(MIN_LHS_WIDTH - INDENT, ...sigs.map((x) => x.length + RIGHT_PADDING))
+	const lines = commands.map((c, i) => {
+		const line = c.description?.split('\n')[0] ?? ''
+		return `  ${sigs[i].padEnd(width)}${line}`.trimEnd()
+	})
+
+	return `Commands:
+${lines.join('\n')}
+
+${(command.name ? `${command.name} <command> -h` : '  <command> -h').padEnd(MIN_LHS_WIDTH)}Get help for <command>`
 }
 
 function generateArgumentsSection(command: Command) {
@@ -255,19 +275,30 @@ export type HelpModel = {
 	usage: string
 	description?: string
 	aliases?: string[]
-	/** The sub-commands, each with the first line of its description. */
+	/** The sub-commands, each with its full signature and the first line of its description. */
 	commands?: HelpModel.CommandSummary[]
 	arguments?: HelpModel.Argument[]
 	options?: HelpModel.Option[]
 	/** The type of the config, as the text help's `Config:` section shows it. */
 	config?: string
 	examples?: { command: string; description: string }[]
-	/** The options every command accepts, listed once. */
+	/**
+	 * The options every command accepts. The root lists them all; any other node lists only `help` and `format`,
+	 * the ones that shape its own answer, and names the rest under `otherGlobalOptions`.
+	 */
 	globalOptions?: HelpModel.Option[]
+	/** The global options a non-root node leaves out; `<cli> --help` describes them. */
+	otherGlobalOptions?: string[]
 }
 
 export namespace HelpModel {
-	export type CommandSummary = { name: string; aliases?: string[]; description?: string }
+	export type CommandSummary = {
+		name: string
+		aliases?: string[]
+		/** The signature, such as `add <name: string> [--force]`; without the alias. */
+		usage: string
+		description?: string
+	}
 
 	/**
 	 * What an argument or option accepts. `type` is the descriptor's kind, left out for a declaration without one.
@@ -307,7 +338,10 @@ export function generateHelpModel(cliName: string, command: Command, globalOptio
 	if (command.alias && command.alias.length > 0) model.aliases = [...command.alias]
 	if (command.commands && command.commands.length > 0) {
 		model.commands = command.commands.map((c) => {
-			const summary: HelpModel.CommandSummary = { name: c.name }
+			const summary: HelpModel.CommandSummary = {
+				name: c.name,
+				usage: commandFullSignature({ ...c, alias: undefined })
+			}
 			if (c.alias && c.alias.length > 0) summary.aliases = [...c.alias]
 			const line = c.description?.split('\n')[0]
 			if (line) summary.description = line
@@ -329,7 +363,13 @@ export function generateHelpModel(cliName: string, command: Command, globalOptio
 	if (command.examples && command.examples.length > 0) {
 		model.examples = command.examples.map(({ command, description }) => ({ command, description }))
 	}
-	model.globalOptions = optionModels(globalOptions, [])
+	if (isRoot) {
+		model.globalOptions = optionModels(globalOptions, [])
+	} else {
+		const others = Object.keys(globalOptions).filter((k) => k !== 'help' && k !== 'format')
+		model.globalOptions = optionModels(globalOptions, others)
+		if (others.length > 0) model.otherGlobalOptions = others
+	}
 	return model
 }
 
