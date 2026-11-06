@@ -238,14 +238,18 @@ that was read. Under `--format text` the property is named after the path:
 config: /home/me/project/package.json (property "app")
 ```
 
-And when nothing matched, `source` is `none` and `config` is `null`. Under `--format text`:
+And when nothing matched, `source` is `none`, `config` is `null`, and `help` says where a config
+would be read from:
 
 ```sh
-config: not found
+$ app --show-config
+source: none
+config: null
+help[1]: "No config found in this directory or a parent. Create `apprc.json` or another config file (`--show-config --verbose` lists the names), or add a \"app\" key to package.json"
 ```
 
-The warning listing every filename that was searched for is a diagnostic on stderr, as on any
-invocation that finds no config.
+Under `--format text`, the first line is `config: not found`, followed by the same `help`.
+`--verbose` lists every filename that was searched for, as a diagnostic on stderr.
 
 With `output: 'console'`, `--show-config` writes the `text` lines through the CLI's `ui`, on stdout,
 whatever the `--format`, as in 11.5.0.

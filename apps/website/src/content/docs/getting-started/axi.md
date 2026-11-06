@@ -34,7 +34,7 @@ what a command says, and only your command knows that. For those, the
 | 5 | **Definitive empty states.** Say the zero, with context. | `empty()` from `clibuilder`, and `orEmpty()` from `clibuilder/axi`. A bare empty list gets no special handling. | Return `empty('0 open tasks found')` instead of an empty list. |
 | 6 | **Structured errors and exit codes.** Errors on stdout, no prompts, unknown flags rejected, exit `0`, `1` or `2`. | Core reports one coded error on stdout, in the caller's format. It rejects unknown options and reports only the top-ranked usage error. It exits `0`, `1` or `2`, and it never prompts. See [Failing](/clibuilder/guides/failing/). | Throw a `CliError` with a `code` and a `help` line when the command cannot finish. A code above `2` is yours to define. |
 | 7 | **Ambient context.** An opt-in setup command installs session hooks. | Nothing. | Write the setup command yourself, if your CLI needs one. |
-| 8 | **Content first.** A bare invocation shows live data, not a manual. | A command with a `run()` runs when invoked bare. A group with no `run()` is a `missing-command` usage error that lists its sub-commands. See [Command groups](/clibuilder/guides/commands/#command-groups). | Give the root a [default command](/clibuilder/guides/commands/#the-default-command) that returns live data. |
+| 8 | **Content first.** A bare invocation shows live data, not a manual. | A command with a `run()` runs when invoked bare. A group with no `run()` is a `missing-command` usage error that lists its sub-commands and their required arguments. See [Command groups](/clibuilder/guides/commands/#command-groups). | Give the root a [default command](/clibuilder/guides/commands/#the-default-command) that returns live data. |
 | 9 | **Contextual disclosure.** A few next steps after the output. | `result(value, { help })` encodes `help[N]` inside the answer. `ref()` builds a command line and checks it against the command tree. See [The result channel](/clibuilder/api/cli/#the-result-channel). | Choose the next steps. See [change 3](#change-3-suggestions-pruned-by-validity). |
 | 10 | **Consistent help.** Per-command `--help`, a home header, a fast `--version`. | `--help` works on every command, and is structured data in `toon` and `json`. A bare `--version` is answered before config and plugins load. `homeHeader()` builds the `bin:` and `description:` lines. See [`--help` and `--version`](/clibuilder/api/cli/#--help-and---version-with-output-axi). | Add [`examples`](/clibuilder/api/command/#examples) to your commands, and `homeHeader()` to your home view. |
 
@@ -107,7 +107,8 @@ and walking all twelve resources one by one cost only 9% more than the whole sur
 - There is no command that prints the whole tree.
 - A group may have its own `run()`, so a bare group can return live data. `clibuilder` does not attach
   the group's verbs to that answer. Return them yourself if you want them there.
-- A group without a `run()` is a `missing-command` usage error, not live data.
+- A group without a `run()` is a `missing-command` usage error, not live data. Its `help` lists the
+  group's sub-commands with their required arguments, such as `get <id>`, and nothing more.
 
 How deep to nest and what to call each level is your design. See
 [Naming Commands](/clibuilder/guides/naming-commands/).

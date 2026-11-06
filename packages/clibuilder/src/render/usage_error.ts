@@ -4,7 +4,7 @@ import type { lookupCommand } from '../invocation/lookup.js'
 import { setProp } from '../props.js'
 import type { ErrorFields } from './encode.js'
 import { formatLookupError } from './error.js'
-import { generateUsageSection } from './help.js'
+import { commandSignature, generateUsageSection } from './help.js'
 
 // How core reports a usage error under `cli({ output: 'axi' })` (axi-native RFC section 3.3).
 // The ranking and the per-error help come from `@clibuilder/axi`'s `usage.ts`.
@@ -104,7 +104,7 @@ export function describeUsageError(
 /** A command group invoked without its sub-command (#609): `missing-command`, with the valid sub-commands in `help`. */
 export function describeMissingCommand(command: cli.Command, cliName: string): Required<ErrorFields> {
 	const name = commandName(command, cliName)
-	const commands = (command.commands ?? []).map((c) => c.name)
+	const commands = (command.commands ?? []).map(commandSignature)
 	return {
 		message: `missing command for \`${name}\``,
 		code: 'missing-command',
@@ -155,7 +155,7 @@ function isOptional(type: cli.Command.Type | undefined) {
 
 function argumentsHelp(command: cli.Command, cliName: string) {
 	const name = command.name || cliName
-	const commands = (command.commands ?? []).map((c) => c.name)
+	const commands = (command.commands ?? []).map(commandSignature)
 	if (!command.arguments?.length && commands.length > 0) return `valid commands for \`${name}\`: ${commands.join(', ')}`
 	const args = (command.arguments ?? []).map((a) => (isOptional(a.type) ? `[${a.name}]` : `<${a.name}>`))
 	return args.length > 0 ? `\`${name}\` takes: ${args.join(' ')}` : `\`${name}\` takes no arguments`

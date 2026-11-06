@@ -61,12 +61,30 @@ export function configExtension(
 }
 
 // in `axi` output it is the answer (`text` is the `console` rendering); in `console` output it goes through `ui.info`
-function showConfig({ config, source }: ConfigLoadResult, output: cli.Output, ui: { info(...args: any[]): void }) {
+function showConfig(
+	{ config, source, candidates }: ConfigLoadResult,
+	output: cli.Output,
+	ui: { info(...args: any[]): void }
+) {
 	const lines = [`config: ${describeConfigSource(source)}`]
 	if (source.type !== 'none') lines.push(JSON.stringify(config, undefined, 2))
-	if (output === 'axi') return result(configReport(source, config), { render: { text: () => lines.join('\n') } })
+	if (output === 'axi') {
+		return result(configReport(source, config), {
+			help: source.type === 'none' ? noConfigHelp(candidates) : undefined,
+			render: { text: () => lines.join('\n') }
+		})
+	}
 	for (const line of lines) ui.info(line)
 	return undefined
+}
+
+// says where a config would be read from, so `source: none` is a definite answer (AXI rule 5).
+// The candidates are many, so one is named; `--verbose` lists them all.
+function noConfigHelp(candidates: string[]) {
+	const name = candidates[0]
+	if (!name) return undefined
+	const file = candidates.find((c) => c.endsWith('rc.json')) ?? name
+	return `No config found in this directory or a parent. Create \`${file}\` or another config file (\`--show-config --verbose\` lists the names), or add a "${name}" key to package.json`
 }
 
 // with no config, a schema that rejects `undefined` validates `{}` instead,

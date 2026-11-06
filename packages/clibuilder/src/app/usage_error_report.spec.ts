@@ -155,7 +155,7 @@ describe('usage errors under output axi', () => {
 			'extra-arguments',
 			{
 				arguments: ['nope'],
-				help: ['Usage: app <command> [options]', 'valid commands for `app`: show, task']
+				help: ['Usage: app <command> [options]', 'valid commands for `app`: show <id>, task']
 			}
 		]
 	])('`%s` is reported as %s on stdout, exit 2, nothing on stderr', async (args, code, expected) => {
@@ -250,7 +250,7 @@ describe('usage errors under output axi', () => {
 		const r = await run('')
 		expect(r.code).toBe(exitCodes.usage)
 		expect(r.stdout).toContain('code: missing-command')
-		expect(r.stdout).toContain('valid commands for `app`: show, task')
+		expect(r.stdout).toContain('valid commands for `app`: show <id>, task')
 		expect(r.stdout).not.toContain('Commands:')
 	})
 

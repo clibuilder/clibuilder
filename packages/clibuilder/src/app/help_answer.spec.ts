@@ -67,6 +67,21 @@ describe('--help under output axi', () => {
 		expect(decode(r.stdout)).toEqual(JSON.parse((await run(`${args} --format json`)).stdout))
 	})
 
+	it('says nothing about options for a command whose only option gave way to the global --format', async () => {
+		const format = Object.defineProperty(
+			{ type: t.enum(['toon', 'text', 'json']).optional(), description: 'own format' },
+			Symbol.for('clibuilder.defers-to-global-format'),
+			{ value: true }
+		)
+		const list = command({ name: 'list', description: 'List things', options: { format }, run() {} })
+		const text = (await run('list --help --format text', { output: 'axi' }, list)).stdout
+		expect(text).toContain('Usage: app list\n')
+		expect(text).not.toContain('Options:')
+		const json = JSON.parse((await run('list --help --format json', { output: 'axi' }, list)).stdout)
+		expect(json.usage).toBe('app list')
+		expect(json.options).toBeUndefined()
+	})
+
 	it('answers the structured help of a command in json', async () => {
 		const r = await run('deploy --help --format json')
 		expect(r.stderr).toBe('')

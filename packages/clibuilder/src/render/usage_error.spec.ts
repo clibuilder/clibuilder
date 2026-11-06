@@ -96,6 +96,37 @@ describe('describeUsageError()', () => {
 		)
 	})
 
+	it('lists each sub-command of a bare group with its required arguments, not its optional ones', () => {
+		const group: cli.Command = {
+			name: 'task',
+			commands: [
+				command({
+					name: 'get',
+					arguments: [
+						{ name: 'id', description: 'the id', type: t.int() },
+						{ name: 'field', description: 'one field', type: t.string().optional() }
+					],
+					run() {}
+				}),
+				command({
+					name: 'copy',
+					arguments: [
+						{ name: 'from', description: 'source' },
+						{ name: 'to', description: 'target' }
+					],
+					run() {}
+				}),
+				command({ name: 'list', run() {} })
+			]
+		}
+		expect(describeMissingCommand(group, 'app').help[1]).toBe(
+			'valid commands for `app task`: get <id>, copy <from> <to>, list'
+		)
+		expect(describeUsageError({ type: 'extra-arguments', name: '', values: ['x'] }, group, 'app').help[1]).toBe(
+			'valid commands for `task`: get <id>, copy <from> <to>, list'
+		)
+	})
+
 	it('names a required option declared with t as an option, listing the options', () => {
 		const tcmd = command({ name: 'deploy', options: { env: { type: t.string(), description: 'env' } }, run() {} })
 		expect(describeUsageError({ type: 'missing-argument', name: 'env' }, tcmd, 'app')).toEqual({
