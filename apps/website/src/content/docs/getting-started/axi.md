@@ -102,8 +102,9 @@ and walking all twelve resources one by one cost only 9% more than the whole sur
 **In `clibuilder` 12.** Partly applied:
 
 - `--help` is scoped to the command it is called on. For a group, its `commands` key lists only that
-  group's sub-commands, with their names and the first line of their descriptions. It does not give
-  their arguments, flags or exit codes.
+  group's sub-commands, each with its full signature (`usage`, such as `add <name: string> [-f|--force]`),
+  its name and the first line of its description. Only the root lists every global option; any other
+  node lists `help` and `format` and names the rest under `otherGlobalOptions`.
 - There is no command that prints the whole tree.
 - A group may have its own `run()`, so a bare group can return live data. `clibuilder` does not attach
   the group's verbs to that answer. Return them yourself if you want them there.

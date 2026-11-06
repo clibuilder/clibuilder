@@ -124,7 +124,7 @@ With `output: 'axi'`, the default, the CLI owns `--help` and `--version`. Both a
 stdout, even with `--silent`, nothing is written on stderr, and the CLI exits 0.
 
 `--help` follows [`--format`](#the-global---format-option). `--format text` prints the help message,
-the same text as with `output: 'console'`. `toon` and `json` print the structured help that the
+the same text as with `output: 'console'`, except that a group lists its sub-commands with their full signatures, not names only. `toon` and `json` print the structured help that the
 text is rendered from:
 
 ```sh
@@ -151,14 +151,14 @@ built-in options; it is cut to one here.
 | `name` | The CLI name and the command chain, as the command is invoked |
 | `usage` | The usage line of the help message, without `Usage: ` |
 | `description`, `aliases` | The command's own |
-| `commands` | Each sub-command's `name`, `aliases`, and the first line of its `description` |
+| `commands` | Each sub-command's `name`, `aliases`, `usage` (its full signature, such as `add <name: string> [-f\|--force]`), and the first line of its `description` |
 | `arguments`, `options` | Each one's `name`, `aliases`, `type`, `required`, `default`, `description` and `conflicts`. A [`t`](/clibuilder/packages/args-minus/) declaration adds `min` and `max`, `pattern`, or the allowed `values`. An array is described by its element, with `array: true` |
 | `config` | The config type, as the help message's `Config:` section shows it |
 | `examples` | The command's [`examples`](/clibuilder/api/command/#examples) |
-| `globalOptions` | The built-in options, listed once. The root help leaves them out of its `options` |
+| `globalOptions` | The built-in options, listed once. The root help leaves them out of its `options`. Only the root lists them all; any other node lists `help` and `format` |
+| `otherGlobalOptions` | The names of the global options a non-root node leaves out. `<cli> --help` describes them |
 
-A key with nothing to say is left out. A group lists only the names and one-line descriptions of its
-sub-commands.
+A key with nothing to say is left out. A group lists its sub-commands with their signatures and one-line descriptions.
 
 `--version` prints the version as plain text in every format, alone or after a command, so a script
 that reads it keeps working:

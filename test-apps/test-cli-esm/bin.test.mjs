@@ -30,7 +30,7 @@ test('--help lists the commands, then the plugins group and the plugin command t
 	const r = run('--help', '--format', 'text')
 	assert.equal(r.code, 0)
 	assert.match(r.stdout, /Usage: test-cli <command>/)
-	assert.match(r.stdout, /echo, config-value, plugins, one/)
+	assert.match(r.stdout, /echo <value>[\s\S]*config-value <name>[\s\S]*plugins <command>[\s\S]*one <command>/)
 })
 
 test('echo echoes its argument', () => {
@@ -71,7 +71,7 @@ test('plugins search is reachable', () => {
 test('the plugins group carries the install sub-command the cli adds to it', () => {
 	const r = run('plugins', '--help', '--format', 'text')
 	assert.equal(r.code, 0)
-	assert.match(r.stdout, /list \(ls\), search, install/)
+	assert.match(r.stdout, /list \(ls\) \[--full\][\s\S]*search [\s\S]*install <plugin>/)
 })
 
 test('plugins, invoked bare, shows the installed plugins followed by its own commands', () => {
