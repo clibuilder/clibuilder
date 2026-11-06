@@ -27,7 +27,7 @@ what a command says, and only your command knows that. For those, the
 
 | # | Rule | What `clibuilder` 12 does | Your part |
 | --- | --- | --- | --- |
-| 1 | **Token-efficient output.** TOON on stdout. | `--format` defaults to `toon`, encoded with the official `@toon-format/toon` encoder. `json` and `text` are the other formats. See [The global `--format` option](/clibuilder/api/cli/#the-global---format-option). | None. See [change 1](#change-1-toon-only-for-collections) for where this version narrows the rule. |
+| 1 | **Token-efficient output.** TOON on stdout. | `--format` defaults to `toon`. Collections are encoded with the official `@toon-format/toon` encoder, and the other fields as plain `key: value` lines, as [change 1](#change-1-toon-only-for-collections) sets out. `json` and `text` are the other formats. See [The global `--format` option](/clibuilder/api/cli/#the-global---format-option). | None. |
 | 2 | **Minimal default schemas.** Three or four fields per list item. | Nothing. There is no built-in `--fields` option. | Choose the keys your command returns. |
 | 3 | **Content truncation.** Cut long text, say how much was cut, offer `--full`. | `truncateText()`, `truncateList()` and `fullOption` in [`clibuilder/axi`](/clibuilder/api/axi/). Core never truncates. | Call the helpers, and add the `--full` hint when something was cut. |
 | 4 | **Pre-computed aggregates.** Give the total, such as `count: 30 of 847 total`. | `truncateList()` returns that `count` string. | Put the count, and any cheap derived status, in your answer. |
@@ -54,21 +54,31 @@ nothing tabular to factor out. On a seven-field detail view TOON costs 85 tokens
 lines, because the encoder quotes any string that holds a delimiter such as `: `. An error costs 24
 tokens in TOON and 20 as plain lines.
 
-**In `clibuilder` 12.** Not applied. In `toon`, core encodes every answer with the official encoder,
-including single objects and errors. That keeps core's output in line with the TOON specification.
-The decision is recorded in the
-[axi-native RFC](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#10-open-questions),
-open question 4.
+**In `clibuilder` 12.** Applied since 12.2.0. In `toon`, core encodes an array, at any depth, with the
+official encoder: a list of records as a table, and a list of values inline. A string field outside any
+array is a plain `key: value` line, unquoted, whether it is in a single object, an error or an empty state.
+A nested object is indented under its key, with the same rule for its fields:
 
-To print one answer as plain lines in `toon`, give it a renderer:
-
-```ts
-import { result } from 'clibuilder'
-
-return result(task, {
-  render: { toon: (t) => Object.entries(t).map(([k, v]) => `${k}: ${v}`).join('\n') }
-})
+```sh
+$ my-cli deploy prod --port 70000
+error: invalid value for option --port: expected an integer from 1 to 65535, received "70000"
+code: invalid-value
+option: --port
+value: "70000"
+help[2]: "Usage: my-cli deploy <arguments> [options]","expected for --port: int 1..65535 (received \"70000\")"
 ```
+
+The output is still TOON: a TOON decoder reads it back to the same value. So a value stays quoted where a
+decoder would read it otherwise:
+
+- the empty string, and a value with a leading or trailing space;
+- a value holding a newline or another control character, which is escaped;
+- a value starting with `"` or `#`;
+- a string that reads as another type: `true`, `false`, `null`, a number such as `"70000"` above, or `[]`.
+
+`help[N]` and `next[N]{run,why}` are collections, so they keep the official encoding, and a `help` line
+holding `: ` or `,` is quoted. `json` and `text` do not change. To print one answer in another form, give
+it a renderer with `result(value, { render: { toon } })`.
 
 `--format text` also prints an object as `key: value` lines, but it prints a list of records as an
 aligned table, not as TOON.

@@ -69,9 +69,9 @@ nothing to stderr, prints no help, and exits `2`:
 
 ```sh
 $ my-cli deploy prod --port 70000
-error: "invalid value for option --port: expected an integer from 1 to 65535, received \"70000\""
+error: invalid value for option --port: expected an integer from 1 to 65535, received "70000"
 code: invalid-value
-option: "--port"
+option: --port
 value: "70000"
 help[2]: "Usage: my-cli deploy <arguments> [options]","expected for --port: int 1..65535 (received \"70000\")"
 ```

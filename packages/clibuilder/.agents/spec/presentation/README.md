@@ -184,7 +184,7 @@ returned values later, read the same. Design: axi-native RFC sections 3.1 and
 
 | Cause | Outcome |
 | --- | --- |
-| `toon` | the official `@toon-format/toon` encoder, for every value, single objects and errors included |
+| `toon` | TOON only for collections (AXI conventions page, change 1): an array, at any depth, by the official `@toon-format/toon` encoder; a string field outside any array as a plain `key: value` line, quoted only where a TOON decoder would read it otherwise |
 | `json` | `JSON.stringify` of the value, on one line |
 | `text` | `key: value` lines, the same rendering as `@clibuilder/axi`'s `renderText` |
 | an error report | flat: `error`, `code`, the `details` fields, then `help`, which is left out when empty |
@@ -530,7 +530,7 @@ graph TD
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| official encoder | `toon` | `an answer is encoded in toon by the official encoder` |
+| TOON only for collections | `toon` | `an answer is encoded in toon with TOON only for its collections` |
 | JSON.stringify | `json` | `an answer is encoded in json on one line` |
 | key: value lines | `text` | `an answer is encoded in text as key and value lines` |
 | flat, in order, empty help left out | an error report | `an error report is error, code, the details fields, then help` |

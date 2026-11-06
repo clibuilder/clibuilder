@@ -505,7 +505,7 @@ describe('plugins list and search under output axi', () => {
 
 	test('plugins search states nothing found as an empty state', async () => {
 		const r = await run(search([]), 'search')
-		expect(r.stdout).toBe('empty: "0 packages found with keywords: kw-a"\n')
+		expect(r.stdout).toBe('empty: 0 packages found with keywords: kw-a\n')
 	})
 
 	test('plugins search reports an unknown --fields value as a usage error on stdout', async () => {

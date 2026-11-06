@@ -130,9 +130,9 @@ describe('runScript', () => {
 		)
 		expect(code).toBe(exitCodes.usage)
 		expect(s.out.join('')).toBe(
-			'error: "invalid value for option -n: expected a number, received \\"abc\\""\n' +
+			'error: invalid value for option -n: expected a number, received "abc"\n' +
 				'code: invalid-value\n' +
-				'option: "-n"\n' +
+				'option: -n\n' +
 				'value: abc\n' +
 				'help[2]: "Usage: script <options>","expected for -n: number (received \\"abc\\")"\n'
 		)

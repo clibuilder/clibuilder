@@ -136,8 +136,8 @@ options: {
 $ app --full -n 20
 error: option --full cannot be used with option -n
 code: conflicting-options
-option: "--full"
-conflictsWith: "-n"
+option: --full
+conflictsWith: -n
 help[1]: "Usage: app [options]"
 ```
 

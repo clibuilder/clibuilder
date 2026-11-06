@@ -99,9 +99,14 @@ describe('axi output', () => {
 		expect(r.stderr).toBe('')
 	})
 
-	it('quotes a value that toon must quote, through the official encoder', async () => {
-		const r = await run(() => new CliError('a, b', { code: 'bad-list', help: 'x' }), { output: 'axi' })
-		expect(r.stdout).toBe('error: "a, b"\ncode: bad-list\nhelp[1]: x\n')
+	it('writes a field as a plain line, and quotes a help line as a toon array item', async () => {
+		const r = await run(() => new CliError('a, b', { code: 'bad-list', help: 'c, d' }), { output: 'axi' })
+		expect(r.stdout).toBe('error: a, b\ncode: bad-list\nhelp[1]: "c, d"\n')
+	})
+
+	it('quotes an error message a toon decoder would not read back as is', async () => {
+		const r = await run(() => new CliError('line 1\nline 2', { code: 'multi-line' }), { output: 'axi' })
+		expect(r.stdout).toBe('error: "line 1\\nline 2"\ncode: multi-line\n')
 	})
 
 	it('writes a debugging copy as a debug line on stderr under --verbose', async () => {
