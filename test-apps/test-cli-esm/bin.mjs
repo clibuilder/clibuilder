@@ -7,6 +7,9 @@ enableCompileCache()
 const { CliError, cli, document } = await import('clibuilder')
 const { config } = await import('clibuilder/config')
 const { plugins } = await import('@clibuilder/plugins')
+const { pluginsGroup } = await import('./plugins-install.mjs')
+
+const keywords = ['test-cli']
 
 const app = cli({
 	name: 'test-cli',
@@ -38,8 +41,10 @@ const app = cli({
 			return { [name]: this.config[name] }
 		}
 	})
-	// loads the plugins the config names and adds the `plugins` group,
-	// so `pnpm cli plugins list` and `pnpm cli plugins search` are reachable by hand.
-	.use(plugins({ keywords: ['test-cli'] }))
+	// the built-in `plugins` group with an `install` sub-command added,
+	// so `pnpm cli plugins list`, `search` and `install` are reachable by hand
+	.command(pluginsGroup({ name: 'test-cli', keywords }))
+	// loads the plugins the config names; `command: false` leaves out the built-in group the line above replaces
+	.use(plugins({ keywords, command: false }))
 
 app.parse(process.argv)
