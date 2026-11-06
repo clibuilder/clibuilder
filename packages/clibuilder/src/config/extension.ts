@@ -1,7 +1,7 @@
 import { CliError } from '../app/errors.js'
 import type { ConfigExtension, cli, ExtensionContext } from '../cli.js'
 import { type ConfigLoadResult, type ConfigSource, describeConfigSource } from '../config.js'
-import { getOwn, setOwn } from '../own_keys.js'
+import { getProp, setProp } from '../props.js'
 import { result } from '../render/answer.js'
 import { describeInvalidConfig } from '../render/usage_error.js'
 import { type StandardSchemaV1, t } from '../t.js'
@@ -91,7 +91,7 @@ function toConfigErrors(issues: readonly StandardSchemaV1.Issue[]): ConfigErrors
 		const key = issue.path?.length
 			? issue.path.map((p) => String(typeof p === 'object' ? p.key : p)).join('.')
 			: '(config)'
-		setOwn(errors, key, [...(getOwn(errors, key) ?? []), String(issue.message)])
+		setProp(errors, key, [...(getProp(errors, key) ?? []), String(issue.message)])
 	}
 	return errors
 }

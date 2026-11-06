@@ -18,7 +18,7 @@ const allowed = [
 	'invocation/argv_occurrences.ts',
 	'invocation/descriptors.ts',
 	'invocation/lookup.ts',
-	'own_keys.ts',
+	'props.ts',
 	'render/answer.ts',
 	'render/encode.ts',
 	'render/error.ts',
