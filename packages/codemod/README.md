@@ -20,6 +20,7 @@ most, and the next steps that apply.
 | Option | Meaning |
 | --- | --- |
 | `--dry-run` | print a unified diff on stdout and write nothing; the report goes to stderr |
+| `--diff-file <path>` | with `--dry-run`, write the diff to `path` and print the findings on stdout, so `git apply <path>` still works |
 | `--add-plugins` | add `.use(plugins())`, after `.use(config())`, to every `cli()` that sets `config`. Without it, the codemod flags those calls with a `TODO(clibuilder-12)` comment, since 12 no longer loads plugins from `config` |
 | `--full` | list every finding, not the first 30 |
 | `--format` | `toon` (default), `json`, or `text` for the prose report |

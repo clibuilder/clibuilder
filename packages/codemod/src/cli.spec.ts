@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Writable } from 'node:stream'
@@ -126,30 +126,43 @@ describe('clibuilder-codemod cli', () => {
 		expect(stdout).toContain('such as `clibuilder-codemod src`')
 	})
 
-	it('fails with unreadable-files and exit 1, after writing the other files', async () => {
+	it('fails with path-not-found and exit 1, before writing any file', async () => {
 		const cwd = project()
 		const { stdout, stderr, code } = await run(cwd, 'src', 'missing.ts')
 		expect(code).toBe(1)
 		expect(stderr).toBe('')
-		expect(stdout).toContain(
-			'error: 1 file(s) could not be read or parsed\ncode: unreadable-files\nfiles[1]: "missing.ts: ENOENT'
-		)
-		expect(stdout).toContain('changed: 1')
-		expect(stdout).toContain('1 other file was changed.')
-	})
-
-	it('fails the same way in dry-run, and writes nothing', async () => {
-		const cwd = project()
-		const { stdout, code } = await run(cwd, 'src', 'missing.ts', '--dry-run')
-		expect(code).toBe(1)
-		expect(stdout).toContain('code: unreadable-files')
+		expect(stdout).toContain('error: 1 path(s) do not exist\ncode: path-not-found\npaths[1]: missing.ts')
 		expect(stdout).toContain('Nothing was written.')
 		expect(readFileSync(join(cwd, 'src/app.ts'), 'utf8')).toContain("z } from 'clibuilder'")
 	})
 
-	it('says no other file was changed when none was', async () => {
-		const { stdout } = await run(project(), 'missing.ts')
-		expect(stdout).toContain('No other file was changed.')
+	it.skipIf(process.platform === 'win32')(
+		'fails with unreadable-files and exit 1 for a file that exists but cannot be read, after writing the others',
+		async () => {
+			const cwd = project()
+			writeFileSync(join(cwd, 'src/locked.ts'), 'export const a = 1\n')
+			chmodSync(join(cwd, 'src/locked.ts'), 0)
+			const { stdout, code } = await run(cwd, 'src')
+			expect(code).toBe(1)
+			expect(stdout).toContain('code: unreadable-files')
+			expect(stdout).toContain('1 other file was changed.')
+		}
+	)
+
+	it('writes the diff to --diff-file and prints the findings on stdout', async () => {
+		const cwd = project()
+		const { stdout, stderr } = await run(cwd, 'src', '--dry-run', '--add-plugins', '--diff-file', 'out.diff')
+		expect(stderr).toBe('')
+		expect(stdout).toContain('scanned: 1')
+		expect(stdout).toContain('git apply out.diff')
+		expect(readFileSync(join(cwd, 'out.diff'), 'utf8').startsWith('--- a/src/app.ts\n+++ b/src/app.ts\n')).toBe(true)
+		expect(readFileSync(join(cwd, 'src/app.ts'), 'utf8')).toContain("z } from 'clibuilder'")
+	})
+
+	it('needs --dry-run for --diff-file', async () => {
+		const { stdout, code } = await run(project(), 'src', '--diff-file', 'out.diff')
+		expect(code).toBe(2)
+		expect(stdout).toContain('code: diff-file-needs-dry-run')
 	})
 
 	it('prints the diff on stdout and the report on stderr with --dry-run', async () => {

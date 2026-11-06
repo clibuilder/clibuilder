@@ -48,13 +48,14 @@ prints [TOON](https://github.com/toon-format/toon) on stdout, with a count of ea
 | Option | Effect |
 | --- | --- |
 | `--dry-run` | Print a unified diff on stdout and write nothing. The report goes to stderr. |
+| `--diff-file <path>` | With `--dry-run`, write the diff to `path` and print the findings on stdout. Apply it with `git apply <path>`. |
 | `--add-plugins` | Add `.use(plugins())` to every `cli()` that sets `config`. |
 | `--format json` | Print the same answer as JSON. |
 | `--format text` | Print the report as plain prose. |
 | `--full` | List every finding instead of the first 30. |
 
-It exits `0` on success, `1` when a file could not be read or parsed (the answer names the files, and
-the other files are still changed unless you passed `--dry-run`), and `2` when it was called wrongly, such
+It exits `0` on success, `1` when a path does not exist (nothing is written) or a file could not be read
+or parsed (the answer names the files, and the other files are still changed unless you passed `--dry-run`), and `2` when it was called wrongly, such
 as with no path. `--help` and `--version` work as in any clibuilder 12 command.
 
 What it rewrites and what it flags:
