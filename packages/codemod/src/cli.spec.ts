@@ -136,15 +136,18 @@ describe('clibuilder-codemod cli', () => {
 		expect(readFileSync(join(cwd, 'src/app.ts'), 'utf8')).toContain("z } from 'clibuilder'")
 	})
 
-	it.skipIf(process.platform === 'win32')('fails with unreadable-files and exit 1 for a file that exists but cannot be read, after writing the others', async () => {
-		const cwd = project()
-		writeFileSync(join(cwd, 'src/locked.ts'), 'export const a = 1\n')
-		chmodSync(join(cwd, 'src/locked.ts'), 0)
-		const { stdout, code } = await run(cwd, 'src')
-		expect(code).toBe(1)
-		expect(stdout).toContain('code: unreadable-files')
-		expect(stdout).toContain('1 other file was changed.')
-	})
+	it.skipIf(process.platform === 'win32')(
+		'fails with unreadable-files and exit 1 for a file that exists but cannot be read, after writing the others',
+		async () => {
+			const cwd = project()
+			writeFileSync(join(cwd, 'src/locked.ts'), 'export const a = 1\n')
+			chmodSync(join(cwd, 'src/locked.ts'), 0)
+			const { stdout, code } = await run(cwd, 'src')
+			expect(code).toBe(1)
+			expect(stdout).toContain('code: unreadable-files')
+			expect(stdout).toContain('1 other file was changed.')
+		}
+	)
 
 	it('writes the diff to --diff-file and prints the findings on stdout', async () => {
 		const cwd = project()
