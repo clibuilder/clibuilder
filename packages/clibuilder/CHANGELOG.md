@@ -1,5 +1,60 @@
 # Change Log
 
+## 12.2.0
+
+### Minor Changes
+
+- 4ec1b3f: Under `output: 'axi'`, a command group whose `run()` answers with `result()` or `empty()` now adds its own verbs to the answer's `help`, such as ``valid commands for `app tasks`: add, rm``, so an author no longer adds them by hand (AXI change 2). An answer whose value already has a `commands` key, and a plain returned value, are unchanged. `output: 'console'` is unchanged.
+- 9df09b2: `--help` is scoped to the node ([AXI conventions, change 2](https://clibuilder.github.io/clibuilder/getting-started/axi/#change-2-disclosure-scoped-to-the-node)).
+  
+  A group's `--help` gives each sub-command's full signature, such as `add <name: string> [-f|--force]`, in the text `Commands:` section and as `usage` on each `commands` entry of the structured help. `name`, `aliases` and `description` stay.
+  
+  Only the root's `--help` lists every global option in full. Any other node's structured help lists `help` and `format` under `globalOptions` and names the rest under the new `otherGlobalOptions`; `<cli> --help` describes them. The text help of a non-root node already left the global options out.
+  
+  Migration: a consumer that read `version`, `verbose`, `silent`, `debug-cli` or an extension's option from `globalOptions` of a sub-command's help should read the root's help instead.
+- dafe2df: `--format toon` now uses TOON only for collections ([AXI conventions, change 1](https://clibuilder.github.io/clibuilder/getting-started/axi/#change-1-toon-only-for-collections)).
+  An array, at any depth, is still encoded by the official `@toon-format/toon` encoder, as a table or an inline list.
+  A string field outside any array, in a single object, an error or an empty state, is now a plain `key: value` line, unquoted:
+  
+  ```diff
+  - error: "invalid value for option --port: expected an integer from 1 to 65535, received \"70000\""
+  + error: invalid value for option --port: expected an integer from 1 to 65535, received "70000"
+    code: invalid-value
+  - option: "--port"
+  + option: --port
+    value: "70000"
+    help[2]: "Usage: my-cli deploy <arguments> [options]","expected for --port: int 1..65535 (received \"70000\")"
+  ```
+  
+  The output is still TOON: a TOON decoder reads it back to the same value as before.
+  A value stays quoted when a decoder would read it otherwise: the empty string, edge whitespace, a newline or other control character, a leading `"` or `#`, and a string that reads as `true`, `false`, `null`, a number or `[]`.
+  `json` and `text` do not change, and a `result(value, { render: { toon } })` renderer still replaces the encoder.
+  
+  Migration: nothing to do if you read `toon` output with a TOON decoder, or use `--format json`.
+  If you match the raw text, such as a snapshot or a `grep` for `option: "--port"`, update the expected text to the unquoted form, or decode it first.
+- 54524bd: `--format toon` now writes more collections as tables ([AXI conventions, change 1](https://clibuilder.github.io/clibuilder/getting-started/axi/#change-1-toon-only-for-collections)).
+  
+  - Structured help (`--help`): `commands`, `arguments`, `options`, `examples` and `globalOptions` are tables. Every row carries the same columns, a column a row has nothing for is `null`, and an array cell (aliases, values, conflicts) is one comma-joined string. `json` is unchanged.
+  - `plugins search --fields keywords` is a table with the keywords joined on a space. `json` is unchanged.
+  
+  Migration: if you decode `toon` help and read `aliases`, `values` or `conflicts` as arrays, split the string on `,`, and treat `null` as absent.
+
+### Patch Changes
+
+- 92e6ec4: Make the built-in answers follow the AXI conventions page more closely:
+  
+  - A bare command group's `missing-command` error, and the `extra-arguments` error of a group, list each sub-command with its required arguments, such as `valid commands for \`app\`: show <id>, task`.
+  - `--show-config` with no config found adds a `help` line that says where a config is read from. `source: none` and `config: null` are unchanged.
+  - The help of a command whose only option gave way to the global `--format` no longer shows an empty `Options:` section or `[options]` in its usage line.
+- 2ca9e2f: Fix a crash on option names that exist on `Object.prototype`.
+  `--constructor`, `--__proto__`, `--toString`, `--hasOwnProperty`, `--valueOf` and similar names threw `TypeError: args[key].push is not a function`.
+  They now work like any other option: an undeclared one is reported as an unknown option, and a declared one gets its value.
+  A config key with such a name that fails validation is reported like any other key, instead of throwing.
+- 803c72f: README trimmed to the basics; details on the docs site.
+- Updated dependencies [2ca9e2f]
+- Updated dependencies [803c72f]
+  - args-minus@0.2.3
+
 ## 12.1.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # args-minus
 
+## 0.2.3
+
+### Patch Changes
+
+- 2ca9e2f: In `strict` mode, an undeclared option whose name exists on `Object.prototype`, such as `--constructor` or `--toString`, is now reported as an unknown option.
+  Before, it was taken as declared.
+- 803c72f: README trimmed to the basics; details on the docs site.
+
 ## 0.2.2
 
 ### Patch Changes

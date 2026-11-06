@@ -1,5 +1,30 @@
 # @clibuilder/codemod
 
+## 0.2.0
+
+### Minor Changes
+
+- 92e6ec4: `clibuilder-codemod` is now built on clibuilder 12 and follows the AXI conventions.
+  It prints TOON on stdout by default: the counts, the flagged and review findings as `file:line:column` (30 at most, `--full` lists all), and the next steps that apply.
+  `--format json` prints the same answer as JSON, and `--format text` prints the prose report as before.
+  `--dry-run` still prints the unified diff on stdout and the report on stderr.
+  Usage errors are coded and printed on stdout with exit code 2, a file that cannot be read or parsed is an `unreadable-files` error with exit code 1, and `--help` and `--version` work as in any clibuilder 12 command.
+  A glob that matches no file is reported as `0 files matched`.
+  `runCodemod()` is unchanged.
+- a07cc68: `--dry-run --diff-file <path>` writes the diff to a file and prints the findings on stdout, so the answer is on stdout and `git apply <path>` still works. `--dry-run` alone is unchanged: the diff on stdout, the report on stderr.
+  A path that does not exist is now a `path-not-found` error (exit 1) that lists the missing paths and writes nothing, instead of an `unreadable-files` error after the other files were changed. `unreadable-files` is left for files that exist but cannot be read or parsed.
+
+### Patch Changes
+
+- Updated dependencies [92e6ec4]
+- Updated dependencies [4ec1b3f]
+- Updated dependencies [9df09b2]
+- Updated dependencies [2ca9e2f]
+- Updated dependencies [803c72f]
+- Updated dependencies [dafe2df]
+- Updated dependencies [54524bd]
+  - clibuilder@12.2.0
+
 ## 0.1.1
 
 ### Patch Changes
