@@ -12,17 +12,11 @@
 
 A highly customizable command line builder.
 
-## What's new in v8
+## What's new in v12
 
-Key highlights:
-
-- Support standalone CLI
-  - `name` and `version` are now required and not read from `package.json`.
-- Plugins are loaded through config (in v12, by `@clibuilder/plugins`)
-  - This drastically improve startup time, as it does not scan `node_modules` anymore.
-  - Also better support other package manager such as `yarn PnP` and `pnpm`.
-- `keywords` are now used for plugin lookup (in v12, an option of `plugins()`).
-- Distribute `ESM` along with `CJS` (in v12, `ESM` only; `require()` still works on Node.js 20.19+ through `require(esm)`).
+Agent-facing output is the default: a value returned from `run()` is printed on stdout, and every `ui.*` message is a diagnostic on stderr.
+`cli({ output: 'console' })` keeps the v11 output. `t` replaces zod.
+See [Upgrading to 12](https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/).
 
 ## Feature Highlights
 
@@ -39,14 +33,14 @@ Key highlights:
 📖 **<https://clibuilder.github.io/clibuilder/>** — guides for commands, arguments and options,
 config files, plugins, testing, and publishing, plus the full API reference.
 
-The site lives in [`apps/website`](./apps/website). To work on it:
+The site lives in [`apps/website`](https://github.com/clibuilder/clibuilder/tree/main/apps/website). To work on it:
 
 ```sh
 pnpm web dev      # local dev server
 pnpm web build    # production build into apps/website/dist
 ```
 
-Learn more in the [`clibuilder` README](./packages/clibuilder/README.md)
+Learn more in the [`clibuilder` README](https://github.com/clibuilder/clibuilder/blob/main/packages/clibuilder/README.md)
 
 [docs-image]: https://img.shields.io/badge/docs-clibuilder.github.io-blue.svg?style=flat
 [docs-url]: https://clibuilder.github.io/clibuilder/
