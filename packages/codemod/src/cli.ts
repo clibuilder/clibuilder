@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 import { CliError, cli, document, empty, result, t } from 'clibuilder'
 import { fullOption, orEmpty, truncateList } from 'clibuilder/axi'
 import { codemod, formatReport } from './run.js'
@@ -34,6 +35,11 @@ export function codemodCli(options: codemodCli.Options = {}) {
 		],
 		options: {
 			'dry-run': { description: 'Print a unified diff instead of writing files' },
+			'diff-file': {
+				description:
+					'With --dry-run, write the diff to this file and print the findings on stdout, instead of the diff on stdout and the report on stderr',
+				type: t.string().optional()
+			},
 			'add-plugins': { description: 'Add .use(plugins()) to every cli() that sets config' },
 			full: fullOption
 		},
@@ -44,9 +50,27 @@ export function codemodCli(options: codemodCli.Options = {}) {
 		run(args) {
 			const patterns = args.patterns as string[]
 			const dryRun = !!args['dry-run']
+			const diffFile = args['diff-file'] as string | undefined
+			const cwd = options.cwd ?? process.cwd()
+			if (diffFile !== undefined && !dryRun) {
+				throw new CliError('--diff-file needs --dry-run', {
+					code: 'diff-file-needs-dry-run',
+					exitCode: 2,
+					help: ['Add --dry-run, or drop --diff-file to write the changes to the files']
+				})
+			}
+			const missing = patterns.filter((p) => !/[*?{[]/.test(p) && !fs.existsSync(path.resolve(cwd, p)))
+			if (missing.length > 0) {
+				throw new CliError(`${missing.length} path(s) do not exist`, {
+					code: 'path-not-found',
+					exitCode: 1,
+					details: { paths: missing },
+					help: ['Nothing was written. Check the spelling and the directory you run it from, then run it again']
+				})
+			}
 			const data = codemod({
 				patterns,
-				cwd: options.cwd ?? process.cwd(),
+				cwd,
 				dryRun,
 				addPlugins: !!args['add-plugins']
 			})
@@ -71,12 +95,13 @@ export function codemodCli(options: codemodCli.Options = {}) {
 					]
 				})
 			}
-			if (dryRun) {
+			if (dryRun && diffFile === undefined) {
 				this.ui.info(formatReport(data, true).replace(/\n$/, ''))
 				if (data.diff === '') return empty('0 files would change')
 				return document(data.diff)
 			}
 
+			if (diffFile !== undefined && data.diff !== '') fs.writeFileSync(path.resolve(cwd, diffFile), data.diff)
 			const listed = data.findings.filter((f) => f.kind !== 'rewrite')
 			const rows = listed.map((f) => ({
 				at: `${f.file}:${f.line}:${f.column}`,
@@ -95,6 +120,7 @@ export function codemodCli(options: codemodCli.Options = {}) {
 			if (summary.review > 0) {
 				help.push('Review each printed return and keep it when the value is the answer')
 			}
+			if (diffFile !== undefined && data.diff !== '') help.push(`Apply the diff with \`git apply ${quote(diffFile)}\``)
 			if (data.dependencies.length > 0) help.push("Run your package manager's install")
 			return result(
 				{
