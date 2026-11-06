@@ -7,13 +7,14 @@ AXI (Agent eXperience Interface) is a set of rules for a CLI whose main caller i
 agent runs a shell command, reads stdout, and decides what to do next. Every extra call costs it a
 tool invocation, a re-read and more reasoning, so the rules aim to answer in one call.
 
-`clibuilder` 12 follows these rules by default, with `output: 'axi'`. It follows one version of them:
+`clibuilder` 12 follows these rules by default, with `output: 'axi'`. It follows its own version of
+them, and this page defines that version:
 
 - The ten rules of [upstream AXI](https://github.com/kunchenguid/axi), as its
   [specification](https://github.com/kunchenguid/axi/blob/main/.agents/skills/axi/SKILL.md) states them.
-- Three changes, set out in
-  [The best rule in AXI is not the one it leads with](https://unional.github.io/agents/2026-07-26-the-best-rule-in-axi/).
-  That post is the source of truth for this version. Upstream has not adopted the changes.
+- Three changes to those rules, set out in
+  [Where this version changes upstream](#where-this-version-changes-upstream).
+  Upstream has not adopted the changes.
 
 This page says what each rule asks for, what `clibuilder` does about it, and what is left to you.
 It does not repeat the API: each row links to the page that documents it.
@@ -39,8 +40,8 @@ what a command says, and only your command knows that. For those, the
 
 ## Where this version changes upstream
 
-Each change comes from measuring the rules against what a CLI emits. The post has the numbers and the
-argument. The sections below state each rule and where `clibuilder` 12 stands on it.
+Each change comes from measuring the rules against what a CLI emits. The sections below state each
+rule, the reason for it, and where `clibuilder` 12 stands on it.
 
 ### Change 1: TOON only for collections
 
@@ -107,7 +108,7 @@ How deep to nest and what to call each level is your design. See
 task's answer does not offer to close it.
 
 **Why.** An irrelevant suggestion costs the agent a moment of reading. An invalid one costs a failed
-command, an error and a recovery. The post marks this change as reasoning, not measurement.
+command, an error and a recovery. This change rests on reasoning, not measurement.
 
 **In `clibuilder` 12.** A `ref()` is checked against the command tree when the answer is printed. A path
 that names no command, or an option the command does not have, throws, so your tests catch it. Whether a
