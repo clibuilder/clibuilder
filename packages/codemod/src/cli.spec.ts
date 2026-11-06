@@ -122,7 +122,7 @@ describe('clibuilder-codemod cli', () => {
 	it('says nothing matched', async () => {
 		const { stdout, code } = await run(project(), 'nothing/*.ts')
 		expect(code).toBe('0 files matched: nothing/*.ts')
-		expect(stdout).toContain('empty: "0 files matched: nothing/*.ts"')
+		expect(stdout).toContain('empty: 0 files matched: nothing/*.ts\n')
 		expect(stdout).toContain('such as `clibuilder-codemod src`')
 	})
 
