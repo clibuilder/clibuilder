@@ -8,7 +8,8 @@ const entry = join(src, 'script', 'index.ts')
 // the headless runner is for a script that does not pay for cli(), so it stays small (axi-native RFC section 4.1).
 // 22 KB before ref() rendering, which adds about 2 KB (next-step-refs RFC section 5),
 // and sharing cli()'s lookup and usage-error report adds about 10 KB (#706): measured at 33,740 bytes.
-const limit = 34 * 1024
+// Resolving a ref from the running script's group (#755) brings it to 34,913 bytes.
+const limit = 35 * 1024
 
 // the source files the runner may bundle: tier B, the ref() resolver, and the lookup and usage-error report it shares with cli()
 const allowed = [

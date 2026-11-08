@@ -98,6 +98,26 @@ describe('scriptResolver()', () => {
 	})
 })
 
+describe('scriptResolver() under a mounted group (#755)', () => {
+	const mounted: ScriptData = {
+		...fixture,
+		entry: 'skills/h/scripts/doctor.mjs',
+		commands: {
+			'agent-harness doctor': 'skills/h/scripts/doctor.mjs',
+			'agent-harness init': 'skills/h/scripts/init.mjs',
+			setup: 'skills/h/scripts/setup.mjs'
+		}
+	}
+
+	it("names a sibling by its own path and renders the host's path", () => {
+		const resolve = scriptResolver(mounted, { script: '', cwd: tmpdir() })
+		expect(resolve(ref('init'))).toBe('npx cyber-asana@1.4.0 agent-harness init')
+		expect(resolve(ref('agent-harness init'))).toBe('npx cyber-asana@1.4.0 agent-harness init')
+		expect(resolve(ref('setup'))).toBe('npx cyber-asana@1.4.0 setup')
+		expect(resolve(ref('other'))).toBe('npx cyber-asana@1.4.0 other')
+	})
+})
+
 describe('runScript() with refs', () => {
 	const commands: ScriptData = { ...fixture, commands: {} }
 

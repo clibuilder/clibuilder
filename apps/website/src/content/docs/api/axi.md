@@ -119,6 +119,9 @@ map that `universal-plugin plugin build` writes into each compiled skill script,
 | the package and version are known | `npx <package>@<version> task get --gid 1` |
 | none of these, or no command map | the ref is left out |
 
+A path is looked up as in `cli()`: from the running script's group in the map, then each enclosing group up to the
+root. A path the map does not hold is rendered as given.
+
 The real path is taken from the running script, so the line works through a pnpm link, a copy or a plugin cache.
 `runScript({ commands })` passes the map directly, for a test or another build tool. `runScript({ refs: 'next' })`
 works as in `cli()`. The runner cannot see the other commands' options, so it does not check a ref: the `cli()`
