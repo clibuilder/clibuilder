@@ -288,8 +288,8 @@ How each return is printed:
 | an object | encoded in the format: `toon`, one line of `json`, or `text` |
 | an array or a scalar | encoded under the `result` key, such as `result[2]: a,b` or `{"result":3}` |
 | a string | the string, verbatim |
-| `result(value, { help, render })` | the value, with `help` as the last key |
-| `document(content)` | the content, verbatim, whatever the format |
+| `result(value, { help, render, exitCode })` | the value, with `help` as the last key. Exit code `exitCode`, 0 by default |
+| `document(content, { exitCode })` | the content, verbatim, whatever the format. Exit code `exitCode`, 0 by default |
 | `empty(message, { help })` | `empty: <message>`, then `help`. Exit code 0 |
 
 Every answer ends on one newline.
@@ -299,13 +299,41 @@ Every answer ends on one newline.
   maps a format to a function that returns a string: for that format the string is written verbatim,
   then the `help`, encoded in the same format, after a blank line. A format without a renderer uses
   the encoder. For example, `{ render: { text: (v) => table(v.items) } }`.
-- **`document(content)`** is for output that is already the answer, such as Markdown, a diff or a
+- **`document(content, { exitCode })`** is for output that is already the answer, such as Markdown, a diff or a
   file. Run through an encoder, it would come back as one escaped line.
 - **`empty(message, { help })`** says that there is nothing to report, so an agent does not retry to
   make sure. It is a success.
 
 `parse()` resolves to the value `result()` wraps, the content of `document()` and the message of
-`empty()`, in either output. A warning the reader must see belongs in the returned data:
+`empty()`, in either output.
+
+### An answer that exits non-zero
+
+Some answers are also failures: a check that finds the thing gone, a wait that timed out, a change
+applied in part. The caller needs the answer and a non-zero exit code together. Pass `exitCode` to
+`result()` or `document()`, any integer from 0 to 255:
+
+```ts
+import { exitCodes, result } from 'clibuilder'
+
+run({ name }) {
+  const exists = panes.has(name)
+  return result({ exists }, { exitCode: exists ? exitCodes.success : exitCodes.error })
+}
+```
+
+```sh
+$ app exists gone
+exists: false
+$ echo $?
+1
+```
+
+The answer is printed as any result is, not as an error, and the CLI exits with `exitCode`. It
+exits with it in `output: 'console'` too, where nothing is printed. `parse()` still resolves to the
+value, and [`runScript()`](/clibuilder/api/axi/#run-a-command-as-a-script) resolves to `exitCode`.
+Throw a [`CliError`](/clibuilder/guides/failing/#failing-from-a-command) instead when the command
+could not answer at all. `empty()` takes no `exitCode`: it is always a success. A warning the reader must see belongs in the returned data:
 `ui.warn` is a diagnostic on stderr.
 
 `run()` reads the output mode as `this.output`, `'axi'` by default. Source:

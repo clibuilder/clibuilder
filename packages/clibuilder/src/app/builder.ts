@@ -9,7 +9,7 @@ import { parseArgv } from '../invocation/argv.js'
 import { convertDescriptors, peekFlags } from '../invocation/descriptors.js'
 import { lookupCommand } from '../invocation/lookup.js'
 import { createRegistry } from '../plugins/registry.js'
-import { answerValue, printAnswer } from '../render/answer.js'
+import { answerExitCode, answerValue, printAnswer } from '../render/answer.js'
 import { type ErrorFields, encode, errorOutput, formats } from '../render/encode.js'
 import { formatLookupError } from '../render/error.js'
 import { commandSignature, generateHelpMessage, generateHelpModel, tabularHelpModel } from '../render/help.js'
@@ -272,7 +272,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		context.writeStdout(`${encode(errorOutput(report), format)}\n`)
 	}
 
-	// prints the answer only in `axi` output (axi-native RFC section 3.5); `parse()` resolves to the value either way
+	// prints the answer only in `axi` output (axi-native RFC section 3.5); `parse()` resolves to the value either way.
+	// An answer's non-zero `exitCode` is recorded in both outputs (#754).
 	function answer(returned: unknown, format: cli.Format, command?: Command) {
 		if (output === 'axi') {
 			// a group that answers with live data also offers its own verbs (AXI change 2, #741)
@@ -282,6 +283,8 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 			const text = printAnswer(returned, format, { resolve: (r) => resolveRef(r, command), refs, verbs })
 			if (text !== undefined) context.writeStdout(text)
 		}
+		const code = answerExitCode(returned)
+		if (code !== exitCodes.success) context.exit(code)
 		return answerValue(returned)
 	}
 

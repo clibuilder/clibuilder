@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { cli } from '../cli.js'
-import { CliError, command, exitCodes } from '../index.js'
+import { result as answer, CliError, command, exitCodes } from '../index.js'
 import { testCommand } from './index.js'
 
 test('get result', async () => {
@@ -14,6 +14,21 @@ test('get result', async () => {
 		'cmd'
 	)
 	expect(result).toBe('a')
+})
+
+test('get the exit code and the value of a result() with an exitCode', async () => {
+	const { result, exitCode, messages } = await testCommand(
+		command({
+			name: 'cmd',
+			run() {
+				return answer({ exists: false }, { exitCode: exitCodes.error })
+			}
+		}),
+		'cmd'
+	)
+	expect(result).toEqual({ exists: false })
+	expect(exitCode).toBe(1)
+	expect(messages).toBe('exists: false\nexit with 1')
 })
 
 test('get messages', async () => {
