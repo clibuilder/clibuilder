@@ -260,7 +260,7 @@ export const view = command({
 | --- | --- | --- |
 | `exitCode` | `number` | The code the cli exits with. Defaults to `exitCodes.error` (1). **Since 12.0.0:** any integer from 1 to 255; `0` and any other value throw a `RangeError`. |
 | `code` | `string` | **Since 12.0.0.** A stable kebab-case string that says which failure this is, such as `not-found`. Defaults to `error`. Anything else throws a `RangeError`. |
-| `details` | `Record<string, scalar \| scalar[]>` | **Since 12.0.0.** Extra fields an agent can act on, such as the name that was not found. Flat: each value is a string, number, boolean, `null`, or a list of them. A key may not be `error`, `code` or `help`. |
+| `details` | `Record<string, scalar \| scalar[] \| record[]>` | **Since 12.0.0.** Extra fields an agent can act on, such as the name that was not found. Each value is a string, number, boolean, `null`, a list of them, or (**since 12.3.0**) a list of records whose fields are scalars. A key may not be `error`, `code` or `help`. |
 | `help` | `string \| string[]` | What the caller should do about it. Reported after the message, one line each. |
 | `cause` | `unknown` | The underlying error, kept for the caller to inspect. |
 
@@ -314,6 +314,31 @@ error: no plugin named foo
 code: not-found
 name: foo
 help[1]: run `my-cli plugins list` to see the installed plugins
+```
+
+A list of records in `details` renders as a TOON table, one row per record. Use it for items that
+carry several fields, such as the panes an ambiguous name matched, instead of index-aligned lists
+(since 12.3.0):
+
+```ts
+throw new CliError({
+  message: 'more than one pane matches "api"',
+  code: 'ambiguous',
+  details: {
+    candidates: [
+      { id: '%1', label: 'api', cwd: '/repo/api' },
+      { id: '%4', label: 'api-test', cwd: '/repo/api' }
+    ]
+  }
+})
+```
+
+```sh
+error: more than one pane matches "api"
+code: ambiguous
+candidates[2]{id,label,cwd}:
+  %1,api,/repo/api
+  %4,api-test,/repo/api
 ```
 
 With `--format json` or `format: 'json'` the same error is one line of JSON, and with `text` it is
