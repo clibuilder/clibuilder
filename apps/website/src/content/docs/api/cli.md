@@ -342,6 +342,11 @@ help[2]: Run `app task get --gid 7` to show the parent task,Run `app task update
   shell would split or expand is single-quoted. `why` is a verb phrase, rendered as ``Run `…` to <why>``.
   A ref passes only the options given: it does not copy the current invocation's global options, such as
   `--repo`, and never adds a confirmation flag such as `--ack`.
+- **Relative to the issuing command.** The path is looked up from the group of the command that returned or threw
+  the ref, then each enclosing group up to the root. The first that holds the path wins, and the line is rendered from
+  the root. So a command tree mounted under a group names its own commands by its own path: `ref('init')` from
+  `doctor` renders as `buddy agent-harness init` when the tree is mounted at `buddy agent-harness`, and as
+  `buddy-agent-harness init` when it runs standalone. A path that the root alone holds renders as before.
 - **`placeholder(name)`** is a value the agent fills in, rendered unquoted as `<name>`.
 - **Checked against the command tree.** A path that names no command, or an option the command and the global
   options do not have, throws when the answer is printed, so the command's own tests catch it. Aliases work in

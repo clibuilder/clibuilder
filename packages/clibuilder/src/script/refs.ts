@@ -48,15 +48,30 @@ export function scriptResolver(
 	return (ref: Ref) => {
 		if (!data) return undefined
 		const args = refArgs(ref)
-		const target = data.commands[ref.path]
+		const path = scopedPath(data, ref.path)
+		const target = data.commands[path]
 		if (target !== undefined) {
 			root ??= pluginRoot(script, data.entry)
 			if (root !== undefined) return ['node', shellQuote(join(root, target)), ...args].join(' ')
 		}
-		if (data.bin && installed(cwd, data.bin)) return ['pnpm', 'exec', data.bin, ref.path, ...args].join(' ')
-		if (data.package && data.version) return ['npx', `${data.package}@${data.version}`, ref.path, ...args].join(' ')
+		if (data.bin && installed(cwd, data.bin)) return ['pnpm', 'exec', data.bin, path, ...args].join(' ')
+		if (data.package && data.version) return ['npx', `${data.package}@${data.version}`, path, ...args].join(' ')
 		return undefined
 	}
+}
+
+// the map key a ref names: looked up from the running script's group up to the root, nearest first, as under `cli()` (#755).
+// A path the map does not hold is kept as given.
+function scopedPath({ commands, entry }: ScriptData, path: string) {
+	const scope =
+		Object.keys(commands)
+			.find((key) => commands[key] === entry)
+			?.split(' ') ?? []
+	while (scope.pop() && scope.length) {
+		const scoped = `${scope.join(' ')} ${path}`
+		if (commands[scoped] !== undefined) return scoped
+	}
+	return path
 }
 
 // the real path of the running script, minus its `entry`, so the line works through a pnpm link, a copy or a cache

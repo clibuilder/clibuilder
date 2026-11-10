@@ -218,7 +218,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 				for (const hook of beforeRunHooks) await hook(run)
 			} catch (e) {
 				if (!isCliError(e)) throw e
-				reportCliError(e, globals.format, ui)
+				reportCliError(e, globals.format, ui, command)
 				return exit(e.exitCode)
 			}
 			s.config = run.config
@@ -242,7 +242,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 			// a command signals failure by throwing `CliError`. Anything else is a
 			// defect in the command and keeps propagating to the caller.
 			if (!isCliError(e)) throw e
-			reportCliError(e, globals.format, commandInstance.ui)
+			reportCliError(e, globals.format, commandInstance.ui, command)
 			return exit(e.exitCode)
 		}
 	}
@@ -251,11 +251,12 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 	function reportCliError(
 		e: CliError,
 		format: cli.Format,
-		ui: { error(...args: any[]): void; debug(...args: any[]): void }
+		ui: { error(...args: any[]): void; debug(...args: any[]): void },
+		command?: Command
 	) {
 		if (isReportedCliError(e)) return
 		// a ref in a `CliError` is always a `help` line: the error keeps the axi-sdk-js shape
-		const { help } = renderHelp(helpLinesOf(e), resolveRef)
+		const { help } = renderHelp(helpLinesOf(e), (r) => resolveRef(r, command))
 		if (output === 'axi') {
 			// read field by field: a `CliError` from an older copy of clibuilder has no `code` or `details`
 			const report = errorOutput({ message: e.message, code: e.code ?? 'error', details: e.details, help })
@@ -278,7 +279,7 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 			const verbs = command?.commands?.length
 				? `valid commands for \`${commandName(command, s.name)}\`: ${command.commands.map(commandSignature).join(', ')}`
 				: undefined
-			const text = printAnswer(returned, format, { resolve: resolveRef, refs, verbs })
+			const text = printAnswer(returned, format, { resolve: (r) => resolveRef(r, command), refs, verbs })
 			if (text !== undefined) context.writeStdout(text)
 		}
 		return answerValue(returned)
@@ -298,19 +299,50 @@ export function builder(context: Context, options: cli.Options): cli.Builder {
 		)
 	}
 
-	// a ref names a command of this cli; one that names no command or option is a defect in the cli, so it throws
-	function resolveRef(ref: Ref) {
-		let command: Command = s.command
-		for (const word of ref.path.split(' ')) {
-			const next = command.commands?.find((c) => c.name === word || c.alias?.includes(word))
-			if (!next) throw new TypeError(`ref('${ref.path}'): ${s.name} has no command "${ref.path}"`)
-			command = next
+	// a ref names a command of this cli; one that names no command or option is a defect in the cli, so it throws.
+	// It is looked up from the issuing command's group up to the root, nearest first, so a command tree
+	// mounted under a group can name its siblings by their own path (#755). It renders from the root.
+	function resolveRef(ref: Ref, from?: Command) {
+		const words = ref.path.split(' ')
+		let found: { command: Command; scope: Command } | undefined
+		for (const scope of scopesOf(from)) {
+			const command = walk(scope, words)
+			if (command) {
+				found = { command, scope }
+				break
+			}
 		}
+		if (!found) throw new TypeError(`ref('${ref.path}'): ${s.name} has no command "${ref.path}"`)
+		const { command, scope } = found
 		for (const name of Object.keys(ref.options)) {
 			if (command.options?.[name] || s.command.options?.[name]) continue
 			throw new TypeError(`ref('${ref.path}'): the command has no option "${name}"`)
 		}
-		return [s.name, ref.path, ...refArgs(ref)].join(' ')
+		return [s.name, ...pathOf(scope), ref.path, ...refArgs(ref)].join(' ')
+	}
+
+	// the groups enclosing `from`, nearest first, ending at the root
+	function scopesOf(from: Command | undefined) {
+		const scopes: Command[] = []
+		for (let c = from?.parent; c?.parent; c = c.parent) scopes.push(c)
+		scopes.push(s.command)
+		return scopes
+	}
+
+	function walk(scope: Command, words: string[]) {
+		let command: Command | undefined = scope
+		for (const word of words) {
+			command = command.commands?.find((c) => c.name === word || c.alias?.includes(word))
+			if (!command) return undefined
+		}
+		return command
+	}
+
+	// the words from the root to `command`, without the cli name
+	function pathOf(command: Command) {
+		const words: string[] = []
+		for (let c: Command | undefined = command; c?.parent; c = c.parent) words.unshift(c.name!)
+		return words
 	}
 
 	function writeVersion() {
