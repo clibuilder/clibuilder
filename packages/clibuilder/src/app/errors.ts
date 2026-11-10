@@ -26,11 +26,20 @@ const helpLinesKey: unique symbol = Symbol.for('clibuilder.CliError.helpLines')
 const reservedKeys = ['error', 'code', 'help']
 
 export namespace CliError {
+	/** A scalar value in `details`, or in a record of a `details` list. */
+	export type DetailScalar = string | number | boolean | null
+
 	/**
-	 * A value in `details`: a scalar, or a list of scalars.
-	 * The record stays flat so it reads the same in every format.
+	 * A record in a `details` list: scalar fields only.
+	 * A list of them renders as a TOON table, as a list of records in json, and as an aligned table in text.
 	 */
-	export type DetailValue = string | number | boolean | null | ReadonlyArray<string | number | boolean | null>
+	export type DetailRecord = Readonly<Record<string, DetailScalar>>
+
+	/**
+	 * A value in `details`: a scalar, a list of scalars, or a list of records with scalar fields.
+	 * Nothing nests deeper, so it reads the same in every format.
+	 */
+	export type DetailValue = DetailScalar | ReadonlyArray<DetailScalar> | ReadonlyArray<DetailRecord>
 
 	/**
 	 * Extra fields an agent can act on, such as the path that was not found
@@ -54,7 +63,8 @@ export namespace CliError {
 		code?: string | undefined
 		/**
 		 * Extra fields an agent can act on, rendered between `code` and `help`.
-		 * Flat: each value is a scalar or a list of scalars.
+		 * Each value is a scalar, a list of scalars, or a list of records with scalar fields,
+		 * such as `candidates: [{ id: 'a', cwd: '/x' }]`, which renders as a TOON table.
 		 * A key may not be `error`, `code` or `help`.
 		 */
 		details?: Details | undefined
