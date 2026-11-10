@@ -92,6 +92,70 @@ describe('axi output', () => {
 		expect(r.stderr).toBe('')
 	})
 
+	const ambiguous = () =>
+		new CliError({
+			message: 'more than one pane matches "api"',
+			code: 'ambiguous',
+			details: {
+				query: 'api',
+				candidates: [
+					{ id: '%1', label: 'api', cwd: '/repo/api' },
+					{ id: '%4', label: 'api-test', cwd: '/repo/api' }
+				]
+			},
+			help: 'pass the pane id'
+		})
+
+	it('renders a list of records in details as a toon table', async () => {
+		const r = await run(ambiguous, { output: 'axi' })
+		expect(r.stdout).toBe(
+			[
+				'error: more than one pane matches "api"',
+				'code: ambiguous',
+				'query: api',
+				'candidates[2]{id,label,cwd}:',
+				'  %1,api,/repo/api',
+				'  %4,api-test,/repo/api',
+				'help[1]: pass the pane id',
+				''
+			].join('\n')
+		)
+	})
+
+	it('renders a list of records in details as a list of objects in json', async () => {
+		const r = await run(ambiguous, { output: 'axi', format: 'json' })
+		expect(JSON.parse(r.stdout)).toEqual({
+			error: 'more than one pane matches "api"',
+			code: 'ambiguous',
+			query: 'api',
+			candidates: [
+				{ id: '%1', label: 'api', cwd: '/repo/api' },
+				{ id: '%4', label: 'api-test', cwd: '/repo/api' }
+			],
+			help: ['pass the pane id']
+		})
+	})
+
+	it('renders a list of records in details as an aligned table in text', async () => {
+		const r = await run(ambiguous, { output: 'axi', format: 'text' })
+		expect(r.stdout).toBe(
+			[
+				'error: more than one pane matches "api"',
+				'code: ambiguous',
+				'query: api',
+				'',
+				'candidates:',
+				'  id  label     cwd',
+				'  %1  api       /repo/api',
+				'  %4  api-test  /repo/api',
+				'',
+				'help:',
+				'  - pass the pane id',
+				''
+			].join('\n')
+		)
+	})
+
 	it('renders a plain CliError with the default code, and leaves out an empty help', async () => {
 		const r = await run(() => new CliError('boom'), { output: 'axi' })
 		expect(r.code).toBe(exitCodes.error)

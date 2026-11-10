@@ -37,6 +37,20 @@ describe('CliError', () => {
 		expect(err.code).toBe('error')
 		expect(err.details).toEqual({})
 	})
+	it('accepts a list of records in details', () => {
+		const candidates = [
+			{ id: '%1', cwd: '/a' },
+			{ id: '%2', cwd: null }
+		]
+		const err = new CliError('boom', { code: 'ambiguous', details: { candidates } })
+		expect(err.details).toEqual({ candidates })
+	})
+	it('keeps a record in a details list to scalar fields', () => {
+		// @ts-expect-error a record field may not nest a list
+		new CliError('boom', { details: { candidates: [{ id: '%1', tags: ['a'] }] } })
+		// @ts-expect-error a list may not mix scalars and records
+		new CliError('boom', { details: { candidates: ['a', { id: '%1' }] } })
+	})
 	it('accepts a code and details', () => {
 		const err = new CliError('boom', { code: 'not-found', details: { name: 'foo', candidates: ['a', 'b'] } })
 		expect(err.code).toBe('not-found')
