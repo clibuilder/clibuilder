@@ -197,7 +197,61 @@ describe('result()', () => {
 	})
 })
 
+describe('result() with an exitCode', () => {
+	it.each([
+		['toon', 'exists: false\nhelp[1]: Run `app open`\n'],
+		['json', '{"exists":false,"help":["Run `app open`"]}\n']
+	] as const)('prints the result in %s and exits with the code', async (format, expected) => {
+		const r = await runShow(
+			() => result({ exists: false }, { exitCode: 1, help: 'Run `app open`' }),
+			`--format ${format}`
+		)
+		expect(r.stdout).toBe(expected)
+		expect(r.stderr).toBe('')
+		expect(r.exitCode).toBe(1)
+	})
+
+	it('resolves parse() to the value, not the code', async () => {
+		const value = { exists: false }
+		const r = await runShow(() => result(value, { exitCode: 3 }))
+		expect(r.value).toBe(value)
+		expect(r.exitCode).toBe(3)
+	})
+
+	it('leaves the exit code alone for exitCode 0', async () => {
+		const r = await runShow(() => result({ exists: true }, { exitCode: 0 }))
+		expect(r.exitCode).toBeUndefined()
+	})
+
+	it('exits with the code in console output too, printing nothing', async () => {
+		const r = await runShow(() => result({ exists: false }, { exitCode: 1 }), '', { output: 'console' })
+		expect(r.stdout).toBe('')
+		expect(r.exitCode).toBe(1)
+	})
+
+	it.each([-1, 256, 1.5, Number.NaN])('rejects exitCode %s', (exitCode) => {
+		expect(() => result({}, { exitCode })).toThrow(RangeError)
+	})
+
+	it('reads an answer without exitCode, as from an older copy of clibuilder, as exit 0', async () => {
+		const r = await runShow(() => ({ [Symbol.for('clibuilder.answer')]: 'document', value: 'x' }))
+		expect(r.stdout).toBe('x\n')
+		expect(r.exitCode).toBeUndefined()
+	})
+})
+
 describe('document()', () => {
+	it('exits with its exitCode after writing the content', async () => {
+		const r = await runShow(() => document('- a\n+ b\n', { exitCode: 1 }))
+		expect(r.stdout).toBe('- a\n+ b\n')
+		expect(r.value).toBe('- a\n+ b\n')
+		expect(r.exitCode).toBe(1)
+	})
+
+	it('rejects an exitCode out of range', () => {
+		expect(() => document('x', { exitCode: 300 })).toThrow(RangeError)
+	})
+
 	it.each(['toon', 'json', 'text'] as const)('writes the content exactly as given in %s', async (format) => {
 		const r = await runShow(() => document('# Rules\n\nState the zero.\n'), `--format ${format}`)
 		expect(r.stdout).toBe('# Rules\n\nState the zero.\n')

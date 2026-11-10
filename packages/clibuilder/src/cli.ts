@@ -225,7 +225,8 @@ export namespace cli {
 		/**
 		 * Runs the command matched by `argv`.
 		 *
-		 * Resolves to what the command's `run()` returns.
+		 * Resolves to what the command's `run()` returns, the value of a `result()` or `document()` included,
+		 * even one whose `exitCode` is not 0: that code is recorded on the process and the value is still the answer.
 		 * When the cli fails instead (a usage error, a config that fails validation,
 		 * a `CliError`), it resolves to the exit code it records on the process,
 		 * so a caller can assign the result without reading `process.exitCode`.

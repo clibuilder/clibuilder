@@ -25,6 +25,23 @@ export namespace result {
 		 * The string a renderer returns is written verbatim, followed by the encoded `help`.
 		 */
 		render?: Partial<Record<Format, Renderer<T>>> | undefined
+		/**
+		 * The code the cli exits with after printing the result: any integer from 0 to 255.
+		 * Defaults to `exitCodes.success` (0).
+		 * For an answer that is also a failure, such as a check that finds the thing gone,
+		 * a wait that timed out, or a change applied in part.
+		 */
+		exitCode?: number | undefined
+	}
+}
+
+export namespace document {
+	export type Options = {
+		/**
+		 * The code the cli exits with after printing the document: any integer from 0 to 255.
+		 * Defaults to `exitCodes.success` (0). For a document that is also a failure, such as a diff that found changes.
+		 */
+		exitCode?: number | undefined
 	}
 }
 
@@ -41,9 +58,14 @@ type Tagged<Kind extends string, Fields> = { readonly [answerKey]: Kind } & Fiel
 export type Answer<T = unknown> =
 	| Tagged<
 			'result',
-			{ readonly value: T; readonly help: readonly HelpLine[]; readonly render: result.Options<T>['render'] }
+			{
+				readonly value: T
+				readonly help: readonly HelpLine[]
+				readonly render: result.Options<T>['render']
+				readonly exitCode: number
+			}
 	  >
-	| Tagged<'document', { readonly value: string }>
+	| Tagged<'document', { readonly value: string; readonly exitCode: number }>
 	| Tagged<'empty', { readonly value: string; readonly help: readonly HelpLine[] }>
 	| Tagged<'written', { readonly value: T }>
 
@@ -54,15 +76,32 @@ export type Answer<T = unknown> =
  * inside it. A renderer for the format replaces the encoder: its string is written verbatim, and the
  * `help` follows it, encoded. `parse()` resolves to `value`.
  *
+ * The cli exits with `exitCode`, 0 by default, in either output mode.
+ * A non-zero one returns an answer that is also a failure, printed as a result rather than as an error.
+ *
  * @example
  * ```ts
  * run() {
  * 	return result({ items }, { help: 'Run `my-cli show <id>` for one', render: { text: (v) => table(v.items) } })
  * }
  * ```
+ *
+ * @example
+ * ```ts
+ * run({ name }) {
+ * 	const exists = panes.has(name)
+ * 	return result({ exists }, { exitCode: exists ? exitCodes.success : exitCodes.error })
+ * }
+ * ```
  */
 export function result<T>(value: T, options: result.Options<T> = {}): Answer<T> {
-	return { [answerKey]: 'result', value, help: helpLines(options.help), render: options.render }
+	return {
+		[answerKey]: 'result',
+		value,
+		help: helpLines(options.help),
+		render: options.render,
+		exitCode: validateExitCode(options.exitCode)
+	}
 }
 
 /**
@@ -70,9 +109,10 @@ export function result<T>(value: T, options: result.Options<T> = {}): Answer<T> 
  * whatever the format, ending on a newline. `parse()` resolves to `content`.
  *
  * For output that is already the answer, such as Markdown, a diff or a file.
+ * The cli exits with `exitCode`, 0 by default, in either output mode.
  */
-export function document(content: string): Answer<string> {
-	return { [answerKey]: 'document', value: String(content) }
+export function document(content: string, options: document.Options = {}): Answer<string> {
+	return { [answerKey]: 'document', value: String(content), exitCode: validateExitCode(options.exitCode) }
 }
 
 /**
@@ -106,6 +146,16 @@ export function isAnswer(value: unknown): value is Answer {
 
 export function answerValue(returned: unknown): any {
 	return isAnswer(returned) ? returned.value : returned
+}
+
+/**
+ * The code the cli exits with for what `run()` returned: the `exitCode` of a `result()` or `document()`, otherwise 0.
+ * Read field by field: an answer from an older copy of clibuilder has no `exitCode`.
+ */
+export function answerExitCode(returned: unknown): number {
+	if (!isAnswer(returned)) return 0
+	const code = (returned as { exitCode?: unknown }).exitCode
+	return typeof code === 'number' ? code : 0
 }
 
 export namespace printAnswer {
@@ -190,6 +240,12 @@ function withHelp(value: Record<string, unknown>, { help, next }: Tail) {
 function helpLines(help: HelpLine | readonly HelpLine[] | undefined): HelpLine[] {
 	if (help === undefined) return []
 	return Array.isArray(help) ? [...help] : [help as HelpLine]
+}
+
+function validateExitCode(exitCode: number | undefined) {
+	if (exitCode === undefined) return 0
+	if (Number.isInteger(exitCode) && exitCode >= 0 && exitCode <= 255) return exitCode
+	throw new RangeError(`an answer's exitCode must be an integer from 0 to 255, received ${exitCode}`)
 }
 
 function line(text: string) {

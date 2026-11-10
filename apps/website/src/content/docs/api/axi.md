@@ -95,6 +95,7 @@ prints the answer the way `output: 'axi'` does, and resolves to the exit code. I
 
 - `this` is `{ format, ui }` and nothing else. `this.ui` writes to stderr. There is no `config`, `cwd` or `registry`,
   so a command that reads `this.config` is a type error.
+- A returned `result()` or `document()` resolves to its `exitCode`, 0 by default. Any other return resolves to 0.
 - A thrown `CliError` is printed with `errorOutput()` on stdout and resolves to its `exitCode`.
 - A bad invocation is printed as `output: 'axi'` prints it: the top-ranked usage error alone, with its `code`
   (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or

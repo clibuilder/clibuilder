@@ -26,6 +26,16 @@ describe('runScript', () => {
 		expect(s.err).toEqual([])
 	})
 
+	it('resolves to the exitCode of a returned result(), after printing it', async () => {
+		const s = streams()
+		const code = await runScript(
+			{ run: () => result({ exists: false }, { exitCode: exitCodes.error }) },
+			{ argv: [], streams: s.streams }
+		)
+		expect(code).toBe(1)
+		expect(s.out.join('')).toBe('exists: false\n')
+	})
+
 	it('reads --format into this.format and encodes in it', async () => {
 		const s = streams()
 		await runScript(

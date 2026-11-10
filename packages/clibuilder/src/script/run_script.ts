@@ -9,7 +9,7 @@ import { helpLinesOf, isCliError, isReportedCliError } from '../app/errors.js'
 import { parseArgv } from '../invocation/argv.js'
 import { convertDescriptors } from '../invocation/descriptors.js'
 import { lookupCommand, lookupOptions } from '../invocation/lookup.js'
-import { printAnswer } from '../render/answer.js'
+import { answerExitCode, printAnswer } from '../render/answer.js'
 import { encode, errorOutput, formats, type Format as OutputFormat } from '../render/encode.js'
 import { type RefsMode, renderHelp } from '../render/ref.js'
 import { describeUsageError, topUsageError } from '../render/usage_error.js'
@@ -147,6 +147,7 @@ export namespace runScript {
  * The answer is printed as `output: 'axi'` prints it (see `printAnswer()`), `this.ui` writes to stderr,
  * and `this` has no `config`: a command that reads it is a type error here.
  *
+ * - A returned `result()` or `document()` resolves to its `exitCode`, 0 by default. Any other return resolves to 0.
  * - A thrown `CliError` is reported with `errorOutput()` on stdout and resolves to its `exitCode`.
  * - A bad invocation is reported as `cli({ output: 'axi' })` reports it: the top-ranked usage error alone, with its `code`
  *   (`unknown-option`, `conflicting-options`, `invalid-value`, `expect-single`, `missing-argument` or `extra-arguments`),
@@ -199,7 +200,7 @@ export async function runScript<
 		const returned = await command.run.call({ format, ui }, args as any)
 		const text = printAnswer(returned, format, { resolve, refs })
 		if (text !== undefined) stdout.write(text)
-		return 0
+		return answerExitCode(returned)
 	} catch (e) {
 		if (!isCliError(e)) throw e
 		if (!isReportedCliError(e)) {
