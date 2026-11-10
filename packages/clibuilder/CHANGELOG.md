@@ -1,5 +1,27 @@
 # Change Log
 
+## 12.3.0
+
+### Minor Changes
+
+- f4d9f64: `result()` and `document()` take an `exitCode` (#754).
+  
+  A command can now return an answer that is also a failure, such as a check that finds the thing gone or a wait that timed out, without setting `process.exitCode` itself:
+  
+  ```ts
+  return result({ exists }, { exitCode: exists ? exitCodes.success : exitCodes.error })
+  ```
+  
+  The answer is printed as a result, not as an error, and the cli exits with `exitCode` (an integer from 0 to 255, 0 by default) in both output modes. `parse()` still resolves to the value, and `runScript()` resolves to `exitCode`.
+- 318f4f9: `CliError`'s `details` can hold a list of records ([#753](https://github.com/clibuilder/clibuilder/issues/753)).
+  
+  A value in `details` can now be a list of records whose fields are scalars, such as `candidates: [{ id: '%1', cwd: '/repo/api' }]`. It renders as a TOON table in `toon`, a list of objects in `json`, and an aligned table in `text`. Use it in place of index-aligned lists such as `candidates`, `labels` and `cwds`. The new `CliError.DetailScalar` and `CliError.DetailRecord` types name the parts of `CliError.DetailValue`.
+- 9efc38f: `ref()` resolves relative to the command that issued it, so a command tree that runs both standalone and mounted under a group can use it ([#755](https://github.com/clibuilder/clibuilder/issues/755)).
+  
+  The path is looked up from the issuing command's group, then each enclosing group up to the root, and the first that holds it wins. The line is rendered from the root. A tree mounted at `buddy agent-harness` can write `ref('init')` from its `doctor` command and get `buddy agent-harness init`; standalone, the same ref renders as `buddy-agent-harness init`. This applies to answers and to a `CliError`'s `help`, under `cli()` and under `runScript()`, where the running script's own path in the command map is the starting point. A path that no enclosing group holds still throws under `cli()`.
+  
+  Migration: a ref that resolved from the root before resolves the same way, unless a nearer group also holds that path. Then the nearer one wins. To name the root's command in that case, write the path from a group that holds no such path.
+
 ## 12.2.0
 
 ### Minor Changes
