@@ -1,4 +1,5 @@
 {
+	"packagePath": ".",
 	"marketplaces": [
 		{
 			"name": "cyber-uni",
