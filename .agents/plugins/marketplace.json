@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "clibuilder",
-      "version": "12.3.0",
+      "version": "12.4.0",
       "source": {
         "source": "local",
         "path": "./packages/clibuilder"
