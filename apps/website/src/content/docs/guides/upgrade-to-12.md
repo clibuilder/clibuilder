@@ -656,6 +656,17 @@ The details, including what stays in core, are in
 **Fix.** Import the value helpers from `clibuilder/axi`, and replace the rest with the core
 features in the sections above. The codemod moves the value helpers and flags the rest.
 
+| `@clibuilder/axi` | `clibuilder` 12 |
+| --- | --- |
+| `truncateText`, `truncateList`, `defaultTextLimit`, `fullOption`, `orEmpty`, `homeHeader`, `collapseHome` | The same names from [`clibuilder/axi`](/clibuilder/api/axi/). `fullOption` is declared with `t.boolean().optional()` |
+| `createOutput(format).result(value, { help })`, `writeResult`, `encodeResult`, `withHelp`, `helpLines` | Return the value, or [`result(value, { help, render })`](/clibuilder/api/cli/#the-result-channel), from `run()` |
+| `output.document(content)`, `writeDocument` | Return `document(content)` from `run()` |
+| `output.error(report)`, `writeError`, `encodeError`, `errorOutput`, `ErrorReport` | Throw a [`CliError`](/clibuilder/guides/failing/#errors-with-output-axi) with `code`, `help` and `details` |
+| `formatOption`, `defineFormatOption`, `parseFormat`, `formats`, `OutputFormat` | The [global `--format`](/clibuilder/api/cli/#the-global---format-option): delete the option, read `this.format`, set the default with `cli({ format })`; the type is `cli.Format` |
+| `renderText` | `--format text`, or `result(value, { render: { text } })` |
+| `createUsageErrorHandler`, `describeUsageError` | Built in: [ranked, coded usage errors](/clibuilder/guides/failing/#usage-errors-with-output-axi). Remove the `onUsageError` handler |
+| `exitCodes` | `exitCodes` from `clibuilder` or `clibuilder/axi` |
+
 ```ts
 // before
 import { createOutput, formatOption, truncateList } from '@clibuilder/axi'

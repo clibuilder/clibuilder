@@ -69,6 +69,11 @@ npm install js-yaml
 Without it, reading a YAML config fails with a `CliError` whose code is `missing-peer-dependency`.
 JSON, JSONC, `cjs` and `mjs` config files need nothing extra.
 
+## Agent plugin
+
+If an AI coding agent writes your CLI, install the [agent plugin](/clibuilder/agents/plugin/) too.
+It teaches the agent to build with `clibuilder` and to shape the output for agents.
+
 ## Next
 
 Build something with it: [Your First CLI](/clibuilder/getting-started/first-cli/).
