@@ -1,0 +1,9 @@
+{
+	"packagePath": ".",
+	"marketplaces": [
+		{
+			"name": "cyber-uni",
+			"repo": "cyber-uni/marketplace"
+		}
+	]
+}

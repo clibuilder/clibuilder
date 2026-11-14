@@ -246,7 +246,7 @@ shadow each other. To migrate, delete the local declaration and read `this.forma
 ```
 
 This includes `formatOption` and `defineFormatOption()` from
-[`@clibuilder/axi`](/clibuilder/packages/axi/#the-global---format-option). The
+`@clibuilder/axi`. The
 `plugins list` and `plugins search` commands of `@clibuilder/plugins` read `this.format` and do not conflict. Source:
 [axi-native section 3.4](https://github.com/clibuilder/clibuilder/blob/main/docs/rfcs/axi-native.md#34---format-is-not-first-class-6394).
 

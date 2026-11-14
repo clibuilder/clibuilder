@@ -7,7 +7,8 @@ export default defineConfig({
 	site: 'https://clibuilder.github.io',
 	base: '/clibuilder/',
 	redirects: {
-		'/api/zod': '/clibuilder/api/t/'
+		'/api/zod': '/clibuilder/api/t/',
+		'/packages/axi': '/clibuilder/guides/upgrade-to-12/#clibuilderaxi-moves-into-clibuilder'
 	},
 	vite: {
 		plugins: [tailwindcss()]
@@ -62,6 +63,14 @@ export default defineConfig({
 					]
 				},
 				{
+					label: 'AI Agents',
+					items: [
+						{ label: 'Agent Plugin', slug: 'agents/plugin' },
+						{ label: 'build-cli skill', slug: 'agents/build-cli' },
+						{ label: 'axi skill', slug: 'agents/axi' }
+					]
+				},
+				{
 					label: 'API Reference',
 					items: [
 						{ label: 'Overview', slug: 'api' },
@@ -83,8 +92,7 @@ export default defineConfig({
 						{
 							label: '@clibuilder/plugins',
 							slug: 'packages/plugins'
-						},
-						{ label: '@clibuilder/axi', slug: 'packages/axi' }
+						}
 					]
 				},
 				{
