@@ -1,6 +1,6 @@
 ---
 name: build-cli
-description: Builds command-line tools with the clibuilder library (v12), covering cli() and command() setup, typed arguments and options with t, subcommands, returned results, CliError failures and exit codes, config, plugins, and in-process tests with clibuilder/testing. Use when building a CLI with clibuilder, adding a command, option or argument, returning a structured result or error, writing a clibuilder plugin, or testing a clibuilder command. Not for other CLI libraries such as commander, yargs or oclif.
+description: Build, extend or test a command-line tool with the clibuilder library (v12) — set up cli() and command(), add subcommands and typed arguments or options with t, return results, fail with CliError and exit codes, read a config file, load plugins, and test commands in-process with clibuilder/testing. For requests like "build a CLI with clibuilder", "add a --port option to my clibuilder command", "make this command exit 1 with an error code", or "write a test for this clibuilder command".
 ---
 
 # Build a CLI with clibuilder
@@ -31,7 +31,7 @@ cli({ name: 'greet', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-Declare `run` as a method, not an arrow function: `this` carries `this.ui`, `this.config`, `this.cwd`, `this.context` and `this.format`. Write a `description` on every command, argument and option: help is generated from them. Every CLI answers `--help`, `--version`, `--verbose`, `--silent` and `--format toon|json|text`.
+Declare `run` as a method, not an arrow function: `this` carries `this.ui`, `this.config`, `this.cwd`, `this.context` and `this.format`. Give every command, argument and option a `description`: help is generated from them. Every CLI answers `--help`, `--version`, `--verbose`, `--silent` and `--format toon|json|text`; do not declare a `format` option of your own.
 
 ## Arguments and options
 
@@ -74,7 +74,7 @@ cli({ name: 'app', version: '1.0.0' })
   .parse(process.argv)
 ```
 
-A command needs `run` or `commands`. A group without `run` is a usage error when invoked bare.
+A command needs `run` or `commands`. A group without `run` is a `missing-command` usage error when invoked bare.
 
 ## Results
 
@@ -93,10 +93,10 @@ return result({ exists }, { exitCode: 1 }) // answer plus non-zero exit
 
 ## Failing
 
-Exit codes: `0` success, `1` could not complete, `2` called incorrectly. Import `exitCodes` for the names. Parsing problems (unknown option, missing argument, bad value) exit `2` on their own. To fail from `run()`, throw `CliError`:
+Exit codes: `0` success, `1` could not complete, `2` called incorrectly. Import `exitCodes` for the names. Usage errors (unknown option, missing argument, bad value, a bare group) exit `2` on their own. To fail from `run()`, throw `CliError`:
 
 ```ts
-import { CliError, exitCodes } from 'clibuilder'
+import { CliError } from 'clibuilder'
 
 throw new CliError({
   message: `no plugin named ${name}`,
@@ -109,24 +109,9 @@ throw new CliError({
 
 Give every failure a stable `code`. Any other thrown error is treated as a bug and propagates out of `parse()`.
 
-## Config
+## Config and plugins
 
-Config is opt-in. Add the extension before the commands, and declare a Standard Schema (zod, valibot, arktype from your own dependencies) per command:
-
-```ts
-import { z } from 'zod'
-import { config } from 'clibuilder/config'
-
-cli({ name: 'app', version: '1.0.0' })
-  .use(config())
-  .command({ name: 'build', description: 'build', config: z.object({ out: z.string() }), run() { return this.config } })
-```
-
-It finds `app.json`, `.apprc`, `app.yaml` and similar upward from the working directory, or an `app` key in `package.json`.
-
-## Plugins
-
-Install `@clibuilder/plugins` and add `.use(config()).use(plugins({ keywords: ['app-plugin'] }))`. Users list plugin packages in the config file's `plugins` array. A plugin package exports `activate({ addCommand })`, which calls `addCommand(command({ ... }))`. Add `config()` before `plugins()`.
+Config is opt-in through `.use(config())` from `clibuilder/config`; plugins need `@clibuilder/plugins`. When a command reads a config file or the CLI loads plugins, read [references/config-and-plugins.md](references/config-and-plugins.md) first.
 
 ## Testing
 
@@ -140,15 +125,19 @@ expect(exitCode).toBeUndefined()
 ```
 
 - `argv` is the command line after the CLI name. Address nested commands by full path: `'repo create x'`.
-- `messages` is stdout and stderr together, in order. `exitCode` is `undefined` unless the command failed.
+- `messages` is stdout and stderr together, in order, including the printed answer. `exitCode` is `undefined` unless the command failed.
 - Failures do not reject. Assert `exitCode` and `messages`, for example `2` and `code: unknown-option`.
 - Pass `{ config: {...} }` to stand in for the config file. Inject fakes through the command's `context` field, read as `this.context`.
 
-## Further reading
+Docs: https://clibuilder.github.io/clibuilder/ (guides and API reference).
 
-- First CLI: https://clibuilder.github.io/clibuilder/getting-started/first-cli/
-- Arguments and options: https://clibuilder.github.io/clibuilder/guides/arguments-and-options/
-- Failing: https://clibuilder.github.io/clibuilder/guides/failing/
-- Plugins: https://clibuilder.github.io/clibuilder/guides/plugins/
-- Testing: https://clibuilder.github.io/clibuilder/guides/testing/
-- API reference: https://clibuilder.github.io/clibuilder/api/cli/
+## Done when
+
+Before reporting done, check each of these against the result. Report any that fails.
+
+- **C1.** The entry file calls `cli()` with `name` and `version`, and calls `.parse(process.argv)` after a `.default()` or `.command()`.
+- **C2.** Every `run` is a method, not an arrow function.
+- **C3.** Every typed argument or option uses a `t` builder, with constraints in the builder options.
+- **C4.** Every failure in `run()` throws `CliError` with a kebab-case `code`; no `run()` calls `process.exit`.
+- **C5.** Each command written or changed has a test that runs it with `testCommand` from `clibuilder/testing` and asserts `exitCode`.
+- **C6.** Every clibuilder import names an export of `clibuilder`, `clibuilder/axi`, `clibuilder/config`, `clibuilder/testing` or `@clibuilder/plugins`.

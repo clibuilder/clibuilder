@@ -56,6 +56,7 @@
 		"CHANGELOG.md",
 		"plugin.json",
 		"skills/",
+		"!skills/*/evals",
 		".claude-plugin/plugin.json",
 		".cursor-plugin/plugin.json",
 		".codex-plugin/plugin.json",

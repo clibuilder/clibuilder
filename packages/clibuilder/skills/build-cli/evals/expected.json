@@ -1,0 +1,218 @@
+{
+	"version": 1,
+	"skill": "build-cli",
+	"at": "2026-11-14T10:51:20.994Z",
+	"verification": "skill-design.aspects.verification from cyber-agentkit",
+	"runs": 3,
+	"threshold": 2,
+	"baseline": "without the skill",
+	"trigger": [
+		{
+			"case": "trigger-1",
+			"prompt": "build a small CLI called greet with clibuilder that prints hello and a name",
+			"expect": "fire",
+			"fired": 3,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-2",
+			"prompt": "add a --port option with a default of 8080 to the serve command in my clibuilder CLI",
+			"expect": "fire",
+			"fired": 3,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-3",
+			"prompt": "how do I make my clibuilder command fail with exit code 4 and a not-found error code?",
+			"expect": "fire",
+			"fired": 3,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-4",
+			"prompt": "write a vitest test for the deploy command of my clibuilder app",
+			"expect": "fire",
+			"fired": 3,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-5",
+			"prompt": "build a CLI with commander.js that copies files",
+			"expect": "skip",
+			"fired": 0,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-6",
+			"prompt": "parse command-line flags in my Python script with argparse",
+			"expect": "skip",
+			"fired": 0,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-7",
+			"prompt": "write a GitHub Actions workflow that publishes my CLI package to npm on release",
+			"expect": "skip",
+			"fired": 0,
+			"ran": 3,
+			"status": "pass"
+		},
+		{
+			"case": "trigger-8",
+			"prompt": "write a bash script that renames every .jpeg file in this folder to .jpg",
+			"expect": "skip",
+			"fired": 0,
+			"ran": 3,
+			"status": "pass"
+		}
+	],
+	"criteria": [
+		{
+			"id": "C1",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		},
+		{
+			"id": "C2",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		},
+		{
+			"id": "C3",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		},
+		{
+			"id": "C4",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		},
+		{
+			"id": "C5",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		},
+		{
+			"id": "C6",
+			"status": "pass",
+			"passed": 3,
+			"ran": 3,
+			"baseline": {
+				"passed": 0,
+				"ran": 3
+			}
+		}
+	],
+	"cases": [
+		{
+			"case": "trigger-1",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-2",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-3",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-4",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-5",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-6",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-7",
+			"status": "pass"
+		},
+		{
+			"case": "trigger-8",
+			"status": "pass"
+		},
+		{
+			"case": "todo-cli",
+			"status": "pass"
+		}
+	],
+	"notRun": [],
+	"blocked": [
+		{
+			"case": "trigger-5",
+			"arm": "skill",
+			"run": 2,
+			"what": "network",
+			"target": "registry.npmjs.org"
+		},
+		{
+			"case": "trigger-5",
+			"arm": "skill",
+			"run": 3,
+			"what": "network",
+			"target": "registry.npmjs.org"
+		}
+	],
+	"cost": 2.9784,
+	"durationMs": 129886,
+	"totalRuns": 30,
+	"comparedWith": "previous",
+	"changed": [
+		{
+			"case": "trigger-1",
+			"from": "fail",
+			"to": "pass"
+		},
+		{
+			"case": "trigger-2",
+			"from": "fail",
+			"to": "pass"
+		},
+		{
+			"case": "trigger-3",
+			"from": "fail",
+			"to": "pass"
+		},
+		{
+			"case": "trigger-4",
+			"from": "fail",
+			"to": "pass"
+		}
+	]
+}

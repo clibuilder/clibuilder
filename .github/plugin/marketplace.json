@@ -15,7 +15,7 @@
       "version": "12.3.0",
       "description": "Skills for building agent-friendly command-line tools with clibuilder, following its version of the AXI conventions.",
       "homepage": "https://clibuilder.github.io/clibuilder/",
-      "repository": "https://github.com/clibuilder/clibuilder.git",
+      "repository": "https://github.com/clibuilder/clibuilder",
       "license": "MIT",
       "keywords": [
         "cli",

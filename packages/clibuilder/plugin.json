@@ -9,10 +9,7 @@
 		"url": "https://github.com/unional"
 	},
 	"homepage": "https://clibuilder.github.io/clibuilder/",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/clibuilder/clibuilder.git"
-	},
+	"repository": "https://github.com/clibuilder/clibuilder",
 	"license": "MIT",
 	"keywords": ["cli", "command", "builder", "axi", "agent"],
 	"extensions": {
