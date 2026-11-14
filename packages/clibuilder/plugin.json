@@ -1,0 +1,29 @@
+{
+	"$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+	"name": "clibuilder",
+	"version": "12.3.0",
+	"description": "Skills for building agent-friendly command-line tools with clibuilder, following its version of the AXI conventions.",
+	"author": {
+		"name": "Homa Wong (unional)",
+		"email": "homawong@gmail.com",
+		"url": "https://github.com/unional"
+	},
+	"homepage": "https://clibuilder.github.io/clibuilder/",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/clibuilder/clibuilder.git"
+	},
+	"license": "MIT",
+	"keywords": ["cli", "command", "builder", "axi", "agent"],
+	"extensions": {
+		"org.cyberuni.universal-plugin": {
+			"vendors": ["claude-code", "cursor", "codex", "copilot-cli"],
+			"harnesses": {
+				"claude-code": {},
+				"cursor": {},
+				"codex": {},
+				"copilot-cli": {}
+			}
+		}
+	}
+}

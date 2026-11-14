@@ -1,0 +1,26 @@
+{
+  "name": "clibuilder-clibuilder-local",
+  "owner": {
+    "name": "Homa Wong (unional)",
+    "email": "homawong@gmail.com",
+    "url": "https://github.com/unional"
+  },
+  "plugins": [
+    {
+      "name": "clibuilder",
+      "source": "./packages/clibuilder",
+      "version": "12.3.0",
+      "description": "Skills for building agent-friendly command-line tools with clibuilder, following its version of the AXI conventions.",
+      "homepage": "https://clibuilder.github.io/clibuilder/",
+      "repository": "https://github.com/clibuilder/clibuilder.git",
+      "license": "MIT",
+      "keywords": [
+        "cli",
+        "command",
+        "builder",
+        "axi",
+        "agent"
+      ]
+    }
+  ]
+}
