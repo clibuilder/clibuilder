@@ -17,7 +17,12 @@
 			"!**/node_modules",
 			"!packages/codemod/fixtures",
 			"!docs/evals",
-			"!packages/args-minus/src/standard_schema.ts"
+			"!packages/args-minus/src/standard_schema.ts",
+			"!**/.claude-plugin",
+			"!**/.cursor-plugin",
+			"!**/.codex-plugin",
+			"!.agents/plugins",
+			"!.github/plugin"
 		]
 	},
 	"javascript": {

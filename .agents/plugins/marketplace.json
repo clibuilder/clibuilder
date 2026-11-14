@@ -1,0 +1,21 @@
+{
+  "name": "clibuilder-clibuilder-local",
+  "interface": {
+    "displayName": "clibuilder-clibuilder-local"
+  },
+  "plugins": [
+    {
+      "name": "clibuilder",
+      "version": "12.3.0",
+      "source": {
+        "source": "local",
+        "path": "./packages/clibuilder"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

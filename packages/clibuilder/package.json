@@ -53,7 +53,14 @@
 		"src",
 		"!**/*.internal.*",
 		"!**/*.{accept,integrate,spec,system,test,unit}.*",
-		"CHANGELOG.md"
+		"CHANGELOG.md",
+		"plugin.json",
+		"skills/",
+		"!skills/*/evals",
+		".claude-plugin/plugin.json",
+		".cursor-plugin/plugin.json",
+		".codex-plugin/plugin.json",
+		"com.github.copilot/"
 	],
 	"scripts": {
 		"build": "tsc",

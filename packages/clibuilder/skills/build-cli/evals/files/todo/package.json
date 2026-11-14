@@ -1,0 +1,14 @@
+{
+	"name": "todo",
+	"version": "0.1.0",
+	"type": "module",
+	"bin": {
+		"todo": "./esm/cli.js"
+	},
+	"dependencies": {
+		"clibuilder": "^12.3.0"
+	},
+	"devDependencies": {
+		"vitest": "^4.0.0"
+	}
+}

@@ -193,6 +193,9 @@ importers:
       turbo:
         specifier: ^2.10.3
         version: 2.10.3
+      universal-plugin:
+        specifier: ^0.20.0
+        version: 0.20.0
 
   apps/website:
     dependencies:
@@ -1772,6 +1775,11 @@ packages:
 
   '@repobuddy/typescript@2.2.3':
     resolution: {integrity: sha512-qsOg5DP84tX+ad3Wa9xB8RZ6Rcqp423Q+4zIbNx2B4vOK0T5w19MnAHxsrLHcm/cLx2tIYouedhbrwlRIpka9g==}
+
+  '@repobuddy/upx@0.2.0':
+    resolution: {integrity: sha512-uoiPhl9RkZGH9DqIZbsFDdcljmmZEemLNwSB0ZJFcqYs/rq86kFZEb//YFw9NNmHt+jlHtSCwIoAGAaIe4q0Vw==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   '@repobuddy/vitest@3.0.1':
     resolution: {integrity: sha512-YJZJQT0U5An5uhkRXugYNTH7CUbOC7WWbrgsHsSf9h8SLN5enTMu3LxKf+uK8EICF1f4A1U2xeu7xjieeC66tw==}
@@ -4835,6 +4843,11 @@ packages:
   unist-util-visit@5.1.0:
     resolution: {integrity: sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==}
 
+  universal-plugin@0.20.0:
+    resolution: {integrity: sha512-mKBZLqQd4RYEj0V3E9uPRzODvS420EpN/TI8gVdrGYKy9NLmKyLdKuwkFY46aMKyHan5ud3Dbh/gCj58480SSQ==}
+    engines: {node: '>=22'}
+    hasBin: true
+
   unpartial@1.0.7:
     resolution: {integrity: sha512-DeyxEI3KSlmDihGAk3Js/p/Ca886ymIz39pWH3VVV/LZ36MsRETylFS37fdzWBWDjMlzB63Rdy2KLCdetOMPig==}
     engines: {node: '>= 20'}
@@ -6410,6 +6423,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
+  '@repobuddy/upx@0.2.0':
+    dependencies:
+      semver: 7.8.5
+
   '@repobuddy/vitest@3.0.1(typescript@5.9.3)(vitest@4.1.11)':
     dependencies:
       '@repobuddy/test': 1.1.2(typescript@5.9.3)
@@ -7326,7 +7343,7 @@ snapshots:
   clibuilder@11.5.0(typescript@5.9.3):
     dependencies:
       args-minus: 0.2.0
-      find-installed-packages: 4.0.1
+      find-installed-packages: 4.0.2
       import-meta-resolve: 4.2.0
       js-yaml: 4.1.1
       jsonc-parser: 3.3.1
@@ -9856,6 +9873,11 @@ snapshots:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
+
+  universal-plugin@0.20.0:
+    dependencies:
+      '@repobuddy/upx': 0.2.0
+      rolldown: 1.2.13
 
   unpartial@1.0.7: {}
 

@@ -1,0 +1,46 @@
+runs: 3
+threshold: 2
+trigger:
+  - prompt: make my CLI's output friendlier for AI agents that call it
+    expect: fire
+  - prompt: review what this command prints, the main caller is a coding agent
+    expect: fire
+  - prompt: apply the AXI conventions to my task CLI
+    expect: fire
+  - prompt: what should my list command print when there are no results, so an agent knows it is empty?
+    expect: fire
+  - prompt: add a --port option to my clibuilder serve command
+    expect: skip
+  - prompt: add colors and a spinner to my CLI's output for human users
+    expect: skip
+  - prompt: design the JSON response schema for my REST API
+    expect: skip
+  - prompt: write the --help text for my bash script
+    expect: skip
+outcome:
+  - id: fix-tasks
+    prompt: >-
+      The main caller of the tasks CLI in this folder is an AI agent. Change src/cli.ts so it follows clibuilder's
+      AXI conventions. You may change src/store.ts too. Do not install packages or run anything; only edit the files.
+    files: files/tasks
+    criteria: [C1, C2, C3, C4, C5]
+  - id: review-tasks
+    prompt: >-
+      Review the tasks CLI in this folder against clibuilder's AXI conventions. Do not change any file; reply with
+      the problems you find.
+    files: files/tasks
+    criteria: [C6]
+rubrics:
+  C1:
+    - script: grep -rEq "\.default\(" src
+  C2:
+    - script: grep -rq "truncateList" src && grep -rEq "full\s*:\s*fullOption" src
+  C3:
+    - script: grep -rEq "\b(empty|orEmpty)\(\s*['\"\`][^'\"\`]*\b(0|[Nn]o)\b" src
+  C4:
+    - script: grep -rq "new CliError" src && grep -rEq "code\s*:\s*['\"][a-z0-9-]+['\"]" src && grep -rEq "help\s*:" src && ! grep -rq "process\.exit" src
+  C5:
+    - script: grep -rq "ref(" src && grep -rEq "state\s*[!=]==?\s*['\"](open|closed)['\"]" src
+  C6:
+    - regex: "[Rr]ule\\s*#?\\s*5\\b"
+    - regex: "[Rr]ule\\s*#?\\s*6\\b"

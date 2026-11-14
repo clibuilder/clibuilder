@@ -1,0 +1,45 @@
+runs: 3
+threshold: 2
+trigger:
+  - prompt: build a small CLI called greet with clibuilder that prints hello and a name
+    expect: fire
+  - prompt: add a --port option with a default of 8080 to the serve command in my clibuilder CLI
+    expect: fire
+  - prompt: how do I make my clibuilder command fail with exit code 4 and a not-found error code?
+    expect: fire
+  - prompt: write a vitest test for the deploy command of my clibuilder app
+    expect: fire
+  - prompt: build a CLI with commander.js that copies files
+    expect: skip
+  - prompt: parse command-line flags in my Python script with argparse
+    expect: skip
+  - prompt: write a GitHub Actions workflow that publishes my CLI package to npm on release
+    expect: skip
+  - prompt: write a bash script that renames every .jpeg file in this folder to .jpg
+    expect: skip
+outcome:
+  - id: todo-cli
+    prompt: >-
+      In this folder, write a CLI named todo, version 0.1.0, with clibuilder, in src/cli.ts. It has a command
+      `add` that takes a `title` argument and a `--priority` option, an integer from 1 to 5 that defaults to 3, and
+      a command `done` that takes an `id` argument and fails with an error code when no todo has that id. Keep the
+      todos in memory. Write vitest tests for both commands in src/cli.test.ts. Do not install packages or run
+      anything; only write the files.
+    files: files/todo
+    checks:
+      C3:
+        - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C3
+        - script: grep -rEq "t\\.int\\(\\s*\\{[^}]*min" src
+rubrics:
+  C1:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C1
+  C2:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C2
+  C3:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C3
+  C4:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C4
+  C5:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C5
+  C6:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C6
