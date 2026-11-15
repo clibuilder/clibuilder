@@ -10,16 +10,19 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Secretless: GITHUB_TOKEN for the version PR, npm trusted publishing (OIDC) to
-  # publish. No CI_GITHUB_TOKEN or NPM_TOKEN, so nothing to rotate. npm validates the
-  # caller workflow, so the trusted publisher is registered against this file rather
-  # than the reusable one, and `id-token: write` is granted here as well as in the callee.
+  # publish. No CI_GITHUB_TOKEN, NPM_TOKEN or GitHub App key, so nothing to rotate.
+  # npm validates the caller workflow, so the trusted publisher is registered against
+  # this file rather than the reusable one; keep its name and path.
   release:
     uses: clibuilder/.github/.github/workflows/pnpm-release-changeset.yml@main
     needs: code
-    secrets:
-      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
-      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
     permissions:
+      # Mints the OIDC token npm exchanges for short-lived publish credentials.
       id-token: write
+      # Pushes the version branch and tags.
       contents: write
+      # Opens the "version packages" PR with GITHUB_TOKEN.
       pull-requests: write
+      # Approves the version PR's runs, which GitHub parks as action_required
+      # because github-actions[bot] pushed them.
+      actions: write
