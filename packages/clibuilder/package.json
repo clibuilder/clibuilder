@@ -1,12 +1,25 @@
 {
 	"name": "clibuilder",
 	"version": "12.4.0",
-	"description": "A CLI building library",
+	"description": "Build type-safe CLIs that serve both humans and AI agents",
 	"keywords": [
-		"builder",
+		"agent",
+		"ai",
+		"ai-agent",
+		"agent-skills",
+		"argument-parser",
+		"argv",
+		"axi",
 		"cli",
+		"cli-framework",
 		"command",
-		"parser"
+		"command-line",
+		"llm",
+		"parser",
+		"plugin",
+		"subcommand",
+		"toon",
+		"typescript"
 	],
 	"homepage": "https://github.com/clibuilder/clibuilder",
 	"bugs": {
@@ -14,7 +27,8 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/clibuilder/clibuilder.git"
+		"url": "https://github.com/clibuilder/clibuilder.git",
+		"directory": "packages/clibuilder"
 	},
 	"license": "MIT",
 	"author": {
@@ -59,8 +73,7 @@
 		"!skills/*/evals",
 		".claude-plugin/plugin.json",
 		".cursor-plugin/plugin.json",
-		".codex-plugin/plugin.json",
-		"com.github.copilot/"
+		".codex-plugin/plugin.json"
 	],
 	"scripts": {
 		"build": "tsc",
