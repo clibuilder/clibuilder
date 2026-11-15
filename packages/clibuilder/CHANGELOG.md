@@ -1,5 +1,11 @@
 # Change Log
 
+## 12.4.1
+
+### Patch Changes
+
+- f87b942: Update the npm package metadata. The description and keywords now say that clibuilder builds CLIs for both humans and AI agents. `repository.directory` now points to `packages/clibuilder`. The package no longer lists a `com.github.copilot/` directory in `files`.
+
 ## 12.4.0
 
 ### Minor Changes
