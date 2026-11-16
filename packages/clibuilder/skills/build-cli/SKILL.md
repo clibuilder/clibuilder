@@ -1,6 +1,6 @@
 ---
 name: build-cli
-description: Build, extend or test a command-line tool with the clibuilder library (v12) — set up cli() and command(), add subcommands and typed arguments or options with t, return results, fail with CliError and exit codes, read a config file, load plugins, and test commands in-process with clibuilder/testing. For requests like "build a CLI with clibuilder", "add a --port option to my clibuilder command", "make this command exit 1 with an error code", or "write a test for this clibuilder command".
+description: Builds, extends and tests a command-line tool with clibuilder 12, writing each command's spec first. Covers cli() and command(), subcommands, typed arguments and options with t, results, CliError failures and exit codes, config files, plugins, and in-process tests with clibuilder/testing. For requests like "build a CLI with clibuilder", "add a --port option to my clibuilder command", "make this command exit 1 with an error code", "write the spec for this clibuilder command", or "write a test for this clibuilder command".
 ---
 
 # Build a CLI with clibuilder
@@ -10,6 +10,19 @@ Requires Node.js 20.19 or newer. clibuilder 12 is ESM only.
 ```sh
 npm install clibuilder
 ```
+
+## Workflow
+
+Each command created or changed goes through these steps in order. Read [references/command-spec.md](references/command-spec.md) before step 1.
+
+1. **Spec it.** Write the command's spec, or update it with the change. The spec names the command's default `--format` by name, also when it is the package-wide default.
+2. **Derive its tests from the spec.** Write one test per spec criterion, the default-format one included, before the code. A test of a criterion the code does not meet yet fails.
+3. **Implement it** with the API below.
+4. **Verify it.** Run the project's tests, and fix the code until they pass. When a test shows the spec itself is wrong, ask before changing the spec. Then check the result against Done when.
+
+**Changing an existing command.** Before step 1, find its default format in three places: its spec, its tests (a test run with no `--format`, and the `format` it passes to `testCommand`), and the entry file's `cli({ format })`, which is `toon` when it sets none. When two of them disagree, or the spec names none and the tests and code disagree, do not pick one: change nothing about that command, report each place and the default it gives, and ask which is right. A spec that is missing is written from the command's current behavior, with the default the code gives.
+
+A request for a test of an existing command takes the spec as its source: step 1 when there is no spec yet, then step 2.
 
 ## Minimal CLI
 
@@ -141,3 +154,7 @@ Before reporting done, check each of these against the result. Report any that f
 - **C4.** Every failure in `run()` throws `CliError` with a kebab-case `code`; no `run()` calls `process.exit`.
 - **C5.** Each command written or changed has a test that runs it with `testCommand` from `clibuilder/testing` and asserts `exitCode`.
 - **C6.** Every clibuilder import names an export of `clibuilder`, `clibuilder/axi`, `clibuilder/config`, `clibuilder/testing` or `@clibuilder/plugins`.
+- **C7.** Each command written or changed has a spec that names its default `--format` as `toon`, `json` or `text`.
+- **C8.** Each criterion ID in a command's spec opens the title of a test of that command.
+- **C9.** Each command written or changed has a test that runs it with no `--format` and asserts an answer in the default its spec names.
+- **C10.** When an existing command's spec, tests and entry file disagree on its default format, the reply names each place and the default it gives, and no file changed that default.

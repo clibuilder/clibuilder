@@ -9,6 +9,8 @@ trigger:
     expect: fire
   - prompt: write a vitest test for the deploy command of my clibuilder app
     expect: fire
+  - prompt: write the spec for the list command of my clibuilder CLI before I change it
+    expect: fire
   - prompt: build a CLI with commander.js that copies files
     expect: skip
   - prompt: parse command-line flags in my Python script with argparse
@@ -26,10 +28,25 @@ outcome:
       todos in memory. Write vitest tests for both commands in src/cli.test.ts. Do not install packages or run
       anything; only write the files.
     files: files/todo
+    criteria: [C1, C2, C3, C4, C5, C6, C7, C8, C9]
     checks:
       C3:
         - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C3
         - script: grep -rEq "t\\.int\\(\\s*\\{[^}]*min" src
+  - id: format-mismatch
+    prompt: >-
+      Add a --limit option to the list command of the tasks CLI in this folder: an integer from 1 to 100,
+      20 by default, the most tasks to list. Do not install packages or run anything; only write the files.
+    files: files/format-mismatch
+    criteria: [C10]
+    checks:
+      C10:
+        - script: grep -q 'Default format:\*\* `json`' src/list.md
+        - script: grep -q "S1 answers in toon" src/list.test.ts
+        - script: "! grep -q format src/cli.ts"
+        - regex: "[Mm]ismatch|[Dd]isagree|[Cc]onflict|[Ii]nconsisten|[Dd]iffer|[Cc]ontradict"
+        - regex: "\\bjson\\b|\\bJSON\\b"
+        - regex: "\\btoon\\b|\\bTOON\\b"
 rubrics:
   C1:
     - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C1
@@ -43,3 +60,9 @@ rubrics:
     - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C5
   C6:
     - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C6
+  C7:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C7
+  C8:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C8
+  C9:
+    - script: node "$SKILL_TEST_PLUGIN/skills/build-cli/evals/check.mjs" C9
