@@ -17,6 +17,7 @@
 			"!**/node_modules",
 			"!packages/codemod/fixtures",
 			"!docs/evals",
+			"!.github/scripts/min-release-age.mjs",
 			"!packages/args-minus/src/standard_schema.ts",
 			"!**/.claude-plugin",
 			"!**/.cursor-plugin",
