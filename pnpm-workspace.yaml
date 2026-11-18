@@ -38,6 +38,8 @@ minimumReleaseAgeExclude:
   - storybook-addon-vis
   - vitest-plugin-vis
   - node-supported-releases
+  # Remove after 2026-11-19: universal-plugin@0.22.0 is inside the minimumReleaseAge window until then.
+  - universal-plugin
   - '@clibuilder/*'
   - '@just-func/*'
   - '@just-web/*'
