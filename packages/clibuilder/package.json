@@ -1,6 +1,6 @@
 {
 	"name": "clibuilder",
-	"version": "12.4.1",
+	"version": "12.5.0",
 	"description": "Build type-safe CLIs that serve both humans and AI agents",
 	"keywords": [
 		"agent",
