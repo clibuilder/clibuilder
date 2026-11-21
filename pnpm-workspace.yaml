@@ -44,8 +44,6 @@ minimumReleaseAgeExclude:
   - '@mocktomata/*'
   - '@repobuddy/*'
   - '@unional/*'
-  # min-release-age: lift universal-plugin@0.23.0 until 2026-11-19T18:00:00Z
-  - 'universal-plugin@0.23.0'
 
 packages:
   - apps/*
